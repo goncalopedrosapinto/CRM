@@ -218,6 +218,18 @@ select.field-input{padding-right:34px;background-image:url("data:image/svg+xml,%
 .dash-alert{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;font-size:13px}
 .dash-alert-t{flex:1;color:var(--text2)}
 .dash-alert-c{font-size:12px;font-weight:700;background:rgba(220,38,38,.1);color:var(--red);padding:2px 9px;border-radius:10px}
+
+.vsel{border-bottom:1px solid rgba(255,255,255,.08)}
+.vsel-head{display:flex;align-items:center;gap:8px;padding:12px 20px;cursor:pointer}
+.vsel-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.4);font-weight:700}
+.vsel-cur{font-size:13px;font-weight:700;color:#fff;margin-top:2px}
+.vsel-arrow{margin-left:auto;color:rgba(255,255,255,.5);transform:rotate(90deg);transition:transform .2s;font-size:18px}
+.vsel-arrow.open{transform:rotate(-90deg)}
+.vsel-menu{padding:4px 0 10px;background:rgba(0,0,0,.15)}
+.vsel-opt{display:flex;align-items:center;padding:9px 20px;font-size:13px;color:rgba(255,255,255,.7);cursor:pointer}
+.vsel-opt:active{background:rgba(255,255,255,.06)}
+.vsel-opt.active{color:#fff;font-weight:600}
+.vsel-group{padding:8px 20px 3px;font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--orange);font-weight:700}
 </style>
 </head>
 <body>
@@ -251,8 +263,8 @@ const ALL_FIELDS=FIELD_GROUPS.flatMap(g=>g.fields);
 // Cada instalação (cada Supabase) tem os seus valores próprios.
 // Settings -> API no dashboard do Supabase.
 const CONFIG={
-  url:'https://fyieckrmdrorjoevmrhm.supabase.co',
-  key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5aWVja3JtZHJvcmpvZXZtcmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMjQwMTYsImV4cCI6MjA5ODkwMDAxNn0.sn43-tvIH525Uc9als40l0aFnFkvi6nX8LHfj10BZU0'
+  url:'https://COLOCA-AQUI-O-PROJECT-ID.supabase.co',
+  key:'COLOCA-AQUI-A-ANON-PUBLIC-KEY'
 };
 // ================================================================
 
@@ -260,7 +272,7 @@ let S={
   screen:'loading',
   config:CONFIG,
   token:null,records:[],selected:null,form:{},
-  me:null,team:[],objetivos:[],viewVendedor:null,
+  me:null,team:[],objetivos:[],viewVendedor:null,vselOpen:false,
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{Identificação:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
 };
@@ -378,6 +390,28 @@ function renderLogin(){return`
   <button class="btn btn-orange btn-block" data-action="login" ${S.loading?'disabled':''} style="margin-top:4px">${S.loading?'A entrar...':'Entrar'}</button>
 </div></div></div>`}
 
+function renderViewSelector(){
+  const motorrad=S.team.filter(p=>p.linha==='motorrad');
+  const auto=S.team.filter(p=>p.linha==='auto');
+  const cur=S.viewVendedor;
+  const curLabel=cur?esc(vendName(cur)):'Toda a equipa';
+  const opt=(id,label,active,extra)=>`<div class="vsel-opt ${active?'active':''}" data-action="${id==='__dash__'?'go-dashboard':'view-vendedor'}" ${id&&id!=='__dash__'&&id!=='__all__'?`data-id="${id}"`:(id==='__all__'?'data-id=""':'')}>${extra||''}${esc(label)}${active?' <span style=\"margin-left:auto;color:var(--orange)\">&#10003;</span>':''}</div>`;
+  return`<div class="vsel">
+    <div class="vsel-head" data-action="toggle-vsel">
+      <div>
+        <div class="vsel-lbl">Vista</div>
+        <div class="vsel-cur">${S.screen==='dashboard'?'Dashboard equipa':curLabel}</div>
+      </div>
+      <span class="vsel-arrow ${S.vselOpen?'open':''}">&#8250;</span>
+    </div>
+    ${S.vselOpen?`<div class="vsel-menu">
+      <div class="vsel-opt ${S.screen==='dashboard'?'active':''}" data-action="go-dashboard">&#128202;&nbsp; Dashboard equipa${S.screen==='dashboard'?' <span style="margin-left:auto;color:var(--orange)">&#10003;</span>':''}</div>
+      <div class="vsel-opt ${S.screen!=='dashboard'&&!cur?'active':''}" data-action="view-vendedor" data-id="">&#128101;&nbsp; Todos os registos${S.screen!=='dashboard'&&!cur?' <span style="margin-left:auto;color:var(--orange)">&#10003;</span>':''}</div>
+      ${motorrad.length?`<div class="vsel-group">Motorrad</div>${motorrad.map(p=>`<div class="vsel-opt ${cur===p.id?'active':''}" data-action="view-vendedor" data-id="${p.id}">&#127949;&nbsp; ${esc(p.nome||'?')}${cur===p.id?' <span style="margin-left:auto;color:var(--orange)">&#10003;</span>':''}</div>`).join('')}`:''}
+      ${auto.length?`<div class="vsel-group">Auto</div>${auto.map(p=>`<div class="vsel-opt ${cur===p.id?'active':''}" data-action="view-vendedor" data-id="${p.id}">&#128663;&nbsp; ${esc(p.nome||'?')}${cur===p.id?' <span style="margin-left:auto;color:var(--orange)">&#10003;</span>':''}</div>`).join('')}`:''}
+    </div>`:''}
+  </div>`}
+
 function renderList(){
   const f=filtered(),c=statusCounts(),months=availableMonths();
   const af=(S.monthFilter.length>0?1:0)+(S.bevFilter!=='all'?1:0)+(S.xevFilter!=='all'?1:0);
@@ -408,10 +442,7 @@ function renderList(){
         <div class="sidebar-logo-sub">Pipeline de vendas</div></div>
       </div>
     </div>
-    ${isAdmin()?`<div style="padding:12px 20px;border-bottom:1px solid rgba(255,255,255,.08)">
-      <div data-action="go-dashboard" style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#fff;cursor:pointer">&#8592; Dashboard equipa</div>
-      <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:6px">A ver: <b style="color:var(--orange)">${esc(vendName(S.viewVendedor)||'Toda a equipa')}</b></div>
-    </div>`:''}
+    ${isAdmin()?renderViewSelector():''}
     <div class="sidebar-nav">
       <div class="sidebar-item ${S.statusFilter==='all'?'active':''}" data-action="sidebar-filter" data-status="all">
         <span class="sdot" style="background:var(--orange)"></span>Todos<span class="scount">${S.records.length}</span>
@@ -669,8 +700,9 @@ function bindEvents(){
     switch(a){
       case'login':{const em=document.getElementById('f-email')?.value?.trim(),pw=document.getElementById('f-pw')?.value;if(!em||!pw){setState({error:'Preenche email e password.'});return}setState({loading:true,error:''});supabaseAuth(em,pw).then(r=>{S.token=r.access_token;return afterAuth()}).catch(e=>setState({error:e.message,loading:false}));break}
       case'logout':clearSession();setState({token:null,records:[],me:null,team:[],objetivos:[],viewVendedor:null,screen:'login',error:''});break;
-      case'go-dashboard':setState({screen:'dashboard',viewVendedor:null,statusFilter:'all',alertFilter:null,alertIds:[],search:'',renderLimit:50});break;
-      case'view-vendedor':{const id=el.dataset.id||null;setState({viewVendedor:id,screen:'list',statusFilter:'all',alertFilter:null,alertIds:[],search:'',monthFilter:[],renderLimit:50});break}
+      case'toggle-vsel':setState({vselOpen:!S.vselOpen});break;
+      case'go-dashboard':setState({screen:'dashboard',viewVendedor:null,vselOpen:false,statusFilter:'all',alertFilter:null,alertIds:[],search:'',renderLimit:50});break;
+      case'view-vendedor':{const id=el.dataset.id||null;setState({viewVendedor:id,screen:'list',vselOpen:false,statusFilter:'all',alertFilter:null,alertIds:[],search:'',monthFilter:[],renderLimit:50});break}
       case'save-objetivo':{e.stopPropagation();const vid=el.dataset.id;const inp=document.querySelector(`[data-obj-input="${vid}"]`);const val=parseInt(inp&&inp.value?inp.value:'0')||0;el.textContent='\u2026';saveObjetivo(vid,val).then(()=>render()).catch(err=>{alert('Erro: '+err.message);render()});break}
       case'refresh':{const p=isAdmin()?Promise.all([loadObjetivos(),loadTeam()]):Promise.resolve();p.then(()=>loadRecords());break}
       case'open-sidebar':setState({sidebarOpen:!S.sidebarOpen});break;
