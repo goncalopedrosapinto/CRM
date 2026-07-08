@@ -230,6 +230,10 @@ select.field-input{padding-right:34px;background-image:url("data:image/svg+xml,%
 .vsel-opt:active{background:rgba(255,255,255,.06)}
 .vsel-opt.active{color:#fff;font-weight:600}
 .vsel-group{padding:8px 20px 3px;font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--orange);font-weight:700}
+
+.dash-linha-filter{display:flex;gap:6px;padding:4px 16px 8px;flex-wrap:wrap}
+.dlf-btn{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer}
+.dlf-btn.active{background:var(--orange);color:#fff;border-color:var(--orange)}
 </style>
 </head>
 <body>
@@ -272,7 +276,7 @@ let S={
   screen:'loading',
   config:CONFIG,
   token:null,records:[],selected:null,form:{},
-  me:null,team:[],objetivos:[],viewVendedor:null,vselOpen:false,
+  me:null,team:[],objetivos:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{Identificação:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
 };
@@ -283,6 +287,9 @@ function saveSession(d){try{if(d.access_token&&d.refresh_token){localStorage.set
 function clearSession(){try{localStorage.removeItem('bc_session')}catch(e){}}
 async function refreshSession(){let raw;try{raw=localStorage.getItem('bc_session')}catch(e){return null}if(!raw)return null;let s;try{s=JSON.parse(raw)}catch(e){return null}if(!s.refresh_token)return null;try{const r=await fetch(`${S.config.url}/auth/v1/token?grant_type=refresh_token`,{method:'POST',headers:{'apikey':S.config.key,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:s.refresh_token})});if(!r.ok){clearSession();return null}const d=await r.json();saveSession(d);return d.access_token}catch(e){return null}}
 async function supabaseApi(m,path,body,_retry){const h={'apikey':S.config.key,'Authorization':`Bearer ${S.token}`,'Content-Type':'application/json'};if(m==='POST'||m==='PATCH')h['Prefer']='return=representation';const o={method:m,headers:h};if(body)o.body=JSON.stringify(body);const r=await fetch(`${S.config.url}/rest/v1${path}`,o);if(r.status===401&&!_retry){const nt=await refreshSession();if(nt){S.token=nt;return supabaseApi(m,path,body,true)}}if(!r.ok){const e=await r.text();throw new Error(e)}const t=await r.text();return t?JSON.parse(t):null}
+const LINHA_LABELS={motorrad:'Motorrad',auto:'VN'};
+const LINHA_ICONS={motorrad:'\u{1F3CD}',auto:'\u{1F697}'};
+function linhaLabel(l){return LINHA_LABELS[l]||l||'?'}
 function jwtSub(t){try{return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).sub}catch(e){return null}}
 async function loadMe(){const uid=jwtSub(S.token);if(!uid)throw new Error('Token invalido');const d=await supabaseApi('GET',`/profiles?id=eq.${uid}&select=*`);if(!d||!d.length)throw new Error('Perfil nao encontrado. Corre o schema SQL (tabela profiles + trigger).');S.me=d[0]}
 function isAdmin(){return S.me&&S.me.role==='admin'}
@@ -407,8 +414,8 @@ function renderViewSelector(){
     ${S.vselOpen?`<div class="vsel-menu">
       <div class="vsel-opt ${S.screen==='dashboard'?'active':''}" data-action="go-dashboard">&#128202;&nbsp; Dashboard equipa${S.screen==='dashboard'?' <span style="margin-left:auto;color:var(--orange)">&#10003;</span>':''}</div>
       <div class="vsel-opt ${S.screen!=='dashboard'&&!cur?'active':''}" data-action="view-vendedor" data-id="">&#128101;&nbsp; Todos os registos${S.screen!=='dashboard'&&!cur?' <span style="margin-left:auto;color:var(--orange)">&#10003;</span>':''}</div>
-      ${motorrad.length?`<div class="vsel-group">Motorrad</div>${motorrad.map(p=>`<div class="vsel-opt ${cur===p.id?'active':''}" data-action="view-vendedor" data-id="${p.id}">&#127949;&nbsp; ${esc(p.nome||'?')}${cur===p.id?' <span style="margin-left:auto;color:var(--orange)">&#10003;</span>':''}</div>`).join('')}`:''}
-      ${auto.length?`<div class="vsel-group">Auto</div>${auto.map(p=>`<div class="vsel-opt ${cur===p.id?'active':''}" data-action="view-vendedor" data-id="${p.id}">&#128663;&nbsp; ${esc(p.nome||'?')}${cur===p.id?' <span style="margin-left:auto;color:var(--orange)">&#10003;</span>':''}</div>`).join('')}`:''}
+      ${motorrad.length?`<div class="vsel-group">${linhaLabel('motorrad')}</div>${motorrad.map(p=>`<div class="vsel-opt ${cur===p.id?'active':''}" data-action="view-vendedor" data-id="${p.id}">&#127949;&nbsp; ${esc(p.nome||'?')}${cur===p.id?' <span style="margin-left:auto;color:var(--orange)">&#10003;</span>':''}</div>`).join('')}`:''}
+      ${auto.length?`<div class="vsel-group">${linhaLabel('auto')}</div>${auto.map(p=>`<div class="vsel-opt ${cur===p.id?'active':''}" data-action="view-vendedor" data-id="${p.id}">&#128663;&nbsp; ${esc(p.nome||'?')}${cur===p.id?' <span style="margin-left:auto;color:var(--orange)">&#10003;</span>':''}</div>`).join('')}`:''}
     </div>`:''}
   </div>`}
 
@@ -619,9 +626,13 @@ function renderEdit(){
   </div>`}
 
 function renderDashboard(){
-  const team=S.team;const ym=curYM();
-  const all=statsFor(S.records);
-  const objTotal=S.objetivos.reduce((a,o)=>a+(o.objetivo_unidades||0),0);
+  const ym=curYM();
+  const linhas=[...new Set(S.team.map(p=>p.linha))].sort();
+  const team=S.dashLinha==='all'?S.team:S.team.filter(p=>p.linha===S.dashLinha);
+  const teamIds=team.map(p=>p.id);
+  const scopeRecs=S.dashLinha==='all'?S.records:S.records.filter(r=>teamIds.includes(r.vendedor_id));
+  const all=statsFor(scopeRecs);
+  const objTotal=S.objetivos.filter(o=>teamIds.includes(o.vendedor_id)).reduce((a,o)=>a+(o.objetivo_unidades||0),0);
   const bevPct=all.fechados?Math.round(100*all.bev/all.fechados):0;
   const alertTotal=all.alerts.reduce((a,x)=>a+x.count,0);
   const perVend=team.map(p=>{const recs=recsOf(p.id);const st=statsFor(recs);const obj=S.objetivos.find(o=>o.vendedor_id===p.id);const upd=lastUpdateDays(recs);return{p,st,obj:obj?obj.objetivo_unidades:0,alertCount:st.alerts.reduce((a,x)=>a+x.count,0),upd}});
@@ -643,6 +654,10 @@ function renderDashboard(){
       ${team.map(p=>`<button class="dash-pill" data-action="view-vendedor" data-id="${p.id}">${esc(p.nome||'?')}</button>`).join('')}
       <button class="dash-pill" data-action="view-vendedor" data-id="">Todos os registos</button>
     </div>
+    ${linhas.length>1?`<div class="dash-linha-filter">
+      <button class="dlf-btn ${S.dashLinha==='all'?'active':''}" data-action="dash-linha" data-linha="all">Todas as linhas</button>
+      ${linhas.map(l=>`<button class="dlf-btn ${S.dashLinha===l?'active':''}" data-action="dash-linha" data-linha="${l}">${LINHA_ICONS[l]||''} ${esc(linhaLabel(l))}</button>`).join('')}
+    </div>`:''}
     <div class="dash-kpis">
       <div class="dash-kpi"><div class="dash-kpi-l">Fechados</div><div class="dash-kpi-v">${all.fechados}</div><div class="dash-kpi-s">${objTotal?`obj: ${objTotal}`:'sem objetivo'}</div></div>
       <div class="dash-kpi"><div class="dash-kpi-l">Funil ativo</div><div class="dash-kpi-v">${all.funil}</div><div class="dash-kpi-s">Q+M+F</div></div>
@@ -701,6 +716,7 @@ function bindEvents(){
       case'login':{const em=document.getElementById('f-email')?.value?.trim(),pw=document.getElementById('f-pw')?.value;if(!em||!pw){setState({error:'Preenche email e password.'});return}setState({loading:true,error:''});supabaseAuth(em,pw).then(r=>{S.token=r.access_token;return afterAuth()}).catch(e=>setState({error:e.message,loading:false}));break}
       case'logout':clearSession();setState({token:null,records:[],me:null,team:[],objetivos:[],viewVendedor:null,screen:'login',error:''});break;
       case'toggle-vsel':setState({vselOpen:!S.vselOpen});break;
+      case'dash-linha':setState({dashLinha:el.dataset.linha});break;
       case'go-dashboard':setState({screen:'dashboard',viewVendedor:null,vselOpen:false,statusFilter:'all',alertFilter:null,alertIds:[],search:'',renderLimit:50});break;
       case'view-vendedor':{const id=el.dataset.id||null;setState({viewVendedor:id,screen:'list',vselOpen:false,statusFilter:'all',alertFilter:null,alertIds:[],search:'',monthFilter:[],renderLimit:50});break}
       case'save-objetivo':{e.stopPropagation();const vid=el.dataset.id;const inp=document.querySelector(`[data-obj-input="${vid}"]`);const val=parseInt(inp&&inp.value?inp.value:'0')||0;el.textContent='\u2026';saveObjetivo(vid,val).then(()=>render()).catch(err=>{alert('Erro: '+err.message);render()});break}
