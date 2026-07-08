@@ -261,7 +261,7 @@ const STATUSES=['Retail','Carteira','Quente','Morno','Frio','Matricula'];
 const SDOT={Retail:'var(--green)',Carteira:'var(--blue)',Quente:'var(--red)',Morno:'var(--amber)',Frio:'var(--slate)',Matricula:'var(--purple)'};
 const TYPES=['VN','VD','VP'],ORIGINS=['','Cliente','Recom.','Stand','Prosp','Lead'],PROFILES=['','PE','PART','BUS','ENI','FLE','CA'],GARS=['','GAR','nGAR'],FINS=['','FS','PP','Fext','Fint'];
 const FIELD_GROUPS=[
-  {g:'Identificação',fields:[{k:'status',l:'Status',t:'select',o:STATUSES},{k:'alert_days',l:'Alertar após (dias)',t:'number',show:'funil'},{k:'id_cliente',l:'Cliente',t:'text'},{k:'resp',l:'Responsável',t:'text'},{k:'local',l:'Código Postal',t:'text'}]},
+  {g:'Identificação',fields:[{k:'status',l:'Status',t:'select',o:STATUSES},{k:'alert_days',l:'Alertar após (dias)',t:'number',show:'funil'},{k:'id_cliente',l:'Cliente',t:'text'},{k:'resp',l:'Responsável',t:'vendedores'},{k:'local',l:'Código Postal',t:'text'}]},
   {g:'Negócio',fields:[{k:'neg',l:'Data Negócio',t:'date'},{k:'mes1',l:'Mês Referência',t:'month'},{k:'type',l:'Tipo',t:'select',o:TYPES},{k:'origin',l:'Origem',t:'select',o:ORIGINS},{k:'profile',l:'Perfil',t:'select',o:PROFILES},{k:'biz',l:'Bizagi',t:'text'},{k:'fin',l:'Financiamento',t:'select',o:FINS}]},
   {g:'Viatura',fields:[{k:'model',l:'Modelo',t:'text'},{k:'version',l:'Versão',t:'text'},{k:'enc',l:'Encomenda',t:'text'},{k:'chas',l:'Chassis',t:'text'},{k:'mat',l:'Matrícula',t:'text'},{k:'gar',l:'Garantia',t:'select',o:GARS}]},
   {g:'Flags',fields:[{k:'qor',l:'QoR',t:'toggle'},{k:'xev',l:'xEV',t:'toggle'},{k:'bev',l:'BEV',t:'toggle'},{k:'m_flag',l:'M',t:'toggle'},{k:'csc',l:'CSC',t:'toggle'},{k:'cme',l:'CME',t:'toggle'}]},
@@ -317,7 +317,11 @@ async function saveRecord(){setState({loading:true,error:''});try{const b={...S.
 async function deleteRecord(){setState({loading:true,error:''});try{await supabaseApi('DELETE',`/baviera_control?id=eq.${S.selected.id}`);await loadRecords();setState({screen:'list',selected:null,confirmDelete:false,loading:false})}catch(e){setState({error:'Erro: '+e.message,loading:false})}}
 
 function fmtDate(d){if(!d)return'—';try{return new Date(d).toLocaleDateString('pt-PT',{day:'2-digit',month:'short',year:'numeric'})}catch{return d}}
-function emptyForm(){const f={};ALL_FIELDS.forEach(fd=>f[fd.k]=fd.t==='toggle'?0:'');return f}
+function emptyForm(){const f={};ALL_FIELDS.forEach(fd=>f[fd.k]=fd.t==='toggle'?0:'');
+  // Pre-preenche Responsavel: admin no contexto de um vendedor -> esse vendedor; vendedor normal -> o proprio.
+  if(isAdmin()&&S.viewVendedor){const v=S.team.find(p=>p.id===S.viewVendedor);if(v&&v.nome)f.resp=v.nome}
+  else if(!isAdmin()&&S.me&&S.me.nome){f.resp=S.me.nome}
+  return f}
 function recordToForm(r){const f={};ALL_FIELDS.forEach(fd=>f[fd.k]=r[fd.k]??(fd.t==='toggle'?0:''));return f}
 const FUNIL=['Quente','Morno','Frio'];
 function filtered(){
@@ -603,6 +607,19 @@ function renderDetail(){
     </div>
   </div>`}
 
+function renderVendedorSelect(k){
+  // Lista de nomes: admin escolhe entre a equipa; vendedor tem só o seu nome.
+  let nomes=[];
+  if(isAdmin()){nomes=S.team.map(p=>p.nome).filter(Boolean)}
+  else if(S.me&&S.me.nome){nomes=[S.me.nome]}
+  const cur=S.form[k]||'';
+  // Se o valor atual nao esta na lista (registo antigo com texto livre), mantem-no como opcao.
+  if(cur&&!nomes.includes(cur))nomes=[cur,...nomes];
+  return`<select class="field-input" data-field="${k}">
+    <option value="">—</option>
+    ${nomes.map(n=>`<option value="${esc(n)}" ${cur===n?'selected':''}>${esc(n)}</option>`).join('')}
+  </select>`}
+
 function renderEdit(){
   const isNew=!S.selected;
   return`
@@ -622,6 +639,7 @@ function renderEdit(){
       ${S.openGroups[g.g]?`<div class="section-body">
         ${g.g==='Flags'?`<div class="toggles">${g.fields.map(fd=>`<button class="toggle-btn ${S.form[fd.k]?'on':''}" data-action="toggle-flag" data-field="${fd.k}">${S.form[fd.k]?'✓ ':''}${esc(fd.l)}</button>`).join('')}</div>`:`
         ${g.fields.filter(fd=>!fd.show||(fd.show==='funil'&&FUNIL.includes(S.form.status))).map(fd=>`<div class="field"><label class="field-label">${esc(fd.l)}${fd.show==='funil'?' (padrão: 10)':''}</label>${
+          fd.t==='vendedores'?renderVendedorSelect(fd.k):
           fd.t==='select'?`<select class="field-input" data-field="${fd.k}"><option value="">—</option>${(fd.o||[]).filter(Boolean).map(o=>`<option value="${esc(o)}" ${S.form[fd.k]===o?'selected':''}>${esc(o)}</option>`).join('')}</select>`:
           fd.t==='textarea'?`<textarea class="field-input" data-field="${fd.k}" rows="3">${esc(S.form[fd.k]||'')}</textarea>`:
           fd.t==='month'?`<input class="field-input" type="month" data-field="${fd.k}" data-fmt="month" value="${esc((S.form[fd.k]||'').replace('/','-'))}">`:
@@ -648,6 +666,7 @@ function renderDashboard(){
   const alertAttr={};
   perVend.forEach(v=>{v.st.alerts.forEach(a=>{if(!alertAttr[a.id])alertAttr[a.id]={label:a.label.replace(/^\d+ /,''),icon:a.icon,total:0,per:[]};alertAttr[a.id].total+=a.count;alertAttr[a.id].per.push((v.p.nome||'?').split(' ')[0]+': '+a.count)});});
   return`
+  <div class="app-layout">
   <div class="main-panel" style="width:100%">
   <div class="hdr">
     <div class="hdr-accent"></div>
@@ -717,6 +736,7 @@ function renderDashboard(){
     <div style="padding:0 16px 24px">
       ${Object.values(alertAttr).map(a=>`<div class="dash-alert"><span>${a.icon}</span><span class="dash-alert-t">${esc(a.label)} <span style="opacity:.6">(${a.per.join(', ')})</span></span><span class="dash-alert-c">${a.total}</span></div>`).join('')}
     </div>`:''}
+  </div>
   </div>
   </div>`}
 
