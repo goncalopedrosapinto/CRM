@@ -234,6 +234,12 @@ select.field-input{padding-right:34px;background-image:url("data:image/svg+xml,%
 .dash-linha-filter{display:flex;gap:6px;padding:4px 16px 8px;flex-wrap:wrap}
 .dlf-btn{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer}
 .dlf-btn.active{background:var(--orange);color:#fff;border-color:var(--orange)}
+
+.dash-nps-head{display:grid;grid-template-columns:1fr 90px 80px 80px 36px;gap:8px;align-items:center;padding:4px 0 8px;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);font-weight:700}
+.dash-nps-row{display:grid;grid-template-columns:1fr 90px 80px 80px 36px;gap:8px;align-items:center;padding:5px 0}
+.dash-nps-name{font-size:13px;font-weight:600;color:var(--text2)}
+.dash-nps-input{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;text-align:center}
+@media(max-width:600px){.dash-nps-head,.dash-nps-row{grid-template-columns:1fr 60px 56px 56px 32px;gap:4px}.dash-nps-input{padding:5px 4px;font-size:12px}}
 </style>
 </head>
 <body>
@@ -276,7 +282,7 @@ let S={
   screen:'loading',
   config:CONFIG,
   token:null,records:[],selected:null,form:{},
-  me:null,team:[],objetivos:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
+  me:null,team:[],objetivos:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{Identificação:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
 };
@@ -299,6 +305,9 @@ function curMes(){const d=new Date();return `${d.getFullYear()}-${String(d.getMo
 function curYM(){const d=new Date();return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`}
 async function loadObjetivos(){try{const d=await supabaseApi('GET',`/objetivos?mes=eq.${curMes()}&select=*`);S.objetivos=d||[]}catch(e){S.objetivos=[]}}
 async function saveObjetivo(vid,val){const ex=S.objetivos.find(o=>o.vendedor_id===vid);if(ex){await supabaseApi('PATCH',`/objetivos?id=eq.${ex.id}`,{objetivo_unidades:val})}else{await supabaseApi('POST','/objetivos',{vendedor_id:vid,mes:curMes(),objetivo_unidades:val})}await loadObjetivos()}
+async function loadNps(){try{const d=await supabaseApi('GET',`/nps?mes=eq.${curMes()}&select=*`);S.nps=d||[]}catch(e){S.nps=[]}}
+async function saveNps(vid,patch){const ex=S.nps.find(n=>n.vendedor_id===vid);if(ex){await supabaseApi('PATCH',`/nps?id=eq.${ex.id}`,patch)}else{await supabaseApi('POST','/nps',Object.assign({vendedor_id:vid,mes:curMes()},patch))}await loadNps()}
+function npsOf(vid){return S.nps.find(n=>n.vendedor_id===vid)||null}
 function recsInContext(){return isAdmin()&&S.viewVendedor?S.records.filter(r=>r.vendedor_id===S.viewVendedor):S.records}
 function recsOf(vid){return S.records.filter(r=>r.vendedor_id===vid)}
 function statsFor(recs){const ym=curYM();const fech=recs.filter(r=>(r.status==='Retail'||r.status==='Carteira')&&r.mes1===ym);const funil=recs.filter(r=>FUNIL.includes(r.status));const bev=fech.filter(r=>r.bev).length;return{fechados:fech.length,funil:funil.length,bev,alerts:calcAlerts(recs)}}
@@ -677,6 +686,21 @@ function renderDashboard(){
           <button class="dash-obj-save" data-action="save-objetivo" data-id="${v.p.id}">\u2713</button>
         </div>`}).join('')}
     </div>
+    <div class="dash-sec">NPS / CSI \u00b7 ${esc(ym)} <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3)">(dados da marca)</span></div>
+    <div class="dash-box">
+      <div class="dash-nps-head">
+        <div>Vendedor</div><div>Inqu\u00e9ritos</div><div>NPS</div><div>CSI</div><div></div>
+      </div>
+      ${team.length===0?'<div style="font-size:13px;color:var(--text3)">Sem vendedores nesta linha.</div>':team.map(p=>{
+        const n=npsOf(p.id);
+        return`<div class="dash-nps-row">
+          <div class="dash-nps-name">${esc((p.nome||'?').split(' ').slice(0,2).join(' '))}</div>
+          <input class="dash-nps-input" type="number" min="0" value="${n&&n.num_inqueritos!=null?n.num_inqueritos:''}" placeholder="0" data-nps-inq="${p.id}">
+          <input class="dash-nps-input" type="number" step="0.1" value="${n&&n.nps!=null?n.nps:''}" placeholder="\u2014" data-nps-nps="${p.id}">
+          <input class="dash-nps-input" type="number" step="0.1" value="${n&&n.csi!=null?n.csi:''}" placeholder="\u2014" data-nps-csi="${p.id}">
+          <button class="dash-obj-save" data-action="save-nps" data-id="${p.id}">\u2713</button>
+        </div>`}).join('')}
+    </div>
     <div class="dash-sec">Equipa</div>
     <div class="dash-team">
       ${perVend.map(v=>`<div class="dash-card" data-action="view-vendedor" data-id="${v.p.id}">
@@ -719,8 +743,9 @@ function bindEvents(){
       case'dash-linha':setState({dashLinha:el.dataset.linha});break;
       case'go-dashboard':setState({screen:'dashboard',viewVendedor:null,vselOpen:false,statusFilter:'all',alertFilter:null,alertIds:[],search:'',renderLimit:50});break;
       case'view-vendedor':{const id=el.dataset.id||null;setState({viewVendedor:id,screen:'list',vselOpen:false,statusFilter:'all',alertFilter:null,alertIds:[],search:'',monthFilter:[],renderLimit:50});break}
+      case'save-nps':{e.stopPropagation();const vid=el.dataset.id;const gi=s=>{const x=document.querySelector(`[${s}="${vid}"]`);return x&&x.value!==''?parseFloat(x.value):null};const patch={num_inqueritos:gi('data-nps-inq')||0,nps:gi('data-nps-nps'),csi:gi('data-nps-csi')};el.textContent='\u2026';saveNps(vid,patch).then(()=>render()).catch(err=>{alert('Erro: '+err.message);render()});break}
       case'save-objetivo':{e.stopPropagation();const vid=el.dataset.id;const inp=document.querySelector(`[data-obj-input="${vid}"]`);const val=parseInt(inp&&inp.value?inp.value:'0')||0;el.textContent='\u2026';saveObjetivo(vid,val).then(()=>render()).catch(err=>{alert('Erro: '+err.message);render()});break}
-      case'refresh':{const p=isAdmin()?Promise.all([loadObjetivos(),loadTeam()]):Promise.resolve();p.then(()=>loadRecords());break}
+      case'refresh':{const p=isAdmin()?Promise.all([loadObjetivos(),loadTeam(),loadNps()]):Promise.resolve();p.then(()=>loadRecords());break}
       case'open-sidebar':setState({sidebarOpen:!S.sidebarOpen});break;
       case'toggle-sidebar':setState({sidebarOpen:!S.sidebarOpen});break;
       case'close-sidebar':setState({sidebarOpen:false});break;
@@ -808,7 +833,7 @@ function bindEvents(){
 
 function collectFormData(){document.querySelectorAll('input[data-field],select[data-field],textarea[data-field]').forEach(el=>{const k=el.dataset.field;let v=el.value;if(el.dataset.fmt==='month'&&v)v=v.replace('-','/');S.form[k]=v})}
 
-function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadTeam(),loadObjetivos()]):Promise.resolve();return extra}).then(function(){return loadRecords()}).then(function(){setState({screen:isAdmin()?'dashboard':'list',loading:false})})}
+function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadTeam(),loadObjetivos(),loadNps()]):Promise.resolve();return extra}).then(function(){return loadRecords()}).then(function(){setState({screen:isAdmin()?'dashboard':'list',loading:false})})}
 (function(){
   S.screen='loading';render();
   refreshSession().then(function(token){
