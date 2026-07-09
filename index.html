@@ -251,6 +251,38 @@ select.field-input{padding-right:34px;background-image:url("data:image/svg+xml,%
 .dash-perda-track{flex:1;height:16px;background:var(--bg3,#eee);border-radius:4px;overflow:hidden}
 .dash-perda-fill{height:100%;border-radius:4px;background:#6b7280;transition:width .3s}
 .dash-perda-val{font-size:13px;font-weight:700;min-width:24px;text-align:right;color:var(--text2)}
+
+.dash-periodo{display:flex;gap:6px;padding:8px 16px 4px;flex-wrap:wrap;align-items:center}
+.dperiodo-btn{padding:6px 14px;border-radius:var(--r);font-size:12px;font-weight:600;border:1px solid var(--border2);background:var(--surface);color:var(--text2);cursor:pointer}
+.dperiodo-btn.active{background:var(--text);color:#fff;border-color:var(--text)}
+.dperiodo-csv{margin-left:auto;padding:6px 14px;border-radius:var(--r);font-size:12px;font-weight:600;border:1px solid var(--border2);background:var(--surface);color:var(--text2);cursor:pointer}
+.dash-realiz{margin:8px 16px 4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);box-shadow:var(--elev1);padding:16px 18px}
+.dash-realiz-l{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px}
+.dash-realiz-main{display:flex;align-items:baseline;gap:12px;margin:6px 0 10px}
+.dash-realiz-pct{font-size:38px;font-weight:800;line-height:1}
+.dash-realiz-frac{font-size:13px;color:var(--text2)}
+.dash-realiz-bar{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden}
+.dash-realiz-fill{height:100%;border-radius:4px;transition:width .4s}
+
+.esc-note{margin:12px 16px;padding:10px 14px;background:var(--bg3);border-radius:var(--r);font-size:12px;color:var(--text2)}
+.esc-wrap{overflow-x:auto;margin:12px 16px 24px;border:1px solid var(--border);border-radius:var(--r2);box-shadow:var(--elev1);background:var(--surface)}
+.esc-table{border-collapse:collapse;width:100%;font-size:12px;min-width:520px}
+.esc-table th{background:var(--text);color:#fff;font-weight:600;padding:9px 8px;text-align:center;position:sticky;top:0;font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+.esc-table td{padding:5px 8px;text-align:center;border-bottom:1px solid var(--border)}
+.esc-table tr:hover{background:var(--bg)}
+.esc-sem{color:var(--text3);font-weight:600;width:38px}
+.esc-data{font-weight:600;width:44px}
+.esc-dia{color:var(--text2);width:44px}
+.esc-dom{background:#eaf4ff}
+.esc-dom:hover{background:#eaf4ff}
+.esc-encerrado{color:var(--blue);font-weight:700;letter-spacing:1px;font-size:11px}
+.esc-cell-sel{border:1px solid var(--border);border-radius:6px;padding:3px 4px;font-size:11px;background:var(--surface);color:var(--text);min-width:78px;cursor:pointer}
+.esc-cell-sel:hover{border-color:var(--orange)}
+.esc-cell-ro{font-size:11px;padding:2px 8px;border-radius:10px;display:inline-block}
+.esc-Stand{background:#dbeafe;color:#1e40af}.esc-Apoio{background:#e0e7ff;color:#4338ca}
+.esc-Livre{background:#f3f4f6;color:#6b7280}.esc-Folga{background:#fef3c7;color:#92400e}
+.esc-Férias{background:#dcfce7;color:#166534}.esc-Ausente{background:#fee2e2;color:#991b1b}
+.esc-Formação{background:#f5f3ff;color:#6b21a8}.esc-Serviço{background:#fce7f3;color:#9d174d}
 </style>
 </head>
 <body>
@@ -295,6 +327,8 @@ let S={
   config:CONFIG,
   token:null,records:[],selected:null,form:{},
   me:null,team:[],objetivos:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
+  dashPeriodo:'mes',escala:{},escalaMes:null,
+
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{Identificação:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
 };
@@ -315,6 +349,75 @@ async function loadTeam(){const d=await supabaseApi('GET','/profiles?select=*&or
 function vendName(id){if(!id)return null;const p=S.team.find(x=>x.id===id)||(S.me&&S.me.id===id?S.me:null);return p?(p.nome||'?'):'?'}
 function curMes(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`}
 function curYM(){const d=new Date();return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`}
+// ---- Período do dashboard ----
+function periodoYMs(){
+  // devolve lista de 'YYYY/MM' incluidos no periodo selecionado
+  const now=new Date();const y=now.getFullYear();const m=now.getMonth();
+  const ym=(yy,mm)=>`${yy}/${String(mm+1).padStart(2,'0')}`;
+  if(S.dashPeriodo==='mes')return[ym(y,m)];
+  if(S.dashPeriodo==='trimestre'){const qStart=Math.floor(m/3)*3;return[0,1,2].map(i=>ym(y,qStart+i))}
+  if(S.dashPeriodo==='ano'){const a=[];for(let i=0;i<12;i++)a.push(ym(y,i));return a}
+  return[ym(y,m)];
+}
+function periodoLabel(){return{mes:'Mês atual',trimestre:'Trimestre',ano:'Ano '+new Date().getFullYear()}[S.dashPeriodo]||'Mês'}
+// statsFor com periodo: conta fechados cujo mes1 cai no periodo
+function statsForPeriodo(recs){
+  const yms=periodoYMs();
+  const fech=recs.filter(r=>(r.status==='Retail'||r.status==='Carteira')&&yms.includes(r.mes1));
+  const funil=recs.filter(r=>FUNIL.includes(r.status));
+  const bev=fech.filter(r=>r.bev).length;
+  const fechTotal=recs.filter(r=>r.status==='Retail'||r.status==='Carteira').length;
+  const perdidos=recs.filter(r=>r.status==='Perdido').length;
+  return{fechados:fech.length,funil:funil.length,bev,fechTotal,perdidos,alerts:calcAlerts(recs)};
+}
+// ---- Escala ----
+function escalaMesRef(){
+  // 'YYYY-MM' do mes a mostrar; default = mes atual
+  if(S.escalaMes)return S.escalaMes;
+  const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+function escalaMesLabel(){
+  const[y,m]=escalaMesRef().split('-').map(Number);
+  const meses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  return `${meses[m-1]} ${y}`;
+}
+function escalaShiftMes(delta){
+  let[y,m]=escalaMesRef().split('-').map(Number);m+=delta;
+  if(m<1){m=12;y--}if(m>12){m=1;y++}
+  S.escalaMes=`${y}-${String(m).padStart(2,'0')}`;
+}
+function isoWeek(date){
+  const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
+  const day=d.getUTCDay()||7;d.setUTCDate(d.getUTCDate()+4-day);
+  const ys=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return Math.ceil((((d-ys)/86400000)+1)/7);
+}
+function escalaDias(){
+  const[y,m]=escalaMesRef().split('-').map(Number);
+  const n=new Date(y,m,0).getDate();const dnames=['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
+  const out=[];
+  for(let d=1;d<=n;d++){
+    const dt=new Date(y,m-1,d);const dow=dt.getDay();
+    out.push({d,iso:`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`,
+      dia:dnames[dow],dom:dow===0,sem:isoWeek(dt)});
+  }
+  return out;
+}
+const ESTADOS_ESCALA=['Stand','Apoio','Livre','Folga','Férias','Ausente','Formação','Serviço'];
+async function loadEscala(){
+  const mesRef=escalaMesRef();const[y,m]=mesRef.split('-').map(Number);
+  const ini=`${mesRef}-01`;const fim=`${m===12?y+1:y}-${String(m===12?1:m+1).padStart(2,'0')}-01`;
+  try{const d=await supabaseApi('GET',`/escala?dia=gte.${ini}&dia=lt.${fim}&select=*`);
+    const map={};(d||[]).forEach(e=>{map[e.dia+'|'+e.vendedor_id]=e});S.escala=map;
+  }catch(e){S.escala={}}
+}
+async function saveEscalaCell(dia,vid,estado){
+  const key=dia+'|'+vid;const ex=S.escala[key];
+  if(!estado){if(ex){await supabaseApi('DELETE',`/escala?id=eq.${ex.id}`)}}
+  else if(ex){await supabaseApi('PATCH',`/escala?id=eq.${ex.id}`,{estado})}
+  else{await supabaseApi('POST','/escala',{dia,vendedor_id:vid,estado})}
+  await loadEscala();
+}
 async function loadObjetivos(){try{const d=await supabaseApi('GET',`/objetivos?mes=eq.${curMes()}&select=*`);S.objetivos=d||[]}catch(e){S.objetivos=[]}}
 async function saveObjetivo(vid,val){const ex=S.objetivos.find(o=>o.vendedor_id===vid);if(ex){await supabaseApi('PATCH',`/objetivos?id=eq.${ex.id}`,{objetivo_unidades:val})}else{await supabaseApi('POST','/objetivos',{vendedor_id:vid,mes:curMes(),objetivo_unidades:val})}await loadObjetivos()}
 async function loadNps(){try{const d=await supabaseApi('GET',`/nps?mes=eq.${curMes()}&select=*`);S.nps=d||[]}catch(e){S.nps=[]}}
@@ -439,6 +542,7 @@ function renderViewSelector(){
     ${S.vselOpen?`<div class="vsel-menu">
       <div class="vsel-opt ${S.screen==='dashboard'?'active':''}" data-action="go-dashboard">&#128202;&nbsp; Dashboard equipa${S.screen==='dashboard'?' <span style="margin-left:auto;color:var(--orange)">&#10003;</span>':''}</div>
       <div class="vsel-opt ${S.screen!=='dashboard'&&!cur?'active':''}" data-action="view-vendedor" data-id="">&#128101;&nbsp; Todos os registos${S.screen!=='dashboard'&&!cur?' <span style="margin-left:auto;color:var(--orange)">&#10003;</span>':''}</div>
+      <div class="vsel-opt ${S.screen==='escala'?'active':''}" data-action="go-escala">&#128197;&nbsp; Escala${S.screen==='escala'?' <span style="margin-left:auto;color:var(--orange)">&#10003;</span>':''}</div>
       ${motorrad.length?`<div class="vsel-group">${linhaLabel('motorrad')}</div>${motorrad.map(p=>`<div class="vsel-opt ${cur===p.id?'active':''}" data-action="view-vendedor" data-id="${p.id}">&#127949;&nbsp; ${esc(p.nome||'?')}${cur===p.id?' <span style="margin-left:auto;color:var(--orange)">&#10003;</span>':''}</div>`).join('')}`:''}
       ${auto.length?`<div class="vsel-group">${linhaLabel('auto')}</div>${auto.map(p=>`<div class="vsel-opt ${cur===p.id?'active':''}" data-action="view-vendedor" data-id="${p.id}">&#128663;&nbsp; ${esc(p.nome||'?')}${cur===p.id?' <span style="margin-left:auto;color:var(--orange)">&#10003;</span>':''}</div>`).join('')}`:''}
     </div>`:''}
@@ -517,6 +621,7 @@ function renderList(){
     <div class="hdr-accent"></div>
     <div class="hdr-title">${esc(curLabel)}</div>
     <div class="hdr-sub">${f.length} de ${recsInContext().length}</div>
+    ${!isAdmin()?`<button class="hdr-btn" data-action="go-escala">📅 Escala</button>`:''}
     <button class="hdr-btn" data-action="refresh" ${S.loading?'disabled':''}>${S.loading?'…':'↻'}</button>
     <button class="hdr-btn" data-action="logout">Sair</button>
   </div>
@@ -668,13 +773,78 @@ function renderEdit(){
   </div>
   </div></div>`}
 
+function objTotalCalc(teamIds){return S.objetivos.filter(o=>teamIds.includes(o.vendedor_id)).reduce((a,o)=>a+(o.objetivo_unidades||0),0)}
+function renderEscala(){
+  const dias=escalaDias();
+  const vendedores=S.team;
+  const admin=isAdmin();
+  const cellFor=(dia,vid)=>{
+    const e=S.escala[dia+'|'+vid];const val=e?e.estado:'';
+    if(admin){
+      return`<select class="esc-cell-sel" data-action="escala-cell" data-dia="${dia}" data-vid="${vid}">
+        <option value="">—</option>
+        ${ESTADOS_ESCALA.map(s=>`<option value="${s}" ${val===s?'selected':''}>${s}</option>`).join('')}
+      </select>`;
+    }
+    return`<span class="esc-cell-ro esc-${val}">${val||'—'}</span>`;
+  };
+  return`
+  <div class="app-layout">
+  ${admin?renderViewSelector():''}
+  <div class="main-panel" style="width:100%">
+  <div class="hdr">
+    ${admin?'':`<button class="hdr-back" data-action="back-to-list">←</button>`}
+    <div class="hdr-accent"></div>
+    <div class="hdr-title">Escala</div>
+    <button class="hdr-btn" data-action="escala-prev">‹</button>
+    <div class="hdr-sub" style="min-width:120px;text-align:center">${esc(escalaMesLabel())}</div>
+    <button class="hdr-btn" data-action="escala-next">›</button>
+    <button class="hdr-btn" data-action="logout">Sair</button>
+  </div>
+  <div class="content">
+    ${S.error?`<div class="error" style="margin:12px 16px 0">${esc(S.error)}</div>`:''}
+    ${!admin?'<div class="esc-note">Apenas o gestor pode editar a escala. Esta é a vista de consulta.</div>':''}
+    <div class="esc-wrap">
+      <table class="esc-table">
+        <thead><tr>
+          <th class="esc-sem">Sem</th><th class="esc-data">Data</th><th class="esc-dia">Dia</th>
+          ${vendedores.map(v=>`<th>${esc((v.nome||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase())}</th>`).join('')}
+        </tr></thead>
+        <tbody>
+          ${dias.map(d=>{
+            if(d.dom)return`<tr class="esc-dom"><td class="esc-sem">${d.sem}</td><td class="esc-data">${String(d.d).padStart(2,'0')}</td><td class="esc-dia">${d.dia}</td><td colspan="${vendedores.length}" class="esc-encerrado">ENCERRADO</td></tr>`;
+            return`<tr><td class="esc-sem">${d.sem}</td><td class="esc-data">${String(d.d).padStart(2,'0')}</td><td class="esc-dia">${d.dia}</td>
+              ${vendedores.map(v=>`<td>${cellFor(d.iso,v.id)}</td>`).join('')}
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+    ${vendedores.length===0?'<div style="padding:20px;color:var(--text3);font-size:13px">Sem vendedores para escalar.</div>':''}
+  </div>
+  </div>
+  </div>`;
+}
+function exportCSV(){
+  const cols=['id_cliente','resp','status','type','model','version','mes1','neg','enc','chas','mat','fin','biz','retoma','retoma_mat','motivo_perda','obs'];
+  const labels=['Cliente','Responsavel','Status','Tipo','Modelo','Versao','MesRef','DataNeg','Encomenda','Chassis','Matricula','Financiamento','Bizagi','Retoma','MatRetoma','MotivoPerda','Obs'];
+  const recs=(isAdmin()&&S.viewVendedor)?S.records.filter(r=>r.vendedor_id===S.viewVendedor):(isAdmin()&&S.dashLinha!=='all')?S.records.filter(r=>{const p=S.team.find(t=>t.id===r.vendedor_id);return p&&p.linha===S.dashLinha}):S.records;
+  const esc2=v=>{v=(v==null?'':String(v));return /[",\n;]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+  const rows=[labels.join(';')];
+  recs.forEach(r=>rows.push(cols.map(c=>esc2(r[c])).join(';')));
+  const blob=new Blob(['\ufeff'+rows.join('\n')],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  a.href=url;a.download=`baviera_${new Date().toISOString().slice(0,10)}.csv`;a.click();
+  URL.revokeObjectURL(url);
+}
 function renderDashboard(){
   const ym=curYM();
   const linhas=[...new Set(S.team.map(p=>p.linha))].sort();
   const team=S.dashLinha==='all'?S.team:S.team.filter(p=>p.linha===S.dashLinha);
   const teamIds=team.map(p=>p.id);
   const scopeRecs=S.dashLinha==='all'?S.records:S.records.filter(r=>teamIds.includes(r.vendedor_id));
-  const all=statsFor(scopeRecs);
+  const all=statsForPeriodo(scopeRecs);
+  const realizPct=objTotalCalc(teamIds)?Math.round(100*all.fechados/objTotalCalc(teamIds)):0;
   const objTotal=S.objetivos.filter(o=>teamIds.includes(o.vendedor_id)).reduce((a,o)=>a+(o.objetivo_unidades||0),0);
   const bevPct=all.fechados?Math.round(100*all.bev/all.fechados):0;
   const alertTotal=all.alerts.reduce((a,x)=>a+x.count,0);
@@ -702,6 +872,18 @@ function renderDashboard(){
       <button class="dlf-btn ${S.dashLinha==='all'?'active':''}" data-action="dash-linha" data-linha="all">Todas as linhas</button>
       ${linhas.map(l=>`<button class="dlf-btn ${S.dashLinha===l?'active':''}" data-action="dash-linha" data-linha="${l}">${LINHA_ICONS[l]||''} ${esc(linhaLabel(l))}</button>`).join('')}
     </div>`:''}
+    <div class="dash-periodo">
+      ${['mes','trimestre','ano'].map(p=>`<button class="dperiodo-btn ${S.dashPeriodo===p?'active':''}" data-action="dash-periodo" data-p="${p}">${{mes:'Mês atual',trimestre:'Trimestre',ano:'Ano '+new Date().getFullYear()}[p]}</button>`).join('')}
+      <button class="dperiodo-csv" data-action="export-csv">⬇ CSV</button>
+    </div>
+    <div class="dash-realiz">
+      <div class="dash-realiz-l">Realização vs Objetivo · ${esc(periodoLabel())}</div>
+      <div class="dash-realiz-main">
+        <span class="dash-realiz-pct" style="color:${realizPct>=100?'var(--green)':realizPct>=60?'#e8a30c':'var(--red)'}">${objTotalCalc(teamIds)?realizPct+'%':'—'}</span>
+        <span class="dash-realiz-frac">${all.fechados} fechados${objTotalCalc(teamIds)?` / ${objTotalCalc(teamIds)} objetivo`:' · sem objetivo definido'}</span>
+      </div>
+      <div class="dash-realiz-bar"><div class="dash-realiz-fill" style="width:${Math.min(100,realizPct)}%;background:${realizPct>=100?'var(--green)':realizPct>=60?'#e8a30c':'var(--red)'}"></div></div>
+    </div>
     <div class="dash-kpis">
       <div class="dash-kpi"><div class="dash-kpi-l">Fechados</div><div class="dash-kpi-v">${all.fechados}</div><div class="dash-kpi-s">${objTotal?`obj: ${objTotal}`:'sem objetivo'}</div></div>
       <div class="dash-kpi"><div class="dash-kpi-l">Funil ativo</div><div class="dash-kpi-v">${all.funil}</div><div class="dash-kpi-s">Q+M+F</div></div>
@@ -775,7 +957,7 @@ function renderDashboard(){
 function render(){
   const app=document.getElementById('app');
   const ce=app.querySelector('.content'),st=ce?ce.scrollTop:0,ps=app.dataset.screen||'';
-  const screens={loading:'<div class="content"><div class="center-screen"><p style="color:var(--text3)">A carregar...</p></div></div>',login:renderLogin,list:renderList,detail:renderDetail,edit:renderEdit,dashboard:renderDashboard};
+  const screens={loading:'<div class="content"><div class="center-screen"><p style="color:var(--text3)">A carregar...</p></div></div>',login:renderLogin,list:renderList,detail:renderDetail,edit:renderEdit,dashboard:renderDashboard,escala:renderEscala};
   const fn=screens[S.screen];
   app.innerHTML=typeof fn==='function'?fn():fn;
   app.dataset.screen=S.screen;
@@ -799,6 +981,12 @@ function bindEvents(){
       case'logout':clearSession();setState({token:null,records:[],me:null,team:[],objetivos:[],viewVendedor:null,screen:'login',error:''});break;
       case'toggle-vsel':setState({vselOpen:!S.vselOpen});break;
       case'dash-linha':setState({dashLinha:el.dataset.linha});break;
+      case'dash-periodo':setState({dashPeriodo:el.dataset.p});break;
+      case'export-csv':exportCSV();break;
+      case'go-escala':{const p=Promise.resolve(loadEscala());p.then(()=>setState({screen:'escala'}));break}
+      case'escala-prev':escalaShiftMes(-1);loadEscala().then(()=>render());break;
+      case'escala-next':escalaShiftMes(1);loadEscala().then(()=>render());break;
+      case'escala-cell':{if(!isAdmin())break;const dia=el.dataset.dia,vid=el.dataset.vid,estado=el.value;el.disabled=true;saveEscalaCell(dia,vid,estado).then(()=>render()).catch(err=>{alert('Erro: '+err.message);render()});break}
       case'go-dashboard':setState({screen:'dashboard',viewVendedor:null,vselOpen:false,statusFilter:'all',alertFilter:null,alertIds:[],search:'',renderLimit:50});break;
       case'view-vendedor':{const id=el.dataset.id||null;setState({viewVendedor:id,screen:'list',vselOpen:false,statusFilter:'all',alertFilter:null,alertIds:[],search:'',monthFilter:[],renderLimit:50});break}
       case'save-nps':{e.stopPropagation();const vid=el.dataset.id;const gi=s=>{const x=document.querySelector(`[${s}="${vid}"]`);return x&&x.value!==''?parseFloat(x.value):null};const patch={num_inqueritos:gi('data-nps-inq')||0,nps:gi('data-nps-nps'),csi:gi('data-nps-csi')};el.textContent='\u2026';saveNps(vid,patch).then(()=>render()).catch(err=>{alert('Erro: '+err.message);render()});break}
