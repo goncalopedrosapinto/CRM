@@ -438,7 +438,7 @@ function escalaDias(){
   }
   return out;
 }
-const ESTADOS_ESCALA=['Stand','Apoio','Livre','Folga','Férias','Ausente','Formação','Serviço'];
+const ESTADOS_ESCALA=['Stand','Apoio','Livre','Folga','Férias','Ausente','Formação'];
 function isFimSemana(iso){const d=new Date(iso+'T00:00:00');const dow=d.getDay();return dow===0||dow===6}
 async function loadFolgaSaldo(){
   // Carrega TODA a escala historica para calcular folgas ganhas (FDS a Stand/Apoio) vs gozadas (Folga)
