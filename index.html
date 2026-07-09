@@ -212,7 +212,7 @@ select.field-input{padding-right:34px;background-image:url("data:image/svg+xml,%
 .dash-avatar{width:36px;height:36px;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
 .dash-card-name{font-size:13px;font-weight:700}
 .dash-card-sub{font-size:11px;color:var(--text3)}
-.dash-card-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;border-top:1px solid var(--border);padding-top:8px}
+.dash-card-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;border-top:1px solid var(--border);padding-top:8px}
 .dash-cs-l{font-size:10px;color:var(--text3);text-transform:uppercase;font-weight:600}
 .dash-cs-v{font-size:16px;font-weight:800;margin-top:2px}
 .dash-alert{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;font-size:13px}
@@ -317,7 +317,7 @@ async function saveNps(vid,patch){const ex=S.nps.find(n=>n.vendedor_id===vid);if
 function npsOf(vid){return S.nps.find(n=>n.vendedor_id===vid)||null}
 function recsInContext(){return isAdmin()&&S.viewVendedor?S.records.filter(r=>r.vendedor_id===S.viewVendedor):S.records}
 function recsOf(vid){return S.records.filter(r=>r.vendedor_id===vid)}
-function statsFor(recs){const ym=curYM();const fech=recs.filter(r=>(r.status==='Retail'||r.status==='Carteira')&&r.mes1===ym);const funil=recs.filter(r=>FUNIL.includes(r.status));const bev=fech.filter(r=>r.bev).length;return{fechados:fech.length,funil:funil.length,bev,alerts:calcAlerts(recs)}}
+function statsFor(recs){const ym=curYM();const fech=recs.filter(r=>(r.status==='Retail'||r.status==='Carteira')&&r.mes1===ym);const funil=recs.filter(r=>FUNIL.includes(r.status));const bev=fech.filter(r=>r.bev).length;const fechTotal=recs.filter(r=>r.status==='Retail'||r.status==='Carteira').length;const perdidos=recs.filter(r=>r.status==='Perdido').length;return{fechados:fech.length,funil:funil.length,bev,fechTotal,perdidos,alerts:calcAlerts(recs)}}
 function lastUpdateDays(recs){let m=0;recs.forEach(r=>{const t=new Date(r.updated_at||r.status_updated_at||r.created_at||0).getTime();if(t>m)m=t});if(!m)return null;return Math.floor((Date.now()-m)/86400000)}
 async function loadRecords(){setState({loading:true,error:''});try{const d=await supabaseApi('GET','/baviera_control?select=*&order=neg.desc.nullslast');setState({records:d,loading:false})}catch(e){setState({error:'Erro: '+e.message,loading:false})}}
 async function saveRecord(){setState({loading:true,error:''});try{const b={...S.form};['neg','dmat','col_298','app'].forEach(k=>{if(!b[k])b[k]=null});['qor','xev','bev','m_flag','csc','cme'].forEach(k=>{b[k]=b[k]?parseInt(b[k]):null});if(!b.alert_days)b.alert_days=null;else b.alert_days=parseInt(b.alert_days);delete b.id;delete b.created_at;delete b.updated_at;delete b.updated_by;if(!S.selected&&isAdmin())b.vendedor_id=S.viewVendedor||S.me.id;if(S.selected){if(b.status!==S.selected.status)b.status_updated_at=new Date().toISOString();delete b.status_updated_at_keep;await supabaseApi('PATCH',`/baviera_control?id=eq.${S.selected.id}`,b)}else{b.status_updated_at=new Date().toISOString();await supabaseApi('POST','/baviera_control',b)}await loadRecords();setState({screen:'list',selected:null,loading:false})}catch(e){setState({error:'Erro ao guardar: '+e.message,loading:false})}}
@@ -739,6 +739,7 @@ function renderDashboard(){
         <div class="dash-card-stats">
           <div><div class="dash-cs-l">Fechados</div><div class="dash-cs-v">${v.st.fechados}</div></div>
           <div><div class="dash-cs-l">Funil</div><div class="dash-cs-v">${v.st.funil}</div></div>
+          <div><div class="dash-cs-l">Convers\u00e3o</div><div class="dash-cs-v">${(()=>{const n=v.st.fechTotal+v.st.perdidos;if(n<5)return`<span style="color:var(--text3)" title="M\u00ednimo 5 neg\u00f3cios decididos">\u2014</span>`;const pct=Math.round(100*v.st.fechTotal/n);const col=pct>=70?'var(--green)':pct>=50?'#e8a30c':'var(--red)';return`<span style="color:${col}">${pct}%</span> <span style="font-size:10px;color:var(--text3)">(${n})</span>`})()}</div></div>
           <div><div class="dash-cs-l">Alertas</div><div class="dash-cs-v" style="color:${v.alertCount?'var(--red)':'var(--green)'}">${v.alertCount}</div></div>
         </div>
       </div>`).join('')}
