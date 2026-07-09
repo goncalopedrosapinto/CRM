@@ -584,6 +584,7 @@ function renderList(){
 function renderDetail(){
   const r=S.selected;if(!r)return'';
   return`
+  <div class="app-layout"><div class="main-panel" style="width:100%">
   <div class="hdr">
     <button class="hdr-back" data-action="back-to-list">←</button>
     <div class="hdr-accent"></div>
@@ -612,7 +613,8 @@ function renderDetail(){
       <button class="btn btn-dark" data-action="open-edit" style="flex:1">Editar</button>
       ${!S.confirmDelete?`<button class="btn btn-danger" data-action="ask-delete">Apagar</button>`:''}
     </div>
-  </div>`}
+  </div>
+  </div></div>`}
 
 function renderVendedorSelect(k){
   // Lista de nomes: admin escolhe entre a equipa; vendedor tem só o seu nome.
@@ -630,6 +632,7 @@ function renderVendedorSelect(k){
 function renderEdit(){
   const isNew=!S.selected;
   return`
+  <div class="app-layout"><div class="main-panel" style="width:100%">
   <div class="hdr">
     <button class="hdr-back" data-action="back-from-edit">←</button>
     <div class="hdr-accent"></div>
@@ -657,7 +660,8 @@ function renderEdit(){
       </div>`:''}
     </div>`).join('')}
     <div style="padding:8px 16px 32px"><button class="btn btn-orange btn-block" data-action="save-record" ${S.loading?'disabled':''}>${S.loading?'A guardar...':'Guardar Registo'}</button></div>
-  </div>`}
+  </div>
+  </div></div>`}
 
 function renderDashboard(){
   const ym=curYM();
