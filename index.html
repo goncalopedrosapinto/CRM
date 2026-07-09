@@ -297,7 +297,15 @@ select.field-input{padding-right:34px;background-image:url("data:image/svg+xml,%
 .esc-h-Livre,.esc-Livre-bg{background:#f3f4f6}.esc-h-Folga,.esc-Folga-bg{background:#fef3c7}
 .esc-h-Férias,.esc-Férias-bg{background:#dcfce7}.esc-h-Ausente,.esc-Ausente-bg{background:#fee2e2}
 .esc-h-Formação,.esc-Formação-bg{background:#f5f3ff}.esc-h-Serviço,.esc-Serviço-bg{background:#fce7f3}
-.esc-grid th.esc-h-Stand,.esc-grid th.esc-h-Apoio,.esc-grid th.esc-h-Livre,.esc-grid th.esc-h-Folga,.esc-grid th.esc-h-Férias,.esc-grid th.esc-h-Ausente,.esc-grid th.esc-h-Formação,.esc-grid th.esc-h-Serviço{color:#1a1a2e;font-weight:700}
+.esc-grid th.esc-h-Stand{background:#dbeafe!important}
+.esc-grid th.esc-h-Apoio{background:#e0e7ff!important}
+.esc-grid th.esc-h-Livre{background:#e5e7eb!important}
+.esc-grid th.esc-h-Folga{background:#fde68a!important}
+.esc-grid th.esc-h-Férias{background:#bbf7d0!important}
+.esc-grid th.esc-h-Ausente{background:#fecaca!important}
+.esc-grid th.esc-h-Formação{background:#e9d5ff!important}
+.esc-grid th.esc-h-Serviço{background:#fbcfe8!important}
+.esc-grid th[class*='esc-h-']{color:#1a1a2e!important;font-weight:800;text-shadow:none}
 .esc-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px}
 .esc-modal{background:var(--surface);border-radius:var(--r3);box-shadow:var(--elev2);width:100%;max-width:360px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column}
 .esc-modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border);font-size:15px}
@@ -932,7 +940,7 @@ function renderEscalaPicker(){
   const{dia,estado}=S.escalaPicker;
   const[y,m,d]=dia.split('-');
   return`<div class="esc-modal-bg" data-action="escala-close">
-    <div class="esc-modal" onclick="event.stopPropagation()">
+    <div class="esc-modal" data-action="escala-noop">
       <div class="esc-modal-head">
         <div><b>${estado}</b> · ${d}/${m}</div>
         <button class="esc-modal-x" data-action="escala-close">✕</button>
@@ -1114,6 +1122,7 @@ function bindEvents(){
       case'go-escala':{const p=Promise.resolve(loadEscala());p.then(()=>setState({screen:'escala'}));break}
       case'escala-open':{if(!isAdmin())break;setState({escalaPicker:{dia:el.dataset.dia,estado:el.dataset.estado}});break}
       case'escala-close':setState({escalaPicker:null});break;
+      case'escala-noop':break;
       case'escala-linha':setState({escalaLinha:el.dataset.linha});break;
       case'escala-toggle':{if(!isAdmin())break;const dia=el.dataset.dia,vid=el.dataset.vid,estado=el.dataset.estado;const e=S.escala[dia+'|'+vid];const novoEstado=(e&&e.estado===estado)?'':estado;saveEscalaCell(dia,vid,novoEstado).then(()=>render()).catch(err=>{alert('Erro: '+err.message);render()});break}
       case'escala-prev':escalaShiftMes(-1);loadEscala().then(()=>render());break;
