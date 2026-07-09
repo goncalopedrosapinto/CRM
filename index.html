@@ -135,7 +135,8 @@ select.field-input{padding-right:34px;background-image:url("data:image/svg+xml,%
 
 /* Layout */
 .app-layout{display:flex;height:100%;overflow:hidden}
-.sidebar{width:260px;min-width:260px;background:#1a1a2e;color:#fff;display:flex;flex-direction:column;transition:all .25s ease;overflow:hidden}
+.sidebar{width:260px;min-width:260px;background:#1a1a2e!important;color:#fff;display:flex;flex-direction:column;transition:all .25s ease;overflow:hidden}
+.sidebar *{color-scheme:dark}
 .sidebar.closed{width:0;min-width:0}
 .sidebar-inner{width:260px;min-width:260px;display:flex;flex-direction:column;height:100%}
 .main-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
@@ -224,7 +225,7 @@ select.field-input{padding-right:34px;background-image:url("data:image/svg+xml,%
 .dash-alert-t{flex:1;color:var(--text2)}
 .dash-alert-c{font-size:12px;font-weight:700;background:rgba(220,38,38,.1);color:var(--red);padding:2px 9px;border-radius:10px}
 
-.vsel{border-bottom:1px solid rgba(255,255,255,.08)}
+.vsel{border-bottom:1px solid rgba(255,255,255,.08);background:#1a1a2e}
 .vsel-head{display:flex;align-items:center;gap:8px;padding:12px 20px;cursor:pointer}
 .vsel-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.4);font-weight:700}
 .vsel-cur{font-size:13px;font-weight:700;color:#fff;margin-top:2px}
@@ -283,6 +284,10 @@ select.field-input{padding-right:34px;background-image:url("data:image/svg+xml,%
 .esc-Livre{background:#f3f4f6;color:#6b7280}.esc-Folga{background:#fef3c7;color:#92400e}
 .esc-Férias{background:#dcfce7;color:#166534}.esc-Ausente{background:#fee2e2;color:#991b1b}
 .esc-Formação{background:#f5f3ff;color:#6b21a8}.esc-Serviço{background:#fce7f3;color:#9d174d}
+
+.esc-resumo-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;padding:20px 16px 8px}
+.esc-resumo th{font-size:10px;padding:8px 6px}
+.esc-resumo td{padding:8px 6px;font-size:13px}
 </style>
 </head>
 <body>
@@ -820,7 +825,20 @@ function renderEscala(){
         </tbody>
       </table>
     </div>
-    ${vendedores.length===0?'<div style="padding:20px;color:var(--text3);font-size:13px">Sem vendedores para escalar.</div>':''}
+    ${vendedores.length===0?'<div style="padding:20px;color:var(--text3);font-size:13px">Sem vendedores para escalar.</div>':`
+    <div class="esc-resumo-title">Resumo do mês · dias por estado</div>
+    <div class="esc-wrap" style="margin-top:0">
+      <table class="esc-table esc-resumo">
+        <thead><tr><th style="text-align:left;padding-left:14px">Vendedor</th>${ESTADOS_ESCALA.map(s=>`<th>${s}</th>`).join('')}</tr></thead>
+        <tbody>
+          ${vendedores.map(v=>{
+            const cont={};ESTADOS_ESCALA.forEach(s=>cont[s]=0);
+            dias.forEach(d=>{if(d.dom)return;const e=S.escala[d.iso+'|'+v.id];if(e&&cont[e.estado]!=null)cont[e.estado]++});
+            return`<tr><td style="text-align:left;padding-left:14px;font-weight:600">${esc(v.nome||'?')}</td>${ESTADOS_ESCALA.map(s=>`<td class="${cont[s]?'esc-'+s:''}" style="${cont[s]?'font-weight:700':'color:var(--text4)'}">${cont[s]||'—'}</td>`).join('')}</tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`}
   </div>
   </div>
   </div>`;
@@ -970,7 +988,14 @@ function bindEvents(){
   app.onchange=function(e){
     const el=e.target;
     if(el.dataset&&el.dataset.field&&(el.dataset.field==='retoma'||el.dataset.field==='status')&&S.screen==='edit'){
-      collectFormData();render();
+      collectFormData();render();return;
+    }
+    // Dropdown da escala (é um <select>, dispara change e não click)
+    if(el.dataset&&el.dataset.action==='escala-cell'){
+      if(!isAdmin())return;
+      const dia=el.dataset.dia,vid=el.dataset.vid,estado=el.value;
+      el.disabled=true;
+      saveEscalaCell(dia,vid,estado).then(()=>render()).catch(err=>{alert('Erro: '+err.message);render()});
     }
   };
   app.onclick=function(e){
@@ -986,7 +1011,6 @@ function bindEvents(){
       case'go-escala':{const p=Promise.resolve(loadEscala());p.then(()=>setState({screen:'escala'}));break}
       case'escala-prev':escalaShiftMes(-1);loadEscala().then(()=>render());break;
       case'escala-next':escalaShiftMes(1);loadEscala().then(()=>render());break;
-      case'escala-cell':{if(!isAdmin())break;const dia=el.dataset.dia,vid=el.dataset.vid,estado=el.value;el.disabled=true;saveEscalaCell(dia,vid,estado).then(()=>render()).catch(err=>{alert('Erro: '+err.message);render()});break}
       case'go-dashboard':setState({screen:'dashboard',viewVendedor:null,vselOpen:false,statusFilter:'all',alertFilter:null,alertIds:[],search:'',renderLimit:50});break;
       case'view-vendedor':{const id=el.dataset.id||null;setState({viewVendedor:id,screen:'list',vselOpen:false,statusFilter:'all',alertFilter:null,alertIds:[],search:'',monthFilter:[],renderLimit:50});break}
       case'save-nps':{e.stopPropagation();const vid=el.dataset.id;const gi=s=>{const x=document.querySelector(`[${s}="${vid}"]`);return x&&x.value!==''?parseFloat(x.value):null};const patch={num_inqueritos:gi('data-nps-inq')||0,nps:gi('data-nps-nps'),csi:gi('data-nps-csi')};el.textContent='\u2026';saveNps(vid,patch).then(()=>render()).catch(err=>{alert('Erro: '+err.message);render()});break}
