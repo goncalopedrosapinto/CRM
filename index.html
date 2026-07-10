@@ -318,6 +318,40 @@ select.field-input{padding-right:34px;background-image:url("data:image/svg+xml,%
 .esc-pick.on .esc-pick-chk{border-color:var(--orange);background:var(--orange);color:#fff}
 .esc-pick-name{flex:1;font-weight:500}
 .esc-pick-else{font-size:11px;color:var(--text3)}
+
+/* ===== Mobile fluidity fixes ===== */
+html,body{overflow-x:hidden;max-width:100vw}
+#app{max-width:100vw;overflow-x:hidden}
+
+/* Escala: colunas de contexto fixas a esquerda ao deslizar os estados */
+.esc-grid .esc-sem,.esc-grid .esc-data,.esc-grid .esc-dia{position:sticky;background:var(--surface);z-index:2}
+.esc-grid .esc-sem{left:0;min-width:34px}
+.esc-grid .esc-data{left:34px;min-width:40px}
+.esc-grid .esc-dia{left:74px;min-width:42px;box-shadow:2px 0 4px rgba(0,0,0,.06)}
+.esc-grid thead .esc-sem,.esc-grid thead .esc-data,.esc-grid thead .esc-dia{background:var(--text);z-index:3}
+.esc-dom .esc-sem,.esc-dom .esc-data,.esc-dom .esc-dia{background:#eaf4ff}
+
+@media(max-width:600px){
+  .esc-table{min-width:0;font-size:11px}
+  .esc-grid td.esc-gc{min-width:52px;padding:2px 2px}
+  .esc-chip{font-size:9px;padding:1px 4px}
+  .esc-table th{padding:7px 4px;font-size:9px;letter-spacing:.2px}
+  .hdr{padding:calc(var(--safe-t)+10px) 10px 10px;gap:6px}
+  .hdr-btn{padding:6px 9px;font-size:12px}
+  .hdr-title{font-size:15px}
+  .hdr-sub{font-size:11px}
+  .dash-realiz-pct{font-size:28px}
+  .dash-kpi-v{font-size:19px}
+  .dash-periodo,.dash-linha-filter,.dash-pills{padding-left:10px;padding-right:10px}
+  .dash-kpis{padding:8px 10px;gap:6px}
+  .dash-realiz{margin:8px 10px 4px;padding:12px 14px}
+  .dash-box{margin:0 10px;padding:12px}
+  .dash-team{padding:0 10px}
+  .esc-wrap{margin:10px 10px 20px}
+  .section{margin:0 10px 8px}
+}
+/* Header da escala: rotulo do mes flexivel, sem estourar */
+.hdr .hdr-sub{min-width:0!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
 <body>
