@@ -861,6 +861,8 @@ function renderEscala(){
       ${linhasDisp.map(l=>`<button class="dlf-btn ${linhaAtiva===l?'active':''}" data-action="escala-linha" data-linha="${l}">${LINHA_ICONS[l]||''} ${esc(linhaLabel(l))}</button>`).join('')}
     </div>`:''}
     ${admin?`<div class="esc-note">Escala <b>${esc(linhaLabel(linhaAtiva))}</b> · Toca numa célula para pôr ou tirar um vendedor desse estado.</div>`:`<div class="esc-note">Escala <b>${esc(linhaLabel(linhaAtiva))}</b> · Vista de consulta.</div>`}
+    ${vendedores.length===0&&S.team.length>0?`<div class="esc-note" style="background:var(--red-bg);color:var(--red)">Não há vendedores na linha "${esc(linhaLabel(linhaAtiva))}".</div>`:''}
+    ${S.team.length===0?`<div class="esc-note" style="background:var(--amber-bg)">A carregar equipa… se persistir, recarrega a página.</div>`:''}
     <div class="esc-wrap">
       <table class="esc-table esc-grid">
         <thead><tr>
@@ -1119,7 +1121,7 @@ function bindEvents(){
       case'dash-linha':setState({dashLinha:el.dataset.linha});break;
       case'dash-periodo':setState({dashPeriodo:el.dataset.p});break;
       case'export-csv':exportCSV();break;
-      case'go-escala':{const p=Promise.resolve(loadEscala());p.then(()=>setState({screen:'escala'}));break}
+      case'go-escala':{setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false})).catch(e=>setState({error:e.message,loading:false,screen:'escala'}));break}
       case'escala-open':{if(!isAdmin())break;setState({escalaPicker:{dia:el.dataset.dia,estado:el.dataset.estado}});break}
       case'escala-close':setState({escalaPicker:null});break;
       case'escala-noop':break;
@@ -1219,7 +1221,7 @@ function bindEvents(){
 
 function collectFormData(){document.querySelectorAll('input[data-field],select[data-field],textarea[data-field]').forEach(el=>{const k=el.dataset.field;let v=el.value;if(el.dataset.fmt==='month'&&v)v=v.replace('-','/');S.form[k]=v})}
 
-function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadTeam(),loadObjetivos(),loadNps()]):Promise.resolve();return extra}).then(function(){return loadRecords()}).then(function(){setState({screen:isAdmin()?'dashboard':'list',loading:false})})}
+function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadTeam(),loadObjetivos(),loadNps()]):loadTeam();return extra}).then(function(){return loadRecords()}).then(function(){setState({screen:isAdmin()?'dashboard':'list',loading:false})})}
 (function(){
   S.screen='loading';render();
   refreshSession().then(function(token){
