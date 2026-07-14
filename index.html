@@ -399,6 +399,7 @@ let S={
   token:null,records:[],selected:null,form:{},
   me:null,team:[],objetivos:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
+  pwMsg:'',pwErr:'',pwLoading:false,
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{Identificação:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
@@ -409,6 +410,43 @@ async function supabaseAuth(e,p){const r=await fetch(`${S.config.url}/auth/v1/to
 function saveSession(d){try{if(d.access_token&&d.refresh_token){localStorage.setItem('bc_session',JSON.stringify({refresh_token:d.refresh_token}))}}catch(e){}}
 function clearSession(){try{localStorage.removeItem('bc_session')}catch(e){}}
 async function refreshSession(){let raw;try{raw=localStorage.getItem('bc_session')}catch(e){return null}if(!raw)return null;let s;try{s=JSON.parse(raw)}catch(e){return null}if(!s.refresh_token)return null;try{const r=await fetch(`${S.config.url}/auth/v1/token?grant_type=refresh_token`,{method:'POST',headers:{'apikey':S.config.key,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:s.refresh_token})});if(!r.ok){clearSession();return null}const d=await r.json();saveSession(d);return d.access_token}catch(e){return null}}
+async function changePassword(atual,nova){
+  // 1) Reautenticar com a password ATUAL — impede que alguem com a sessao aberta mude a pass
+  const email=(S.me&&S.me.nome&&S.me.email)||null;
+  const uid=jwtSub(S.token);
+  // Buscar o email do proprio utilizador (o profile pode nao o ter; usamos o do token)
+  let myEmail=null;
+  try{
+    const payload=JSON.parse(atob(S.token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+    myEmail=payload.email;
+  }catch(e){}
+  if(!myEmail)throw new Error('Não foi possível identificar o utilizador.');
+  const r1=await fetch(`${S.config.url}/auth/v1/token?grant_type=password`,{
+    method:'POST',
+    headers:{'apikey':S.config.key,'Content-Type':'application/json'},
+    body:JSON.stringify({email:myEmail,password:atual})
+  });
+  if(!r1.ok)throw new Error('A password atual está incorreta.');
+  const d1=await r1.json();
+  // 2) Alterar a password com o token fresco
+  const r2=await fetch(`${S.config.url}/auth/v1/user`,{
+    method:'PUT',
+    headers:{'apikey':S.config.key,'Authorization':`Bearer ${d1.access_token}`,'Content-Type':'application/json'},
+    body:JSON.stringify({password:nova})
+  });
+  if(!r2.ok){
+    const t=await r2.text();
+    let msg='Não foi possível alterar a password.';
+    if(t.includes('at least'))msg='A password nova é demasiado curta (mínimo 6 caracteres).';
+    if(t.includes('same'))msg='A password nova tem de ser diferente da atual.';
+    throw new Error(msg);
+  }
+  const d2=await r2.json();
+  // 3) Guardar a sessao nova
+  S.token=d1.access_token;
+  saveSession(d1);
+  return true;
+}
 async function supabaseApi(m,path,body,_retry){const h={'apikey':S.config.key,'Authorization':`Bearer ${S.token}`,'Content-Type':'application/json'};if(m==='POST'||m==='PATCH')h['Prefer']='return=representation';const o={method:m,headers:h};if(body)o.body=JSON.stringify(body);const r=await fetch(`${S.config.url}/rest/v1${path}`,o);if(r.status===401&&!_retry){const nt=await refreshSession();if(nt){S.token=nt;return supabaseApi(m,path,body,true)}}if(!r.ok){const e=await r.text();throw new Error(e)}const t=await r.text();return t?JSON.parse(t):null}
 const LINHA_LABELS={motorrad:'Motorrad',auto:'Equipa Teste'};
 const LINHA_ICONS={motorrad:'\u{1F3CD}',auto:'\u{1F697}'};
@@ -604,6 +642,48 @@ function renderCard(r){return`
     </div>
   </div>`}
 
+function renderPassword(){
+  let myEmail='';
+  try{const p=JSON.parse(atob(S.token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));myEmail=p.email||''}catch(e){}
+  return`
+  <div class="app-layout"><div class="main-panel" style="width:100%">
+  <div class="hdr">
+    <button class="hdr-back" data-action="pw-back">←</button>
+    <div class="hdr-accent"></div>
+    <div class="hdr-title">Alterar password</div>
+  </div>
+  <div class="content">
+    <div class="center-screen" style="min-height:auto;padding-top:24px">
+      <div class="center-box">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:20px">
+          Sessão de <b>${esc(myEmail)}</b>
+        </div>
+        ${S.pwErr?`<div class="error">${esc(S.pwErr)}</div>`:''}
+        ${S.pwMsg?`<div style="background:var(--green-bg);color:var(--green);padding:10px 14px;border-radius:var(--r);font-size:13px;margin-bottom:14px;border:1px solid #bbf7d0">${esc(S.pwMsg)}</div>`:''}
+        <div class="field">
+          <label class="field-label">Password atual</label>
+          <input class="field-input" type="password" id="pw-atual" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <div class="field">
+          <label class="field-label">Password nova</label>
+          <input class="field-input" type="password" id="pw-nova" placeholder="mínimo 6 caracteres" autocomplete="new-password">
+        </div>
+        <div class="field">
+          <label class="field-label">Confirmar password nova</label>
+          <input class="field-input" type="password" id="pw-conf" placeholder="••••••••" autocomplete="new-password">
+        </div>
+        <button class="btn btn-orange btn-block" data-action="pw-save" ${S.pwLoading?'disabled':''} style="margin-top:6px">
+          ${S.pwLoading?'A alterar...':'Alterar password'}
+        </button>
+        <div style="font-size:12px;color:var(--text3);margin-top:14px;line-height:1.5">
+          Por segurança, é pedida a password atual antes de a poderes mudar.
+        </div>
+      </div>
+    </div>
+  </div>
+  </div></div>`;
+}
+
 function renderLogin(){return`
 <div class="content"><div class="center-screen"><div class="center-box">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:28px">
@@ -715,6 +795,7 @@ function renderList(){
     <div class="hdr-sub">${f.length} de ${recsInContext().length}</div>
     ${!isAdmin()?`<button class="hdr-btn" data-action="go-escala">📅 Escala</button>`:''}
     <button class="hdr-btn" data-action="refresh" ${S.loading?'disabled':''}>${S.loading?'…':'↻'}</button>
+    <button class="hdr-btn" data-action="go-password" title="Alterar password">🔑</button>
     <button class="hdr-btn" data-action="logout">Sair</button>
   </div>
   <div class="content">
@@ -895,6 +976,7 @@ function renderEscala(){
     <button class="hdr-btn" data-action="escala-prev">‹</button>
     <div class="hdr-sub" style="min-width:120px;text-align:center">${esc(escalaMesLabel())}</div>
     <button class="hdr-btn" data-action="escala-next">›</button>
+    <button class="hdr-btn" data-action="go-password" title="Alterar password">🔑</button>
     <button class="hdr-btn" data-action="logout">Sair</button>
   </div>
   <div class="content">
@@ -1038,6 +1120,7 @@ function renderDashboard(){
     <div class="hdr-title">Dashboard equipa</div>
     <div class="hdr-sub">${esc(ym)}</div>
     <button class="hdr-btn" data-action="refresh" ${S.loading?'disabled':''}>${S.loading?'\u2026':'\u21bb'}</button>
+    <button class="hdr-btn" data-action="go-password" title="Alterar password">🔑</button>
     <button class="hdr-btn" data-action="logout">Sair</button>
   </div>
   <div class="content">
@@ -1137,7 +1220,7 @@ function renderDashboard(){
 function render(){
   const app=document.getElementById('app');
   const ce=app.querySelector('.content'),st=ce?ce.scrollTop:0,ps=app.dataset.screen||'';
-  const screens={loading:'<div class="content"><div class="center-screen"><p style="color:var(--text3)">A carregar...</p></div></div>',login:renderLogin,list:renderList,detail:renderDetail,edit:renderEdit,dashboard:renderDashboard,escala:renderEscala};
+  const screens={loading:'<div class="content"><div class="center-screen"><p style="color:var(--text3)">A carregar...</p></div></div>',login:renderLogin,list:renderList,detail:renderDetail,edit:renderEdit,dashboard:renderDashboard,escala:renderEscala,password:renderPassword};
   const fn=screens[S.screen];
   app.innerHTML=typeof fn==='function'?fn():fn;
   app.dataset.screen=S.screen;
@@ -1158,6 +1241,22 @@ function bindEvents(){
     const a=el.dataset.action;
     switch(a){
       case'login':{const em=document.getElementById('f-email')?.value?.trim(),pw=document.getElementById('f-pw')?.value;if(!em||!pw){setState({error:'Preenche email e password.'});return}setState({loading:true,error:''});supabaseAuth(em,pw).then(r=>{S.token=r.access_token;return afterAuth()}).catch(e=>setState({error:e.message,loading:false}));break}
+      case'go-password':setState({screen:'password',pwErr:'',pwMsg:''});break;
+      case'pw-back':setState({screen:isAdmin()?'dashboard':'list',pwErr:'',pwMsg:''});break;
+      case'pw-save':{
+        const atual=document.getElementById('pw-atual')?.value||'';
+        const nova=document.getElementById('pw-nova')?.value||'';
+        const conf=document.getElementById('pw-conf')?.value||'';
+        if(!atual||!nova||!conf){setState({pwErr:'Preenche todos os campos.',pwMsg:''});break}
+        if(nova!==conf){setState({pwErr:'A password nova e a confirmação não coincidem.',pwMsg:''});break}
+        if(nova.length<6){setState({pwErr:'A password nova tem de ter pelo menos 6 caracteres.',pwMsg:''});break}
+        if(nova===atual){setState({pwErr:'A password nova tem de ser diferente da atual.',pwMsg:''});break}
+        setState({pwLoading:true,pwErr:'',pwMsg:''});
+        changePassword(atual,nova)
+          .then(()=>setState({pwLoading:false,pwMsg:'Password alterada com sucesso.',pwErr:''}))
+          .catch(e=>setState({pwLoading:false,pwErr:e.message,pwMsg:''}));
+        break;
+      }
       case'logout':clearSession();setState({token:null,records:[],me:null,team:[],objetivos:[],viewVendedor:null,screen:'login',error:''});break;
       case'toggle-vsel':setState({vselOpen:!S.vselOpen});break;
       case'dash-linha':setState({dashLinha:el.dataset.linha});break;
