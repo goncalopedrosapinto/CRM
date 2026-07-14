@@ -373,14 +373,14 @@ const I={
 
 const STATUSES=['Retail','Carteira','Quente','Morno','Frio','Matricula','Perdido'];
 const SDOT={Retail:'var(--green)',Carteira:'var(--blue)',Quente:'var(--red)',Morno:'var(--amber)',Frio:'var(--slate)',Matricula:'var(--purple)',Perdido:'#6b7280'};
-const MOTIVOS_PERDA=['Preço','Concorrência','Prazo de entrega','Financiamento','Retoma','Desistência','Outro'];
+const MOTIVOS_PERDA=['Preço','Concorrência','Prazo de entrega','Financiamento','Retoma','Desistência','Adiado','Outro'];
 const TYPES=['VN','VD','VU'],ORIGINS=['','Cliente','Recom.','Stand','Prosp','Lead'],PROFILES=['','PE','PART','BUS','ENI','FLE','CA'],GARS=['','GAR','nGAR'],FINS=['','FS','PP','Fext','Fint'];
 const FIELD_GROUPS=[
-  {g:'Identificação',fields:[{k:'status',l:'Status',t:'select',o:STATUSES},{k:'motivo_perda',l:'Motivo da Perda',t:'select',o:MOTIVOS_PERDA,show:'perdido'},{k:'alert_days',l:'Alertar após (dias)',t:'number',show:'funil'},{k:'id_cliente',l:'Cliente',t:'text'},{k:'resp',l:'Responsável',t:'vendedores'},{k:'local',l:'Código Postal',t:'text'}]},
-  {g:'Negócio',fields:[{k:'neg',l:'Data Negócio',t:'date'},{k:'mes1',l:'Mês Referência',t:'month'},{k:'type',l:'Tipo',t:'select',o:TYPES},{k:'origin',l:'Origem',t:'select',o:ORIGINS},{k:'profile',l:'Perfil',t:'select',o:PROFILES},{k:'retoma',l:'Retoma?',t:'select',o:['Não','Sim']},{k:'retoma_mat',l:'Matrícula da Retoma',t:'text',show:'retoma'},{k:'biz',l:'Bizagi',t:'text'},{k:'fin',l:'Financiamento',t:'select',o:FINS}]},
-  {g:'Viatura',fields:[{k:'model',l:'Modelo',t:'text'},{k:'version',l:'Versão',t:'text'},{k:'enc',l:'Encomenda',t:'text'},{k:'chas',l:'Chassis',t:'text'},{k:'mat',l:'Matrícula',t:'text'},{k:'gar',l:'Garantia',t:'select',o:GARS}]},
+  {g:'Identificação',fields:[{k:'status',l:'Status',t:'select',o:STATUSES},{k:'motivo_perda',l:'Motivo da Perda',t:'select',o:MOTIVOS_PERDA,show:'perdido'},{k:'alert_days',l:'Alertar após (dias)',t:'number',show:'funil'},{k:'id_cliente',l:'Cliente',t:'text'},{k:'local',l:'Código Postal',t:'text'}]},
+  {g:'Negócio',fields:[{k:'neg',l:'Data Negócio',t:'date'},{k:'mes1',l:'Mês Referência',t:'month'},{k:'type',l:'Tipo',t:'select',o:TYPES},{k:'pvp',l:'PVP (€)',t:'number'},{k:'origin',l:'Origem',t:'select',o:ORIGINS},{k:'profile',l:'Perfil',t:'select',o:PROFILES},{k:'retoma',l:'Retoma?',t:'select',o:['Não','Sim']},{k:'retoma_mat',l:'Matrícula da Retoma',t:'text',show:'retoma'},{k:'biz',l:'Bizagi',t:'text'},{k:'fin',l:'Financiamento',t:'select',o:FINS}]},
+  {g:'Viatura',fields:[{k:'model',l:'Modelo',t:'text'},{k:'version',l:'Versão',t:'text'},{k:'stock',l:'Em Stock?',t:'select',o:['Não','Sim']},{k:'enc',l:'Encomenda',t:'text'},{k:'chas',l:'Chassis',t:'text'},{k:'mat',l:'Matrícula',t:'text'},{k:'gar',l:'Garantia',t:'select',o:GARS}]},
   {g:'Flags',fields:[{k:'qor',l:'QoR',t:'toggle'},{k:'xev',l:'xEV',t:'toggle'},{k:'bev',l:'BEV',t:'toggle'},{k:'m_flag',l:'M',t:'toggle'},{k:'csc',l:'CSC',t:'toggle'},{k:'cme',l:'CME',t:'toggle'}]},
-  {g:'Datas & Estado',fields:[{k:'col_198',l:'198',t:'text'},{k:'dmat',l:'Data Matrícula',t:'date'},{k:'col_298',l:'298',t:'date'},{k:'app',l:'APP',t:'date'},{k:'obs',l:'Observações',t:'textarea'}]}
+  {g:'Datas & Estado',fields:[{k:'col_198',l:'198',t:'text'},{k:'dmat',l:'Data Matrícula',t:'date'},{k:'col_298',l:'298',t:'date'},{k:'obs',l:'Observações',t:'textarea'}]}
 ];
 const ALL_FIELDS=FIELD_GROUPS.flatMap(g=>g.fields);
 
@@ -514,7 +514,7 @@ function recsOf(vid){return S.records.filter(r=>r.vendedor_id===vid)}
 function statsFor(recs){const ym=curYM();const fech=recs.filter(r=>(r.status==='Retail'||r.status==='Carteira')&&r.mes1===ym);const funil=recs.filter(r=>FUNIL.includes(r.status));const bev=fech.filter(r=>r.bev).length;const fechTotal=recs.filter(r=>r.status==='Retail'||r.status==='Carteira').length;const perdidos=recs.filter(r=>r.status==='Perdido').length;return{fechados:fech.length,funil:funil.length,bev,fechTotal,perdidos,alerts:calcAlerts(recs)}}
 function lastUpdateDays(recs){let m=0;recs.forEach(r=>{const t=new Date(r.updated_at||r.status_updated_at||r.created_at||0).getTime();if(t>m)m=t});if(!m)return null;return Math.floor((Date.now()-m)/86400000)}
 async function loadRecords(){setState({loading:true,error:''});try{const d=await supabaseApi('GET','/baviera_control?select=*&order=neg.desc.nullslast');setState({records:d,loading:false})}catch(e){setState({error:'Erro: '+e.message,loading:false})}}
-async function saveRecord(){setState({loading:true,error:''});try{const b={...S.form};['neg','dmat','col_298','app'].forEach(k=>{if(!b[k])b[k]=null});['qor','xev','bev','m_flag','csc','cme'].forEach(k=>{b[k]=b[k]?parseInt(b[k]):null});if(!b.alert_days)b.alert_days=null;else b.alert_days=parseInt(b.alert_days);delete b.id;delete b.created_at;delete b.updated_at;delete b.updated_by;if(!S.selected&&isAdmin())b.vendedor_id=S.viewVendedor||S.me.id;if(S.selected){if(b.status!==S.selected.status)b.status_updated_at=new Date().toISOString();delete b.status_updated_at_keep;await supabaseApi('PATCH',`/baviera_control?id=eq.${S.selected.id}`,b)}else{b.status_updated_at=new Date().toISOString();await supabaseApi('POST','/baviera_control',b)}await loadRecords();setState({screen:'list',selected:null,loading:false})}catch(e){setState({error:'Erro ao guardar: '+e.message,loading:false})}}
+async function saveRecord(){setState({loading:true,error:''});try{const b={...S.form};['neg','dmat','col_298'].forEach(k=>{if(!b[k])b[k]=null});['qor','xev','bev','m_flag','csc','cme'].forEach(k=>{b[k]=b[k]?parseInt(b[k]):null});b.pvp=b.pvp?parseFloat(b.pvp):null;if(!b.alert_days)b.alert_days=null;else b.alert_days=parseInt(b.alert_days);delete b.id;delete b.created_at;delete b.updated_at;delete b.updated_by;if(!S.selected&&isAdmin())b.vendedor_id=S.viewVendedor||S.me.id;if(S.selected){if(b.status!==S.selected.status)b.status_updated_at=new Date().toISOString();delete b.status_updated_at_keep;await supabaseApi('PATCH',`/baviera_control?id=eq.${S.selected.id}`,b)}else{b.status_updated_at=new Date().toISOString();await supabaseApi('POST','/baviera_control',b)}await loadRecords();setState({screen:'list',selected:null,loading:false})}catch(e){setState({error:'Erro ao guardar: '+e.message,loading:false})}}
 async function deleteRecord(){setState({loading:true,error:''});try{await supabaseApi('DELETE',`/baviera_control?id=eq.${S.selected.id}`);await loadRecords();setState({screen:'list',selected:null,confirmDelete:false,loading:false})}catch(e){setState({error:'Erro: '+e.message,loading:false})}}
 
 function fmtDate(d){if(!d)return'—';try{return new Date(d).toLocaleDateString('pt-PT',{day:'2-digit',month:'short',year:'numeric'})}catch{return d}}
@@ -583,7 +583,7 @@ function renderCard(r){return`
         ${r.enc?`<div class="card-row">${I.hash}<span>Enc: <b>${esc(r.enc)}</b></span></div>`:''}
         ${r.biz?`<div class="card-row">${I.hash}<span>Biz: <b>${esc(r.biz)}</b></span></div>`:''}
         <div class="card-row">${I.cal}<span>${fmtDate(r.neg)}</span>${r.mes1?`<span style="opacity:.5">· ${esc(r.mes1)}</span>`:''}</div>
-        ${r.resp?`<div class="card-row">${I.user}<span>Resp: ${esc(r.resp)}</span></div>`:''}
+        ${r.pvp?`<div class="card-row">${I.money}<span><b>${Number(r.pvp).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:0})} €</b></span></div>`:''}
         ${r.fin?`<div class="card-row">${I.money}<span>${esc(r.fin)}</span></div>`:''}
         ${r.col_198?`<div class="card-row">${I.note}<span>198: ${esc(r.col_198)}</span></div>`:''}
         ${r.obs?`<div class="card-row">${I.note}<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px">${esc(r.obs)}</span></div>`:''}
@@ -999,8 +999,8 @@ function renderEscalaPicker(){
   </div>`;
 }
 function exportCSV(){
-  const cols=['id_cliente','resp','status','type','model','version','mes1','neg','enc','chas','mat','fin','biz','retoma','retoma_mat','motivo_perda','obs'];
-  const labels=['Cliente','Responsavel','Status','Tipo','Modelo','Versao','MesRef','DataNeg','Encomenda','Chassis','Matricula','Financiamento','Bizagi','Retoma','MatRetoma','MotivoPerda','Obs'];
+  const cols=['id_cliente','status','type','pvp','model','version','mes1','neg','stock','enc','chas','mat','fin','biz','retoma','retoma_mat','motivo_perda','obs'];
+  const labels=['Cliente','Status','Tipo','PVP','Modelo','Versao','MesRef','DataNeg','Stock','Encomenda','Chassis','Matricula','Financiamento','Bizagi','Retoma','MatRetoma','MotivoPerda','Obs'];
   const recs=(isAdmin()&&S.viewVendedor)?S.records.filter(r=>r.vendedor_id===S.viewVendedor):(isAdmin()&&S.dashLinha!=='all')?S.records.filter(r=>{const p=S.team.find(t=>t.id===r.vendedor_id);return p&&p.linha===S.dashLinha}):S.records;
   const esc2=v=>{v=(v==null?'':String(v));return /[",\n;]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
   const rows=[labels.join(';')];
