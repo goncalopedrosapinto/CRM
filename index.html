@@ -431,10 +431,16 @@ function periodoYMs(){
   return[ym(y,m)];
 }
 function periodoLabel(){return{mes:'Mês atual',trimestre:'Trimestre',ano:'Ano '+new Date().getFullYear()}[S.dashPeriodo]||'Mês'}
-// statsFor com periodo: conta fechados cujo mes1 cai no periodo
+// statsFor com periodo: conta fechados pela DATA DE NEGOCIO (neg), nao pelo mes de entrega (mes1)
+function negYM(r){
+  // Mes do FECHO do negocio = mes da Data Negocio (neg), nao o mes de entrega (mes1)
+  if(!r.neg)return null;
+  const s=String(r.neg);
+  return s.slice(0,4)+'/'+s.slice(5,7);
+}
 function statsForPeriodo(recs){
   const yms=periodoYMs();
-  const fech=recs.filter(r=>(r.status==='Retail'||r.status==='Carteira')&&yms.includes(r.mes1));
+  const fech=recs.filter(r=>(r.status==='Retail'||r.status==='Carteira')&&yms.includes(negYM(r)));
   const funil=recs.filter(r=>FUNIL.includes(r.status));
   const bev=fech.filter(r=>r.bev).length;
   const fechTotal=recs.filter(r=>r.status==='Retail'||r.status==='Carteira').length;
@@ -511,7 +517,7 @@ async function saveNps(vid,patch){const ex=S.nps.find(n=>n.vendedor_id===vid);if
 function npsOf(vid){return S.nps.find(n=>n.vendedor_id===vid)||null}
 function recsInContext(){return isAdmin()&&S.viewVendedor?S.records.filter(r=>r.vendedor_id===S.viewVendedor):S.records}
 function recsOf(vid){return S.records.filter(r=>r.vendedor_id===vid)}
-function statsFor(recs){const ym=curYM();const fech=recs.filter(r=>(r.status==='Retail'||r.status==='Carteira')&&r.mes1===ym);const funil=recs.filter(r=>FUNIL.includes(r.status));const bev=fech.filter(r=>r.bev).length;const fechTotal=recs.filter(r=>r.status==='Retail'||r.status==='Carteira').length;const perdidos=recs.filter(r=>r.status==='Perdido').length;return{fechados:fech.length,funil:funil.length,bev,fechTotal,perdidos,alerts:calcAlerts(recs)}}
+function statsFor(recs){const ym=curYM();const fech=recs.filter(r=>(r.status==='Retail'||r.status==='Carteira')&&negYM(r)===ym);const funil=recs.filter(r=>FUNIL.includes(r.status));const bev=fech.filter(r=>r.bev).length;const fechTotal=recs.filter(r=>r.status==='Retail'||r.status==='Carteira').length;const perdidos=recs.filter(r=>r.status==='Perdido').length;return{fechados:fech.length,funil:funil.length,bev,fechTotal,perdidos,alerts:calcAlerts(recs)}}
 function lastUpdateDays(recs){let m=0;recs.forEach(r=>{const t=new Date(r.updated_at||r.status_updated_at||r.created_at||0).getTime();if(t>m)m=t});if(!m)return null;return Math.floor((Date.now()-m)/86400000)}
 async function loadRecords(){setState({loading:true,error:''});try{const d=await supabaseApi('GET','/baviera_control?select=*&order=neg.desc.nullslast');setState({records:d,loading:false})}catch(e){setState({error:'Erro: '+e.message,loading:false})}}
 async function saveRecord(){setState({loading:true,error:''});try{const b={...S.form};['neg','dmat','col_298'].forEach(k=>{if(!b[k])b[k]=null});['qor','xev','bev','m_flag','csc','cme'].forEach(k=>{b[k]=b[k]?parseInt(b[k]):null});b.pvp=b.pvp?parseFloat(b.pvp):null;if(!b.alert_days)b.alert_days=null;else b.alert_days=parseInt(b.alert_days);delete b.id;delete b.created_at;delete b.updated_at;delete b.updated_by;if(!S.selected&&isAdmin())b.vendedor_id=S.viewVendedor||S.me.id;if(S.selected){if(b.status!==S.selected.status)b.status_updated_at=new Date().toISOString();delete b.status_updated_at_keep;await supabaseApi('PATCH',`/baviera_control?id=eq.${S.selected.id}`,b)}else{b.status_updated_at=new Date().toISOString();await supabaseApi('POST','/baviera_control',b)}await loadRecords();setState({screen:'list',selected:null,loading:false})}catch(e){setState({error:'Erro ao guardar: '+e.message,loading:false})}}
