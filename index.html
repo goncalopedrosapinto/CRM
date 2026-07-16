@@ -400,6 +400,13 @@ html,body{overflow-x:hidden;max-width:100vw}
   .dash-nav-item.active{border-bottom-color:var(--orange);background:none}
   .app-layout:has(.dash-nav){flex-direction:column}
 }
+
+.dash-perda-click{cursor:pointer;padding:8px 4px;border-radius:var(--r)}
+.dash-perda-click:active{background:var(--bg)}
+.dash-perda-arrow{color:var(--text3);font-size:12px;flex-shrink:0;width:14px}
+.dash-perda-detalhe{padding:4px 4px 10px}
+.perda-tr:active{background:var(--bg)}
+.perda-tr td{border-bottom:1px solid var(--border)}
 </style>
 </head>
 <body>
@@ -1231,10 +1238,10 @@ function renderDashboard(){
       ${(()=>{
         const yms=periodoYMs();
         const fechados=scopeRecs.filter(r=>(r.status==='Retail'||r.status==='Carteira')&&yms.includes(negYM(r)));
-        const vn=fechados.filter(r=>r.type==='VN').length;
-        const vd=fechados.filter(r=>r.type==='VD').length;
-        const vu=fechados.filter(r=>r.type==='VU').length;
-        const semTipo=fechados.filter(r=>!r.type||!['VN','VD','VU'].includes(r.type)).length;
+        const vn=fechados.filter(r=>r.type==='MN').length;
+        const vd=fechados.filter(r=>r.type==='MD').length;
+        const vu=fechados.filter(r=>r.type==='MU').length;
+        const semTipo=fechados.filter(r=>!r.type||!['MN','MD','MU'].includes(r.type)).length;
         const total=fechados.length;
         const novas=vn+vd;const usadas=vu;
         const pct=n=>total?Math.round(100*n/total):0;
@@ -1243,13 +1250,13 @@ function renderDashboard(){
         <div class="tipo-split">
           <div class="tipo-big tipo-novas">
             <div class="tipo-big-n">${novas}</div>
-            <div class="tipo-big-l">Novas (VN+VD)</div>
+            <div class="tipo-big-l">Novas (MN+MD)</div>
             <div class="tipo-big-p">${pct(novas)}%</div>
           </div>
           <div class="tipo-vs">vs</div>
           <div class="tipo-big tipo-usadas">
             <div class="tipo-big-n">${usadas}</div>
-            <div class="tipo-big-l">Usadas (VU)</div>
+            <div class="tipo-big-l">Usadas (MU)</div>
             <div class="tipo-big-p">${pct(usadas)}%</div>
           </div>
         </div>
@@ -1258,9 +1265,9 @@ function renderDashboard(){
           <div class="tipo-bar-fill" style="width:${pct(usadas)}%;background:#D97706" title="Usadas"></div>
         </div>
         <div class="tipo-detalhe">
-          <div class="tipo-d"><span class="tipo-dot" style="background:#2563EB"></span>VN · Novas<b>${vn}</b></div>
-          <div class="tipo-d"><span class="tipo-dot" style="background:#7C3AED"></span>VD · Demonstração<b>${vd}</b></div>
-          <div class="tipo-d"><span class="tipo-dot" style="background:#D97706"></span>VU · Usadas<b>${vu}</b></div>
+          <div class="tipo-d"><span class="tipo-dot" style="background:#2563EB"></span>MN · Novas<b>${vn}</b></div>
+          <div class="tipo-d"><span class="tipo-dot" style="background:#7C3AED"></span>MD · Demonstração<b>${vd}</b></div>
+          <div class="tipo-d"><span class="tipo-dot" style="background:#D97706"></span>MU · Usadas<b>${vu}</b></div>
           ${semTipo?`<div class="tipo-d"><span class="tipo-dot" style="background:#9ca3af"></span>Sem tipo<b>${semTipo}</b></div>`:''}
           <div class="tipo-d" style="border-top:1px solid var(--border);padding-top:6px;margin-top:2px"><b style="margin-left:0">Total</b><b>${total}</b></div>
         </div>`;
@@ -1318,12 +1325,39 @@ function renderDashboard(){
       const ordenado=Object.entries(cont).sort((a,b)=>b[1]-a[1]);
       const max=ordenado[0][1];
       return`<div class="dash-sec">Motivos de perda \u00b7 ${perdidos.length} negócio${perdidos.length>1?'s':''}</div>
-      <div class="dash-box" style="margin-bottom:24px">
-        ${ordenado.map(([m,n])=>`<div class="dash-perda-row">
+      <div class="dash-box" style="margin-bottom:16px">
+        ${ordenado.map(([m,n])=>`<div class="dash-perda-row dash-perda-click ${S.dashAlertOpen==='perda:'+m?'open':''}" data-action="dash-alert-toggle" data-id="perda:${esc(m)}">
           <div class="dash-perda-label">${esc(m)}</div>
           <div class="dash-perda-track"><div class="dash-perda-fill" style="width:${Math.round(100*n/max)}%"></div></div>
           <div class="dash-perda-val">${n}</div>
-        </div>`).join('')}
+          <span class="dash-perda-arrow">${S.dashAlertOpen==='perda:'+m?'▾':'▸'}</span>
+        </div>
+        ${S.dashAlertOpen==='perda:'+m?`<div class="dash-perda-detalhe">
+          ${perdidos.filter(r=>(r.motivo_perda||'Sem motivo')===m).map(r=>`<div class="dash-acao-item" data-action="open-record-from-dash" data-id="${r.id}">
+            <b>${esc(r.id_cliente||'(sem cliente)')}</b>
+            <span>${esc(r.model||'')} ${esc(r.version||'')}</span>
+            <span style="color:var(--text3)">${esc(vendName(r.vendedor_id)||'')}</span>
+          </div>`).join('')}
+        </div>`:''}`).join('')}
+      </div>
+      <div class="dash-sec">Todos os negócios perdidos</div>
+      <div class="dash-box" style="margin-bottom:24px">
+        <table class="esc-table" style="width:100%">
+          <thead><tr>
+            <th style="text-align:left;padding:8px 10px">Cliente</th>
+            <th style="text-align:left;padding:8px 10px">Viatura</th>
+            <th style="text-align:left;padding:8px 10px">Motivo</th>
+            <th style="text-align:left;padding:8px 10px">Vendedor</th>
+          </tr></thead>
+          <tbody>
+            ${perdidos.map(r=>`<tr class="perda-tr" data-action="open-record-from-dash" data-id="${r.id}" style="cursor:pointer">
+              <td style="padding:9px 10px;font-weight:600">${esc(r.id_cliente||'—')}</td>
+              <td style="padding:9px 10px">${esc(r.model||'')} ${esc(r.version||'')}</td>
+              <td style="padding:9px 10px">${esc(r.motivo_perda||'—')}</td>
+              <td style="padding:9px 10px;color:var(--text2)">${esc(vendName(r.vendedor_id)||'')}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
       </div>`;
     })()}
   </div>
