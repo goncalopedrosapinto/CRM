@@ -420,12 +420,11 @@ const I={
 const STATUSES=['Retail','Carteira','Quente','Morno','Frio','Matricula','Perdido'];
 const SDOT={Retail:'var(--green)',Carteira:'var(--blue)',Quente:'var(--red)',Morno:'var(--amber)',Frio:'var(--slate)',Matricula:'var(--purple)',Perdido:'#6b7280'};
 const MOTIVOS_PERDA=['Preço','Concorrência','Prazo de entrega','Financiamento','Retoma','Desistência','Adiado','Outro'];
-const TYPES=['VN','VD','VU'],ORIGINS=['','Cliente','Recom.','Stand','Prosp','Lead'],PROFILES=['','PE','PART','BUS','ENI','FLE','CA'],GARS=['','GAR','nGAR'],FINS=['','FS','PP','Fext','Fint'];
+const TYPES=['MN','MD','MU'],ORIGINS=['','Cliente','Recom.','Stand','Prosp','Lead'],PROFILES=['','Particular','Empresa','Protocolo','Estado'],GAR_PERIODOS=['1 ano','2 anos','3 anos','4 anos','5 anos'],FINS=['','PP','Fext','Fint'];
 const FIELD_GROUPS=[
   {g:'Identificação',fields:[{k:'status',l:'Status',t:'select',o:STATUSES},{k:'motivo_perda',l:'Motivo da Perda',t:'select',o:MOTIVOS_PERDA,show:'perdido'},{k:'alert_days',l:'Alertar após (dias)',t:'number',show:'funil'},{k:'id_cliente',l:'Cliente',t:'text'},{k:'local',l:'Código Postal',t:'text'}]},
   {g:'Negócio',fields:[{k:'neg',l:'Data Negócio',t:'date'},{k:'mes1',l:'Mês Referência',t:'month'},{k:'type',l:'Tipo',t:'select',o:TYPES},{k:'pvp',l:'PVP (€)',t:'number'},{k:'origin',l:'Origem',t:'select',o:ORIGINS},{k:'profile',l:'Perfil',t:'select',o:PROFILES},{k:'retoma',l:'Retoma?',t:'select',o:['Não','Sim']},{k:'retoma_mat',l:'Matrícula da Retoma',t:'text',show:'retoma'},{k:'biz',l:'Bizagi',t:'text'},{k:'fin',l:'Financiamento',t:'select',o:FINS}]},
-  {g:'Viatura',fields:[{k:'model',l:'Modelo',t:'text'},{k:'version',l:'Versão',t:'text'},{k:'stock',l:'Em Stock?',t:'select',o:['Não','Sim']},{k:'enc',l:'Encomenda',t:'text'},{k:'chas',l:'Chassis',t:'text'},{k:'mat',l:'Matrícula',t:'text'},{k:'gar',l:'Garantia',t:'select',o:GARS}]},
-  {g:'Flags',fields:[{k:'qor',l:'QoR',t:'toggle'},{k:'xev',l:'xEV',t:'toggle'},{k:'bev',l:'BEV',t:'toggle'},{k:'m_flag',l:'M',t:'toggle'},{k:'csc',l:'CSC',t:'toggle'},{k:'cme',l:'CME',t:'toggle'}]},
+  {g:'Viatura',fields:[{k:'model',l:'Modelo',t:'text'},{k:'version',l:'Versão',t:'text'},{k:'stock',l:'Em Stock?',t:'select',o:['Não','Sim']},{k:'enc',l:'Encomenda',t:'text'},{k:'chas',l:'Chassis',t:'text'},{k:'mat',l:'Matrícula',t:'text'},{k:'gar',l:'Garantia?',t:'select',o:['Não','Sim']},{k:'gar_periodo',l:'Período de Garantia',t:'select',o:GAR_PERIODOS,show:'garantia'}]},
   {g:'Datas & Estado',fields:[{k:'col_198',l:'198',t:'text'},{k:'dmat',l:'Data Matrícula',t:'date'},{k:'col_298',l:'298',t:'date'},{k:'obs',l:'Observações',t:'textarea'}]}
 ];
 const ALL_FIELDS=FIELD_GROUPS.flatMap(g=>g.fields);
@@ -637,7 +636,7 @@ function calcAlerts(records){
   const funilGroups={Quente:[],Morno:[],Frio:[]};
   records.forEach(r=>{if(FUNIL.includes(r.status)&&r.status_updated_at){const days=Math.floor((now-new Date(r.status_updated_at).getTime())/day);const limit=r.alert_days||10;if(days>=limit)funilGroups[r.status].push(r)}});
   Object.entries(funilGroups).forEach(([s,recs])=>{if(recs.length)alerts.push({id:'funil_'+s,icon:'🟡',label:`${recs.length} ${s.toLowerCase()} há +${recs[0].alert_days||10}d`,count:recs.length,ids:recs.map(r=>r.id)})});
-  const cartAlert=records.filter(r=>r.status==='Carteira'&&!r.enc);
+  const cartAlert=records.filter(r=>r.status==='Carteira'&&!r.enc&&r.type!=='MU');
   if(cartAlert.length)alerts.push({id:'cart',icon:'🔵',label:`${cartAlert.length} carteira${cartAlert.length>1?'s':''} sem encomenda`,count:cartAlert.length,ids:cartAlert.map(r=>r.id)});
   const nowD=new Date();const nowYM=nowD.getFullYear()*12+nowD.getMonth();
   const cmeAlert=records.filter(r=>{
@@ -884,13 +883,6 @@ function renderList(){
             }).join('')}
           </div>
         </div>
-        <div class="fpanel-section">
-          <div class="fpanel-label">Tipo</div>
-          <div class="fpanel-toggles">
-            <button class="fpanel-toggle ${S.bevFilter==='1'?'active':''}" data-action="filter-bev">BEV</button>
-            <button class="fpanel-toggle ${S.xevFilter==='1'?'active':''}" data-action="filter-xev">xEV</button>
-          </div>
-        </div>
       </div>`;
     })():''}
     ${S.error?`<div class="error" style="margin:8px 16px">${esc(S.error)}</div>`:''}
@@ -977,7 +969,7 @@ function renderEdit(){
       </div>
       ${S.openGroups[g.g]?`<div class="section-body">
         ${g.g==='Flags'?`<div class="toggles">${g.fields.map(fd=>`<button class="toggle-btn ${S.form[fd.k]?'on':''}" data-action="toggle-flag" data-field="${fd.k}">${S.form[fd.k]?'✓ ':''}${esc(fd.l)}</button>`).join('')}</div>`:`
-        ${g.fields.filter(fd=>!fd.show||(fd.show==='funil'&&FUNIL.includes(S.form.status))||(fd.show==='retoma'&&S.form.retoma==='Sim')||(fd.show==='perdido'&&S.form.status==='Perdido')).map(fd=>`<div class="field"><label class="field-label">${esc(fd.l)}${fd.show==='funil'?' (padrão: 10)':''}</label>${
+        ${g.fields.filter(fd=>!fd.show||(fd.show==='funil'&&FUNIL.includes(S.form.status))||(fd.show==='retoma'&&S.form.retoma==='Sim')||(fd.show==='perdido'&&S.form.status==='Perdido')||(fd.show==='garantia'&&S.form.gar==='Sim')).map(fd=>`<div class="field"><label class="field-label">${esc(fd.l)}${fd.show==='funil'?' (padrão: 10)':''}</label>${
           fd.t==='vendedores'?renderVendedorSelect(fd.k):
           fd.t==='select'?`<select class="field-input" data-field="${fd.k}"><option value="">—</option>${(fd.o||[]).filter(Boolean).map(o=>`<option value="${esc(o)}" ${S.form[fd.k]===o?'selected':''}>${esc(o)}</option>`).join('')}</select>`:
           fd.t==='textarea'?`<textarea class="field-input" data-field="${fd.k}" rows="3">${esc(S.form[fd.k]||'')}</textarea>`:
@@ -1133,12 +1125,12 @@ function renderEscalaPicker(){
   </div>`;
 }
 function exportCSV(){
-  const cols=['id_cliente','status','type','pvp','model','version','mes1','neg','stock','enc','chas','mat','fin','biz','retoma','retoma_mat','motivo_perda','obs'];
-  const labels=['Cliente','Status','Tipo','PVP','Modelo','Versao','MesRef','DataNeg','Stock','Encomenda','Chassis','Matricula','Financiamento','Bizagi','Retoma','MatRetoma','MotivoPerda','Obs'];
-  const recs=(isAdmin()&&S.viewVendedor)?S.records.filter(r=>r.vendedor_id===S.viewVendedor):(isAdmin()&&S.dashLinha!=='all')?S.records.filter(r=>{const p=S.team.find(t=>t.id===r.vendedor_id);return p&&p.linha===S.dashLinha}):S.records;
+  const cols=['id_cliente','status','motivo_perda','resp','local','neg','mes1','type','pvp','origin','profile','retoma','retoma_mat','biz','fin','model','version','stock','enc','chas','mat','gar','gar_periodo','dmat','col_198','col_298','obs'];
+  const labels=['Cliente','Status','MotivoPerda','Responsavel','CodPostal','DataNegocio','MesRef','Tipo','PVP','Origem','Perfil','Retoma','MatRetoma','Bizagi','Financiamento','Modelo','Versao','Stock','Encomenda','Chassis','Matricula','Garantia','PeriodoGarantia','DataMatricula','198','298','Obs'];
+  const recs=S.records;
   const esc2=v=>{v=(v==null?'':String(v));return /[",\n;]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
   const rows=[labels.join(';')];
-  recs.forEach(r=>rows.push(cols.map(c=>esc2(r[c])).join(';')));
+  rows[0]='Vendedor;'+rows[0];recs.forEach(r=>rows.push(esc2(vendName(r.vendedor_id)||'')+';'+cols.map(c=>esc2(r[c])).join(';')));
   const blob=new Blob(['\ufeff'+rows.join('\n')],{type:'text/csv;charset=utf-8'});
   const url=URL.createObjectURL(blob);const a=document.createElement('a');
   a.href=url;a.download=`baviera_${new Date().toISOString().slice(0,10)}.csv`;a.click();
@@ -1231,7 +1223,7 @@ function renderDashboard(){
     <div class="dash-kpis">
       <div class="dash-kpi"><div class="dash-kpi-l">Fechados</div><div class="dash-kpi-v">${all.fechados}</div><div class="dash-kpi-s">${objTotal?`obj: ${objTotal}`:'sem objetivo'}</div></div>
       <div class="dash-kpi"><div class="dash-kpi-l">Funil ativo</div><div class="dash-kpi-v">${all.funil}</div><div class="dash-kpi-s">Q+M+F</div></div>
-      <div class="dash-kpi"><div class="dash-kpi-l">BEV %</div><div class="dash-kpi-v">${bevPct}%</div><div class="dash-kpi-s">dos fechados</div></div>
+      <div class="dash-kpi"><div class="dash-kpi-l">Perdidos</div><div class="dash-kpi-v" style="color:${all.perdidos?'var(--red)':'var(--text)'}">${all.perdidos}</div><div class="dash-kpi-s">no total</div></div>
       <div class="dash-kpi"><div class="dash-kpi-l">Ticket médio</div><div class="dash-kpi-v">${(()=>{const fech=scopeRecs.filter(r=>(r.status==='Retail'||r.status==='Carteira')&&periodoYMs().includes(negYM(r))&&r.pvp);if(!fech.length)return'—';const m=fech.reduce((s,r)=>s+Number(r.pvp),0)/fech.length;return Math.round(m/1000)+'k'})()}</div><div class="dash-kpi-s">€ por venda</div></div>
     </div>`:''}
     ${S.dashSection==='vendas'?`<div class="dash-sec">Vendas por tipo · ${esc(periodoLabel())}</div>
@@ -1353,7 +1345,7 @@ function bindEvents(){
   const app=document.getElementById('app');
   app.onchange=function(e){
     const el=e.target;
-    if(el.dataset&&el.dataset.field&&(el.dataset.field==='retoma'||el.dataset.field==='status')&&S.screen==='edit'){
+    if(el.dataset&&el.dataset.field&&(el.dataset.field==='retoma'||el.dataset.field==='status'||el.dataset.field==='gar')&&S.screen==='edit'){
       collectFormData();render();return;
     }
   };
