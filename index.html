@@ -369,6 +369,21 @@ html,body{overflow-x:hidden;max-width:100vw}
 .tipo-d{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2)}
 .tipo-d b{margin-left:auto;color:var(--text);font-weight:700}
 .tipo-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+
+.dash-acao{margin:8px 16px 4px}
+.dash-acao-ok{background:var(--green-bg);color:var(--green);border:1px solid #bbf7d0;border-radius:var(--r2);padding:14px 18px;font-size:14px;font-weight:600}
+.dash-acao-head{font-size:13px;font-weight:800;color:var(--red);text-transform:uppercase;letter-spacing:.4px;padding:4px 2px 10px}
+.dash-acao-row{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--red);border-radius:var(--r);box-shadow:var(--elev1);margin-bottom:6px;cursor:pointer}
+.dash-acao-row.open{border-radius:var(--r) var(--r) 0 0;margin-bottom:0}
+.dash-acao-icon{font-size:14px;flex-shrink:0}
+.dash-acao-label{font-weight:600;font-size:14px}
+.dash-acao-per{margin-left:auto;font-size:12px;color:var(--text3)}
+.dash-acao-arrow{color:var(--text3);font-size:12px;flex-shrink:0}
+.dash-acao-detalhe{background:var(--bg);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r);margin-bottom:6px;padding:4px}
+.dash-acao-item{display:flex;align-items:center;gap:10px;padding:10px 14px;font-size:13px;border-radius:var(--r);cursor:pointer}
+.dash-acao-item:active{background:var(--surface)}
+.dash-acao-item b{min-width:0}
+.dash-acao-item span{color:var(--text2)}
 </style>
 </head>
 <body>
@@ -414,7 +429,7 @@ let S={
   token:null,records:[],selected:null,form:{},
   me:null,team:[],objetivos:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
-  pwMsg:'',pwErr:'',pwLoading:false,
+  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{Identificação:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
@@ -1154,6 +1169,35 @@ function renderDashboard(){
       ${['mes','trimestre','ano'].map(p=>`<button class="dperiodo-btn ${S.dashPeriodo===p?'active':''}" data-action="dash-periodo" data-p="${p}">${{mes:'Mês atual',trimestre:'Trimestre',ano:'Ano '+new Date().getFullYear()}[p]}</button>`).join('')}
       <button class="dperiodo-csv" data-action="export-csv">⬇ CSV</button>
     </div>
+    <div class="dash-acao">
+      ${(()=>{
+        // Alertas agregados com atribuicao por vendedor e ids dos registos
+        const blocos=[];
+        Object.entries(alertAttr).forEach(([id,a])=>{
+          // recolher os ids de todos os vendedores para este tipo de alerta
+          const recsAfetados=[];
+          perVend.forEach(v=>{const al=v.st.alerts.find(x=>x.id===id);if(al)al.ids.forEach(rid=>{const r=S.records.find(x=>x.id===rid);if(r)recsAfetados.push(r)})});
+          blocos.push({id,icon:a.icon,label:a.label,total:a.total,per:a.per,recs:recsAfetados});
+        });
+        if(blocos.length===0)return`<div class="dash-acao-ok">✓ Tudo em dia — nenhum registo requer ação.</div>`;
+        return`<div class="dash-acao-head">⚠ Requer ação hoje · ${blocos.reduce((s,b)=>s+b.total,0)} registo(s)</div>
+        ${blocos.map(b=>`
+          <div class="dash-acao-row ${S.dashAlertOpen===b.id?'open':''}" data-action="dash-alert-toggle" data-id="${b.id}">
+            <span class="dash-acao-icon">${b.icon}</span>
+            <span class="dash-acao-label">${esc(b.label)}</span>
+            <span class="dash-acao-per">${esc(b.per.join(' · '))}</span>
+            <span class="dash-acao-arrow">${S.dashAlertOpen===b.id?'▾':'▸'}</span>
+          </div>
+          ${S.dashAlertOpen===b.id?`<div class="dash-acao-detalhe">
+            ${b.recs.map(r=>`<div class="dash-acao-item" data-action="open-record-from-dash" data-id="${r.id}">
+              <b>${esc(r.id_cliente||'(sem cliente)')}</b>
+              <span>${esc(vendName(r.vendedor_id)||'')}</span>
+              <span style="color:var(--text3)">${esc(r.model||'')} ${esc(r.version||'')}</span>
+            </div>`).join('')}
+          </div>`:''}
+        `).join('')}`;
+      })()}
+    </div>
     <div class="dash-realiz">
       <div class="dash-realiz-l">Realização vs Objetivo · ${esc(periodoLabel())}</div>
       <div class="dash-realiz-main">
@@ -1166,7 +1210,7 @@ function renderDashboard(){
       <div class="dash-kpi"><div class="dash-kpi-l">Fechados</div><div class="dash-kpi-v">${all.fechados}</div><div class="dash-kpi-s">${objTotal?`obj: ${objTotal}`:'sem objetivo'}</div></div>
       <div class="dash-kpi"><div class="dash-kpi-l">Funil ativo</div><div class="dash-kpi-v">${all.funil}</div><div class="dash-kpi-s">Q+M+F</div></div>
       <div class="dash-kpi"><div class="dash-kpi-l">BEV %</div><div class="dash-kpi-v">${bevPct}%</div><div class="dash-kpi-s">dos fechados</div></div>
-      <div class="dash-kpi"><div class="dash-kpi-l">Alertas</div><div class="dash-kpi-v" style="color:${alertTotal?'var(--red)':'var(--green)'}">${alertTotal}</div><div class="dash-kpi-s">${alertTotal?'requer a\u00e7\u00e3o':'tudo ok'}</div></div>
+      <div class="dash-kpi"><div class="dash-kpi-l">Ticket médio</div><div class="dash-kpi-v">${(()=>{const fech=scopeRecs.filter(r=>(r.status==='Retail'||r.status==='Carteira')&&periodoYMs().includes(negYM(r))&&r.pvp);if(!fech.length)return'—';const m=fech.reduce((s,r)=>s+Number(r.pvp),0)/fech.length;return Math.round(m/1000)+'k'})()}</div><div class="dash-kpi-s">€ por venda</div></div>
     </div>
     <div class="dash-sec">Vendas por tipo · ${esc(periodoLabel())}</div>
     <div class="dash-box">
@@ -1221,6 +1265,19 @@ function renderDashboard(){
           <button class="dash-obj-save" data-action="save-objetivo" data-id="${v.p.id}">\u2713</button>
         </div>`}).join('')}
     </div>
+    <div class="dash-sec">Equipa</div>
+    <div class="dash-team">
+      ${perVend.map(v=>`<div class="dash-card" data-action="view-vendedor" data-id="${v.p.id}">
+        <div class="dash-card-top"><div class="dash-avatar">${esc((v.p.nome||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase())}</div>
+        <div><div class="dash-card-name">${esc(v.p.nome||'?')}</div><div class="dash-card-sub">${v.upd===null?'sem registos':v.upd===0?'atualizado hoje':`atualizado h\u00e1 ${v.upd}d`}</div></div></div>
+        <div class="dash-card-stats">
+          <div><div class="dash-cs-l">Fechados</div><div class="dash-cs-v">${v.st.fechados}</div></div>
+          <div><div class="dash-cs-l">Funil</div><div class="dash-cs-v">${v.st.funil}</div></div>
+          <div><div class="dash-cs-l">Convers\u00e3o</div><div class="dash-cs-v">${(()=>{const n=v.st.fechTotal+v.st.perdidos;if(n<5)return`<span style="color:var(--text3)" title="M\u00ednimo 5 neg\u00f3cios decididos">\u2014</span>`;const pct=Math.round(100*v.st.fechTotal/n);const col=pct>=70?'var(--green)':pct>=50?'#e8a30c':'var(--red)';return`<span style="color:${col}">${pct}%</span> <span style="font-size:10px;color:var(--text3)">(${n})</span>`})()}</div></div>
+          <div><div class="dash-cs-l">Alertas</div><div class="dash-cs-v" style="color:${v.alertCount?'var(--red)':'var(--green)'}">${v.alertCount}</div></div>
+        </div>
+      </div>`).join('')}
+    </div>
     <div class="dash-sec">NPS / CSI \u00b7 ${esc(ym)} <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3)">(dados da marca)</span></div>
     <div class="dash-box">
       <div class="dash-nps-head">
@@ -1236,23 +1293,7 @@ function renderDashboard(){
           <button class="dash-obj-save" data-action="save-nps" data-id="${p.id}">\u2713</button>
         </div>`}).join('')}
     </div>
-    <div class="dash-sec">Equipa</div>
-    <div class="dash-team">
-      ${perVend.map(v=>`<div class="dash-card" data-action="view-vendedor" data-id="${v.p.id}">
-        <div class="dash-card-top"><div class="dash-avatar">${esc((v.p.nome||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase())}</div>
-        <div><div class="dash-card-name">${esc(v.p.nome||'?')}</div><div class="dash-card-sub">${v.upd===null?'sem registos':v.upd===0?'atualizado hoje':`atualizado h\u00e1 ${v.upd}d`}</div></div></div>
-        <div class="dash-card-stats">
-          <div><div class="dash-cs-l">Fechados</div><div class="dash-cs-v">${v.st.fechados}</div></div>
-          <div><div class="dash-cs-l">Funil</div><div class="dash-cs-v">${v.st.funil}</div></div>
-          <div><div class="dash-cs-l">Convers\u00e3o</div><div class="dash-cs-v">${(()=>{const n=v.st.fechTotal+v.st.perdidos;if(n<5)return`<span style="color:var(--text3)" title="M\u00ednimo 5 neg\u00f3cios decididos">\u2014</span>`;const pct=Math.round(100*v.st.fechTotal/n);const col=pct>=70?'var(--green)':pct>=50?'#e8a30c':'var(--red)';return`<span style="color:${col}">${pct}%</span> <span style="font-size:10px;color:var(--text3)">(${n})</span>`})()}</div></div>
-          <div><div class="dash-cs-l">Alertas</div><div class="dash-cs-v" style="color:${v.alertCount?'var(--red)':'var(--green)'}">${v.alertCount}</div></div>
-        </div>
-      </div>`).join('')}
-    </div>
-    ${Object.keys(alertAttr).length?`<div class="dash-sec">Alertas da equipa</div>
-    <div style="padding:0 16px 24px">
-      ${Object.values(alertAttr).map(a=>`<div class="dash-alert"><span>${a.icon}</span><span class="dash-alert-t">${esc(a.label)} <span style="opacity:.6">(${a.per.join(', ')})</span></span><span class="dash-alert-c">${a.total}</span></div>`).join('')}
-    </div>`:''}
+
     ${(()=>{
       const perdidos=scopeRecs.filter(r=>r.status==='Perdido');
       if(!perdidos.length)return'';
@@ -1316,6 +1357,8 @@ function bindEvents(){
       case'toggle-vsel':setState({vselOpen:!S.vselOpen});break;
       case'dash-linha':setState({dashLinha:el.dataset.linha});break;
       case'dash-periodo':setState({dashPeriodo:el.dataset.p});break;
+      case'dash-alert-toggle':setState({dashAlertOpen:S.dashAlertOpen===el.dataset.id?null:el.dataset.id});break;
+      case'open-record-from-dash':{const r=S.records.find(x=>String(x.id)===String(el.dataset.id));if(r)setState({selected:r,screen:'detail'});break}
       case'export-csv':exportCSV();break;
       case'go-escala':{setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false})).catch(e=>setState({error:e.message,loading:false,screen:'escala'}));break}
       case'escala-open':{if(!isAdmin())break;setState({escalaPicker:{dia:el.dataset.dia,estado:el.dataset.estado}});break}
