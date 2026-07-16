@@ -384,6 +384,22 @@ html,body{overflow-x:hidden;max-width:100vw}
 .dash-acao-item:active{background:var(--surface)}
 .dash-acao-item b{min-width:0}
 .dash-acao-item span{color:var(--text2)}
+
+.dash-nav{width:210px;min-width:210px;background:#1a1a2e;color:#fff;display:flex;flex-direction:column;overflow-y:auto;padding-bottom:20px}
+.dash-nav-logo{display:flex;align-items:center;gap:10px;padding:18px 18px 14px;font-weight:800;font-size:14px;border-bottom:1px solid rgba(255,255,255,.08)}
+.dash-nav-b{width:30px;height:30px;border-radius:8px;background:var(--orange);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0}
+.dash-nav-grp{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.35);font-weight:700;padding:16px 18px 6px}
+.dash-nav-item{padding:10px 18px;font-size:13px;color:rgba(255,255,255,.65);cursor:pointer;border-left:3px solid transparent}
+.dash-nav-item:hover{color:#fff;background:rgba(255,255,255,.04)}
+.dash-nav-item.active{color:#fff;background:rgba(255,255,255,.08);border-left-color:var(--orange);font-weight:600}
+@media(max-width:700px){
+  .dash-nav{width:100%;min-width:0;flex-direction:row;overflow-x:auto;overflow-y:hidden;padding:0;align-items:center;flex-shrink:0}
+  .dash-nav-logo{display:none}
+  .dash-nav-grp{display:none}
+  .dash-nav-item{white-space:nowrap;border-left:none;border-bottom:3px solid transparent;padding:12px 14px}
+  .dash-nav-item.active{border-bottom-color:var(--orange);background:none}
+  .app-layout:has(.dash-nav){flex-direction:column}
+}
 </style>
 </head>
 <body>
@@ -429,7 +445,7 @@ let S={
   token:null,records:[],selected:null,form:{},
   me:null,team:[],objetivos:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
-  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,
+  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{Identificação:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
@@ -1142,12 +1158,24 @@ function renderDashboard(){
   const perVend=team.map(p=>{const recs=recsOf(p.id);const st=statsFor(recs);const obj=S.objetivos.find(o=>o.vendedor_id===p.id);const upd=lastUpdateDays(recs);return{p,st,obj:obj?obj.objetivo_unidades:0,alertCount:st.alerts.reduce((a,x)=>a+x.count,0),upd}});
   const alertAttr={};
   perVend.forEach(v=>{v.st.alerts.forEach(a=>{if(!alertAttr[a.id])alertAttr[a.id]={label:a.label.replace(/^\d+ /,''),icon:a.icon,total:0,per:[]};alertAttr[a.id].total+=a.count;alertAttr[a.id].per.push((v.p.nome||'?').split(' ')[0]+': '+a.count)});});
+  const SECOES=[['resumo','📊','Resumo'],['vendas','🏍️','Vendas'],['equipa','👥','Equipa & NPS'],['perdas','📉','Perdas']];
+  const secLabel={resumo:'Resumo',vendas:'Vendas',equipa:'Equipa & NPS',perdas:'Perdas'}[S.dashSection]||'Dashboard';
   return`
   <div class="app-layout">
+  <div class="dash-nav">
+    <div class="dash-nav-logo"><span class="dash-nav-b">B</span> Baviera Control</div>
+    <div class="dash-nav-grp">Dashboard</div>
+    ${SECOES.map(([id,ic,lb])=>`<div class="dash-nav-item ${S.dashSection===id?'active':''}" data-action="dash-section" data-s="${id}">${ic}&nbsp; ${lb}</div>`).join('')}
+    <div class="dash-nav-grp">Vendedores</div>
+    ${team.map(p=>`<div class="dash-nav-item" data-action="view-vendedor" data-id="${p.id}">👤&nbsp; ${esc((p.nome||'?').split(' ')[0])}</div>`).join('')}
+    <div class="dash-nav-item" data-action="view-vendedor" data-id="">📋&nbsp; Todos os registos</div>
+    <div class="dash-nav-grp">Operação</div>
+    <div class="dash-nav-item" data-action="go-escala">📅&nbsp; Escala</div>
+  </div>
   <div class="main-panel" style="width:100%">
   <div class="hdr">
     <div class="hdr-accent"></div>
-    <div class="hdr-title">Dashboard equipa</div>
+    <div class="hdr-title">${esc(secLabel)}</div>
     <div class="hdr-sub">${esc(ym)}</div>
     <button class="hdr-btn" data-action="refresh" ${S.loading?'disabled':''}>${S.loading?'\u2026':'\u21bb'}</button>
     <button class="hdr-btn" data-action="go-password" title="Alterar password">🔑</button>
@@ -1155,12 +1183,6 @@ function renderDashboard(){
   </div>
   <div class="content">
     ${S.error?`<div class="error" style="margin:12px 16px 0">${esc(S.error)}</div>`:''}
-    <div class="dash-pills">
-      <button class="dash-pill active">Dashboard</button>
-      ${team.map(p=>`<button class="dash-pill" data-action="view-vendedor" data-id="${p.id}">${esc(p.nome||'?')}</button>`).join('')}
-      <button class="dash-pill" data-action="view-vendedor" data-id="">Todos os registos</button>
-      <button class="dash-pill" data-action="go-escala">📅 Escala</button>
-    </div>
     ${linhas.length>1?`<div class="dash-linha-filter">
       <button class="dlf-btn ${S.dashLinha==='all'?'active':''}" data-action="dash-linha" data-linha="all">Todas as linhas</button>
       ${linhas.map(l=>`<button class="dlf-btn ${S.dashLinha===l?'active':''}" data-action="dash-linha" data-linha="${l}">${LINHA_ICONS[l]||''} ${esc(linhaLabel(l))}</button>`).join('')}
@@ -1169,7 +1191,7 @@ function renderDashboard(){
       ${['mes','trimestre','ano'].map(p=>`<button class="dperiodo-btn ${S.dashPeriodo===p?'active':''}" data-action="dash-periodo" data-p="${p}">${{mes:'Mês atual',trimestre:'Trimestre',ano:'Ano '+new Date().getFullYear()}[p]}</button>`).join('')}
       <button class="dperiodo-csv" data-action="export-csv">⬇ CSV</button>
     </div>
-    <div class="dash-acao">
+    ${S.dashSection==='resumo'?`<div class="dash-acao">
       ${(()=>{
         // Alertas agregados com atribuicao por vendedor e ids dos registos
         const blocos=[];
@@ -1211,8 +1233,8 @@ function renderDashboard(){
       <div class="dash-kpi"><div class="dash-kpi-l">Funil ativo</div><div class="dash-kpi-v">${all.funil}</div><div class="dash-kpi-s">Q+M+F</div></div>
       <div class="dash-kpi"><div class="dash-kpi-l">BEV %</div><div class="dash-kpi-v">${bevPct}%</div><div class="dash-kpi-s">dos fechados</div></div>
       <div class="dash-kpi"><div class="dash-kpi-l">Ticket médio</div><div class="dash-kpi-v">${(()=>{const fech=scopeRecs.filter(r=>(r.status==='Retail'||r.status==='Carteira')&&periodoYMs().includes(negYM(r))&&r.pvp);if(!fech.length)return'—';const m=fech.reduce((s,r)=>s+Number(r.pvp),0)/fech.length;return Math.round(m/1000)+'k'})()}</div><div class="dash-kpi-s">€ por venda</div></div>
-    </div>
-    <div class="dash-sec">Vendas por tipo · ${esc(periodoLabel())}</div>
+    </div>`:''}
+    ${S.dashSection==='vendas'?`<div class="dash-sec">Vendas por tipo · ${esc(periodoLabel())}</div>
     <div class="dash-box">
       ${(()=>{
         const yms=periodoYMs();
@@ -1265,7 +1287,8 @@ function renderDashboard(){
           <button class="dash-obj-save" data-action="save-objetivo" data-id="${v.p.id}">\u2713</button>
         </div>`}).join('')}
     </div>
-    <div class="dash-sec">Equipa</div>
+`:''}
+    ${S.dashSection==='equipa'?`<div class="dash-sec">Equipa</div>
     <div class="dash-team">
       ${perVend.map(v=>`<div class="dash-card" data-action="view-vendedor" data-id="${v.p.id}">
         <div class="dash-card-top"><div class="dash-avatar">${esc((v.p.nome||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase())}</div>
@@ -1294,9 +1317,11 @@ function renderDashboard(){
         </div>`}).join('')}
     </div>
 
+`:''}
     ${(()=>{
+      if(S.dashSection!=='perdas')return'';
       const perdidos=scopeRecs.filter(r=>r.status==='Perdido');
-      if(!perdidos.length)return'';
+      if(!perdidos.length)return'<div class="dash-sec">Motivos de perda</div><div class="dash-box" style="margin-bottom:24px;font-size:13px;color:var(--text3)">Sem negócios perdidos no âmbito atual.</div>';
       const cont={};perdidos.forEach(r=>{const m=r.motivo_perda||'Sem motivo';cont[m]=(cont[m]||0)+1});
       const ordenado=Object.entries(cont).sort((a,b)=>b[1]-a[1]);
       const max=ordenado[0][1];
@@ -1357,6 +1382,7 @@ function bindEvents(){
       case'toggle-vsel':setState({vselOpen:!S.vselOpen});break;
       case'dash-linha':setState({dashLinha:el.dataset.linha});break;
       case'dash-periodo':setState({dashPeriodo:el.dataset.p});break;
+      case'dash-section':setState({dashSection:el.dataset.s,dashAlertOpen:null});break;
       case'dash-alert-toggle':setState({dashAlertOpen:S.dashAlertOpen===el.dataset.id?null:el.dataset.id});break;
       case'open-record-from-dash':{const r=S.records.find(x=>String(x.id)===String(el.dataset.id));if(r)setState({selected:r,screen:'detail'});break}
       case'export-csv':exportCSV();break;
