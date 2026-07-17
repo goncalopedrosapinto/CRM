@@ -407,6 +407,14 @@ html,body{overflow-x:hidden;max-width:100vw}
 .dash-perda-detalhe{padding:4px 4px 10px}
 .perda-tr:active{background:var(--bg)}
 .perda-tr td{border-bottom:1px solid var(--border)}
+
+.dash-nav-totais{margin-top:auto;padding:8px 0 4px;border-top:1px solid rgba(255,255,255,.08)}
+.dnt-row{display:flex;align-items:center;gap:8px;padding:7px 18px;font-size:13px;color:rgba(255,255,255,.75)}
+.dnt-row b{margin-left:auto;color:#fff;font-weight:700;font-size:15px}
+.dnt-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0}
+.dnt-total{border-top:1px solid rgba(255,255,255,.08);margin-top:4px;padding-top:10px;font-weight:700;color:#fff}
+.dnt-total b{color:var(--orange);font-size:17px}
+@media(max-width:700px){.dash-nav-totais{display:none}}
 </style>
 </head>
 <body>
@@ -1021,6 +1029,7 @@ function renderEscala(){
     <button class="hdr-btn" data-action="escala-prev">‹</button>
     <div class="hdr-sub" style="min-width:120px;text-align:center">${esc(escalaMesLabel())}</div>
     <button class="hdr-btn" data-action="escala-next">›</button>
+    <button class="hdr-btn" data-action="escala-export" title="Exportar para Excel">⬇ Excel</button>
     <button class="hdr-btn" data-action="go-password" title="Alterar password">🔑</button>
     <button class="hdr-btn" data-action="logout">Sair</button>
   </div>
@@ -1131,6 +1140,55 @@ function renderEscalaPicker(){
     </div>
   </div>`;
 }
+function exportEscala(){
+  const dias=escalaDias();
+  const admin=isAdmin();
+  const linhasDisp=[...new Set(S.team.map(p=>p.linha))].sort();
+  const linhaAtiva=admin?(S.escalaLinha||linhasDisp[0]||'auto'):((S.me&&S.me.linha)||'auto');
+  const vendedores=S.team.filter(p=>p.linha===linhaAtiva);
+  const esc2=v=>{v=(v==null?'':String(v));return /[",\n;]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+  const nl='\r\n';const rows=[];
+
+  rows.push(`Escala ${linhaLabel(linhaAtiva)} - ${escalaMesLabel()}`);
+  rows.push('');
+  rows.push(['Sem','Data','Dia',...ESTADOS_ESCALA].map(esc2).join(';'));
+  dias.forEach(d=>{
+    if(d.dom){rows.push([d.sem,String(d.d).padStart(2,'0'),d.dia,'ENCERRADO'].map(esc2).join(';'));return;}
+    const cells=[d.sem,String(d.d).padStart(2,'0'),d.dia];
+    ESTADOS_ESCALA.forEach(estado=>{
+      const quem=vendedores.filter(v=>{const e=S.escala[d.iso+'|'+v.id];return e&&e.estado===estado})
+        .map(v=>(v.nome||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase());
+      cells.push(quem.join(' '));
+    });
+    rows.push(cells.map(esc2).join(';'));
+  });
+
+  rows.push('');rows.push('');
+  rows.push('RESUMO DO MES');
+  rows.push(['Vendedor','Stand','Apoio','Out','Total','Ferias','Folga','FDS'].map(esc2).join(';'));
+  vendedores.forEach(v=>{
+    let stand=0,apoio=0,out=0,ferias=0,folga=0,fds=0;
+    dias.forEach(d=>{const e=S.escala[d.iso+'|'+v.id];if(!e)return;const s=e.estado;
+      if(s==='Stand')stand++;else if(s==='Apoio')apoio++;
+      else if(s==='Livre'||s==='Ausente'||s==='Formação')out++;
+      else if(s==='Férias')ferias++;else if(s==='Folga')folga++;
+      if((s==='Stand'||s==='Apoio')&&isFimSemana(d.iso))fds++;});
+    rows.push([v.nome,stand,apoio,out,stand+apoio+out,ferias,folga,fds].map(esc2).join(';'));
+  });
+
+  rows.push('');
+  rows.push('FOLGAS POR GOZAR (acumulado)');
+  rows.push(['Vendedor','Ganhas','Gozadas','Por gozar'].map(esc2).join(';'));
+  vendedores.forEach(v=>{
+    const s=S.folgaSaldo[v.id]||{ganhas:0,gozadas:0};
+    rows.push([v.nome,s.ganhas,s.gozadas,s.ganhas-s.gozadas].map(esc2).join(';'));
+  });
+
+  const blob=new Blob(['\ufeff'+rows.join(nl)],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  a.href=url;a.download=`escala_${linhaLabel(linhaAtiva)}_${escalaMesRef()}.csv`;a.click();
+  URL.revokeObjectURL(url);
+}
 function exportCSV(){
   const cols=['id_cliente','status','motivo_perda','resp','local','neg','mes1','type','pvp','origin','profile','retoma','retoma_mat','biz','fin','model','version','stock','enc','chas','mat','gar','gar_periodo','dmat','col_198','col_298','obs'];
   const labels=['Cliente','Status','MotivoPerda','Responsavel','CodPostal','DataNegocio','MesRef','Tipo','PVP','Origem','Perfil','Retoma','MatRetoma','Bizagi','Financiamento','Modelo','Versao','Stock','Encomenda','Chassis','Matricula','Garantia','PeriodoGarantia','DataMatricula','198','298','Obs'];
@@ -1170,6 +1228,17 @@ function renderDashboard(){
     <div class="dash-nav-item" data-action="view-vendedor" data-id="">📋&nbsp; Todos os registos</div>
     <div class="dash-nav-grp">Operação</div>
     <div class="dash-nav-item" data-action="go-escala">📅&nbsp; Escala</div>
+    ${(()=>{
+      const yms=periodoYMs();
+      const retail=scopeRecs.filter(r=>r.status==='Retail'&&yms.includes(negYM(r))).length;
+      const carteira=scopeRecs.filter(r=>r.status==='Carteira'&&yms.includes(negYM(r))).length;
+      return`<div class="dash-nav-totais">
+        <div class="dash-nav-grp">Totais · ${esc(periodoLabel())}</div>
+        <div class="dnt-row"><span class="dnt-dot" style="background:var(--green)"></span>Retail<b>${retail}</b></div>
+        <div class="dnt-row"><span class="dnt-dot" style="background:var(--blue)"></span>Carteira<b>${carteira}</b></div>
+        <div class="dnt-row dnt-total">Total<b>${retail+carteira}</b></div>
+      </div>`;
+    })()}
   </div>
   <div class="main-panel" style="width:100%">
   <div class="hdr">
@@ -1418,6 +1487,7 @@ function bindEvents(){
       case'escala-noop':break;
       case'escala-linha':setState({escalaLinha:el.dataset.linha});break;
       case'escala-toggle':{if(!isAdmin())break;const dia=el.dataset.dia,vid=el.dataset.vid,estado=el.dataset.estado;const e=S.escala[dia+'|'+vid];const novoEstado=(e&&e.estado===estado)?'':estado;saveEscalaCell(dia,vid,novoEstado).then(()=>render()).catch(err=>{alert('Erro: '+err.message);render()});break}
+      case'escala-export':exportEscala();break;
       case'escala-prev':escalaShiftMes(-1);loadEscala().then(()=>render());break;
       case'escala-next':escalaShiftMes(1);loadEscala().then(()=>render());break;
       case'go-dashboard':setState({screen:'dashboard',viewVendedor:null,vselOpen:false,statusFilter:'all',alertFilter:null,alertIds:[],search:'',renderLimit:50});break;
