@@ -533,19 +533,28 @@ function periodoYMs(){
 function periodoLabel(){return{mes:'Mês atual',trimestre:'Trimestre',ano:'Ano '+new Date().getFullYear()}[S.dashPeriodo]||'Mês'}
 // statsFor com periodo: conta fechados pela DATA DE NEGOCIO (neg), nao pelo mes de entrega (mes1)
 function negYM(r){
-  // Mes do FECHO do negocio = mes da Data Negocio (neg), nao o mes de entrega (mes1)
+  // Mes do FECHO do negocio = mes da Data Negocio (neg) — atividade de venda
   if(!r.neg)return null;
   const s=String(r.neg);
   return s.slice(0,4)+'/'+s.slice(5,7);
 }
+function retailYM(r){
+  // Mes do RETAIL/entrega = mes da data 298 (matricula) — para objetivos e realizacao
+  if(!r.col_298)return null;
+  const s=String(r.col_298);
+  return s.slice(0,4)+'/'+s.slice(5,7);
+}
 function statsForPeriodo(recs){
   const yms=periodoYMs();
+  // "Fechados" = atividade de venda, por Data Negocio
   const fech=recs.filter(r=>(r.status==='Retail'||r.status==='Carteira')&&yms.includes(negYM(r)));
+  // "Retails" = motas entregues/matriculadas no periodo, por data 298 (objetivo/realizacao)
+  const retails=recs.filter(r=>r.status==='Retail'&&yms.includes(retailYM(r)));
   const funil=recs.filter(r=>FUNIL.includes(r.status));
   const bev=fech.filter(r=>r.bev).length;
   const fechTotal=recs.filter(r=>r.status==='Retail'||r.status==='Carteira').length;
   const perdidos=recs.filter(r=>r.status==='Perdido').length;
-  return{fechados:fech.length,funil:funil.length,bev,fechTotal,perdidos,alerts:calcAlerts(recs)};
+  return{fechados:fech.length,retails:retails.length,funil:funil.length,bev,fechTotal,perdidos,alerts:calcAlerts(recs)};
 }
 // ---- Escala ----
 function escalaMesRef(){
@@ -1210,7 +1219,7 @@ function renderDashboard(){
   const teamIds=team.map(p=>p.id);
   const scopeRecs=S.dashLinha==='all'?S.records:S.records.filter(r=>teamIds.includes(r.vendedor_id));
   const all=statsForPeriodo(scopeRecs);
-  const realizPct=objTotalCalc(teamIds)?Math.round(100*all.fechados/objTotalCalc(teamIds)):0;
+  const realizPct=objTotalCalc(teamIds)?Math.round(100*all.retails/objTotalCalc(teamIds)):0;
   const objTotal=S.objetivos.filter(o=>teamIds.includes(o.vendedor_id)).reduce((a,o)=>a+(o.objetivo_unidades||0),0);
   const bevPct=all.fechados?Math.round(100*all.bev/all.fechados):0;
   const alertTotal=all.alerts.reduce((a,x)=>a+x.count,0);
@@ -1232,11 +1241,11 @@ function renderDashboard(){
     <div class="dash-nav-item" data-action="go-escala">📅&nbsp; Escala</div>
     ${(()=>{
       const yms=periodoYMs();
-      const retail=scopeRecs.filter(r=>r.status==='Retail'&&yms.includes(negYM(r))).length;
+      const retail=scopeRecs.filter(r=>r.status==='Retail'&&yms.includes(retailYM(r))).length;
       const carteira=scopeRecs.filter(r=>r.status==='Carteira').length;
       return`<div class="dash-nav-totais">
         <div class="dash-nav-grp">Totais</div>
-        <div class="dnt-row"><span class="dnt-dot" style="background:var(--green)"></span>Retail <span class="dnt-sub">· ${esc(periodoLabel())}</span><b>${retail}</b></div>
+        <div class="dnt-row"><span class="dnt-dot" style="background:var(--green)"></span>Retail <span class="dnt-sub">· entregue ${esc(periodoLabel())}</span><b>${retail}</b></div>
         <div class="dnt-row"><span class="dnt-dot" style="background:var(--blue)"></span>Carteira <span class="dnt-sub">· em aberto</span><b>${carteira}</b></div>
       </div>`;
     })()}
@@ -1293,7 +1302,7 @@ function renderDashboard(){
       <div class="dash-realiz-l">Realização vs Objetivo · ${esc(periodoLabel())}</div>
       <div class="dash-realiz-main">
         <span class="dash-realiz-pct" style="color:${realizPct>=100?'var(--green)':realizPct>=60?'#e8a30c':'var(--red)'}">${objTotalCalc(teamIds)?realizPct+'%':'—'}</span>
-        <span class="dash-realiz-frac">${all.fechados} fechados${objTotalCalc(teamIds)?` / ${objTotalCalc(teamIds)} objetivo`:' · sem objetivo definido'}</span>
+        <span class="dash-realiz-frac">${all.retails} retails${objTotalCalc(teamIds)?` / ${objTotalCalc(teamIds)} objetivo`:' · sem objetivo definido'}</span>
       </div>
       <div class="dash-realiz-bar"><div class="dash-realiz-fill" style="width:${Math.min(100,realizPct)}%;background:${realizPct>=100?'var(--green)':realizPct>=60?'#e8a30c':'var(--red)'}"></div></div>
     </div>
@@ -1301,13 +1310,13 @@ function renderDashboard(){
       <div class="dash-kpi"><div class="dash-kpi-l">Fechados</div><div class="dash-kpi-v">${all.fechados}</div><div class="dash-kpi-s">${objTotal?`obj: ${objTotal}`:'sem objetivo'}</div></div>
       <div class="dash-kpi"><div class="dash-kpi-l">Funil ativo</div><div class="dash-kpi-v">${all.funil}</div><div class="dash-kpi-s">Q+M+F</div></div>
       <div class="dash-kpi"><div class="dash-kpi-l">Perdidos</div><div class="dash-kpi-v" style="color:${all.perdidos?'var(--red)':'var(--text)'}">${all.perdidos}</div><div class="dash-kpi-s">no total</div></div>
-      <div class="dash-kpi"><div class="dash-kpi-l">Ticket médio</div><div class="dash-kpi-v">${(()=>{const fech=scopeRecs.filter(r=>(r.status==='Retail'||r.status==='Carteira')&&periodoYMs().includes(negYM(r))&&r.pvp);if(!fech.length)return'—';const m=fech.reduce((s,r)=>s+Number(r.pvp),0)/fech.length;return Math.round(m/1000)+'k'})()}</div><div class="dash-kpi-s">€ por venda</div></div>
+      <div class="dash-kpi"><div class="dash-kpi-l">Ticket médio</div><div class="dash-kpi-v">${(()=>{const fech=scopeRecs.filter(r=>r.status==='Retail'&&periodoYMs().includes(retailYM(r))&&r.pvp);if(!fech.length)return'—';const m=fech.reduce((s,r)=>s+Number(r.pvp),0)/fech.length;return Math.round(m/1000)+'k'})()}</div><div class="dash-kpi-s">€ por venda</div></div>
     </div>`:''}
     ${S.dashSection==='vendas'?`<div class="dash-sec">Vendas por tipo · ${esc(periodoLabel())}</div>
     <div class="dash-box">
       ${(()=>{
         const yms=periodoYMs();
-        const fechados=scopeRecs.filter(r=>(r.status==='Retail'||r.status==='Carteira')&&yms.includes(negYM(r)));
+        const fechados=scopeRecs.filter(r=>r.status==='Retail'&&yms.includes(retailYM(r)));
         const vn=fechados.filter(r=>r.type==='MN').length;
         const vd=fechados.filter(r=>r.type==='MD').length;
         const vu=fechados.filter(r=>r.type==='MU').length;
@@ -1346,12 +1355,12 @@ function renderDashboard(){
     <div class="dash-sec">Objetivo mensal por vendedor</div>
     <div class="dash-box">
       ${perVend.length===0?'<div style="font-size:13px;color:var(--text3)">Sem vendedores. Cria utilizadores no Supabase Auth.</div>':perVend.map(v=>{
-        const pct=v.obj?Math.min(100,Math.round(100*v.st.fechados/v.obj)):0;
+        const pct=v.obj?Math.min(100,Math.round(100*v.st.retails/v.obj)):0;
         const col=pct>=75?'var(--green)':pct>=50?'#e8a30c':'var(--red)';
         return`<div class="dash-obj-row">
           <div class="dash-obj-name">${esc((v.p.nome||'?').split(' ')[0])}</div>
           <div class="dash-obj-track"><div class="dash-obj-fill" style="width:${v.obj?pct:0}%;background:${col}"></div></div>
-          <div class="dash-obj-val" style="color:${v.obj?col:'var(--text3)'}">${v.st.fechados}/${v.obj||'\u2014'}</div>
+          <div class="dash-obj-val" style="color:${v.obj?col:'var(--text3)'}">${v.st.retails}/${v.obj||'\u2014'}</div>
           <input class="dash-obj-input" type="number" min="0" max="99" value="${v.obj||''}" placeholder="obj" data-obj-input="${v.p.id}">
           <button class="dash-obj-save" data-action="save-objetivo" data-id="${v.p.id}">\u2713</button>
         </div>`}).join('')}
@@ -1363,7 +1372,7 @@ function renderDashboard(){
         <div class="dash-card-top"><div class="dash-avatar">${esc((v.p.nome||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase())}</div>
         <div><div class="dash-card-name">${esc(v.p.nome||'?')}</div><div class="dash-card-sub">${v.upd===null?'sem registos':v.upd===0?'atualizado hoje':`atualizado h\u00e1 ${v.upd}d`}</div></div></div>
         <div class="dash-card-stats">
-          <div><div class="dash-cs-l">Fechados</div><div class="dash-cs-v">${v.st.fechados}</div></div>
+          <div><div class="dash-cs-l">Retails</div><div class="dash-cs-v">${v.st.retails}</div></div>
           <div><div class="dash-cs-l">Funil</div><div class="dash-cs-v">${v.st.funil}</div></div>
           <div><div class="dash-cs-l">Convers\u00e3o</div><div class="dash-cs-v">${(()=>{const n=v.st.fechTotal+v.st.perdidos;if(n<5)return`<span style="color:var(--text3)" title="M\u00ednimo 5 neg\u00f3cios decididos">\u2014</span>`;const pct=Math.round(100*v.st.fechTotal/n);const col=pct>=70?'var(--green)':pct>=50?'#e8a30c':'var(--red)';return`<span style="color:${col}">${pct}%</span> <span style="font-size:10px;color:var(--text3)">(${n})</span>`})()}</div></div>
           <div><div class="dash-cs-l">Alertas</div><div class="dash-cs-v" style="color:${v.alertCount?'var(--red)':'var(--green)'}">${v.alertCount}</div></div>
