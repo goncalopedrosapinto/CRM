@@ -415,6 +415,8 @@ html,body{overflow-x:hidden;max-width:100vw}
 .dnt-total{border-top:1px solid rgba(255,255,255,.08);margin-top:4px;padding-top:10px;font-weight:700;color:#fff}
 .dnt-total b{color:var(--orange);font-size:17px}
 @media(max-width:700px){.dash-nav-totais{display:none}}
+
+.dnt-sub{font-size:10px;color:rgba(255,255,255,.4);font-weight:400}
 </style>
 </head>
 <body>
@@ -1231,12 +1233,11 @@ function renderDashboard(){
     ${(()=>{
       const yms=periodoYMs();
       const retail=scopeRecs.filter(r=>r.status==='Retail'&&yms.includes(negYM(r))).length;
-      const carteira=scopeRecs.filter(r=>r.status==='Carteira'&&yms.includes(negYM(r))).length;
+      const carteira=scopeRecs.filter(r=>r.status==='Carteira').length;
       return`<div class="dash-nav-totais">
-        <div class="dash-nav-grp">Totais · ${esc(periodoLabel())}</div>
-        <div class="dnt-row"><span class="dnt-dot" style="background:var(--green)"></span>Retail<b>${retail}</b></div>
-        <div class="dnt-row"><span class="dnt-dot" style="background:var(--blue)"></span>Carteira<b>${carteira}</b></div>
-        <div class="dnt-row dnt-total">Total<b>${retail+carteira}</b></div>
+        <div class="dash-nav-grp">Totais</div>
+        <div class="dnt-row"><span class="dnt-dot" style="background:var(--green)"></span>Retail <span class="dnt-sub">· ${esc(periodoLabel())}</span><b>${retail}</b></div>
+        <div class="dnt-row"><span class="dnt-dot" style="background:var(--blue)"></span>Carteira <span class="dnt-sub">· em aberto</span><b>${carteira}</b></div>
       </div>`;
     })()}
   </div>
