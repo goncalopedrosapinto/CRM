@@ -671,9 +671,13 @@ function filtered(){
   return base.filter(r=>{
   if(S.statusFilter==='Funil'){if(!FUNIL.includes(r.status))return false}
   else if(S.statusFilter==='Fechados'){if(r.status!=='Retail'&&r.status!=='Carteira')return false}
+  else if(S.statusFilter==='Retail:novas'){if(r.status!=='Retail'||!(r.type==='MN'||r.type==='MD'))return false}
+  else if(S.statusFilter==='Retail:usadas'){if(r.status!=='Retail'||r.type!=='MU')return false}
+  else if(S.statusFilter==='Carteira:novas'){if(r.status!=='Carteira'||!(r.type==='MN'||r.type==='MD'))return false}
+  else if(S.statusFilter==='Carteira:usadas'){if(r.status!=='Carteira'||r.type!=='MU')return false}
   else if(S.statusFilter!=='all'&&r.status!==S.statusFilter)return false;
   if(S.monthFilter.length>0&&!S.monthFilter.includes(getMonth(r)))return false;if(S.bevFilter!=='all'&&!r.bev)return false;if(S.xevFilter!=='all'&&!r.xev)return false;if(S.search){const s=S.search.toLowerCase();return['id_cliente','model','version','mat','obs','biz','enc'].some(k=>(r[k]||'').toLowerCase().includes(s))}return true})}
-function availableMonths(){let recs=recsInContext();if(S.statusFilter==='Funil')recs=recs.filter(r=>FUNIL.includes(r.status));else if(S.statusFilter==='Fechados')recs=recs.filter(r=>r.status==='Retail'||r.status==='Carteira');else if(S.statusFilter!=='all')recs=recs.filter(r=>r.status===S.statusFilter);const m=[...new Set(recs.map(r=>getMonth(r)).filter(Boolean))];m.sort((a,b)=>b.localeCompare(a));return m}
+function availableMonths(){let recs=recsInContext();if(S.statusFilter==='Funil')recs=recs.filter(r=>FUNIL.includes(r.status));else if(S.statusFilter==='Fechados')recs=recs.filter(r=>r.status==='Retail'||r.status==='Carteira');else if(S.statusFilter.includes(':')){const[st,tp]=S.statusFilter.split(':');recs=recs.filter(r=>r.status===st&&(tp==='novas'?(r.type==='MN'||r.type==='MD'):r.type==='MU'))}else if(S.statusFilter!=='all')recs=recs.filter(r=>r.status===S.statusFilter);const m=[...new Set(recs.map(r=>getMonth(r)).filter(Boolean))];m.sort((a,b)=>b.localeCompare(a));return m}
 function availableYears(){const ms=availableMonths();const yrs=[...new Set(ms.map(m=>m.split('/')[0]))];yrs.sort((a,b)=>b-a);return yrs}
 function monthsForYear(y){const ms=availableMonths();return ms.filter(m=>m.startsWith(y+'/'))}
 const MONTH_NAMES=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
@@ -815,7 +819,7 @@ function renderViewSelector(){
 function renderList(){
   const f=filtered(),c=statusCounts(),months=availableMonths();
   const af=(S.monthFilter.length>0?1:0)+(S.bevFilter!=='all'?1:0)+(S.xevFilter!=='all'?1:0);
-  const curLabel=S.alertFilter?'⚠️ Alertas':S.statusFilter==='all'?'Todos':S.statusFilter;
+  const subLabels={'Retail:novas':'Retail · Novas','Retail:usadas':'Retail · Usadas','Carteira:novas':'Carteira · Novas','Carteira:usadas':'Carteira · Usadas'};const curLabel=S.alertFilter?'⚠️ Alertas':S.statusFilter==='all'?'Todos':(subLabels[S.statusFilter]||S.statusFilter);
   const alerts=calcAlerts(recsInContext());
   const alertTotal=alerts.reduce((a,x)=>a+x.count,0);
   let alertsHtml='';
@@ -850,8 +854,24 @@ function renderList(){
       <div class="sidebar-item ${S.statusFilter==='Retail'?'active':''}" data-action="sidebar-filter" data-status="Retail">
         <span class="sdot" style="background:var(--green)"></span>Retail<span class="scount">${c['Retail']||0}</span>
       </div>
+      <div style="padding-left:32px">
+        <div class="sidebar-item ${S.statusFilter==='Retail:novas'?'active':''}" data-action="sidebar-filter" data-status="Retail:novas" style="padding:7px 20px;font-size:12px">
+          <span class="sdot" style="background:var(--blue);width:6px;height:6px"></span>Novas (MN+MD)<span class="scount">${S.records.filter(r=>r.status==='Retail'&&(r.type==='MN'||r.type==='MD')).length}</span>
+        </div>
+        <div class="sidebar-item ${S.statusFilter==='Retail:usadas'?'active':''}" data-action="sidebar-filter" data-status="Retail:usadas" style="padding:7px 20px;font-size:12px">
+          <span class="sdot" style="background:var(--amber);width:6px;height:6px"></span>Usadas (MU)<span class="scount">${S.records.filter(r=>r.status==='Retail'&&r.type==='MU').length}</span>
+        </div>
+      </div>
       <div class="sidebar-item ${S.statusFilter==='Carteira'?'active':''}" data-action="sidebar-filter" data-status="Carteira">
         <span class="sdot" style="background:var(--blue)"></span>Carteira<span class="scount">${c['Carteira']||0}</span>
+      </div>
+      <div style="padding-left:32px">
+        <div class="sidebar-item ${S.statusFilter==='Carteira:novas'?'active':''}" data-action="sidebar-filter" data-status="Carteira:novas" style="padding:7px 20px;font-size:12px">
+          <span class="sdot" style="background:var(--blue);width:6px;height:6px"></span>Novas (MN+MD)<span class="scount">${S.records.filter(r=>r.status==='Carteira'&&(r.type==='MN'||r.type==='MD')).length}</span>
+        </div>
+        <div class="sidebar-item ${S.statusFilter==='Carteira:usadas'?'active':''}" data-action="sidebar-filter" data-status="Carteira:usadas" style="padding:7px 20px;font-size:12px">
+          <span class="sdot" style="background:var(--amber);width:6px;height:6px"></span>Usadas (MU)<span class="scount">${S.records.filter(r=>r.status==='Carteira'&&r.type==='MU').length}</span>
+        </div>
       </div>
       <div class="sidebar-item ${S.statusFilter==='Funil'?'active':''}" data-action="sidebar-filter" data-status="Funil">
         <span class="sdot" style="background:var(--red)"></span>Funil<span class="scount">${(c['Quente']||0)+(c['Morno']||0)+(c['Frio']||0)}</span>
