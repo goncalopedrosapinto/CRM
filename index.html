@@ -882,17 +882,17 @@ function renderList(){
     ${isAdmin()?renderViewSelector():''}
     <div class="sidebar-nav">
       <div class="sidebar-item ${S.statusFilter==='all'?'active':''}" data-action="sidebar-filter" data-status="all">
-        <span class="sdot" style="background:var(--orange)"></span>Todos<span class="scount">${S.records.length}</span>
+        <span class="sdot" style="background:var(--orange)"></span>Todos<span class="scount">${recsInContext().length}</span>
       </div>
       <div class="sidebar-item ${S.statusFilter==='Retail'?'active':''}" data-action="sidebar-filter" data-status="Retail">
         <span class="sdot" style="background:var(--green)"></span>Retail<span class="scount">${c['Retail']||0}</span>
       </div>
       <div style="padding-left:32px">
         <div class="sidebar-item ${S.statusFilter==='Retail:novas'?'active':''}" data-action="sidebar-filter" data-status="Retail:novas" style="padding:7px 20px;font-size:12px">
-          <span class="sdot" style="background:var(--blue);width:6px;height:6px"></span>Novas (MN+MD)<span class="scount">${S.records.filter(r=>r.status==='Retail'&&(r.type==='MN'||r.type==='MD')).length}</span>
+          <span class="sdot" style="background:var(--blue);width:6px;height:6px"></span>Novas (MN+MD)<span class="scount">${recsInContext().filter(r=>r.status==='Retail'&&(r.type==='MN'||r.type==='MD')).length}</span>
         </div>
         <div class="sidebar-item ${S.statusFilter==='Retail:usadas'?'active':''}" data-action="sidebar-filter" data-status="Retail:usadas" style="padding:7px 20px;font-size:12px">
-          <span class="sdot" style="background:var(--amber);width:6px;height:6px"></span>Usadas (MU)<span class="scount">${S.records.filter(r=>r.status==='Retail'&&r.type==='MU').length}</span>
+          <span class="sdot" style="background:var(--amber);width:6px;height:6px"></span>Usadas (MU)<span class="scount">${recsInContext().filter(r=>r.status==='Retail'&&r.type==='MU').length}</span>
         </div>
       </div>
       <div class="sidebar-item ${S.statusFilter==='Carteira'?'active':''}" data-action="sidebar-filter" data-status="Carteira">
@@ -900,10 +900,10 @@ function renderList(){
       </div>
       <div style="padding-left:32px">
         <div class="sidebar-item ${S.statusFilter==='Carteira:novas'?'active':''}" data-action="sidebar-filter" data-status="Carteira:novas" style="padding:7px 20px;font-size:12px">
-          <span class="sdot" style="background:var(--blue);width:6px;height:6px"></span>Novas (MN+MD)<span class="scount">${S.records.filter(r=>r.status==='Carteira'&&(r.type==='MN'||r.type==='MD')).length}</span>
+          <span class="sdot" style="background:var(--blue);width:6px;height:6px"></span>Novas (MN+MD)<span class="scount">${recsInContext().filter(r=>r.status==='Carteira'&&(r.type==='MN'||r.type==='MD')).length}</span>
         </div>
         <div class="sidebar-item ${S.statusFilter==='Carteira:usadas'?'active':''}" data-action="sidebar-filter" data-status="Carteira:usadas" style="padding:7px 20px;font-size:12px">
-          <span class="sdot" style="background:var(--amber);width:6px;height:6px"></span>Usadas (MU)<span class="scount">${S.records.filter(r=>r.status==='Carteira'&&r.type==='MU').length}</span>
+          <span class="sdot" style="background:var(--amber);width:6px;height:6px"></span>Usadas (MU)<span class="scount">${recsInContext().filter(r=>r.status==='Carteira'&&r.type==='MU').length}</span>
         </div>
       </div>
       <div class="sidebar-item ${S.statusFilter==='Funil'?'active':''}" data-action="sidebar-filter" data-status="Funil">
