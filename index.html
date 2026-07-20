@@ -775,25 +775,20 @@ function renderLogin(){return`
 </div></div></div>`}
 
 function renderViewSelector(){
-  const motorrad=S.team.filter(p=>p.linha==='motorrad');
-  const auto=S.team.filter(p=>p.linha==='auto');
+  const vendedores=S.team.filter(p=>p.role==='vendedor');
   const cur=S.viewVendedor;
-  const curLabel=cur?esc(vendName(cur)):'Toda a equipa';
-  const opt=(id,label,active,extra)=>`<div class="vsel-opt ${active?'active':''}" data-action="${id==='__dash__'?'go-dashboard':'view-vendedor'}" ${id&&id!=='__dash__'&&id!=='__all__'?`data-id="${id}"`:(id==='__all__'?'data-id=""':'')}>${extra||''}${esc(label)}${active?' <span style=\"margin-left:auto;color:var(--orange)\">&#10003;</span>':''}</div>`;
+  const curLabel=S.screen==='dashboard'?'GPP (Chefe de Vendas)':(cur?esc(vendName(cur)):'—');
   return`<div class="vsel">
     <div class="vsel-head" data-action="toggle-vsel">
       <div>
         <div class="vsel-lbl">Vista</div>
-        <div class="vsel-cur">${S.screen==='dashboard'?'Dashboard equipa':curLabel}</div>
+        <div class="vsel-cur">${curLabel}</div>
       </div>
       <span class="vsel-arrow ${S.vselOpen?'open':''}">&#8250;</span>
     </div>
     ${S.vselOpen?`<div class="vsel-menu">
-      <div class="vsel-opt ${S.screen==='dashboard'?'active':''}" data-action="go-dashboard">&#128202;&nbsp; Dashboard equipa${S.screen==='dashboard'?' <span style="margin-left:auto;color:var(--orange)">&#10003;</span>':''}</div>
-      <div class="vsel-opt ${S.screen!=='dashboard'&&!cur?'active':''}" data-action="view-vendedor" data-id="">&#128101;&nbsp; Todos os registos${S.screen!=='dashboard'&&!cur?' <span style="margin-left:auto;color:var(--orange)">&#10003;</span>':''}</div>
-      <div class="vsel-opt ${S.screen==='escala'?'active':''}" data-action="go-escala">&#128197;&nbsp; Escala${S.screen==='escala'?' <span style="margin-left:auto;color:var(--orange)">&#10003;</span>':''}</div>
-      ${motorrad.length?`<div class="vsel-group">${linhaLabel('motorrad')}</div>${motorrad.map(p=>`<div class="vsel-opt ${cur===p.id?'active':''}" data-action="view-vendedor" data-id="${p.id}">&#127949;&nbsp; ${esc(p.nome||'?')}${cur===p.id?' <span style="margin-left:auto;color:var(--orange)">&#10003;</span>':''}</div>`).join('')}`:''}
-      ${auto.length?`<div class="vsel-group">${linhaLabel('auto')}</div>${auto.map(p=>`<div class="vsel-opt ${cur===p.id?'active':''}" data-action="view-vendedor" data-id="${p.id}">&#128663;&nbsp; ${esc(p.nome||'?')}${cur===p.id?' <span style="margin-left:auto;color:var(--orange)">&#10003;</span>':''}</div>`).join('')}`:''}
+      ${vendedores.map(p=>`<div class="vsel-opt ${S.screen!=='dashboard'&&cur===p.id?'active':''}" data-action="view-vendedor" data-id="${p.id}">&#128100;&nbsp; ${esc(p.nome||'?')}${S.screen!=='dashboard'&&cur===p.id?' <span style="margin-left:auto;color:var(--orange)">&#10003;</span>':''}</div>`).join('')}
+      <div class="vsel-opt ${S.screen==='dashboard'?'active':''}" data-action="go-dashboard">&#128188;&nbsp; GPP (Chefe de Vendas)${S.screen==='dashboard'?' <span style="margin-left:auto;color:var(--orange)">&#10003;</span>':''}</div>
     </div>`:''}
   </div>`}
 
@@ -1220,291 +1215,31 @@ function exportCSV(){
   URL.revokeObjectURL(url);
 }
 function renderDashboard(){
-  const ym=curYM();
-  const linhas=[...new Set(S.team.map(p=>p.linha))].sort();
-  const team=S.dashLinha==='all'?S.team:S.team.filter(p=>p.linha===S.dashLinha);
-  const teamIds=team.map(p=>p.id);
-  const scopeRecs=S.dashLinha==='all'?S.records:S.records.filter(r=>teamIds.includes(r.vendedor_id));
-  const all=statsForPeriodo(scopeRecs);
-  const realizPct=objTotalCalc(teamIds)?Math.round(100*all.retails/objTotalCalc(teamIds)):0;
-  const objTotal=S.objetivos.filter(o=>teamIds.includes(o.vendedor_id)).reduce((a,o)=>a+(o.objetivo_unidades||0),0);
-  const bevPct=all.fechados?Math.round(100*all.bev/all.fechados):0;
-  const alertTotal=all.alerts.reduce((a,x)=>a+x.count,0);
-  const perVend=team.map(p=>{const recs=recsOf(p.id);const st=statsFor(recs);const obj=S.objetivos.find(o=>o.vendedor_id===p.id);const upd=lastUpdateDays(recs);return{p,st,obj:obj?obj.objetivo_unidades:0,alertCount:st.alerts.reduce((a,x)=>a+x.count,0),upd}});
-  const alertAttr={};
-  perVend.forEach(v=>{v.st.alerts.forEach(a=>{if(!alertAttr[a.id])alertAttr[a.id]={label:a.label.replace(/^\d+ /,''),icon:a.icon,total:0,per:[]};alertAttr[a.id].total+=a.count;alertAttr[a.id].per.push((v.p.nome||'?').split(' ')[0]+': '+a.count)});});
-  const SECOES=[['resumo','📊','Resumo'],['vendas','🏍️','Vendas'],['equipa','👥','Equipa & NPS'],['perdas','📉','Perdas']];
-  const secLabel={resumo:'Resumo',vendas:'Vendas',equipa:'Equipa & NPS',perdas:'Perdas'}[S.dashSection]||'Dashboard';
+  // Vista GPP (Chefe de Vendas) — dashboard em construção.
+  // A lógica de dados dos vendedores mantém-se noutras funções (renderList, etc.).
   return`
   <div class="app-layout">
-  <div class="dash-nav">
-    <div class="dash-nav-logo"><span class="dash-nav-b">B</span> Baviera Control</div>
-    <div class="dash-nav-grp">Dashboard</div>
-    ${SECOES.map(([id,ic,lb])=>`<div class="dash-nav-item ${S.dashSection===id?'active':''}" data-action="dash-section" data-s="${id}">${ic}&nbsp; ${lb}</div>`).join('')}
-    <div class="dash-nav-grp">Vendedores</div>
-    ${team.map(p=>`<div class="dash-nav-item" data-action="view-vendedor" data-id="${p.id}">👤&nbsp; ${esc((p.nome||'?').split(' ')[0])}</div>`).join('')}
-    <div class="dash-nav-item" data-action="view-vendedor" data-id="">📋&nbsp; Todos os registos</div>
-    <div class="dash-nav-grp">Operação</div>
-    <div class="dash-nav-item" data-action="go-escala">📅&nbsp; Escala</div>
-    ${(()=>{
-      const yms=periodoYMs();
-      const retail=scopeRecs.filter(r=>r.status==='Retail'&&yms.includes(retailYM(r))).length;
-      const carteira=scopeRecs.filter(r=>r.status==='Carteira'&&yms.includes(r.mes1)).length;
-      const carteiraTotal=scopeRecs.filter(r=>r.status==='Carteira').length;
-      // Meses com carteira (para o seletor): distintos mes1 de negocios em carteira, ordenados
-      const mesesCarteira=[...new Set(scopeRecs.filter(r=>r.status==='Carteira'&&r.mes1).map(r=>r.mes1))].sort();
-      const mesSel=S.carteiraMes||'';
-      const carteiraMesSel=mesSel?scopeRecs.filter(r=>r.status==='Carteira'&&r.mes1===mesSel).length:0;
-      return`<div class="dash-nav-totais">
-        <div class="dash-nav-grp">Totais</div>
-        <div class="dnt-row"><span class="dnt-dot" style="background:var(--green)"></span>Retail <span class="dnt-sub">· entregue ${esc(periodoLabel())}</span><b>${retail}</b></div>
-        <div class="dnt-row"><span class="dnt-dot" style="background:var(--text3)"></span>Carteira <span class="dnt-sub">· total aberto</span><b>${carteiraTotal}</b></div>
-        <div class="dnt-carteira-sel">
-          <div class="dash-nav-grp" style="padding-bottom:4px">Carteira por mês de entrega</div>
-          <select class="dnt-select" data-action="carteira-mes-sel">
-            <option value="">Escolher mês…</option>
-            ${mesesCarteira.map(m=>`<option value="${m}" ${mesSel===m?'selected':''}>${esc(m)}</option>`).join('')}
-          </select>
-          ${mesSel?`<div class="dnt-row" style="margin-top:6px"><span class="dnt-dot" style="background:var(--blue)"></span>${esc(mesSel)}<b>${carteiraMesSel}</b></div>`:''}
-        </div>
-      </div>`;
-    })()}
-  </div>
+  ${renderViewSelector()}
   <div class="main-panel" style="width:100%">
   <div class="hdr">
     <div class="hdr-accent"></div>
-    <div class="hdr-title">${esc(secLabel)}</div>
-    <div class="hdr-sub">${esc(ym)}</div>
-    <button class="hdr-btn" data-action="refresh" ${S.loading?'disabled':''}>${S.loading?'\u2026':'\u21bb'}</button>
+    <div class="hdr-title">Dashboard GPP</div>
+    <button class="hdr-btn" data-action="refresh" ${S.loading?'disabled':''}>${S.loading?'…':'↻'}</button>
     <button class="hdr-btn" data-action="go-password" title="Alterar password">🔑</button>
     <button class="hdr-btn" data-action="logout">Sair</button>
   </div>
   <div class="content">
-    ${S.error?`<div class="error" style="margin:12px 16px 0">${esc(S.error)}</div>`:''}
-    ${linhas.length>1?`<div class="dash-linha-filter">
-      <button class="dlf-btn ${S.dashLinha==='all'?'active':''}" data-action="dash-linha" data-linha="all">Todas as linhas</button>
-      ${linhas.map(l=>`<button class="dlf-btn ${S.dashLinha===l?'active':''}" data-action="dash-linha" data-linha="${l}">${LINHA_ICONS[l]||''} ${esc(linhaLabel(l))}</button>`).join('')}
-    </div>`:''}
-    <div class="dash-periodo">
-      ${['mes','trimestre','ano'].map(p=>`<button class="dperiodo-btn ${S.dashPeriodo===p?'active':''}" data-action="dash-periodo" data-p="${p}">${{mes:'Mês atual',trimestre:'Trimestre',ano:'Ano '+new Date().getFullYear()}[p]}</button>`).join('')}
-      <button class="dperiodo-csv" data-action="export-csv">⬇ CSV</button>
-    </div>
-    ${S.dashSection==='resumo'?`<div class="dash-acao">
-      ${(()=>{
-        // Alertas agregados com atribuicao por vendedor e ids dos registos
-        const blocos=[];
-        Object.entries(alertAttr).forEach(([id,a])=>{
-          // recolher os ids de todos os vendedores para este tipo de alerta
-          const recsAfetados=[];
-          perVend.forEach(v=>{const al=v.st.alerts.find(x=>x.id===id);if(al)al.ids.forEach(rid=>{const r=S.records.find(x=>x.id===rid);if(r)recsAfetados.push(r)})});
-          blocos.push({id,icon:a.icon,label:a.label,total:a.total,per:a.per,recs:recsAfetados});
-        });
-        if(blocos.length===0)return`<div class="dash-acao-ok">✓ Tudo em dia — nenhum registo requer ação.</div>`;
-        return`<div class="dash-acao-head">⚠ Requer ação hoje · ${blocos.reduce((s,b)=>s+b.total,0)} registo(s)</div>
-        ${blocos.map(b=>`
-          <div class="dash-acao-row ${S.dashAlertOpen===b.id?'open':''}" data-action="dash-alert-toggle" data-id="${b.id}">
-            <span class="dash-acao-icon">${b.icon}</span>
-            <span class="dash-acao-label">${esc(b.label)}</span>
-            <span class="dash-acao-per">${esc(b.per.join(' · '))}</span>
-            <span class="dash-acao-arrow">${S.dashAlertOpen===b.id?'▾':'▸'}</span>
-          </div>
-          ${S.dashAlertOpen===b.id?`<div class="dash-acao-detalhe">
-            ${b.recs.map(r=>`<div class="dash-acao-item" data-action="open-record-from-dash" data-id="${r.id}">
-              <b>${esc(r.id_cliente||'(sem cliente)')}</b>
-              <span>${esc(vendName(r.vendedor_id)||'')}</span>
-              <span style="color:var(--text3)">${esc(r.model||'')} ${esc(r.version||'')}</span>
-            </div>`).join('')}
-          </div>`:''}
-        `).join('')}`;
-      })()}
-    </div>
-    <div class="dash-realiz">
-      <div class="dash-realiz-l">Realização vs Objetivo · ${esc(periodoLabel())}</div>
-      <div class="dash-realiz-main">
-        <span class="dash-realiz-pct" style="color:${realizPct>=100?'var(--green)':realizPct>=60?'#e8a30c':'var(--red)'}">${objTotalCalc(teamIds)?realizPct+'%':'—'}</span>
-        <span class="dash-realiz-frac">${all.retails} retails${objTotalCalc(teamIds)?` / ${objTotalCalc(teamIds)} objetivo`:' · sem objetivo definido'}</span>
+    <div class="center-screen" style="min-height:60vh;flex-direction:column;gap:10px">
+      <div style="font-size:40px;opacity:.15">📊</div>
+      <div style="font-size:16px;font-weight:600;color:var(--text2)">Dashboard do Chefe de Vendas</div>
+      <div style="font-size:13px;color:var(--text3);max-width:340px;text-align:center;line-height:1.5">
+        Página em branco, pronta para construir. Diz o que queres ver aqui e vamos montando passo a passo.
       </div>
-      <div class="dash-realiz-bar"><div class="dash-realiz-fill" style="width:${Math.min(100,realizPct)}%;background:${realizPct>=100?'var(--green)':realizPct>=60?'#e8a30c':'var(--red)'}"></div></div>
     </div>
-    <div class="dash-kpis">
-      <div class="dash-kpi"><div class="dash-kpi-l">Fechados</div><div class="dash-kpi-v">${all.fechados}</div><div class="dash-kpi-s">${objTotal?`obj: ${objTotal}`:'sem objetivo'}</div></div>
-      <div class="dash-kpi"><div class="dash-kpi-l">Funil ativo</div><div class="dash-kpi-v">${all.funil}</div><div class="dash-kpi-s">Q+M+F</div></div>
-      <div class="dash-kpi"><div class="dash-kpi-l">Perdidos</div><div class="dash-kpi-v" style="color:${all.perdidos?'var(--red)':'var(--text)'}">${all.perdidos}</div><div class="dash-kpi-s">no total</div></div>
-      <div class="dash-kpi"><div class="dash-kpi-l">Ticket médio</div><div class="dash-kpi-v">${(()=>{const fech=scopeRecs.filter(r=>r.status==='Retail'&&periodoYMs().includes(retailYM(r))&&r.pvp);if(!fech.length)return'—';const m=fech.reduce((s,r)=>s+Number(r.pvp),0)/fech.length;return Math.round(m/1000)+'k'})()}</div><div class="dash-kpi-s">€ por venda</div></div>
-    </div>`:''}
-    ${S.dashSection==='vendas'?`<div class="dash-sec">Vendas por tipo · ${esc(periodoLabel())}</div>
-    <div class="dash-box">
-      ${(()=>{
-        const yms=periodoYMs();
-        const fechados=scopeRecs.filter(r=>r.status==='Retail'&&yms.includes(retailYM(r)));
-        const vn=fechados.filter(r=>r.type==='MN').length;
-        const vd=fechados.filter(r=>r.type==='MD').length;
-        const vu=fechados.filter(r=>r.type==='MU').length;
-        const semTipo=fechados.filter(r=>!r.type||!['MN','MD','MU'].includes(r.type)).length;
-        const total=fechados.length;
-        const novas=vn+vd;const usadas=vu;
-        const pct=n=>total?Math.round(100*n/total):0;
-        if(total===0)return'<div style="font-size:13px;color:var(--text3)">Sem vendas fechadas neste período.</div>';
-        return`
-        <div class="tipo-split">
-          <div class="tipo-big tipo-novas">
-            <div class="tipo-big-n">${novas}</div>
-            <div class="tipo-big-l">Novas (MN+MD)</div>
-            <div class="tipo-big-p">${pct(novas)}%</div>
-          </div>
-          <div class="tipo-vs">vs</div>
-          <div class="tipo-big tipo-usadas">
-            <div class="tipo-big-n">${usadas}</div>
-            <div class="tipo-big-l">Usadas (MU)</div>
-            <div class="tipo-big-p">${pct(usadas)}%</div>
-          </div>
-        </div>
-        <div class="tipo-bar">
-          <div class="tipo-bar-fill" style="width:${pct(novas)}%;background:#2563EB" title="Novas"></div>
-          <div class="tipo-bar-fill" style="width:${pct(usadas)}%;background:#D97706" title="Usadas"></div>
-        </div>
-        <div class="tipo-detalhe">
-          <div class="tipo-d"><span class="tipo-dot" style="background:#2563EB"></span>MN · Novas<b>${vn}</b></div>
-          <div class="tipo-d"><span class="tipo-dot" style="background:#7C3AED"></span>MD · Demonstração<b>${vd}</b></div>
-          <div class="tipo-d"><span class="tipo-dot" style="background:#D97706"></span>MU · Usadas<b>${vu}</b></div>
-          ${semTipo?`<div class="tipo-d"><span class="tipo-dot" style="background:#9ca3af"></span>Sem tipo<b>${semTipo}</b></div>`:''}
-          <div class="tipo-d" style="border-top:1px solid var(--border);padding-top:6px;margin-top:2px"><b style="margin-left:0">Total</b><b>${total}</b></div>
-        </div>`;
-      })()}
-    </div>
-    <div class="dash-sec">Objetivo mensal por vendedor</div>
-    <div class="dash-box">
-      ${perVend.length===0?'<div style="font-size:13px;color:var(--text3)">Sem vendedores. Cria utilizadores no Supabase Auth.</div>':perVend.map(v=>{
-        const pct=v.obj?Math.min(100,Math.round(100*v.st.retails/v.obj)):0;
-        const col=pct>=75?'var(--green)':pct>=50?'#e8a30c':'var(--red)';
-        return`<div class="dash-obj-row">
-          <div class="dash-obj-name">${esc((v.p.nome||'?').split(' ')[0])}</div>
-          <div class="dash-obj-track"><div class="dash-obj-fill" style="width:${v.obj?pct:0}%;background:${col}"></div></div>
-          <div class="dash-obj-val" style="color:${v.obj?col:'var(--text3)'}">${v.st.retails}/${v.obj||'\u2014'}</div>
-          <input class="dash-obj-input" type="number" min="0" max="99" value="${v.obj||''}" placeholder="obj" data-obj-input="${v.p.id}">
-          <button class="dash-obj-save" data-action="save-objetivo" data-id="${v.p.id}">\u2713</button>
-        </div>`}).join('')}
-    </div>
-`:''}
-    ${S.dashSection==='equipa'?`<div class="dash-sec">Equipa</div>
-    <div class="dash-team">
-      ${perVend.map(v=>`<div class="dash-card" data-action="view-vendedor" data-id="${v.p.id}">
-        <div class="dash-card-top"><div class="dash-avatar">${esc((v.p.nome||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase())}</div>
-        <div><div class="dash-card-name">${esc(v.p.nome||'?')}</div><div class="dash-card-sub">${v.upd===null?'sem registos':v.upd===0?'atualizado hoje':`atualizado h\u00e1 ${v.upd}d`}</div></div></div>
-        <div class="dash-card-stats">
-          <div><div class="dash-cs-l">Retails</div><div class="dash-cs-v">${v.st.retails}</div></div>
-          <div><div class="dash-cs-l">Funil</div><div class="dash-cs-v">${v.st.funil}</div></div>
-          <div><div class="dash-cs-l">Convers\u00e3o</div><div class="dash-cs-v">${(()=>{const n=v.st.fechTotal+v.st.perdidos;if(n<5)return`<span style="color:var(--text3)" title="M\u00ednimo 5 neg\u00f3cios decididos">\u2014</span>`;const pct=Math.round(100*v.st.fechTotal/n);const col=pct>=70?'var(--green)':pct>=50?'#e8a30c':'var(--red)';return`<span style="color:${col}">${pct}%</span> <span style="font-size:10px;color:var(--text3)">(${n})</span>`})()}</div></div>
-          <div><div class="dash-cs-l">Alertas</div><div class="dash-cs-v" style="color:${v.alertCount?'var(--red)':'var(--green)'}">${v.alertCount}</div></div>
-        </div>
-      </div>`).join('')}
-    </div>
-    <div class="dash-sec">NPS / CSI \u00b7 ${esc(ym)} <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3)">(dados da marca)</span></div>
-    <div class="dash-box">
-      <div class="dash-nps-head">
-        <div>Vendedor</div><div>Inqu\u00e9ritos</div><div>NPS</div><div>CSI</div><div></div>
-      </div>
-      ${team.length===0?'<div style="font-size:13px;color:var(--text3)">Sem vendedores nesta linha.</div>':team.map(p=>{
-        const n=npsOf(p.id);
-        return`<div class="dash-nps-row">
-          <div class="dash-nps-name">${esc((p.nome||'?').split(' ').slice(0,2).join(' '))}</div>
-          <input class="dash-nps-input" type="number" min="0" value="${n&&n.num_inqueritos!=null?n.num_inqueritos:''}" placeholder="0" data-nps-inq="${p.id}">
-          <input class="dash-nps-input" type="number" step="0.1" value="${n&&n.nps!=null?n.nps:''}" placeholder="\u2014" data-nps-nps="${p.id}">
-          <input class="dash-nps-input" type="number" step="0.1" value="${n&&n.csi!=null?n.csi:''}" placeholder="\u2014" data-nps-csi="${p.id}">
-          <button class="dash-obj-save" data-action="save-nps" data-id="${p.id}">\u2713</button>
-        </div>`}).join('')}
-    </div>
-    <div class="dash-sec">Extras por vendedor <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3)">(% dos negócios fechados)</span></div>
-    <div class="dash-box" style="margin-bottom:8px">
-      ${(()=>{
-        const EXTRAS=[['flag_ccgo','CC Go'],['flag_rgpd','RGPD'],['flag_seguro','Seguro Nosso'],['flag_lifestyle','Lifestyle']];
-        return`<table class="esc-table" style="width:100%">
-          <thead><tr>
-            <th style="text-align:left;padding:8px 10px">Vendedor</th>
-            <th style="padding:8px 6px">Fechados</th>
-            ${EXTRAS.map(([,l])=>`<th style="padding:8px 6px">${esc(l)}</th>`).join('')}
-          </tr></thead>
-          <tbody>
-            ${team.map(p=>{
-              const fechados=recsOf(p.id).filter(r=>r.status==='Retail'||r.status==='Carteira');
-              const tot=fechados.length;
-              const cell=(fk)=>{
-                if(!tot)return`<td style="padding:9px 6px;text-align:center;color:var(--text4)">—</td>`;
-                const n=fechados.filter(r=>r[fk]).length;
-                const pct=Math.round(100*n/tot);
-                const col=pct>=70?'var(--green)':pct>=40?'#e8a30c':'var(--red)';
-                return`<td style="padding:9px 6px;text-align:center"><b style="color:${col}">${pct}%</b><div style="font-size:10px;color:var(--text3)">${n}/${tot}</div></td>`;
-              };
-              return`<tr>
-                <td style="padding:9px 10px;font-weight:600">${esc(p.nome||'?')}</td>
-                <td style="padding:9px 6px;text-align:center;font-weight:700">${tot}</td>
-                ${EXTRAS.map(([fk])=>cell(fk)).join('')}
-              </tr>`;
-            }).join('')}
-            ${(()=>{
-              // Linha TOTAL da equipa
-              const all=team.flatMap(p=>recsOf(p.id)).filter(r=>r.status==='Retail'||r.status==='Carteira');
-              const tot=all.length;
-              const cell=(fk)=>{if(!tot)return'<td style="padding:9px 6px;text-align:center;color:var(--text4)">—</td>';const n=all.filter(r=>r[fk]).length;const pct=Math.round(100*n/tot);return`<td style="padding:9px 6px;text-align:center;font-weight:700">${pct}%<div style="font-size:10px;color:var(--text3);font-weight:400">${n}/${tot}</div></td>`};
-              return`<tr style="border-top:2px solid var(--border2)">
-                <td style="padding:9px 10px;font-weight:800">Equipa</td>
-                <td style="padding:9px 6px;text-align:center;font-weight:800">${tot}</td>
-                ${EXTRAS.map(([fk])=>cell(fk)).join('')}
-              </tr>`;
-            })()}
-          </tbody>
-        </table>`;
-      })()}
-    </div>
-
-`:''}
-    ${(()=>{
-      if(S.dashSection!=='perdas')return'';
-      const perdidos=scopeRecs.filter(r=>r.status==='Perdido');
-      if(!perdidos.length)return'<div class="dash-sec">Motivos de perda</div><div class="dash-box" style="margin-bottom:24px;font-size:13px;color:var(--text3)">Sem negócios perdidos no âmbito atual.</div>';
-      const cont={};perdidos.forEach(r=>{const m=r.motivo_perda||'Sem motivo';cont[m]=(cont[m]||0)+1});
-      const ordenado=Object.entries(cont).sort((a,b)=>b[1]-a[1]);
-      const max=ordenado[0][1];
-      return`<div class="dash-sec">Motivos de perda \u00b7 ${perdidos.length} negócio${perdidos.length>1?'s':''}</div>
-      <div class="dash-box" style="margin-bottom:16px">
-        ${ordenado.map(([m,n])=>`<div class="dash-perda-row dash-perda-click ${S.dashAlertOpen==='perda:'+m?'open':''}" data-action="dash-alert-toggle" data-id="perda:${esc(m)}">
-          <div class="dash-perda-label">${esc(m)}</div>
-          <div class="dash-perda-track"><div class="dash-perda-fill" style="width:${Math.round(100*n/max)}%"></div></div>
-          <div class="dash-perda-val">${n}</div>
-          <span class="dash-perda-arrow">${S.dashAlertOpen==='perda:'+m?'▾':'▸'}</span>
-        </div>
-        ${S.dashAlertOpen==='perda:'+m?`<div class="dash-perda-detalhe">
-          ${perdidos.filter(r=>(r.motivo_perda||'Sem motivo')===m).map(r=>`<div class="dash-acao-item" data-action="open-record-from-dash" data-id="${r.id}">
-            <b>${esc(r.id_cliente||'(sem cliente)')}</b>
-            <span>${esc(r.model||'')} ${esc(r.version||'')}</span>
-            <span style="color:var(--text3)">${esc(vendName(r.vendedor_id)||'')}</span>
-          </div>`).join('')}
-        </div>`:''}`).join('')}
-      </div>
-      <div class="dash-sec">Todos os negócios perdidos</div>
-      <div class="dash-box" style="margin-bottom:24px">
-        <table class="esc-table" style="width:100%">
-          <thead><tr>
-            <th style="text-align:left;padding:8px 10px">Cliente</th>
-            <th style="text-align:left;padding:8px 10px">Viatura</th>
-            <th style="text-align:left;padding:8px 10px">Motivo</th>
-            <th style="text-align:left;padding:8px 10px">Vendedor</th>
-          </tr></thead>
-          <tbody>
-            ${perdidos.map(r=>`<tr class="perda-tr" data-action="open-record-from-dash" data-id="${r.id}" style="cursor:pointer">
-              <td style="padding:9px 10px;font-weight:600">${esc(r.id_cliente||'—')}</td>
-              <td style="padding:9px 10px">${esc(r.model||'')} ${esc(r.version||'')}</td>
-              <td style="padding:9px 10px">${esc(r.motivo_perda||'—')}</td>
-              <td style="padding:9px 10px;color:var(--text2)">${esc(vendName(r.vendedor_id)||'')}</td>
-            </tr>`).join('')}
-          </tbody>
-        </table>
-      </div>`;
-    })()}
   </div>
   </div>
-  </div>`}
-
+  </div>`;
+}
 function render(){
   const app=document.getElementById('app');
   const ce=app.querySelector('.content'),st=ce?ce.scrollTop:0,ps=app.dataset.screen||'';
