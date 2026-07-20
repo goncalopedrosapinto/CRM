@@ -417,6 +417,10 @@ html,body{overflow-x:hidden;max-width:100vw}
 @media(max-width:700px){.dash-nav-totais{display:none}}
 
 .dnt-sub{font-size:10px;color:rgba(255,255,255,.4);font-weight:400}
+
+.dnt-carteira-sel{padding:10px 18px 4px;border-top:1px solid rgba(255,255,255,.08);margin-top:6px}
+.dnt-select{width:100%;padding:7px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#fff;font-size:12px;cursor:pointer}
+.dnt-select option{background:#1a1a2e;color:#fff}
 </style>
 </head>
 <body>
@@ -437,7 +441,7 @@ const I={
 const STATUSES=['Retail','Carteira','Quente','Morno','Frio','Matricula','Perdido'];
 const SDOT={Retail:'var(--green)',Carteira:'var(--blue)',Quente:'var(--red)',Morno:'var(--amber)',Frio:'var(--slate)',Matricula:'var(--purple)',Perdido:'#6b7280'};
 const MOTIVOS_PERDA=['Preço','Concorrência','Prazo de entrega','Financiamento','Retoma','Desistência','Adiado','Outro'];
-const TYPES=['MN','MD','MU'],ORIGINS=['','Cliente','Recom.','Stand','Prosp','Lead'],PROFILES=['','Particular','Empresa','Protocolo','Estado'],GAR_PERIODOS=['1 ano','2 anos','3 anos','4 anos','5 anos'],FINS=['','PP','Fext','Fint'];
+const TYPES=['MN','MD','MU'],ORIGINS=['','Cliente','Recom.','Stand','Evento','Lead'],PROFILES=['','Particular','Empresa','Protocolo','Estado'],GAR_PERIODOS=['1 ano','2 anos','3 anos','4 anos','5 anos'],FINS=['','PP','Fext','Fint'];
 const FIELD_GROUPS=[
   {g:'Identificação',fields:[{k:'status',l:'Status',t:'select',o:STATUSES},{k:'motivo_perda',l:'Motivo da Perda',t:'select',o:MOTIVOS_PERDA,show:'perdido'},{k:'alert_days',l:'Alertar após (dias)',t:'number',show:'funil'},{k:'id_cliente',l:'Cliente',t:'text'},{k:'local',l:'Código Postal',t:'text'}]},
   {g:'Negócio',fields:[{k:'neg',l:'Data Negócio',t:'date'},{k:'mes1',l:'Mês Referência',t:'month'},{k:'type',l:'Tipo',t:'select',o:TYPES},{k:'pvp',l:'PVP (€)',t:'number'},{k:'origin',l:'Origem',t:'select',o:ORIGINS},{k:'profile',l:'Perfil',t:'select',o:PROFILES},{k:'retoma',l:'Retoma?',t:'select',o:['Não','Sim']},{k:'retoma_mat',l:'Matrícula da Retoma',t:'text',show:'retoma'},{k:'biz',l:'Bizagi',t:'text'},{k:'fin',l:'Financiamento',t:'select',o:FINS}]},
@@ -462,7 +466,7 @@ let S={
   token:null,records:[],selected:null,form:{},
   me:null,team:[],objetivos:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
-  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',
+  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{Identificação:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
@@ -699,6 +703,7 @@ function renderCard(r){return`
         ${r.enc?`<div class="card-row">${I.hash}<span>Enc: <b>${esc(r.enc)}</b></span></div>`:''}
         ${r.biz?`<div class="card-row">${I.hash}<span>Biz: <b>${esc(r.biz)}</b></span></div>`:''}
         <div class="card-row">${I.cal}<span>${fmtDate(r.neg)}</span>${r.mes1?`<span style="opacity:.5">· ${esc(r.mes1)}</span>`:''}</div>
+        <div class="card-row">${I.user}<span>${esc(vendName(r.vendedor_id)||'—')}</span></div>
         ${r.pvp?`<div class="card-row">${I.money}<span><b>${Number(r.pvp).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:0})} €</b></span></div>`:''}
         ${r.fin?`<div class="card-row">${I.money}<span>${esc(r.fin)}</span></div>`:''}
         ${r.col_198?`<div class="card-row">${I.note}<span>198: ${esc(r.col_198)}</span></div>`:''}
@@ -942,6 +947,7 @@ function renderDetail(){
   <div class="content">
     <div class="detail-badges">
       <span class="card-status s-${esc(r.status)}" style="font-size:11px;padding:3px 10px">${esc(r.status)}</span>
+      <span class="tag tag-sm" style="background:var(--bg3);color:var(--text)">👤 ${esc(vendName(r.vendedor_id)||'—')}</span>
       ${r.gar?`<span class="tag tag-gar">${esc(r.gar)}</span>`:''}
       ${r.type?`<span class="tag tag-sm">${esc(r.type)}</span>`:''}
       ${r.fin?`<span class="tag tag-sm">${esc(r.fin)}</span>`:''}
@@ -1243,11 +1249,24 @@ function renderDashboard(){
     ${(()=>{
       const yms=periodoYMs();
       const retail=scopeRecs.filter(r=>r.status==='Retail'&&yms.includes(retailYM(r))).length;
-      const carteira=scopeRecs.filter(r=>r.status==='Carteira').length;
+      const carteira=scopeRecs.filter(r=>r.status==='Carteira'&&yms.includes(r.mes1)).length;
+      const carteiraTotal=scopeRecs.filter(r=>r.status==='Carteira').length;
+      // Meses com carteira (para o seletor): distintos mes1 de negocios em carteira, ordenados
+      const mesesCarteira=[...new Set(scopeRecs.filter(r=>r.status==='Carteira'&&r.mes1).map(r=>r.mes1))].sort();
+      const mesSel=S.carteiraMes||'';
+      const carteiraMesSel=mesSel?scopeRecs.filter(r=>r.status==='Carteira'&&r.mes1===mesSel).length:0;
       return`<div class="dash-nav-totais">
         <div class="dash-nav-grp">Totais</div>
         <div class="dnt-row"><span class="dnt-dot" style="background:var(--green)"></span>Retail <span class="dnt-sub">· entregue ${esc(periodoLabel())}</span><b>${retail}</b></div>
-        <div class="dnt-row"><span class="dnt-dot" style="background:var(--blue)"></span>Carteira <span class="dnt-sub">· em aberto</span><b>${carteira}</b></div>
+        <div class="dnt-row"><span class="dnt-dot" style="background:var(--text3)"></span>Carteira <span class="dnt-sub">· total aberto</span><b>${carteiraTotal}</b></div>
+        <div class="dnt-carteira-sel">
+          <div class="dash-nav-grp" style="padding-bottom:4px">Carteira por mês de entrega</div>
+          <select class="dnt-select" data-action="carteira-mes-sel">
+            <option value="">Escolher mês…</option>
+            ${mesesCarteira.map(m=>`<option value="${m}" ${mesSel===m?'selected':''}>${esc(m)}</option>`).join('')}
+          </select>
+          ${mesSel?`<div class="dnt-row" style="margin-top:6px"><span class="dnt-dot" style="background:var(--blue)"></span>${esc(mesSel)}<b>${carteiraMesSel}</b></div>`:''}
+        </div>
       </div>`;
     })()}
   </div>
@@ -1395,6 +1414,48 @@ function renderDashboard(){
           <button class="dash-obj-save" data-action="save-nps" data-id="${p.id}">\u2713</button>
         </div>`}).join('')}
     </div>
+    <div class="dash-sec">Extras por vendedor <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3)">(% dos negócios fechados)</span></div>
+    <div class="dash-box" style="margin-bottom:8px">
+      ${(()=>{
+        const EXTRAS=[['flag_ccgo','CC Go'],['flag_rgpd','RGPD'],['flag_seguro','Seguro Nosso'],['flag_lifestyle','Lifestyle']];
+        return`<table class="esc-table" style="width:100%">
+          <thead><tr>
+            <th style="text-align:left;padding:8px 10px">Vendedor</th>
+            <th style="padding:8px 6px">Fechados</th>
+            ${EXTRAS.map(([,l])=>`<th style="padding:8px 6px">${esc(l)}</th>`).join('')}
+          </tr></thead>
+          <tbody>
+            ${team.map(p=>{
+              const fechados=recsOf(p.id).filter(r=>r.status==='Retail'||r.status==='Carteira');
+              const tot=fechados.length;
+              const cell=(fk)=>{
+                if(!tot)return`<td style="padding:9px 6px;text-align:center;color:var(--text4)">—</td>`;
+                const n=fechados.filter(r=>r[fk]).length;
+                const pct=Math.round(100*n/tot);
+                const col=pct>=70?'var(--green)':pct>=40?'#e8a30c':'var(--red)';
+                return`<td style="padding:9px 6px;text-align:center"><b style="color:${col}">${pct}%</b><div style="font-size:10px;color:var(--text3)">${n}/${tot}</div></td>`;
+              };
+              return`<tr>
+                <td style="padding:9px 10px;font-weight:600">${esc(p.nome||'?')}</td>
+                <td style="padding:9px 6px;text-align:center;font-weight:700">${tot}</td>
+                ${EXTRAS.map(([fk])=>cell(fk)).join('')}
+              </tr>`;
+            }).join('')}
+            ${(()=>{
+              // Linha TOTAL da equipa
+              const all=team.flatMap(p=>recsOf(p.id)).filter(r=>r.status==='Retail'||r.status==='Carteira');
+              const tot=all.length;
+              const cell=(fk)=>{if(!tot)return'<td style="padding:9px 6px;text-align:center;color:var(--text4)">—</td>';const n=all.filter(r=>r[fk]).length;const pct=Math.round(100*n/tot);return`<td style="padding:9px 6px;text-align:center;font-weight:700">${pct}%<div style="font-size:10px;color:var(--text3);font-weight:400">${n}/${tot}</div></td>`};
+              return`<tr style="border-top:2px solid var(--border2)">
+                <td style="padding:9px 10px;font-weight:800">Equipa</td>
+                <td style="padding:9px 6px;text-align:center;font-weight:800">${tot}</td>
+                ${EXTRAS.map(([fk])=>cell(fk)).join('')}
+              </tr>`;
+            })()}
+          </tbody>
+        </table>`;
+      })()}
+    </div>
 
 `:''}
     ${(()=>{
@@ -1459,6 +1520,7 @@ function bindEvents(){
   const app=document.getElementById('app');
   app.onchange=function(e){
     const el=e.target;
+    if(el.dataset&&el.dataset.action==='carteira-mes-sel'){setState({carteiraMes:el.value});return;}
     if(el.dataset&&el.dataset.field&&(el.dataset.field==='retoma'||el.dataset.field==='status'||el.dataset.field==='gar')&&S.screen==='edit'){
       collectFormData();render();return;
     }
