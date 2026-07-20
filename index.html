@@ -1352,6 +1352,44 @@ function renderDashboard(){
       </tbody></table></div>`;
   }
 
+  // ---- Gráfico de carteira por mês de entrega (novas vs usadas) ----
+  function carteiraChart(){
+    const cart=recs.filter(r=>r.status==='Carteira'&&r.mes1);
+    // Agrupar por mes1
+    const porMes={};
+    cart.forEach(r=>{
+      if(!porMes[r.mes1])porMes[r.mes1]={novas:0,usadas:0};
+      if(isUsadas(r))porMes[r.mes1].usadas++;else porMes[r.mes1].novas++;
+    });
+    const mesesG=Object.keys(porMes).sort();
+    if(mesesG.length===0)return'<div class="gpp-empty" style="margin-top:12px">Sem carteira para prever.</div>';
+    const totalCart=cart.length;
+    const maxV=Math.max(...mesesG.map(m=>porMes[m].novas+porMes[m].usadas));
+    // Dimensões
+    const W=Math.max(320, mesesG.length*64+40), H=240, padB=44, padT=24, padL=28;
+    const chartH=H-padB-padT, bw=34, gap=(W-padL-mesesG.length*bw)/(mesesG.length+1);
+    const y=v=>padT+chartH-(v/maxV)*chartH;
+    let bars='';
+    mesesG.forEach((m,i)=>{
+      const x=padL+gap+i*(bw+gap);
+      const d=porMes[m];const tot=d.novas+d.usadas;
+      const hNov=(d.novas/maxV)*chartH, hUsa=(d.usadas/maxV)*chartH;
+      const yNov=padT+chartH-hNov, yUsa=yNov-hUsa;
+      if(d.novas)bars+=`<rect x="${x}" y="${yNov}" width="${bw}" height="${hNov}" fill="#2563EB" rx="2"/>${d.novas>0?`<text x="${x+bw/2}" y="${yNov+hNov/2+4}" text-anchor="middle" font-size="10" fill="#fff" font-weight="700">${d.novas}</text>`:''}`;
+      if(d.usadas)bars+=`<rect x="${x}" y="${yUsa}" width="${bw}" height="${hUsa}" fill="#D97706" rx="2"/><text x="${x+bw/2}" y="${yUsa+hUsa/2+4}" text-anchor="middle" font-size="10" fill="#fff" font-weight="700">${d.usadas}</text>`;
+      bars+=`<text x="${x+bw/2}" y="${padT+chartH+16}" text-anchor="middle" font-size="9" fill="var(--text3)">${esc(m.replace('/','/'))}</text>`;
+      bars+=`<text x="${x+bw/2}" y="${y(tot)-6}" text-anchor="middle" font-size="11" fill="var(--text)" font-weight="800">${tot}</text>`;
+    });
+    return`<div class="gpp-tot-head">Previsão de entregas · carteira por mês · <b>${totalCart}</b> motas</div>
+    <div class="gpp-card" style="padding:12px 8px">
+      <div style="overflow-x:auto"><svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:${W}px;max-width:100%;height:auto">${bars}</svg></div>
+      <div style="display:flex;gap:16px;justify-content:center;padding:8px 0 2px;font-size:12px">
+        <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;background:#2563EB;border-radius:2px"></span>Novas (MN+MD)</span>
+        <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;background:#D97706;border-radius:2px"></span>Usadas (MU)</span>
+      </div>
+    </div>`;
+  }
+
   // ---- Lista de negócios com tabela (Carteira / Retail) ----
   function listaEstado(status,dataFn){
     const arr=recs.filter(r=>r.status===status&&dataFn(r)===mesSel);
@@ -1421,7 +1459,7 @@ function renderDashboard(){
   let body;
   if(sec==='home')body=mesBar+(recs.filter(r=>r.status==='Retail'&&!r.col_298).length?`${(()=>{const semData=recs.filter(r=>r.status==='Retail'&&!r.col_298);return`<div class="gpp-alerta ${S.dashAlertOpen==='sem298'?'open':''}"><div class="gpp-alerta-head" data-action="dash-alert-toggle" data-id="sem298"><span>⚠️</span><span><b>${semData.length}</b> mota${semData.length>1?'s':''} em Retail sem data 298 — não contam nos totais</span><span class="gpp-alerta-arrow">${S.dashAlertOpen==='sem298'?'▾':'▸'}</span></div>${S.dashAlertOpen==='sem298'?`<div class="gpp-alerta-lista">${semData.map(r=>`<div class="gpp-alerta-item" data-action="open-record-from-dash" data-id="${r.id}"><b>${esc(r.id_cliente||'(sem cliente)')}</b><span>${esc(r.model||'')} ${esc(r.version||'')}</span><span class="gpp-alerta-tipo">${esc(r.type||'?')}</span><span style="color:var(--text3)">${esc(vendName(r.vendedor_id)||'')}</span></div>`).join('')}</div>`:''}</div>`})()}`:'')+tabelaResumo();
   else if(sec==='funil')body=funilView();
-  else if(sec==='carteira')body=listaEstado('Carteira',r=>r.mes1);
+  else if(sec==='carteira')body=carteiraChart()+listaEstado('Carteira',r=>r.mes1);
   else if(sec==='retail')body=listaEstado('Retail',retailYM);
   else if(sec==='pendentes')body=pendentesView();
   else if(sec==='exportar')body=exportarView();
