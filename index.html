@@ -398,7 +398,7 @@ html,body{overflow-x:hidden;max-width:100vw}
   .dash-nav-grp{display:none}
   .dash-nav-item{white-space:nowrap;border-left:none;border-bottom:3px solid transparent;padding:12px 14px}
   .dash-nav-item.active{border-bottom-color:var(--orange);background:none}
-  .app-layout:has(.dash-nav){flex-direction:column}
+  .app-layout:has(.gpp-nav){flex-direction:column}
 }
 
 .dash-perda-click{cursor:pointer;padding:8px 4px;border-radius:var(--r)}
@@ -450,6 +450,29 @@ html,body{overflow-x:hidden;max-width:100vw}
 .gpp-alerta-item{display:flex;align-items:center;gap:10px;padding:10px 14px;font-size:13px;border-radius:var(--r);cursor:pointer}
 .gpp-alerta-item:active{background:#fef3c7}
 .gpp-alerta-tipo{font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;background:#fde68a;color:#92400e}
+
+.gpp-nav{width:190px;min-width:190px;background:#1a1a2e;color:#fff;display:flex;flex-direction:column;overflow-y:auto;padding-bottom:20px}
+.gpp-nav-logo{display:flex;align-items:center;gap:10px;padding:18px 16px 14px;font-weight:800;font-size:14px;border-bottom:1px solid rgba(255,255,255,.08)}
+.gpp-nav-b{width:28px;height:28px;border-radius:8px;background:var(--orange);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0}
+.gpp-nav-item{padding:11px 16px;font-size:13px;color:rgba(255,255,255,.65);cursor:pointer;border-left:3px solid transparent}
+.gpp-nav-item:hover{color:#fff;background:rgba(255,255,255,.04)}
+.gpp-nav-item.active{color:#fff;background:rgba(255,255,255,.08);border-left-color:var(--orange);font-weight:600}
+.gpp-tot-head{padding:16px 16px 4px;font-size:14px;font-weight:700;color:var(--text)}
+.gpp-sub-h{margin:14px 16px 6px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--text2);background:var(--bg);border-radius:0 var(--r) var(--r) 0}
+.gpp-ltable{width:100%;border-collapse:collapse;font-size:13px}
+.gpp-ltable th{text-align:left;padding:8px 12px;background:var(--bg);color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.4px;font-weight:700;border-bottom:1px solid var(--border)}
+.gpp-ltable td{padding:10px 12px;border-bottom:1px solid var(--border)}
+.gpp-lrow{cursor:pointer}.gpp-lrow:active{background:var(--bg)}
+.gpp-tipo-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;background:var(--bg3);color:var(--text)}
+.gpp-empty{margin:6px 16px;padding:14px;font-size:13px;color:var(--text3);text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2)}
+.gpp-pend-desc{margin:0 16px 6px;font-size:12px;color:var(--text3)}
+.gpp-export{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center}
+@media(max-width:700px){
+  .gpp-nav{width:100%;min-width:0;flex-direction:row;overflow-x:auto;overflow-y:hidden;padding:0;flex-shrink:0}
+  .gpp-nav-logo{display:none}
+  .gpp-nav-item{white-space:nowrap;border-left:none;border-bottom:3px solid transparent;padding:12px 14px}
+  .gpp-nav-item.active{border-bottom-color:var(--orange);background:none}
+}
 </style>
 </head>
 <body>
@@ -495,7 +518,7 @@ let S={
   token:null,records:[],selected:null,form:{},
   me:null,team:[],objetivos:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
-  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',
+  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{Identificação:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
@@ -662,6 +685,7 @@ function recsInContext(){return isAdmin()&&S.viewVendedor?S.records.filter(r=>r.
 function recsOf(vid){return S.records.filter(r=>r.vendedor_id===vid)}
 function statsFor(recs){const ym=curYM();const fech=recs.filter(r=>(r.status==='Retail'||r.status==='Carteira')&&negYM(r)===ym);const funil=recs.filter(r=>FUNIL.includes(r.status));const bev=fech.filter(r=>r.bev).length;const fechTotal=recs.filter(r=>r.status==='Retail'||r.status==='Carteira').length;const perdidos=recs.filter(r=>r.status==='Perdido').length;return{fechados:fech.length,funil:funil.length,bev,fechTotal,perdidos,alerts:calcAlerts(recs)}}
 function lastUpdateDays(recs){let m=0;recs.forEach(r=>{const t=new Date(r.updated_at||r.status_updated_at||r.created_at||0).getTime();if(t>m)m=t});if(!m)return null;return Math.floor((Date.now()-m)/86400000)}
+function lastUpdateDaysR(r){const t=new Date(r.updated_at||r.status_updated_at||r.created_at||0).getTime();if(!t)return 999;return Math.floor((Date.now()-t)/86400000)}
 async function loadRecords(){setState({loading:true,error:''});try{const d=await supabaseApi('GET','/baviera_control?select=*&order=neg.desc.nullslast');setState({records:d,loading:false})}catch(e){setState({error:'Erro: '+e.message,loading:false})}}
 async function saveRecord(){setState({loading:true,error:''});try{const b={...S.form};['neg','dmat','col_298'].forEach(k=>{if(!b[k])b[k]=null});['qor','xev','bev','m_flag','csc','cme'].forEach(k=>{b[k]=b[k]?parseInt(b[k]):null});b.pvp=b.pvp?parseFloat(b.pvp):null;if(!b.alert_days)b.alert_days=null;else b.alert_days=parseInt(b.alert_days);delete b.id;delete b.created_at;delete b.updated_at;delete b.updated_by;if(!S.selected&&isAdmin())b.vendedor_id=S.viewVendedor||S.me.id;if(S.selected){if(b.status!==S.selected.status)b.status_updated_at=new Date().toISOString();delete b.status_updated_at_keep;await supabaseApi('PATCH',`/baviera_control?id=eq.${S.selected.id}`,b)}else{b.status_updated_at=new Date().toISOString();await supabaseApi('POST','/baviera_control',b)}await loadRecords();setState({screen:'list',selected:null,loading:false})}catch(e){setState({error:'Erro ao guardar: '+e.message,loading:false})}}
 async function deleteRecord(){setState({loading:true,error:''});try{await supabaseApi('DELETE',`/baviera_control?id=eq.${S.selected.id}`);await loadRecords();setState({screen:'list',selected:null,confirmDelete:false,loading:false})}catch(e){setState({error:'Erro: '+e.message,loading:false})}}
@@ -1264,95 +1288,152 @@ function exportCSV(){
   URL.revokeObjectURL(url);
 }
 function renderDashboard(){
-  // Vista GPP (Chefe de Vendas)
+  // Vista GPP (Chefe de Vendas) — navegação por tópicos
   const recs=S.records;
-  // Meses disponíveis: união dos meses de retail (298) e carteira (mes1)
+  const sec=S.gppSec||'home';
+  const isNovas=r=>r.type==='MN'||r.type==='MD';
+  const isUsadas=r=>r.type==='MU';
+
+  // Meses disponíveis (retail por 298, carteira por mes1)
   const mesesSet=new Set();
   recs.forEach(r=>{
     if(r.status==='Retail'&&r.col_298)mesesSet.add(retailYM(r));
     if(r.status==='Carteira'&&r.mes1)mesesSet.add(r.mes1);
   });
   const meses=[...mesesSet].filter(Boolean).sort();
-  // Mês selecionado: default = mês atual, senão o mais recente disponível
   const mesAtual=curYM();
   const mesSel=S.dashMes||(meses.includes(mesAtual)?mesAtual:(meses[meses.length-1]||mesAtual));
 
-  const isNovas=r=>r.type==='MN'||r.type==='MD';
-  const isUsadas=r=>r.type==='MU';
-  // Retail entregue no mês (por 298), Carteira prevista para o mês (por mes1)
-  const retail=recs.filter(r=>r.status==='Retail'&&retailYM(r)===mesSel);
-  const carteira=recs.filter(r=>r.status==='Carteira'&&r.mes1===mesSel);
-  const cnt=(arr,f)=>arr.filter(f).length;
+  const TOPICOS=[
+    ['home','🏠','Home'],
+    ['funil','🔻','Funil'],
+    ['carteira','📦','Carteira'],
+    ['retail','✅','Retail'],
+    ['pendentes','⚠️','Pendentes'],
+    ['escala','📅','Escala'],
+    ['exportar','⬇️','Exportar'],
+  ];
+  const secLabel=(TOPICOS.find(t=>t[0]===sec)||[,,'Home'])[2];
 
-  const rNovas=cnt(retail,isNovas),rUsadas=cnt(retail,isUsadas);
-  const cNovas=cnt(carteira,isNovas),cUsadas=cnt(carteira,isUsadas);
-  const tNovas=rNovas+cNovas,tUsadas=rUsadas+cUsadas;
+  const nav=`<div class="gpp-nav">
+    <div class="gpp-nav-logo"><span class="gpp-nav-b">B</span> GPP</div>
+    ${TOPICOS.map(([id,ic,lb])=>`<div class="gpp-nav-item ${sec===id?'active':''}" data-action="gpp-sec" data-s="${id}">${ic}&nbsp; ${lb}</div>`).join('')}
+  </div>`;
+
+  const header=`<div class="hdr">
+    <div class="hdr-accent"></div>
+    <div class="hdr-title">${esc(secLabel)}</div>
+    <button class="hdr-btn" data-action="refresh" ${S.loading?'disabled':''}>${S.loading?'…':'↻'}</button>
+    <button class="hdr-btn" data-action="go-password" title="Alterar password">🔑</button>
+    <button class="hdr-btn" data-action="logout">Sair</button>
+  </div>`;
+
+  // ---- Seletor de mês (usado em Home, Carteira, Retail) ----
+  const mesBar=`<div class="gpp-mes-bar">
+    <span class="gpp-mes-lbl">Mês</span>
+    <select class="gpp-mes-sel" data-action="dash-mes-sel">
+      ${meses.length===0?`<option>${esc(mesAtual)}</option>`:meses.map(m=>`<option value="${m}" ${mesSel===m?'selected':''}>${esc(m)}</option>`).join('')}
+    </select>
+  </div>`;
+
+  // ---- Tabela resumo (Home) ----
+  function tabelaResumo(){
+    const retail=recs.filter(r=>r.status==='Retail'&&retailYM(r)===mesSel);
+    const carteira=recs.filter(r=>r.status==='Carteira'&&r.mes1===mesSel);
+    const cnt=(arr,f)=>arr.filter(f).length;
+    const rN=cnt(retail,isNovas),rU=cnt(retail,isUsadas);
+    const cN=cnt(carteira,isNovas),cU=cnt(carteira,isUsadas);
+    return`<div class="gpp-card"><table class="gpp-table">
+      <thead><tr><th></th><th class="gpp-th-novas">MN + MD<div class="gpp-th-sub">Novas</div></th><th class="gpp-th-usadas">MU<div class="gpp-th-sub">Usadas</div></th><th class="gpp-th-tot">Total</th></tr></thead>
+      <tbody>
+        <tr><td class="gpp-rowlbl"><span class="gpp-dot" style="background:var(--green)"></span>Retail<div class="gpp-rowsub">entregue</div></td><td class="gpp-num">${rN}</td><td class="gpp-num">${rU}</td><td class="gpp-num gpp-tot">${rN+rU}</td></tr>
+        <tr><td class="gpp-rowlbl"><span class="gpp-dot" style="background:var(--blue)"></span>Carteira<div class="gpp-rowsub">a entregar</div></td><td class="gpp-num">${cN}</td><td class="gpp-num">${cU}</td><td class="gpp-num gpp-tot">${cN+cU}</td></tr>
+        <tr class="gpp-totrow"><td class="gpp-rowlbl">Total</td><td class="gpp-num gpp-tot">${rN+cN}</td><td class="gpp-num gpp-tot">${rU+cU}</td><td class="gpp-num gpp-tot gpp-grandtot">${rN+rU+cN+cU}</td></tr>
+      </tbody></table></div>`;
+  }
+
+  // ---- Lista de negócios com tabela (Carteira / Retail) ----
+  function listaEstado(status,dataFn){
+    const arr=recs.filter(r=>r.status===status&&dataFn(r)===mesSel);
+    const novas=arr.filter(isNovas),usadas=arr.filter(isUsadas);
+    const linha=r=>`<tr class="gpp-lrow" data-action="open-record-from-dash" data-id="${r.id}">
+      <td>${esc(r.id_cliente||'—')}</td><td>${esc(r.model||'')} ${esc(r.version||'')}</td>
+      <td><span class="gpp-tipo-badge">${esc(r.type||'?')}</span></td><td>${esc(vendName(r.vendedor_id)||'')}</td></tr>`;
+    const bloco=(titulo,lista,cor)=>`
+      <div class="gpp-sub-h" style="border-left:3px solid ${cor}">${titulo} · <b>${lista.length}</b></div>
+      ${lista.length?`<div class="gpp-card"><table class="gpp-ltable"><thead><tr><th>Cliente</th><th>Modelo</th><th>Tipo</th><th>Vendedor</th></tr></thead><tbody>${lista.map(linha).join('')}</tbody></table></div>`:'<div class="gpp-empty">Sem registos.</div>'}`;
+    return`${mesBar}
+      <div class="gpp-tot-head">${status} · ${esc(mesSel)} · <b>${arr.length}</b> mota${arr.length!==1?'s':''}</div>
+      ${bloco('Novas (MN+MD)',novas,'var(--blue)')}
+      ${bloco('Usadas (MU)',usadas,'var(--amber)')}`;
+  }
+
+  // ---- Funil (todos os vendedores) ----
+  function funilView(){
+    const grupos={Quente:[],Morno:[],Frio:[]};
+    recs.filter(r=>FUNIL.includes(r.status)).forEach(r=>grupos[r.status].push(r));
+    const cores={Quente:'var(--red)',Morno:'var(--amber)',Frio:'var(--slate)'};
+    const bloco=(estado)=>{
+      const lista=grupos[estado];
+      return`<div class="gpp-sub-h" style="border-left:3px solid ${cores[estado]}">${estado} · <b>${lista.length}</b></div>
+      ${lista.length?`<div class="gpp-card"><table class="gpp-ltable"><thead><tr><th>Vendedor</th><th>Cliente</th><th>Modelo</th><th>Obs</th></tr></thead><tbody>
+        ${lista.map(r=>`<tr class="gpp-lrow" data-action="open-record-from-dash" data-id="${r.id}">
+          <td>${esc(vendName(r.vendedor_id)||'')}</td><td>${esc(r.id_cliente||'—')}</td>
+          <td>${esc(r.model||'')} ${esc(r.version||'')}</td><td style="color:var(--text2)">${esc(r.obs||'')}</td></tr>`).join('')}
+      </tbody></table></div>`:'<div class="gpp-empty">Sem negócios.</div>'}`;
+    };
+    return`<div class="gpp-tot-head">Funil de toda a equipa · <b>${grupos.Quente.length+grupos.Morno.length+grupos.Frio.length}</b> negócios</div>
+      ${bloco('Quente')}${bloco('Morno')}${bloco('Frio')}`;
+  }
+
+  // ---- Pendentes ----
+  function pendentesView(){
+    const semData=recs.filter(r=>r.status==='Retail'&&!r.col_298);
+    const funilParado=recs.filter(r=>FUNIL.includes(r.status)&&lastUpdateDaysR(r)>10);
+    const cartSemEnc=recs.filter(r=>r.status==='Carteira'&&!r.enc&&r.type!=='MU');
+    const bloco=(titulo,lista,desc,extraCol)=>`
+      <div class="gpp-sub-h" style="border-left:3px solid var(--red)">${titulo} · <b>${lista.length}</b></div>
+      <div class="gpp-pend-desc">${desc}</div>
+      ${lista.length?`<div class="gpp-card"><table class="gpp-ltable"><thead><tr><th>Cliente</th><th>Modelo</th><th>Vendedor</th>${extraCol?`<th>${extraCol}</th>`:''}</tr></thead><tbody>
+        ${lista.map(r=>`<tr class="gpp-lrow" data-action="open-record-from-dash" data-id="${r.id}">
+          <td>${esc(r.id_cliente||'—')}</td><td>${esc(r.model||'')} ${esc(r.version||'')}</td>
+          <td>${esc(vendName(r.vendedor_id)||'')}</td>${extraCol?`<td>${esc(r.status)}</td>`:''}</tr>`).join('')}
+      </tbody></table></div>`:'<div class="gpp-empty">Nada pendente aqui. ✓</div>'}`;
+    const total=semData.length+funilParado.length+cartSemEnc.length;
+    return`<div class="gpp-tot-head">Pendentes · <b>${total}</b> a precisar de atenção</div>
+      ${bloco('Retail sem data 298',semData,'Motas entregues sem matrícula preenchida — não contam nos totais.')}
+      ${bloco('Funil parado (+10 dias)',funilParado,'Negócios em funil sem atualização há mais de 10 dias.','Estado')}
+      ${bloco('Carteira sem encomenda',cartSemEnc,'Motas novas em carteira sem nº de encomenda.')}`;
+  }
+
+  // ---- Exportar ----
+  function exportarView(){
+    return`<div class="gpp-export">
+      <div style="font-size:40px">⬇️</div>
+      <div style="font-size:16px;font-weight:600;margin:8px 0 4px">Exportar todos os dados</div>
+      <div style="font-size:13px;color:var(--text3);max-width:360px;text-align:center;line-height:1.5;margin-bottom:20px">
+        Descarrega todos os registos de todos os vendedores (e os teus) em CSV, com todos os campos. Abre diretamente no Excel.
+      </div>
+      <button class="btn btn-orange" data-action="export-csv" style="padding:12px 28px">⬇ Descarregar CSV completo (${recs.length} registos)</button>
+    </div>`;
+  }
+
+  let body;
+  if(sec==='home')body=mesBar+(recs.filter(r=>r.status==='Retail'&&!r.col_298).length?`${(()=>{const semData=recs.filter(r=>r.status==='Retail'&&!r.col_298);return`<div class="gpp-alerta ${S.dashAlertOpen==='sem298'?'open':''}"><div class="gpp-alerta-head" data-action="dash-alert-toggle" data-id="sem298"><span>⚠️</span><span><b>${semData.length}</b> mota${semData.length>1?'s':''} em Retail sem data 298 — não contam nos totais</span><span class="gpp-alerta-arrow">${S.dashAlertOpen==='sem298'?'▾':'▸'}</span></div>${S.dashAlertOpen==='sem298'?`<div class="gpp-alerta-lista">${semData.map(r=>`<div class="gpp-alerta-item" data-action="open-record-from-dash" data-id="${r.id}"><b>${esc(r.id_cliente||'(sem cliente)')}</b><span>${esc(r.model||'')} ${esc(r.version||'')}</span><span class="gpp-alerta-tipo">${esc(r.type||'?')}</span><span style="color:var(--text3)">${esc(vendName(r.vendedor_id)||'')}</span></div>`).join('')}</div>`:''}</div>`})()}`:'')+tabelaResumo();
+  else if(sec==='funil')body=funilView();
+  else if(sec==='carteira')body=listaEstado('Carteira',r=>r.mes1);
+  else if(sec==='retail')body=listaEstado('Retail',retailYM);
+  else if(sec==='pendentes')body=pendentesView();
+  else if(sec==='exportar')body=exportarView();
+  else body=tabelaResumo();
 
   return`
   <div class="app-layout">
   ${renderViewSelector()}
+  ${nav}
   <div class="main-panel" style="width:100%">
-  <div class="hdr">
-    <div class="hdr-accent"></div>
-    <div class="hdr-title">Dashboard GPP</div>
-    <button class="hdr-btn" data-action="refresh" ${S.loading?'disabled':''}>${S.loading?'…':'↻'}</button>
-    <button class="hdr-btn" data-action="go-password" title="Alterar password">🔑</button>
-    <button class="hdr-btn" data-action="logout">Sair</button>
-  </div>
-  <div class="content">
-    <div class="gpp-mes-bar">
-      <span class="gpp-mes-lbl">Mês</span>
-      <select class="gpp-mes-sel" data-action="dash-mes-sel">
-        ${meses.length===0?`<option>${esc(mesAtual)}</option>`:meses.map(m=>`<option value="${m}" ${mesSel===m?'selected':''}>${esc(m)}</option>`).join('')}
-      </select>
-    </div>
-    ${(()=>{
-      const semData=recs.filter(r=>r.status==='Retail'&&!r.col_298);
-      if(semData.length===0)return'';
-      return`<div class="gpp-alerta ${S.dashAlertOpen==='sem298'?'open':''}" >
-        <div class="gpp-alerta-head" data-action="dash-alert-toggle" data-id="sem298">
-          <span>⚠️</span>
-          <span><b>${semData.length}</b> mota${semData.length>1?'s':''} em Retail sem data 298 — não contam nos totais até preencheres</span>
-          <span class="gpp-alerta-arrow">${S.dashAlertOpen==='sem298'?'▾':'▸'}</span>
-        </div>
-        ${S.dashAlertOpen==='sem298'?`<div class="gpp-alerta-lista">
-          ${semData.map(r=>`<div class="gpp-alerta-item" data-action="open-record-from-dash" data-id="${r.id}">
-            <b>${esc(r.id_cliente||'(sem cliente)')}</b>
-            <span>${esc(r.model||'')} ${esc(r.version||'')}</span>
-            <span class="gpp-alerta-tipo">${esc(r.type||'?')}</span>
-            <span style="color:var(--text3)">${esc(vendName(r.vendedor_id)||'')}</span>
-          </div>`).join('')}
-        </div>`:''}
-      </div>`;
-    })()}
-    <div class="gpp-card">
-      <table class="gpp-table">
-        <thead><tr>
-          <th></th>
-          <th class="gpp-th-novas">MN + MD<div class="gpp-th-sub">Novas</div></th>
-          <th class="gpp-th-usadas">MU<div class="gpp-th-sub">Usadas</div></th>
-          <th class="gpp-th-tot">Total</th>
-        </tr></thead>
-        <tbody>
-          <tr>
-            <td class="gpp-rowlbl"><span class="gpp-dot" style="background:var(--green)"></span>Retail<div class="gpp-rowsub">entregue</div></td>
-            <td class="gpp-num">${rNovas}</td><td class="gpp-num">${rUsadas}</td>
-            <td class="gpp-num gpp-tot">${rNovas+rUsadas}</td>
-          </tr>
-          <tr>
-            <td class="gpp-rowlbl"><span class="gpp-dot" style="background:var(--blue)"></span>Carteira<div class="gpp-rowsub">a entregar</div></td>
-            <td class="gpp-num">${cNovas}</td><td class="gpp-num">${cUsadas}</td>
-            <td class="gpp-num gpp-tot">${cNovas+cUsadas}</td>
-          </tr>
-          <tr class="gpp-totrow">
-            <td class="gpp-rowlbl">Total</td>
-            <td class="gpp-num gpp-tot">${tNovas}</td><td class="gpp-num gpp-tot">${tUsadas}</td>
-            <td class="gpp-num gpp-tot gpp-grandtot">${tNovas+tUsadas}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+  ${header}
+  <div class="content">${body}</div>
   </div>
   </div>`;
 }
@@ -1416,6 +1497,7 @@ function bindEvents(){
       case'escala-prev':escalaShiftMes(-1);loadEscala().then(()=>render());break;
       case'escala-next':escalaShiftMes(1);loadEscala().then(()=>render());break;
       case'go-dashboard':setState({screen:'dashboard',viewVendedor:null,vselOpen:false,statusFilter:'all',alertFilter:null,alertIds:[],search:'',renderLimit:50});break;
+      case'gpp-sec':{const s=el.dataset.s;if(s==='escala'){setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}else{setState({gppSec:s,dashAlertOpen:null});}break}
       case'view-vendedor':{const id=el.dataset.id||null;setState({viewVendedor:id,screen:'list',vselOpen:false,statusFilter:'all',alertFilter:null,alertIds:[],search:'',monthFilter:[],renderLimit:50});break}
       case'save-nps':{e.stopPropagation();const vid=el.dataset.id;const gi=s=>{const x=document.querySelector(`[${s}="${vid}"]`);return x&&x.value!==''?parseFloat(x.value):null};const patch={num_inqueritos:gi('data-nps-inq')||0,nps:gi('data-nps-nps'),csi:gi('data-nps-csi')};el.textContent='\u2026';saveNps(vid,patch).then(()=>render()).catch(err=>{alert('Erro: '+err.message);render()});break}
       case'save-objetivo':{e.stopPropagation();const vid=el.dataset.id;const inp=document.querySelector(`[data-obj-input="${vid}"]`);const val=parseInt(inp&&inp.value?inp.value:'0')||0;el.textContent='\u2026';saveObjetivo(vid,val).then(()=>render()).catch(err=>{alert('Erro: '+err.message);render()});break}
