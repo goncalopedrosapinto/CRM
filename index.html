@@ -479,6 +479,13 @@ html,body{overflow-x:hidden;max-width:100vw}
 .gpp-obs-cell{min-width:180px}
 .gpp-obs-input{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--surface);color:var(--text)}
 .gpp-obs-input:focus{border-color:var(--orange);outline:none}
+
+.stock-table input.stock-inp,.stock-table select.stock-inp{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--surface);color:var(--text)}
+.stock-num{max-width:90px}
+.stock-inp:focus{border-color:var(--orange);outline:none}
+.stock-chk{width:18px;height:18px;cursor:pointer;accent-color:var(--green)}
+.stock-del{background:none;border:none;cursor:pointer;font-size:15px;opacity:.5}
+.stock-del:hover{opacity:1}
 </style>
 </head>
 <body>
@@ -524,7 +531,7 @@ let S={
   token:null,records:[],selected:null,form:{},
   me:null,team:[],objetivos:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
-  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',
+  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{Identificação:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
@@ -674,6 +681,35 @@ async function loadFolgaSaldo(){
     S.folgaSaldo=saldo;
   }catch(e){S.folgaSaldo={}}
 }
+async function loadStockPublico(){
+  try{
+    const d=await supabaseApi('GET','/stock_usadas_publico?select=*&order=created_at.desc');
+    S.stock=d||[];S.stockLoaded=true;
+  }catch(e){S.stock=[];S.stockLoaded=true;}
+}
+async function loadStock(){
+  try{
+    const d=await supabaseApi('GET','/stock_usadas?select=*&order=created_at.desc');
+    S.stock=d||[];S.stockLoaded=true;
+  }catch(e){S.stock=[];S.stockLoaded=true;}
+}
+async function saveStockField(id,campo,valor){
+  try{
+    const patch={};patch[campo]=valor;patch.updated_at=new Date().toISOString();
+    await supabaseApi('PATCH',`/stock_usadas?id=eq.${id}`,patch);
+    const m=S.stock.find(x=>String(x.id)===String(id));if(m)m[campo]=valor;
+  }catch(e){alert('Erro ao gravar: '+e.message);}
+}
+async function addStockMota(modelo){
+  try{
+    await supabaseApi('POST','/stock_usadas',{modelo,estado:'Disponível',maxterauto:false});
+    await loadStock();render();
+  }catch(e){alert('Erro ao adicionar: '+e.message);}
+}
+async function deleteStockMota(id){
+  try{await supabaseApi('DELETE',`/stock_usadas?id=eq.${id}`);await loadStock();render();}
+  catch(e){alert('Erro ao apagar: '+e.message);}
+}
 async function loadEscala(){
   const mesRef=escalaMesRef();const[y,m]=mesRef.split('-').map(Number);
   const ini=`${mesRef}-01`;const fim=`${m===12?y+1:y}-${String(m===12?1:m+1).padStart(2,'0')}-01`;
@@ -790,6 +826,36 @@ function renderCard(r){return`
     </div>
   </div>`}
 
+function renderStockVend(){
+  const st=S.stock;
+  const estadoCor={'Disponível':'var(--green)','A negociar':'#e8a30c','Vendida':'var(--text3)'};
+  return`
+  <div class="app-layout"><div class="main-panel" style="width:100%">
+  <div class="hdr">
+    <button class="hdr-back" data-action="back-from-stock">←</button>
+    <div class="hdr-accent"></div>
+    <div class="hdr-title">Stock de Usadas</div>
+    <button class="hdr-btn" data-action="logout">Sair</button>
+  </div>
+  <div class="content">
+    ${!S.stockLoaded?'<div class="gpp-empty" style="margin-top:12px">A carregar…</div>':st.length===0?'<div class="gpp-empty" style="margin-top:12px">Sem motas em stock.</div>':`
+    <div class="gpp-card" style="margin:12px 16px;overflow-x:auto">
+      <table class="gpp-ltable">
+        <thead><tr><th>Modelo</th><th>Estado</th><th>Maxterauto</th><th>Negociação</th></tr></thead>
+        <tbody>
+          ${st.map(m=>`<tr>
+            <td style="font-weight:600">${esc(m.modelo||'')}</td>
+            <td><span style="color:${estadoCor[m.estado]||'var(--text)'};font-weight:600">${esc(m.estado||'')}</span></td>
+            <td style="text-align:center">${m.maxterauto?'✅':'—'}</td>
+            <td style="color:var(--text2)">${m.negociado_por?esc(vendName(m.negociado_por)||''):'—'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div class="gpp-pend-desc" style="margin:0 16px">Disponível = podes negociar. A negociar = já tem um colega. Vendida = fechada.</div>`}
+  </div>
+  </div></div>`;
+}
 function renderPassword(){
   let myEmail='';
   try{const p=JSON.parse(atob(S.token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));myEmail=p.email||''}catch(e){}
@@ -952,7 +1018,7 @@ function renderList(){
     <div class="hdr-accent"></div>
     <div class="hdr-title">${esc(curLabel)}</div>
     <div class="hdr-sub">${f.length} de ${recsInContext().length}</div>
-    ${!isAdmin()?`<button class="hdr-btn" data-action="go-escala">📅 Escala</button>`:''}
+    ${!isAdmin()?`<button class="hdr-btn" data-action="go-stock-vend">🏍️ Stock</button><button class="hdr-btn" data-action="go-escala">📅 Escala</button>`:''}
     <button class="hdr-btn" data-action="refresh" ${S.loading?'disabled':''}>${S.loading?'…':'↻'}</button>
     <button class="hdr-btn" data-action="go-password" title="Alterar password">🔑</button>
     <button class="hdr-btn" data-action="logout">Sair</button>
@@ -1324,6 +1390,7 @@ function renderDashboard(){
     ['carteira','📦','Carteira'],
     ['retail','✅','Retail'],
     ['pendentes','⚠️','Pendentes'],
+    ['stock','🏍️','Stock Usadas'],
     ['escala','📅','Escala'],
     ['exportar','⬇️','Exportar'],
   ];
@@ -1470,6 +1537,47 @@ function renderDashboard(){
   }
 
   // ---- Exportar ----
+  // ---- Stock de motas usadas (admin) ----
+  function stockView(){
+    if(!S.stockLoaded)return'<div class="gpp-empty" style="margin-top:12px">A carregar stock…</div>';
+    const st=S.stock;
+    const estadoBadge={'Disponível':'var(--green)','A negociar':'#e8a30c','Vendida':'var(--text3)'};
+    return`
+    <div class="gpp-mes-bar" style="justify-content:space-between">
+      <div><span class="gpp-mes-lbl">Stock de usadas</span> <b style="margin-left:8px">${st.length}</b></div>
+      <button class="btn btn-orange btn-sm" data-action="stock-add">+ Adicionar mota</button>
+    </div>
+    ${st.length===0?'<div class="gpp-empty">Sem motas em stock. Adiciona a primeira.</div>':`
+    <div class="gpp-card" style="overflow-x:auto">
+      <table class="gpp-ltable stock-table">
+        <thead><tr>
+          <th>Modelo</th><th>Valor mín</th><th>Anunciado</th><th>Maxterauto</th><th>Estado</th><th>Negociado por</th><th></th>
+        </tr></thead>
+        <tbody>
+          ${st.map(m=>`<tr>
+            <td><input class="stock-inp" data-stock-id="${m.id}" data-stock-f="modelo" value="${esc(m.modelo||'')}" style="min-width:140px"></td>
+            <td><input class="stock-inp stock-num" data-stock-id="${m.id}" data-stock-f="valor_min" type="number" value="${m.valor_min!=null?m.valor_min:''}" placeholder="—"></td>
+            <td><input class="stock-inp stock-num" data-stock-id="${m.id}" data-stock-f="valor_anunciado" type="number" value="${m.valor_anunciado!=null?m.valor_anunciado:''}" placeholder="—"></td>
+            <td style="text-align:center"><input type="checkbox" class="stock-chk" data-stock-id="${m.id}" data-stock-f="maxterauto" ${m.maxterauto?'checked':''}></td>
+            <td>
+              <select class="stock-inp" data-stock-id="${m.id}" data-stock-f="estado" style="color:${estadoBadge[m.estado]||'var(--text)'};font-weight:600">
+                ${['Disponível','A negociar','Vendida'].map(e=>`<option value="${e}" ${m.estado===e?'selected':''}>${e}</option>`).join('')}
+              </select>
+            </td>
+            <td>
+              <select class="stock-inp" data-stock-id="${m.id}" data-stock-f="negociado_por">
+                <option value="">—</option>
+                ${S.team.filter(p=>p.role==='vendedor').map(p=>`<option value="${p.id}" ${m.negociado_por===p.id?'selected':''}>${esc((p.nome||'').split(' ')[0])}</option>`).join('')}
+              </select>
+            </td>
+            <td><button class="stock-del" data-action="stock-del" data-id="${m.id}" title="Apagar">🗑</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div class="gpp-pend-desc" style="margin-top:8px">Os vendedores veem o modelo, estado e Maxterauto — <b>nunca os valores</b>.</div>`}`;
+  }
+
   function exportarView(){
     return`<div class="gpp-export">
       <div style="font-size:40px">⬇️</div>
@@ -1487,6 +1595,7 @@ function renderDashboard(){
   else if(sec==='carteira')body=carteiraChart()+listaEstado('Carteira',r=>r.mes1);
   else if(sec==='retail')body=listaEstado('Retail',retailYM);
   else if(sec==='pendentes')body=pendentesView();
+  else if(sec==='stock')body=stockView();
   else if(sec==='exportar')body=exportarView();
   else body=tabelaResumo();
 
@@ -1503,7 +1612,7 @@ function renderDashboard(){
 function render(){
   const app=document.getElementById('app');
   const ce=app.querySelector('.content'),st=ce?ce.scrollTop:0,ps=app.dataset.screen||'';
-  const screens={loading:'<div class="content"><div class="center-screen"><p style="color:var(--text3)">A carregar...</p></div></div>',login:renderLogin,list:renderList,detail:renderDetail,edit:renderEdit,dashboard:renderDashboard,escala:renderEscala,password:renderPassword};
+  const screens={loading:'<div class="content"><div class="center-screen"><p style="color:var(--text3)">A carregar...</p></div></div>',login:renderLogin,list:renderList,detail:renderDetail,edit:renderEdit,dashboard:renderDashboard,escala:renderEscala,password:renderPassword,stockvend:renderStockVend};
   const fn=screens[S.screen];
   app.innerHTML=typeof fn==='function'?fn():fn;
   app.dataset.screen=S.screen;
@@ -1516,6 +1625,15 @@ function bindEvents(){
   app.onchange=function(e){
     const el=e.target;
     if(el.dataset&&el.dataset.obsGestor){saveObsGestor(el.dataset.obsGestor,el.value);return;}
+    if(el.dataset&&el.dataset.stockId){
+      const f=el.dataset.stockF;
+      let v;
+      if(f==='maxterauto')v=el.checked;
+      else if(f==='valor_min'||f==='valor_anunciado')v=el.value?parseFloat(el.value):null;
+      else if(f==='negociado_por')v=el.value||null;
+      else v=el.value;
+      saveStockField(el.dataset.stockId,f,v);return;
+    }
     if(el.dataset&&el.dataset.action==='carteira-mes-sel'){setState({carteiraMes:el.value});return;}
     if(el.dataset&&el.dataset.action==='dash-mes-sel'){setState({dashMes:el.value});return;}
     if(el.dataset&&el.dataset.field&&(el.dataset.field==='retoma'||el.dataset.field==='status'||el.dataset.field==='gar')&&S.screen==='edit'){
@@ -1552,6 +1670,8 @@ function bindEvents(){
       case'open-record-from-dash':{const r=S.records.find(x=>String(x.id)===String(el.dataset.id));if(r)setState({selected:r,screen:'detail'});break}
       case'export-csv':exportCSV();break;
       case'go-escala':{setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false})).catch(e=>setState({error:e.message,loading:false,screen:'escala'}));break}
+      case'go-stock-vend':{setState({loading:true});loadStockPublico().then(()=>setState({screen:'stockvend',loading:false}));break}
+      case'back-from-stock':setState({screen:'list'});break;
       case'escala-open':{if(!isAdmin())break;setState({escalaPicker:{dia:el.dataset.dia,estado:el.dataset.estado}});break}
       case'escala-close':setState({escalaPicker:null});break;
       case'escala-noop':break;
@@ -1561,7 +1681,9 @@ function bindEvents(){
       case'escala-prev':escalaShiftMes(-1);loadEscala().then(()=>render());break;
       case'escala-next':escalaShiftMes(1);loadEscala().then(()=>render());break;
       case'go-dashboard':setState({screen:'dashboard',viewVendedor:null,vselOpen:false,statusFilter:'all',alertFilter:null,alertIds:[],search:'',renderLimit:50});break;
-      case'gpp-sec':{const s=el.dataset.s;if(s==='escala'){setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}else{setState({gppSec:s,dashAlertOpen:null});}break}
+      case'gpp-sec':{const s=el.dataset.s;if(s==='escala'){setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}else if(s==='stock'){setState({gppSec:s,dashAlertOpen:null});if(!S.stockLoaded)loadStock().then(()=>render());}else{setState({gppSec:s,dashAlertOpen:null});}break}
+      case'stock-add':{const modelo=prompt('Modelo da mota usada:');if(modelo&&modelo.trim())addStockMota(modelo.trim());break}
+      case'stock-del':{if(confirm('Apagar esta mota do stock?'))deleteStockMota(el.dataset.id);break}
       case'view-vendedor':{const id=el.dataset.id||null;setState({viewVendedor:id,screen:'list',vselOpen:false,statusFilter:'all',alertFilter:null,alertIds:[],search:'',monthFilter:[],renderLimit:50});break}
       case'save-nps':{e.stopPropagation();const vid=el.dataset.id;const gi=s=>{const x=document.querySelector(`[${s}="${vid}"]`);return x&&x.value!==''?parseFloat(x.value):null};const patch={num_inqueritos:gi('data-nps-inq')||0,nps:gi('data-nps-nps'),csi:gi('data-nps-csi')};el.textContent='\u2026';saveNps(vid,patch).then(()=>render()).catch(err=>{alert('Erro: '+err.message);render()});break}
       case'save-objetivo':{e.stopPropagation();const vid=el.dataset.id;const inp=document.querySelector(`[data-obj-input="${vid}"]`);const val=parseInt(inp&&inp.value?inp.value:'0')||0;el.textContent='\u2026';saveObjetivo(vid,val).then(()=>render()).catch(err=>{alert('Erro: '+err.message);render()});break}
