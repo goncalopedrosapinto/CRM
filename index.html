@@ -933,7 +933,7 @@ function renderStockVend(){
             <span style="flex:1;font-size:15px;font-weight:700">${esc(m.modelo||'')}</span>
             ${m.maxterauto?'<span class="stock-max-badge">Maxterauto ✅</span>':''}
           </div>
-          ${m.kms!=null?`<div style="font-size:12px;color:var(--text3);margin-bottom:8px">${esc(String(m.kms))} km</div>`:''}
+          ${(m.matricula||m.kms!=null)?`<div style="font-size:12px;color:var(--text3);margin-bottom:8px">${m.matricula?`<b>${esc(m.matricula)}</b>`:''}${m.matricula&&m.kms!=null?' · ':''}${m.kms!=null?esc(String(m.kms))+' km':''}</div>`:''}
           <div class="stock-vend-row">
             <div class="stock-field" style="flex:1">
               <label>Estado</label>
@@ -1487,6 +1487,7 @@ function renderDashboard(){
     ['carteira','📦','Carteira'],
     ['funil','🔻','Funil'],
     ['pendentes','⚠️','Pendentes'],
+    ['demos','⭐','Demos'],
     ['stock','🏍️','Stock Usadas'],
     ['escala','📅','Escala'],
     ['exportar','⬇️','Exportar'],
@@ -1639,9 +1640,9 @@ function renderDashboard(){
 
   // ---- Exportar ----
   // ---- Stock de motas usadas (admin) ----
-  function stockView(){
+  function stockView(catParam){
     if(!S.stockLoaded)return'<div class="gpp-empty" style="margin-top:12px">A carregar stock…</div>';
-    const cat=S.stockCat||'usada'; // 'usada' | 'demo'
+    const cat=catParam||'usada'; // 'usada' | 'demo'
     const st=S.stock.filter(m=>(m.categoria||'usada')===cat);
     const estadoBadge={'Disponível':'var(--green)','A negociar':'#e8a30c','Vendida':'var(--text3)'};
     const disp=st.filter(m=>m.estado==='Disponível').length;
@@ -1656,6 +1657,7 @@ function renderDashboard(){
         <div class="stock-form-h">Nova mota ${nome}</div>
         <div class="stock-form-grid">
           <label>Modelo<input id="sf-modelo" class="field-input" placeholder="Ex: BMW R 1250 GS"></label>
+          <label>Matrícula<input id="sf-mat" class="field-input" placeholder="Ex: AA-00-BB"></label>
           <label>Km<input id="sf-kms" class="field-input" type="number" placeholder="—"></label>
           <label>Valor mín (€)<input id="sf-min" class="field-input" type="number" placeholder="—"></label>
           <label>Valor anunciado (€)<input id="sf-anun" class="field-input" type="number" placeholder="—"></label>
@@ -1669,10 +1671,6 @@ function renderDashboard(){
         </div>
       </div>`:'';
     return`
-    <div class="stock-tabs">
-      <button class="stock-tab ${cat==='usada'?'active':''}" data-action="stock-cat" data-c="usada">🏍️ Usadas</button>
-      <button class="stock-tab ${cat==='demo'?'active':''}" data-action="stock-cat" data-c="demo">⭐ Demos</button>
-    </div>
     <div class="stock-head">
       <div class="stock-head-stats">
         <div class="stock-stat"><span class="stock-stat-n" style="color:var(--green)">${disp}</span><span class="stock-stat-l">Disponíveis</span></div>
@@ -1687,11 +1685,12 @@ function renderDashboard(){
     <div class="gpp-card" style="margin:0 16px;overflow-x:auto">
       <table class="gpp-ltable stock-tbl">
         <thead><tr>
-          <th>Modelo</th><th>Km</th><th>Valor mín</th><th>Anunciado</th><th>Estado</th><th>Negociado por</th><th>Maxterauto</th><th></th>
+          <th>Modelo</th><th>Matrícula</th><th>Km</th><th>Valor mín</th><th>Anunciado</th><th>Estado</th><th>Negociado por</th><th>Maxterauto</th><th></th>
         </tr></thead>
         <tbody>
           ${st.map(m=>`<tr>
             <td><input class="stock-inp stock-modelo-inp" data-stock-id="${m.id}" data-stock-f="modelo" value="${esc(m.modelo||'')}"></td>
+            <td><input class="stock-inp" data-stock-id="${m.id}" data-stock-f="matricula" value="${esc(m.matricula||'')}" placeholder="—" style="max-width:100px;font-weight:600"></td>
             <td><input class="stock-inp stock-num" data-stock-id="${m.id}" data-stock-f="kms" type="number" value="${m.kms!=null?m.kms:''}" placeholder="—" style="max-width:70px"></td>
             <td><div class="stock-eurwrap"><input class="stock-inp stock-num" data-stock-id="${m.id}" data-stock-f="valor_min" type="number" value="${m.valor_min!=null?m.valor_min:''}" placeholder="—"><span class="stock-eur2">€</span></div></td>
             <td><div class="stock-eurwrap"><input class="stock-inp stock-num" data-stock-id="${m.id}" data-stock-f="valor_anunciado" type="number" value="${m.valor_anunciado!=null?m.valor_anunciado:''}" placeholder="—"><span class="stock-eur2">€</span></div></td>
@@ -1791,7 +1790,8 @@ function renderDashboard(){
   else if(sec==='carteira')body=carteiraChart()+listaEstado('Carteira',r=>r.mes1);
   else if(sec==='retail')body=retailView();
   else if(sec==='pendentes')body=pendentesView();
-  else if(sec==='stock')body=stockView();
+  else if(sec==='stock')body=stockView('usada');
+  else if(sec==='demos')body=stockView('demo');
   else if(sec==='exportar')body=exportarView();
   else body=tabelaResumo();
 
@@ -1917,6 +1917,7 @@ function bindEvents(){
         if(!modelo){alert('Indica o modelo.');break;}
         const dados={
           modelo,
+          matricula:document.getElementById('sf-mat')?.value||null,
           kms:document.getElementById('sf-kms')?.value?parseInt(document.getElementById('sf-kms').value):null,
           valor_min:document.getElementById('sf-min')?.value?parseFloat(document.getElementById('sf-min').value):null,
           valor_anunciado:document.getElementById('sf-anun')?.value?parseFloat(document.getElementById('sf-anun').value):null,
