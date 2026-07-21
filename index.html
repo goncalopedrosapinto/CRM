@@ -473,6 +473,12 @@ html,body{overflow-x:hidden;max-width:100vw}
   .gpp-nav-item{white-space:nowrap;border-left:none;border-bottom:3px solid transparent;padding:12px 14px}
   .gpp-nav-item.active{border-bottom-color:var(--orange);background:none}
 }
+
+.gpp-lclick{cursor:pointer}
+.gpp-lrow2:active .gpp-lclick{background:var(--bg)}
+.gpp-obs-cell{min-width:180px}
+.gpp-obs-input{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--surface);color:var(--text)}
+.gpp-obs-input:focus{border-color:var(--orange);outline:none}
 </style>
 </head>
 <body>
@@ -499,7 +505,7 @@ const FIELD_GROUPS=[
   {g:'Negócio',fields:[{k:'neg',l:'Data Negócio',t:'date'},{k:'mes1',l:'Mês Referência',t:'month'},{k:'type',l:'Tipo',t:'select',o:TYPES},{k:'pvp',l:'PVP (€)',t:'number'},{k:'origin',l:'Origem',t:'select',o:ORIGINS},{k:'profile',l:'Perfil',t:'select',o:PROFILES},{k:'retoma',l:'Retoma?',t:'select',o:['Não','Sim']},{k:'retoma_mat',l:'Matrícula da Retoma',t:'text',show:'retoma'},{k:'biz',l:'Bizagi',t:'text'},{k:'fin',l:'Financiamento',t:'select',o:FINS}]},
   {g:'Viatura',fields:[{k:'model',l:'Modelo',t:'text'},{k:'version',l:'Versão',t:'text'},{k:'stock',l:'Em Stock?',t:'select',o:['Não','Sim']},{k:'enc',l:'Encomenda',t:'text'},{k:'chas',l:'Chassis',t:'text'},{k:'mat',l:'Matrícula',t:'text'},{k:'gar',l:'Garantia?',t:'select',o:['Não','Sim']},{k:'gar_periodo',l:'Período de Garantia',t:'select',o:GAR_PERIODOS,show:'garantia'}]},
   {g:'Extras',fields:[{k:'flag_ccgo',l:'CC Go',t:'toggle'},{k:'flag_rgpd',l:'RGPD',t:'toggle'},{k:'flag_seguro',l:'Seguro Nosso',t:'toggle'},{k:'flag_lifestyle',l:'Lifestyle',t:'toggle'}]},
-  {g:'Datas & Estado',fields:[{k:'col_198',l:'198',t:'text'},{k:'dmat',l:'Data Matrícula',t:'date'},{k:'col_298',l:'298',t:'date'},{k:'obs',l:'Observações',t:'textarea'}]}
+  {g:'Datas & Estado',fields:[{k:'col_198',l:'198',t:'text'},{k:'dmat',l:'Data Matrícula',t:'date'},{k:'col_298',l:'298',t:'date'},{k:'obs',l:'Observações',t:'textarea'},{k:'obs_gestor',l:'Observação do Chefe',t:'textarea'}]}
 ];
 const ALL_FIELDS=FIELD_GROUPS.flatMap(g=>g.fields);
 
@@ -529,6 +535,13 @@ async function supabaseAuth(e,p){const r=await fetch(`${S.config.url}/auth/v1/to
 function saveSession(d){try{if(d.access_token&&d.refresh_token){localStorage.setItem('bc_session',JSON.stringify({refresh_token:d.refresh_token}))}}catch(e){}}
 function clearSession(){try{localStorage.removeItem('bc_session')}catch(e){}}
 async function refreshSession(){let raw;try{raw=localStorage.getItem('bc_session')}catch(e){return null}if(!raw)return null;let s;try{s=JSON.parse(raw)}catch(e){return null}if(!s.refresh_token)return null;try{const r=await fetch(`${S.config.url}/auth/v1/token?grant_type=refresh_token`,{method:'POST',headers:{'apikey':S.config.key,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:s.refresh_token})});if(!r.ok){clearSession();return null}const d=await r.json();saveSession(d);return d.access_token}catch(e){return null}}
+async function saveObsGestor(id,texto){
+  try{
+    await supabaseApi('PATCH',`/baviera_control?id=eq.${id}`,{obs_gestor:texto||null});
+    const r=S.records.find(x=>String(x.id)===String(id));
+    if(r)r.obs_gestor=texto;
+  }catch(e){alert('Não foi possível gravar a observação: '+e.message);}
+}
 async function changePassword(atual,nova){
   // 1) Reautenticar com a password ATUAL — impede que alguem com a sessao aberta mude a pass
   const email=(S.me&&S.me.nome&&S.me.email)||null;
@@ -1394,12 +1407,15 @@ function renderDashboard(){
   function listaEstado(status,dataFn){
     const arr=recs.filter(r=>r.status===status&&dataFn(r)===mesSel);
     const novas=arr.filter(isNovas),usadas=arr.filter(isUsadas);
-    const linha=r=>`<tr class="gpp-lrow" data-action="open-record-from-dash" data-id="${r.id}">
-      <td>${esc(r.id_cliente||'—')}</td><td>${esc(r.model||'')} ${esc(r.version||'')}</td>
-      <td><span class="gpp-tipo-badge">${esc(r.type||'?')}</span></td><td>${esc(vendName(r.vendedor_id)||'')}</td></tr>`;
+    const linha=r=>`<tr class="gpp-lrow2" data-id="${r.id}">
+      <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}">${esc(r.id_cliente||'—')}</td>
+      <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}">${esc(r.model||'')} ${esc(r.version||'')}</td>
+      <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}"><span class="gpp-tipo-badge">${esc(r.type||'?')}</span></td>
+      <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}">${esc(vendName(r.vendedor_id)||'')}</td>
+      <td class="gpp-obs-cell"><input class="gpp-obs-input" data-obs-gestor="${r.id}" value="${esc(r.obs_gestor||'')}" placeholder="Nota do chefe…"></td></tr>`;
     const bloco=(titulo,lista,cor)=>`
       <div class="gpp-sub-h" style="border-left:3px solid ${cor}">${titulo} · <b>${lista.length}</b></div>
-      ${lista.length?`<div class="gpp-card"><table class="gpp-ltable"><thead><tr><th>Cliente</th><th>Modelo</th><th>Tipo</th><th>Vendedor</th></tr></thead><tbody>${lista.map(linha).join('')}</tbody></table></div>`:'<div class="gpp-empty">Sem registos.</div>'}`;
+      ${lista.length?`<div class="gpp-card"><table class="gpp-ltable"><thead><tr><th>Cliente</th><th>Modelo</th><th>Tipo</th><th>Vendedor</th><th>Obs. Gestor</th></tr></thead><tbody>${lista.map(linha).join('')}</tbody></table></div>`:'<div class="gpp-empty">Sem registos.</div>'}`;
     return`${mesBar}
       <div class="gpp-tot-head">${status} · ${esc(mesSel)} · <b>${arr.length}</b> mota${arr.length!==1?'s':''}</div>
       ${bloco('Novas (MN+MD)',novas,'var(--blue)')}
@@ -1490,6 +1506,7 @@ function bindEvents(){
   const app=document.getElementById('app');
   app.onchange=function(e){
     const el=e.target;
+    if(el.dataset&&el.dataset.obsGestor){saveObsGestor(el.dataset.obsGestor,el.value);return;}
     if(el.dataset&&el.dataset.action==='carteira-mes-sel'){setState({carteiraMes:el.value});return;}
     if(el.dataset&&el.dataset.action==='dash-mes-sel'){setState({dashMes:el.value});return;}
     if(el.dataset&&el.dataset.field&&(el.dataset.field==='retoma'||el.dataset.field==='status'||el.dataset.field==='gar')&&S.screen==='edit'){
