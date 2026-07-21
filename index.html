@@ -749,6 +749,7 @@ function calcAlerts(records){
   if(cmeAlert.length)alerts.push({id:'cme',icon:'🟠',label:`${cmeAlert.length} CME a tratar (2 meses)`,count:cmeAlert.length,ids:cmeAlert.map(r=>r.id)});
   const bizAlert=records.filter(r=>{
     if(r.biz||!r.mes1)return false;
+    if(r.status!=='Carteira'&&r.status!=='Retail')return false;
     const p=r.mes1.split('/').map(Number);if(p.length!==2||p[0]<2026)return false;
     return true;
   });
@@ -1442,22 +1443,30 @@ function renderDashboard(){
 
   // ---- Pendentes ----
   function pendentesView(){
+    // Retail sem 298 (não está no calcAlerts, é específico)
     const semData=recs.filter(r=>r.status==='Retail'&&!r.col_298);
-    const funilParado=recs.filter(r=>FUNIL.includes(r.status)&&lastUpdateDaysR(r)>10);
-    const cartSemEnc=recs.filter(r=>r.status==='Carteira'&&!r.enc&&r.type!=='MU');
-    const bloco=(titulo,lista,desc,extraCol)=>`
+    // Todos os alertas dos vendedores (calcAlerts cobre matrícula, funil parado, carteira s/ enc, CME, Bizagi)
+    const alertas=calcAlerts(recs);
+    const linhaRec=r=>`<tr class="gpp-lrow" data-action="open-record-from-dash" data-id="${r.id}">
+      <td>${esc(r.id_cliente||'—')}</td><td>${esc(r.model||'')} ${esc(r.version||'')}</td>
+      <td><span class="gpp-tipo-badge">${esc(r.type||'?')}</span></td>
+      <td>${esc(vendName(r.vendedor_id)||'')}</td><td style="color:var(--text3)">${esc(r.status)}</td></tr>`;
+    const bloco=(titulo,lista,desc)=>`
       <div class="gpp-sub-h" style="border-left:3px solid var(--red)">${titulo} · <b>${lista.length}</b></div>
-      <div class="gpp-pend-desc">${desc}</div>
-      ${lista.length?`<div class="gpp-card"><table class="gpp-ltable"><thead><tr><th>Cliente</th><th>Modelo</th><th>Vendedor</th>${extraCol?`<th>${extraCol}</th>`:''}</tr></thead><tbody>
-        ${lista.map(r=>`<tr class="gpp-lrow" data-action="open-record-from-dash" data-id="${r.id}">
-          <td>${esc(r.id_cliente||'—')}</td><td>${esc(r.model||'')} ${esc(r.version||'')}</td>
-          <td>${esc(vendName(r.vendedor_id)||'')}</td>${extraCol?`<td>${esc(r.status)}</td>`:''}</tr>`).join('')}
-      </tbody></table></div>`:'<div class="gpp-empty">Nada pendente aqui. ✓</div>'}`;
-    const total=semData.length+funilParado.length+cartSemEnc.length;
-    return`<div class="gpp-tot-head">Pendentes · <b>${total}</b> a precisar de atenção</div>
-      ${bloco('Retail sem data 298',semData,'Motas entregues sem matrícula preenchida — não contam nos totais.')}
-      ${bloco('Funil parado (+10 dias)',funilParado,'Negócios em funil sem atualização há mais de 10 dias.','Estado')}
-      ${bloco('Carteira sem encomenda',cartSemEnc,'Motas novas em carteira sem nº de encomenda.')}`;
+      ${desc?`<div class="gpp-pend-desc">${desc}</div>`:''}
+      ${lista.length?`<div class="gpp-card"><table class="gpp-ltable"><thead><tr><th>Cliente</th><th>Modelo</th><th>Tipo</th><th>Vendedor</th><th>Estado</th></tr></thead><tbody>
+        ${lista.map(linhaRec).join('')}
+      </tbody></table></div>`:'<div class="gpp-empty">Nada aqui. ✓</div>'}`;
+    const totalAlertas=alertas.reduce((s,a)=>s+a.count,0)+semData.length;
+    // Retail sem 298 primeiro (o mais importante para os totais), depois cada alerta do calcAlerts
+    let blocos=bloco('Retail sem data 298',semData,'Motas entregues sem matrícula (298) preenchida — não contam nos totais.');
+    alertas.forEach(a=>{
+      const lista=a.ids.map(id=>recs.find(r=>String(r.id)===String(id))).filter(Boolean);
+      blocos+=bloco(a.label.replace(/^\d+\s/,'').replace(/^\w/,c=>c.toUpperCase()),lista,'');
+    });
+    return`<div class="gpp-tot-head">Pendentes · <b>${totalAlertas}</b> a precisar de atenção</div>
+      ${blocos}
+      ${totalAlertas===0?'<div class="gpp-empty" style="margin-top:12px">Tudo em dia — nenhum pendente. ✓</div>':''}`;
   }
 
   // ---- Exportar ----
