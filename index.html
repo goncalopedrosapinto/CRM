@@ -585,7 +585,7 @@ let S={
   token:null,records:[],selected:null,form:{},
   me:null,team:[],objetivos:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
-  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockAdding:false,stockFormMax:false,gppBusca:'',retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',
+  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockAdding:false,stockFormMax:false,gppBusca:'',retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{Identificação:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
@@ -1560,12 +1560,13 @@ function renderDashboard(){
     const linha=r=>`<tr class="gpp-lrow2" data-id="${r.id}">
       <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}">${esc(r.id_cliente||'—')}</td>
       <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}">${esc(r.model||'')} ${esc(r.version||'')}</td>
+      <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}"><b>${esc(r.mat||'—')}</b></td>
       <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}"><span class="gpp-tipo-badge">${esc(r.type||'?')}</span></td>
       <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}">${esc(vendName(r.vendedor_id)||'')}</td>
       <td class="gpp-obs-cell"><input class="gpp-obs-input" data-obs-gestor="${r.id}" value="${esc(r.obs_gestor||'')}" placeholder="Nota do chefe…"></td></tr>`;
     const bloco=(titulo,lista,cor)=>`
       <div class="gpp-sub-h" style="border-left:3px solid ${cor}">${titulo} · <b>${lista.length}</b></div>
-      ${lista.length?`<div class="gpp-card"><table class="gpp-ltable"><thead><tr><th>Cliente</th><th>Modelo</th><th>Tipo</th><th>Vendedor</th><th>Obs. Gestor</th></tr></thead><tbody>${lista.map(linha).join('')}</tbody></table></div>`:'<div class="gpp-empty">Sem registos.</div>'}`;
+      ${lista.length?`<div class="gpp-card"><table class="gpp-ltable"><thead><tr><th>Cliente</th><th>Modelo</th><th>Matrícula</th><th>Tipo</th><th>Vendedor</th><th>Obs. Gestor</th></tr></thead><tbody>${lista.map(linha).join('')}</tbody></table></div>`:'<div class="gpp-empty">Sem registos.</div>'}`;
     return`${mesBar}
       <div class="gpp-tot-head">${status} · ${esc(mesSel)} · <b>${arr.length}</b> mota${arr.length!==1?'s':''}</div>
       ${bloco('Novas (MN+MD)',novas,'var(--blue)')}
@@ -1694,6 +1695,7 @@ function renderDashboard(){
     if(S.retailVend)arr=arr.filter(r=>r.vendedor_id===S.retailVend);
     if(S.retailTipo==='novas')arr=arr.filter(r=>r.type==='MN'||r.type==='MD');
     else if(S.retailTipo==='usadas')arr=arr.filter(r=>r.type==='MU');
+    if(S.retailMat&&S.retailMat.trim()){const q=S.retailMat.trim().toLowerCase();arr=arr.filter(r=>(r.mat||'').toLowerCase().includes(q)||(r.id_cliente||'').toLowerCase().includes(q));}
     // Ordenação
     const ord=S.retailOrd||'data', dir=S.retailDir||'desc';
     const val=r=>({cliente:(r.id_cliente||'').toLowerCase(),modelo:(r.model||'').toLowerCase(),tipo:r.type||'',vend:(vendName(r.vendedor_id)||'').toLowerCase(),data:r.col_298||''}[ord]);
@@ -1706,6 +1708,7 @@ function renderDashboard(){
         <button class="retail-tab active" data-action="retail-modo" data-m="sempre">De sempre</button>
       </div>
       <div class="retail-filtros">
+        <input class="retail-fsel" id="retail-mat-search" placeholder="🔍 Matrícula ou cliente" value="${esc(S.retailMat||'')}" data-action="retail-mat-input" style="min-width:180px">
         <select class="retail-fsel" data-action="retail-vend">
           <option value="">Todos os vendedores</option>
           ${vends.map(p=>`<option value="${p.id}" ${S.retailVend===p.id?'selected':''}>${esc(p.nome||'')}</option>`).join('')}
@@ -1791,6 +1794,13 @@ function bindEvents(){
   const app=document.getElementById('app');
   app.oninput=function(e){
     const el=e.target;
+    if(el.id==='retail-mat-search'){
+      S.retailMat=el.value;
+      render();
+      const inp=document.getElementById('retail-mat-search');
+      if(inp){inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length);}
+      return;
+    }
     if(el.id==='gpp-search'){
       S.gppBusca=el.value;
       // Re-render mas devolver o foco ao campo
