@@ -532,6 +532,14 @@ html,body{overflow-x:hidden;max-width:100vw}
 .gpp-search-inp:focus{outline:none;border-color:var(--orange);background:rgba(255,255,255,.12)}
 .stock-max-alert{margin-top:6px;font-size:12px;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:6px 10px}
 .stock-warn{margin:0 16px 12px;padding:10px 14px;background:#fffbeb;border:1px solid #fde68a;border-radius:var(--r2);font-size:13px;color:#92400e}
+
+.retail-tabs{display:flex;gap:8px;padding:14px 16px 4px}
+.retail-tab{padding:8px 16px;border-radius:var(--r);border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-size:13px;font-weight:600;cursor:pointer}
+.retail-tab.active{background:var(--text);color:#fff;border-color:var(--text)}
+.retail-filtros{display:flex;align-items:center;gap:10px;padding:8px 16px 12px;flex-wrap:wrap}
+.retail-fsel{padding:7px 12px;border-radius:var(--r);border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:13px;cursor:pointer}
+.retail-count{font-size:12px;color:var(--text3);margin-left:auto;font-weight:600}
+.retail-th:hover{color:var(--orange)}
 </style>
 </head>
 <body>
@@ -577,7 +585,7 @@ let S={
   token:null,records:[],selected:null,form:{},
   me:null,team:[],objetivos:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
-  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockAdding:false,gppBusca:'',
+  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockAdding:false,stockFormMax:false,gppBusca:'',retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{Identificação:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
@@ -756,7 +764,7 @@ async function saveStockField(id,campo,valor){
 async function addStockMotaFull(dados){
   try{
     await supabaseApi('POST','/stock_usadas',dados);
-    S.stockAdding=false;
+    S.stockAdding=false;S.stockFormMax=false;
     await loadStock();render();
   }catch(e){alert('Erro ao adicionar: '+e.message);}
 }
@@ -1631,7 +1639,7 @@ function renderDashboard(){
           <label>Valor anunciado (€)<input id="sf-anun" class="field-input" type="number" placeholder="—"></label>
           <label>Estado<select id="sf-estado" class="field-input">${['Disponível','A negociar','Vendida'].map(e=>`<option>${e}</option>`).join('')}</select></label>
           <label>Negociado por<select id="sf-neg" class="field-input"><option value="">—</option>${vends.map(p=>`<option value="${p.id}">${esc((p.nome||'').split(' ')[0])}</option>`).join('')}</select></label>
-          <label class="stock-form-chk"><input type="checkbox" id="sf-max"> Inserida no Maxterauto</label>
+          <label style="justify-content:center"><button type="button" class="toggle-btn stock-max-toggle ${S.stockFormMax?'on':''}" data-action="stock-form-toggle-max" style="width:100%">${S.stockFormMax?'✓ ':''}Maxterauto</button></label>
         </div>
         <div class="stock-form-btns">
           <button class="btn btn-dark btn-sm" data-action="stock-cancel">Cancelar</button>
@@ -1664,11 +1672,61 @@ function renderDashboard(){
           <div class="stock-field"><label>Estado</label><select class="stock-inp" data-stock-id="${m.id}" data-stock-f="estado" style="color:${estadoBadge[m.estado]||'var(--text)'};font-weight:700">${['Disponível','A negociar','Vendida'].map(e=>`<option value="${e}" ${m.estado===e?'selected':''}>${e}</option>`).join('')}</select></div>
           <div class="stock-field"><label>Negociado por</label><select class="stock-inp" data-stock-id="${m.id}" data-stock-f="negociado_por"><option value="">—</option>${vends.map(p=>`<option value="${p.id}" ${m.negociado_por===p.id?'selected':''}>${esc((p.nome||'').split(' ')[0])}</option>`).join('')}</select></div>
         </div>
-        <label class="stock-max"><input type="checkbox" class="stock-chk" data-stock-id="${m.id}" data-stock-f="maxterauto" ${m.maxterauto?'checked':''}> Inserida no Maxterauto</label>
+        <button class="toggle-btn stock-max-toggle ${m.maxterauto?'on':''}" data-action="stock-toggle-max" data-id="${m.id}">${m.maxterauto?'✓ ':''}Maxterauto</button>
         ${!m.maxterauto&&m.estado!=='Vendida'?'<div class="stock-max-alert">⚠️ Ainda não está no Maxterauto</div>':''}
       </div>`).join('')}
     </div>
     <div class="gpp-pend-desc" style="margin-top:12px">Os vendedores veem o modelo, estado e Maxterauto — <b>nunca os valores</b>.</div>`}`;
+  }
+
+  // ---- Retail: modo Mês ou De sempre, com filtros e ordenação ----
+  function retailView(){
+    const modo=S.retailModo||'mes'; // 'mes' | 'sempre'
+    if(modo==='mes')return`
+      <div class="retail-tabs">
+        <button class="retail-tab active" data-action="retail-modo" data-m="mes">Por mês</button>
+        <button class="retail-tab" data-action="retail-modo" data-m="sempre">De sempre</button>
+      </div>
+      ${listaEstado('Retail',retailYM)}`;
+    // MODO DE SEMPRE
+    let arr=recs.filter(r=>r.status==='Retail');
+    // Filtros
+    if(S.retailVend)arr=arr.filter(r=>r.vendedor_id===S.retailVend);
+    if(S.retailTipo==='novas')arr=arr.filter(r=>r.type==='MN'||r.type==='MD');
+    else if(S.retailTipo==='usadas')arr=arr.filter(r=>r.type==='MU');
+    // Ordenação
+    const ord=S.retailOrd||'data', dir=S.retailDir||'desc';
+    const val=r=>({cliente:(r.id_cliente||'').toLowerCase(),modelo:(r.model||'').toLowerCase(),tipo:r.type||'',vend:(vendName(r.vendedor_id)||'').toLowerCase(),data:r.col_298||''}[ord]);
+    arr=[...arr].sort((a,b)=>{const x=val(a),y=val(b);return (x<y?-1:x>y?1:0)*(dir==='asc'?1:-1)});
+    const vends=S.team.filter(p=>p.role==='vendedor');
+    const th=(campo,label)=>`<th class="retail-th" data-action="retail-ord" data-o="${campo}" style="cursor:pointer">${label}${ord===campo?(dir==='asc'?' ▲':' ▼'):''}</th>`;
+    return`
+      <div class="retail-tabs">
+        <button class="retail-tab" data-action="retail-modo" data-m="mes">Por mês</button>
+        <button class="retail-tab active" data-action="retail-modo" data-m="sempre">De sempre</button>
+      </div>
+      <div class="retail-filtros">
+        <select class="retail-fsel" data-action="retail-vend">
+          <option value="">Todos os vendedores</option>
+          ${vends.map(p=>`<option value="${p.id}" ${S.retailVend===p.id?'selected':''}>${esc(p.nome||'')}</option>`).join('')}
+        </select>
+        <select class="retail-fsel" data-action="retail-tipo">
+          <option value="" ${!S.retailTipo?'selected':''}>Todos os tipos</option>
+          <option value="novas" ${S.retailTipo==='novas'?'selected':''}>Novas (MN+MD)</option>
+          <option value="usadas" ${S.retailTipo==='usadas'?'selected':''}>Usadas (MU)</option>
+        </select>
+        <span class="retail-count">${arr.length} retail${arr.length!==1?'s':''}</span>
+      </div>
+      ${arr.length===0?'<div class="gpp-empty">Sem retails com estes filtros.</div>':`
+      <div class="gpp-card" style="margin:0 16px 20px"><table class="gpp-ltable">
+        <thead><tr>${th('cliente','Cliente')}${th('modelo','Modelo')}${th('tipo','Tipo')}${th('vend','Vendedor')}${th('data','Data 298')}</tr></thead>
+        <tbody>${arr.map(r=>`<tr class="gpp-lrow" data-action="open-record-from-dash" data-id="${r.id}">
+          <td style="font-weight:600">${esc(r.id_cliente||'—')}</td>
+          <td>${esc(r.model||'')} ${esc(r.version||'')}</td>
+          <td><span class="gpp-tipo-badge">${esc(r.type||'?')}</span></td>
+          <td>${esc(vendName(r.vendedor_id)||'')}</td>
+          <td style="color:var(--text3)">${r.col_298?esc(String(r.col_298).slice(0,10)):'—'}</td></tr>`).join('')}</tbody>
+      </table></div>`}`;
   }
 
   function exportarView(){
@@ -1702,7 +1760,7 @@ function renderDashboard(){
   else if(sec==='home')body=mesBar+(recs.filter(r=>r.status==='Retail'&&!r.col_298).length?`${(()=>{const semData=recs.filter(r=>r.status==='Retail'&&!r.col_298);return`<div class="gpp-alerta ${S.dashAlertOpen==='sem298'?'open':''}"><div class="gpp-alerta-head" data-action="dash-alert-toggle" data-id="sem298"><span>⚠️</span><span><b>${semData.length}</b> mota${semData.length>1?'s':''} em Retail sem data 298 — não contam nos totais</span><span class="gpp-alerta-arrow">${S.dashAlertOpen==='sem298'?'▾':'▸'}</span></div>${S.dashAlertOpen==='sem298'?`<div class="gpp-alerta-lista">${semData.map(r=>`<div class="gpp-alerta-item" data-action="open-record-from-dash" data-id="${r.id}"><b>${esc(r.id_cliente||'(sem cliente)')}</b><span>${esc(r.model||'')} ${esc(r.version||'')}</span><span class="gpp-alerta-tipo">${esc(r.type||'?')}</span><span style="color:var(--text3)">${esc(vendName(r.vendedor_id)||'')}</span></div>`).join('')}</div>`:''}</div>`})()}`:'')+tabelaResumo();
   else if(sec==='funil')body=funilView();
   else if(sec==='carteira')body=carteiraChart()+listaEstado('Carteira',r=>r.mes1);
-  else if(sec==='retail')body=listaEstado('Retail',retailYM);
+  else if(sec==='retail')body=retailView();
   else if(sec==='pendentes')body=pendentesView();
   else if(sec==='stock')body=stockView();
   else if(sec==='exportar')body=exportarView();
@@ -1760,6 +1818,8 @@ function bindEvents(){
     }
     if(el.dataset&&el.dataset.action==='carteira-mes-sel'){setState({carteiraMes:el.value});return;}
     if(el.dataset&&el.dataset.action==='dash-mes-sel'){setState({dashMes:el.value});return;}
+    if(el.dataset&&el.dataset.action==='retail-vend'){setState({retailVend:el.value});return;}
+    if(el.dataset&&el.dataset.action==='retail-tipo'){setState({retailTipo:el.value});return;}
     if(el.dataset&&el.dataset.field&&(el.dataset.field==='retoma'||el.dataset.field==='status'||el.dataset.field==='gar')&&S.screen==='edit'){
       collectFormData();render();return;
     }
@@ -1807,8 +1867,12 @@ function bindEvents(){
       case'escala-prev':escalaShiftMes(-1);loadEscala().then(()=>render());break;
       case'escala-next':escalaShiftMes(1);loadEscala().then(()=>render());break;
       case'go-dashboard':setState({screen:'dashboard',viewVendedor:null,vselOpen:false,statusFilter:'all',alertFilter:null,alertIds:[],search:'',renderLimit:50});break;
+      case'retail-modo':setState({retailModo:el.dataset.m});break;
+      case'retail-ord':{const o=el.dataset.o;if(S.retailOrd===o)setState({retailDir:S.retailDir==='asc'?'desc':'asc'});else setState({retailOrd:o,retailDir:'asc'});break;}
       case'gpp-sec':{const s=el.dataset.s;S.gppBusca='';if(s==='escala'){setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}else if(s==='stock'){setState({gppSec:s,dashAlertOpen:null});if(!S.stockLoaded)loadStock().then(()=>render());}else{setState({gppSec:s,dashAlertOpen:null});}break}
-      case'stock-add':setState({stockAdding:true});break;
+      case'stock-add':setState({stockAdding:true,stockFormMax:false});break;
+      case'stock-toggle-max':{const m=S.stock.find(x=>String(x.id)===String(el.dataset.id));if(m)saveStockField(el.dataset.id,'maxterauto',!m.maxterauto);break;}
+      case'stock-form-toggle-max':setState({stockFormMax:!S.stockFormMax});break;
       case'stock-cancel':setState({stockAdding:false});break;
       case'stock-save-new':{
         const modelo=(document.getElementById('sf-modelo')?.value||'').trim();
@@ -1819,7 +1883,7 @@ function bindEvents(){
           valor_anunciado:document.getElementById('sf-anun')?.value?parseFloat(document.getElementById('sf-anun').value):null,
           estado:document.getElementById('sf-estado')?.value||'Disponível',
           negociado_por:document.getElementById('sf-neg')?.value||null,
-          maxterauto:document.getElementById('sf-max')?.checked||false
+          maxterauto:S.stockFormMax||false
         };
         addStockMotaFull(dados);break;
       }
