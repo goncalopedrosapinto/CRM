@@ -620,7 +620,7 @@ let S={
   token:null,records:[],selected:null,form:{},
   me:null,team:[],objetivos:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
-  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',
+  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{Identificação:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
@@ -779,8 +779,8 @@ async function stockMudarEstado(id,estado,assumir){
 async function loadStockPublico(){
   try{
     const d=await supabaseApi('GET','/stock_usadas_publico?select=*&order=created_at.desc');
-    S.stock=d||[];S.stockLoaded=true;
-  }catch(e){S.stock=[];S.stockLoaded=true;}
+    S.stock=d||[];S.stockLoaded=true;S.stockErr='';
+  }catch(e){S.stock=[];S.stockLoaded=true;S.stockErr=e.message||String(e);}
 }
 async function loadStock(){
   try{
@@ -960,7 +960,7 @@ function renderStockVend(){
       <button class="stock-tab ${cat==='usada'?'active':''}" data-action="stock-cat" data-c="usada">🏍️ Usadas</button>
       <button class="stock-tab ${cat==='demo'?'active':''}" data-action="stock-cat" data-c="demo">⭐ Demos</button>
     </div>
-    ${!S.stockLoaded?'<div class="gpp-empty" style="margin-top:12px">A carregar…</div>':st.length===0?`<div class="gpp-empty" style="margin-top:12px">Sem ${cat==='demo'?'demos':'usadas'} em stock.</div>`:`
+    ${S.stockErr?`<div class="gpp-empty" style="margin-top:12px;color:var(--red)">Erro ao carregar o stock: ${esc(S.stockErr)}</div>`:!S.stockLoaded?'<div class="gpp-empty" style="margin-top:12px">A carregar…</div>':st.length===0?`<div class="gpp-empty" style="margin-top:12px">Sem ${cat==='demo'?'demos':'usadas'} em stock.</div>`:`
     <div class="stock-grid" style="padding:12px 16px">
       ${st.map(m=>{
         const meu=m.negociado_por===meuId;
@@ -1140,6 +1140,10 @@ function renderList(){
       <div class="sidebar-item ${S.statusFilter==='Fechados'?'active':''}" data-action="sidebar-filter" data-status="Fechados">
         <span class="sdot" style="background:#22c55e"></span>Negócios Fechados<span class="scount">${(c['Retail']||0)+(c['Carteira']||0)}</span>
       </div>
+      ${!isAdmin()?`
+      <div style="border-top:1px solid rgba(255,255,255,.08);margin:8px 0"></div>
+      <div class="sidebar-item" data-action="go-stock-vend">🏍️&nbsp;&nbsp;Stock Usadas / Demos</div>
+      <div class="sidebar-item" data-action="go-escala">📅&nbsp;&nbsp;Escala</div>`:''}
       ${alertsHtml}
     </div>
     <div class="sidebar-close" data-action="toggle-sidebar">Fechar ✕</div>
@@ -1565,6 +1569,7 @@ function exportCSV(){
 function renderDashboard(){
   // Vista GPP (Chefe de Vendas) — navegação por tópicos
   const recs=S.records;
+  const team=S.team||[];
   const sec=S.gppSec||'home';
   const isNovas=r=>r.type==='MN'||r.type==='MD';
   const isUsadas=r=>r.type==='MU';
