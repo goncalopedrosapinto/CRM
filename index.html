@@ -1773,6 +1773,7 @@ function renderDashboard(){
     const semMax=st.filter(m=>!m.maxterauto&&m.estado!=='Vendida').length;
     const vends=S.team.filter(p=>p.role==='vendedor');
     const nome=cat==='demo'?'demo':'usada';
+    const ehDemo=cat==='demo';
     // Formulário de adição
     const form=S.stockAdding?`
       <div class="stock-form">
@@ -1781,9 +1782,9 @@ function renderDashboard(){
           <label>Modelo<input id="sf-modelo" class="field-input" placeholder="Ex: BMW R 1250 GS"></label>
           <label>Matrícula<input id="sf-mat" class="field-input" placeholder="Ex: AA-00-BB"></label>
           <label>Km<input id="sf-kms" class="field-input" type="number" placeholder="—"></label>
-          <label>Valor mín (€)<input id="sf-min" class="field-input" type="number" placeholder="—"></label>
+          ${ehDemo?'':`<label>Valor mín (€)<input id="sf-min" class="field-input" type="number" placeholder="—"></label>
           <label>Valor anunciado (€)<input id="sf-anun" class="field-input" type="number" placeholder="—"></label>
-          <label>Valor campanha (€)<input id="sf-camp" class="field-input" type="number" placeholder="—"></label>
+          <label>Valor campanha (€)<input id="sf-camp" class="field-input" type="number" placeholder="—"></label>`}
           <label>Estado<select id="sf-estado" class="field-input">${['Disponível','A negociar','Vendida'].map(e=>`<option>${e}</option>`).join('')}</select></label>
           <label>Negociado por<select id="sf-neg" class="field-input"><option value="">—</option>${vends.map(p=>`<option value="${p.id}">${esc((p.nome||'').split(' ')[0])}</option>`).join('')}</select></label>
           <label style="justify-content:flex-end"><button type="button" class="toggle-btn stock-max-toggle ${S.stockFormMax?'on':''}" data-action="stock-form-toggle-max" style="width:100%">${S.stockFormMax?'✓ ':''}Maxterauto</button></label>
@@ -1799,16 +1800,16 @@ function renderDashboard(){
             <td><input class="stock-inp stock-modelo-inp" data-stock-id="${m.id}" data-stock-f="modelo" value="${esc(m.modelo||'')}"></td>
             <td><input class="stock-inp" data-stock-id="${m.id}" data-stock-f="matricula" value="${esc(m.matricula||'')}" placeholder="—" style="max-width:100px;font-weight:600"></td>
             <td><input class="stock-inp stock-num" data-stock-id="${m.id}" data-stock-f="kms" type="number" value="${m.kms!=null?m.kms:''}" placeholder="—" style="max-width:70px"></td>
-            <td><div class="stock-eurwrap"><input class="stock-inp stock-num" data-stock-id="${m.id}" data-stock-f="valor_min" type="number" value="${m.valor_min!=null?m.valor_min:''}" placeholder="—"><span class="stock-eur2">€</span></div></td>
+            ${ehDemo?'':`<td><div class="stock-eurwrap"><input class="stock-inp stock-num" data-stock-id="${m.id}" data-stock-f="valor_min" type="number" value="${m.valor_min!=null?m.valor_min:''}" placeholder="—"><span class="stock-eur2">€</span></div></td>
             <td><div class="stock-eurwrap"><input class="stock-inp stock-num" data-stock-id="${m.id}" data-stock-f="valor_anunciado" type="number" value="${m.valor_anunciado!=null?m.valor_anunciado:''}" placeholder="—"><span class="stock-eur2">€</span></div></td>
-            <td><div class="stock-eurwrap"><input class="stock-inp stock-num stock-camp" data-stock-id="${m.id}" data-stock-f="valor_campanha" type="number" value="${m.valor_campanha!=null?m.valor_campanha:''}" placeholder="—"><span class="stock-eur2">€</span></div></td>
+            <td><div class="stock-eurwrap"><input class="stock-inp stock-num stock-camp" data-stock-id="${m.id}" data-stock-f="valor_campanha" type="number" value="${m.valor_campanha!=null?m.valor_campanha:''}" placeholder="—"><span class="stock-eur2">€</span></div></td>`}
             <td><select class="stock-inp" data-stock-id="${m.id}" data-stock-f="estado" style="color:${estadoBadge[m.estado]||'var(--text)'};font-weight:700">${['Disponível','A negociar','Vendida'].map(e=>`<option value="${e}" ${m.estado===e?'selected':''}>${e}</option>`).join('')}</select></td>
             <td><select class="stock-inp" data-stock-id="${m.id}" data-stock-f="negociado_por"><option value="">—</option>${vends.map(p=>`<option value="${p.id}" ${m.negociado_por===p.id?'selected':''}>${esc((p.nome||'').split(' ')[0])}</option>`).join('')}</select></td>
             <td style="text-align:center"><button class="toggle-btn stock-max-toggle stock-max-mini ${m.maxterauto?'on':''}" data-action="stock-toggle-max" data-id="${m.id}">${m.maxterauto?'✓':'—'}</button></td>
             <td><button class="stock-del" data-action="stock-del" data-id="${m.id}" title="Apagar">🗑</button></td>
           </tr>`;
     const cabecalho=`<thead><tr>
-          <th>Modelo</th><th>Matrícula</th><th>Km</th><th>Valor mín</th><th>Anunciado</th><th>Campanha</th><th>Estado</th><th>Negociado por</th><th>Maxterauto</th><th></th>
+          <th>Modelo</th><th>Matrícula</th><th>Km</th>${ehDemo?'':'<th>Valor mín</th><th>Anunciado</th><th>Campanha</th>'}<th>Estado</th><th>Negociado por</th><th>Maxterauto</th><th></th>
         </tr></thead>`;
     return`
     <div class="stock-head">
@@ -2151,7 +2152,7 @@ function bindEvents(){
           estado:document.getElementById('sf-estado')?.value||'Disponível',
           negociado_por:document.getElementById('sf-neg')?.value||null,
           maxterauto:S.stockFormMax||false,
-          categoria:S.stockCat||'usada'
+          categoria:(S.gppSec==='demos'?'demo':'usada')
         };
         addStockMotaFull(dados);break;
       }
