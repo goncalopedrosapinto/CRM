@@ -179,6 +179,10 @@ select.field-input{padding-right:34px;background-image:url("data:image/svg+xml,%
 .detail-value{font-size:13px;font-weight:500;color:var(--text);margin-top:1px}
 .detail-badges{display:flex;gap:6px;flex-wrap:wrap;padding:14px 16px 6px}
 .detail-actions{display:flex;gap:8px;padding:16px 16px 24px}.detail-actions .btn{flex:1}
+.copy-actions{display:flex;gap:8px;padding:8px 16px 0}.copy-actions .btn{flex:1}
+.btn-copy{border:1.5px solid var(--blue);color:var(--blue);background:var(--surface);font-weight:700;transition:background .15s,color .15s}
+.btn-copy:active{background:var(--blue-bg)}
+.btn-copy.copied{background:var(--green);border-color:var(--green);color:#fff}
 
 .toggles{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .toggle-btn{padding:10px 6px;border-radius:var(--r);border:1.5px solid var(--border);font-size:12px;font-weight:700;text-align:center;background:var(--surface);color:var(--text3)}
@@ -486,6 +490,7 @@ html,body{overflow-x:hidden;max-width:100vw}
 .ev-item-sub{font-size:11px;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .insc-inp{border:1px solid var(--border);border-radius:6px;padding:5px 6px;font-size:12px;background:var(--surface);max-width:130px}
 .ev-estado-pill{font-size:12px;font-weight:700;flex-shrink:0}
+.ev-funil-pill{display:inline-block;font-size:10px;font-weight:700;color:#fff;padding:1px 7px;border-radius:10px;vertical-align:middle}
 .ev-form{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:14px;margin:10px 0}
 .ev-form-h{font-size:14px;font-weight:800;color:var(--text);margin-bottom:12px}
 .ev-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -662,11 +667,13 @@ const SDOT={Retail:'var(--green)',Carteira:'var(--blue)',Quente:'var(--red)',Mor
 const MOTIVOS_PERDA=['Preço','Concorrência','Prazo de entrega','Financiamento','Retoma','Desistência','Adiado','Outro'];
 const TYPES=['MN','MD','MU'],ORIGINS=['','Cliente','Recom.','Stand','Evento','Lead'],PROFILES=['','Particular','Empresa','Protocolo','Estado'],GAR_PERIODOS=['1 ano','2 anos','3 anos','4 anos','5 anos'],FINS=['','PP','Fext','Fint'];
 const FIELD_GROUPS=[
-  {g:'Identificação',fields:[{k:'status',l:'Status',t:'select',o:STATUSES},{k:'motivo_perda',l:'Motivo da Perda',t:'select',o:MOTIVOS_PERDA,show:'perdido'},{k:'alert_date',l:'Alertar no dia',t:'date',show:'funil'},{k:'id_cliente',l:'Cliente',t:'text'},{k:'local',l:'Código Postal',t:'text'}]},
+  {g:'INFO',fields:[{k:'status',l:'Status',t:'select',o:STATUSES},{k:'motivo_perda',l:'Motivo da Perda',t:'select',o:MOTIVOS_PERDA,show:'perdido'},{k:'alert_date',l:'Alertar no dia',t:'date',show:'funil'}]},
+  {g:'Identificação',fields:[{k:'id_cliente',l:'Cliente',t:'text'},{k:'local',l:'Código Postal',t:'text'},{k:'nif',l:'NIF',t:'text'},{k:'morada',l:'Morada',t:'text'},{k:'cc',l:'CC',t:'text'},{k:'email',l:'Email',t:'text'},{k:'contacto',l:'Contacto',t:'text'}]},
   {g:'Negócio',fields:[{k:'neg',l:'Data Negócio',t:'date'},{k:'mes1',l:'Mês Referência',t:'month'},{k:'type',l:'Tipo',t:'select',o:TYPES},{k:'pvp',l:'PVP (€)',t:'number'},{k:'origin',l:'Origem',t:'select',o:ORIGINS},{k:'lead_webapp',l:'Nº Lead (WebApp)',t:'text',show:'lead'},{k:'profile',l:'Perfil',t:'select',o:PROFILES},{k:'retoma',l:'Retoma?',t:'select',o:['Não','Sim']},{k:'retoma_mat',l:'Matrícula da Retoma',t:'text',show:'retoma'},{k:'biz',l:'Bizagi',t:'text'},{k:'fin',l:'Financiamento',t:'select',o:FINS}]},
   {g:'Viatura',fields:[{k:'stock_id',l:'Mota do Stock (modelo · matrícula)',t:'stockpick',show:'stockpick'},{k:'model',l:'Modelo',t:'text'},{k:'version',l:'Versão',t:'text'},{k:'stock',l:'Em Stock?',t:'select',o:['Não','Sim']},{k:'enc',l:'Encomenda',t:'text'},{k:'chas',l:'Chassis',t:'text'},{k:'mat',l:'Matrícula',t:'text'},{k:'gar',l:'Garantia?',t:'select',o:['Não','Sim']},{k:'gar_periodo',l:'Período de Garantia',t:'select',o:GAR_PERIODOS,show:'garantia'}]},
   {g:'Extras',fields:[{k:'flag_ccgo',l:'CC Go',t:'toggle'},{k:'flag_rgpd',l:'RGPD',t:'toggle'},{k:'flag_seguro',l:'Seguro Nosso',t:'toggle'},{k:'flag_lifestyle',l:'Lifestyle',t:'toggle'}]},
-  {g:'Datas & Estado',fields:[{k:'col_198',l:'198',t:'text'},{k:'dmat',l:'Data Matrícula',t:'date'},{k:'col_298',l:'298',t:'date'},{k:'obs',l:'Observações',t:'textarea'},{k:'obs_gestor',l:'Observação do Chefe',t:'textarea'}]}
+  {g:'Datas',fields:[{k:'col_198',l:'198',t:'text'},{k:'dmat',l:'Data Matrícula',t:'date'},{k:'col_298',l:'298',t:'date'}]},
+  {g:'OBS',fields:[{k:'obs',l:'Observações',t:'textarea'},{k:'obs_gestor',l:'Observação do Chefe',t:'textarea'}]}
 ];
 const ALL_FIELDS=FIELD_GROUPS.flatMap(g=>g.fields);
 
@@ -688,7 +695,7 @@ let S={
   pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
-  openGroups:{Identificação:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
+  openGroups:{INFO:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
 };
 function setState(u){Object.assign(S,u);render()}
 
@@ -914,6 +921,7 @@ async function saveInscricaoNova(){
     telefone:(document.getElementById('insc-telefone')?.value||'').trim()||null,
     acompanhantes:parseInt(document.getElementById('insc-acompanhantes')?.value)||0,
     estado:document.getElementById('insc-estado')?.value||'Confirmado',
+    funil:document.getElementById('insc-funil')?.value||null,
     obs:(document.getElementById('insc-obs')?.value||'').trim()||null};
   setState({loading:true,eventoErr:''});
   try{await supabaseApi('POST','/inscricoes',body);await recarregarEvento();setState({loading:false,inscAdding:false});}
@@ -937,8 +945,8 @@ async function delEvento(id){const n=(S.inscricoes||[]).filter(i=>i.evento_id===
 function exportInscricoes(){
   const ev=eventoAtual();if(!ev)return;
   const list=(S.inscricoes||[]).filter(i=>i.evento_id===ev.id);
-  const rows=[['Evento','Cliente','Telefone','Acompanhantes','Estado','Vendedor','Observações']];
-  list.forEach(i=>rows.push([ev.nome,i.cliente,i.telefone||'',i.acompanhantes||0,i.estado||'',vendName(i.vendedor_id)||'',(i.obs||'').replace(/\n/g,' ')]));
+  const rows=[['Evento','Cliente','Telefone','Acompanhantes','Estado','Funil','Vendedor','Observações']];
+  list.forEach(i=>rows.push([ev.nome,i.cliente,i.telefone||'',i.acompanhantes||0,i.estado||'',i.funil||'',vendName(i.vendedor_id)||'',(i.obs||'').replace(/\n/g,' ')]));
   const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const url=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
   const a=document.createElement('a');a.href=url;a.download=`inscricoes_${ev.nome.replace(/\s+/g,'_')}.csv`;a.click();
@@ -1187,6 +1195,7 @@ function renderViewSelector(){
     </div>`:''}
   </div>`}
 
+function eventoFunilPill(f){if(!f)return'';const c={Quente:'#ef4444',Morno:'#e8a30c',Frio:'#64748b'}[f]||'var(--text3)';return`<span class="ev-funil-pill" style="background:${c}">${esc(f)}</span>`;}
 function eventoRankingHtml(){
   const meuId=S.me&&S.me.id;
   const rk=S.ranking||[];
@@ -1230,6 +1239,7 @@ function renderEventoVend(){
         <label>Telefone<input id="insc-telefone" class="field-input" placeholder="—" inputmode="tel"></label>
         <label>Acompanhantes<input id="insc-acompanhantes" class="field-input" type="number" min="0" value="0"></label>
         <label>Estado<select id="insc-estado" class="field-input">${estados.map(e=>`<option ${e==='Confirmado'?'selected':''}>${e}</option>`).join('')}</select></label>
+        <label>Funil<select id="insc-funil" class="field-input"><option value="">—</option>${['Frio','Morno','Quente'].map(f=>`<option>${f}</option>`).join('')}</select></label>
         <label style="grid-column:1/-1">Observações<input id="insc-obs" class="field-input" placeholder="—"></label>
       </div>
       <div class="ev-form-btns">
@@ -1251,7 +1261,7 @@ function renderEventoVend(){
       <div class="ev-list">${minhas.map(i=>`
         <div class="ev-item">
           <div class="ev-item-main">
-            <div class="ev-item-nome">${esc(i.cliente)}</div>
+            <div class="ev-item-nome">${esc(i.cliente)} ${eventoFunilPill(i.funil)}</div>
             <div class="ev-item-sub">${i.telefone?esc(i.telefone):'sem telefone'}${i.acompanhantes>0?` · +${i.acompanhantes} acomp.`:''}${i.obs?` · ${esc(i.obs)}`:''}</div>
           </div>
           <select class="insc-inp" data-insc-id="${i.id}" data-insc-f="estado" style="color:${estadoCor[i.estado]||'var(--text)'};font-weight:700">${estados.map(e=>`<option value="${e}" ${i.estado===e?'selected':''}>${e}</option>`).join('')}</select>
@@ -1429,6 +1439,16 @@ function renderList(){
   <button class="fab" data-action="open-add">+</button>
   </div></div>`}
 
+function origemVeiculo(r){if(!r)return'—';if(r.type==='MU')return'Usada';if(r.type==='MD')return'DEMO';if(r.stock==='Sim')return'Stock';if(r.enc)return'Encomenda';return'—';}
+function textoMatricula(r){r=r||{};return['*Pedido de matrícula*','NIF: '+(r.nif||'—'),'CC: '+(r.cc||'—'),'Nome: '+(r.id_cliente||'—'),'Chassis/VIN: '+(r.chas||'—'),'Nº Bizagi: '+(r.biz||'—')].join('\n');}
+function textoVenda(r){r=r||{};const modelo=[r.model,r.version].filter(Boolean).join(' ')||'—';const ret=r.retoma==='Sim'?('Retoma'+(r.retoma_mat?' ('+r.retoma_mat+')':'')):'Sem Retoma';return['*Comunicação de venda*','Modelo: '+modelo,'Origem: '+origemVeiculo(r),ret,'Pagamento: '+(r.fin||'—'),'Nome: '+(r.id_cliente||'—')].join('\n');}
+function copiarTexto(txt,btn){
+  const flash=()=>{if(!btn)return;const o=btn.getAttribute('data-label')||btn.textContent;if(!btn.getAttribute('data-label'))btn.setAttribute('data-label',o);btn.textContent='✓ Copiado';btn.classList.add('copied');setTimeout(()=>{btn.textContent=btn.getAttribute('data-label');btn.classList.remove('copied');},1600);};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(flash).catch(()=>fallbackCopy(txt,flash));}
+  else fallbackCopy(txt,flash);
+}
+function fallbackCopy(txt,cb){try{const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.top='-1000px';ta.style.opacity='0';document.body.appendChild(ta);ta.focus();ta.select();document.execCommand('copy');document.body.removeChild(ta);cb&&cb();}catch(e){alert('Não foi possível copiar automaticamente.');}}
+
 function renderDetail(){
   const r=S.selected;if(!r)return'';
   return`
@@ -1458,6 +1478,10 @@ function renderDetail(){
       </div></div>`:''}
     </div>`).join('')}
     ${S.confirmDelete?`<div class="confirm-bar"><p>Apagar este registo?</p><button class="btn btn-sm" data-action="confirm-delete" ${S.loading?'disabled':''} style="background:var(--red);color:#fff">${S.loading?'…':'Sim'}</button><button class="btn btn-outline btn-sm" data-action="cancel-delete">Não</button></div>`:''}
+    <div class="copy-actions">
+      <button class="btn btn-copy" data-action="copy-matricula">📋 Pedido de matrícula</button>
+      <button class="btn btn-copy" data-action="copy-venda">📋 Comunicação de venda</button>
+    </div>
     <div class="detail-actions">
       <button class="btn btn-dark" data-action="open-edit" style="flex:1">Editar</button>
       ${!S.confirmDelete?`<button class="btn btn-danger" data-action="ask-delete">Apagar</button>`:''}
@@ -1764,16 +1788,28 @@ function exportComissoes(){
   a.href=url;a.download=`comissoes_${mesSel.replace('/','-')}.csv`;a.click();
   URL.revokeObjectURL(url);
 }
-function exportCSV(){
-  const cols=['id_cliente','status','motivo_perda','resp','local','neg','mes1','type','pvp','origin','profile','retoma','retoma_mat','biz','fin','model','version','stock','enc','chas','mat','lead_webapp','gar','gar_periodo','flag_ccgo','flag_rgpd','flag_seguro','flag_lifestyle','dmat','col_198','col_298','obs'];
-  const labels=['Cliente','Status','MotivoPerda','Responsavel','CodPostal','DataNegocio','MesRef','Tipo','PVP','Origem','Perfil','Retoma','MatRetoma','Bizagi','Financiamento','Modelo','Versao','Stock','Encomenda','Chassis','Matricula','NumLeadWebApp','Garantia','PeriodoGarantia','CCGo','RGPD','SeguroNosso','Lifestyle','DataMatricula','198','298','Obs'];
-  const recs=S.records;
+function exportCSV(incluirPessoais){
+  if(incluirPessoais===undefined)incluirPessoais=true;
+  const bool=v=>v===true?'Sim':(v===false?'Não':'');
+  const nomeStock=id=>{if(!id)return'';const m=(S.stock||[]).find(x=>String(x.id)===String(id));return m?((m.modelo||'')+(m.matricula?' · '+m.matricula:'')):('#'+id);};
+  const nome=v=>vendName(v)||'';
+  const DEF=[
+    {c:'id',l:'ID'},{c:'status',l:'Status'},{c:'vendedor_id',l:'Vendedor',f:nome},{c:'resp',l:'Resp'},{c:'motivo_perda',l:'MotivoPerda'},
+    {c:'id_cliente',l:'Cliente'},{c:'nif',l:'NIF',p:1},{c:'cc',l:'CC',p:1},{c:'morada',l:'Morada',p:1},{c:'email',l:'Email',p:1},{c:'contacto',l:'Contacto',p:1},{c:'local',l:'CodPostal'},
+    {c:'neg',l:'DataNegocio'},{c:'mes1',l:'MesRef'},{c:'type',l:'Tipo'},{c:'pvp',l:'PVP'},{c:'origin',l:'Origem'},{c:'lead_webapp',l:'NumLeadWebApp'},{c:'profile',l:'Perfil'},{c:'retoma',l:'Retoma'},{c:'retoma_mat',l:'MatRetoma'},{c:'biz',l:'Bizagi'},{c:'fin',l:'Financiamento'},
+    {c:'model',l:'Modelo'},{c:'version',l:'Versao'},{c:'stock',l:'EmStock'},{c:'enc',l:'Encomenda'},{c:'chas',l:'Chassis'},{c:'mat',l:'Matricula'},{c:'stock_id',l:'MotaStock',f:nomeStock},{c:'gar',l:'Garantia'},{c:'gar_periodo',l:'PeriodoGarantia'},
+    {c:'flag_ccgo',l:'CCGo',f:bool},{c:'flag_rgpd',l:'RGPD',f:bool},{c:'flag_seguro',l:'SeguroNosso',f:bool},{c:'flag_lifestyle',l:'Lifestyle',f:bool},{c:'xev',l:'xEV'},{c:'bev',l:'BEV'},{c:'qor',l:'QOR'},{c:'m_flag',l:'M_FLAG'},{c:'csc',l:'CSC'},{c:'cme',l:'CME'},{c:'cme_confirmed',l:'CME_Confirmado'},
+    {c:'col_198',l:'198'},{c:'dmat',l:'DataMatricula'},{c:'col_298',l:'298'},{c:'app',l:'APP'},
+    {c:'alert_date',l:'AlertarNoDia'},{c:'alert_days',l:'AlertarDias_legado'},{c:'obs',l:'Obs'},{c:'obs_gestor',l:'ObsChefe',p:1},
+    {c:'status_updated_at',l:'StatusMudouEm'},{c:'created_at',l:'Criado'},{c:'updated_at',l:'Atualizado'},{c:'updated_by',l:'AtualizadoPor',f:nome}
+  ];
+  const cols=DEF.filter(d=>incluirPessoais||!d.p);
   const esc2=v=>{v=(v==null?'':String(v));return /[",\n;]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
-  const rows=[labels.join(';')];
-  rows[0]='Vendedor;'+rows[0];recs.forEach(r=>rows.push(esc2(vendName(r.vendedor_id)||'')+';'+cols.map(c=>esc2(r[c])).join(';')));
+  const rows=[cols.map(d=>d.l).join(';')];
+  (S.records||[]).forEach(r=>{rows.push(cols.map(d=>esc2(d.f?d.f(r[d.c],r):r[d.c])).join(';'));});
   const blob=new Blob(['\ufeff'+rows.join('\n')],{type:'text/csv;charset=utf-8'});
   const url=URL.createObjectURL(blob);const a=document.createElement('a');
-  a.href=url;a.download=`baviera_${new Date().toISOString().slice(0,10)}.csv`;a.click();
+  a.href=url;a.download=`baviera_${incluirPessoais?'completo':'sem_dados_pessoais'}_${new Date().toISOString().slice(0,10)}.csv`;a.click();
   URL.revokeObjectURL(url);
 }
 function renderDashboard(){
@@ -2254,7 +2290,7 @@ function renderDashboard(){
       <div class="ev-list">${lista.map(i=>`
         <div class="ev-item">
           <div class="ev-item-main">
-            <div class="ev-item-nome">${esc(i.cliente)} <span class="ev-item-vend">· ${esc((vendName(i.vendedor_id)||'?').split(' ')[0])}</span></div>
+            <div class="ev-item-nome">${esc(i.cliente)} ${eventoFunilPill(i.funil)}<span class="ev-item-vend">· ${esc((vendName(i.vendedor_id)||'?').split(' ')[0])}</span></div>
             <div class="ev-item-sub">${i.telefone?esc(i.telefone):'sem telefone'}${i.acompanhantes>0?` · +${i.acompanhantes} acomp.`:''}${i.obs?` · ${esc(i.obs)}`:''}</div>
           </div>
           <span class="ev-estado-pill" style="color:${estadoCor[i.estado]||'var(--text)'}">${esc(i.estado||'')}</span>
@@ -2267,10 +2303,14 @@ function renderDashboard(){
     return`<div class="gpp-export">
       <div style="font-size:40px">⬇️</div>
       <div style="font-size:16px;font-weight:600;margin:8px 0 4px">Exportar todos os dados</div>
-      <div style="font-size:13px;color:var(--text3);max-width:360px;text-align:center;line-height:1.5;margin-bottom:20px">
-        Descarrega todos os registos de todos os vendedores (e os teus) em CSV, com todos os campos. Abre diretamente no Excel.
+      <div style="font-size:13px;color:var(--text3);max-width:420px;text-align:center;line-height:1.5;margin-bottom:16px">
+        CSV com <b>todos os campos</b> de todos os registos, organizados por blocos (cliente, negócio, viatura, extras, datas, alertas, observações e metadados). Abre direto no Excel.
       </div>
-      <button class="btn btn-orange" data-action="export-csv" style="padding:12px 28px">⬇ Descarregar CSV completo (${recs.length} registos)</button>
+      <button class="btn btn-orange" data-action="export-csv" style="padding:12px 28px">⬇ CSV completo (${recs.length} registos)</button>
+      <div style="font-size:12px;color:var(--text3);max-width:420px;text-align:center;line-height:1.5;border-top:1px solid var(--border);padding-top:16px;margin-top:20px">
+        O CSV completo inclui <b>NIF, CC, morada, email, contacto</b> e a observação do chefe. Para um ficheiro que possas partilhar sem expor dados pessoais, usa a versão limpa:
+      </div>
+      <button class="btn btn-dark btn-sm" data-action="export-csv-safe" style="margin-top:10px">⬇ CSV sem dados pessoais</button>
     </div>`;
   }
 
@@ -2408,7 +2448,8 @@ function bindEvents(){
       case'dash-section':setState({dashSection:el.dataset.s,dashAlertOpen:null});break;
       case'dash-alert-toggle':setState({dashAlertOpen:S.dashAlertOpen===el.dataset.id?null:el.dataset.id});break;
       case'open-record-from-dash':{const r=S.records.find(x=>String(x.id)===String(el.dataset.id));if(r)setState({selected:r,screen:'detail'});break}
-      case'export-csv':exportCSV();break;
+      case'export-csv':{if(!S.stockLoaded){loadStock().then(()=>exportCSV(true));}else exportCSV(true);break}
+      case'export-csv-safe':{if(!S.stockLoaded){loadStock().then(()=>exportCSV(false));}else exportCSV(false);break}
       case'export-comissoes':exportComissoes();break;
       case'go-escala':{setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false})).catch(e=>setState({error:e.message,loading:false,screen:'escala'}));break}
       case'go-stock-vend':{setState({loading:true});loadStockPublico().then(()=>setState({screen:'stockvend',loading:false}));break}
@@ -2533,15 +2574,17 @@ function bindEvents(){
         });
         break;
       }
-      case'open-detail':{const id=parseInt(el.dataset.id),r=S.records.find(x=>x.id===id);if(r)setState({selected:r,screen:'detail',confirmDelete:false,openGroups:{Identificação:true}});break}
+      case'open-detail':{const id=parseInt(el.dataset.id),r=S.records.find(x=>x.id===id);if(r)setState({selected:r,screen:'detail',confirmDelete:false,openGroups:{INFO:true}});break}
       case'back-to-list':setState({screen:'list',selected:null});break;
-      case'open-edit':setState({form:recordToForm(S.selected||{}),screen:'edit',error:'',openGroups:{Identificação:true}});break;
-      case'open-add':setState({selected:null,form:emptyForm(),screen:'edit',error:'',openGroups:{Identificação:true}});break;
+      case'open-edit':setState({form:recordToForm(S.selected||{}),screen:'edit',error:'',openGroups:{INFO:true}});break;
+      case'open-add':setState({selected:null,form:emptyForm(),screen:'edit',error:'',openGroups:{INFO:true}});break;
       case'back-from-edit':setState({screen:S.selected?'detail':'list',error:''});break;
       case'save-record':collectFormData();saveRecord();break;
       case'toggle-section':{const g=el.dataset.group;S.openGroups[g]=!S.openGroups[g];if(S.screen==='edit')collectFormData();render();break}
       case'toggle-flag':{collectFormData();S.form[el.dataset.field]=S.form[el.dataset.field]?false:true;render();break}
       case'ask-delete':setState({confirmDelete:true});break;
+      case'copy-matricula':copiarTexto(textoMatricula(S.selected),el);break;
+      case'copy-venda':copiarTexto(textoVenda(S.selected),el);break;
       case'cancel-delete':setState({confirmDelete:false});break;
       case'confirm-delete':deleteRecord();break;
     }
