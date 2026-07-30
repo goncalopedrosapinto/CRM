@@ -662,7 +662,7 @@ const I={
   plus:'<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 4v10M4 9h10"/></svg>',
 };
 
-const STATUSES=['Retail','Carteira','Quente','Morno','Frio','Matricula','Perdido'];
+const STATUSES=['Retail','Carteira','Quente','Morno','Frio','Perdido'];
 const SDOT={Retail:'var(--green)',Carteira:'var(--blue)',Quente:'var(--red)',Morno:'var(--amber)',Frio:'var(--slate)',Matricula:'var(--purple)',Perdido:'#6b7280'};
 const MOTIVOS_PERDA=['Preço','Concorrência','Prazo de entrega','Financiamento','Retoma','Desistência','Adiado','Outro'];
 const TYPES=['MN','MD','MU'],ORIGINS=['','Cliente','Recom.','Stand','Evento','Lead'],PROFILES=['','Particular','Empresa','Protocolo','Estado'],GAR_PERIODOS=['1 ano','2 anos','3 anos','4 anos','5 anos'],FINS=['','PP','Fext','Fint'];
@@ -1063,7 +1063,7 @@ function renderCard(r){return`
         ${r.gar?`<span class="tag tag-gar">${esc(r.gar)}</span>`:''}
         ${r.type?`<span class="tag tag-sm">${esc(r.type)}</span>`:''}
       </div>`:''}
-      ${(()=>{const acts=[];if(r.status==='Carteira'||r.status==='Matricula')acts.push(`<button class="card-act" data-action="copy-pedido" data-id="${r.id}" title="Copiar Pedido de Matrícula">📋 <span>Matrícula</span></button>`);if(r.bev&&!r.cme)acts.push(`<button class="card-act card-act-cme" data-action="confirm-cme" data-id="${r.id}" title="Confirmar CME">🟠 <span>CME</span></button>`);return acts.length?`<div class="card-acts">${acts.join('')}</div>`:''})()}
+      ${(()=>{const acts=[];if(r.bev&&!r.cme)acts.push(`<button class="card-act card-act-cme" data-action="confirm-cme" data-id="${r.id}" title="Confirmar CME">🟠 <span>CME</span></button>`);return acts.length?`<div class="card-acts">${acts.join('')}</div>`:''})()}
     </div>
   </div>`}
 
@@ -1352,9 +1352,6 @@ function renderList(){
           <span class="sdot" style="background:var(--slate);width:6px;height:6px"></span>Frio<span class="scount">${c['Frio']||0}</span>
         </div>
       </div>
-      <div class="sidebar-item ${S.statusFilter==='Matricula'?'active':''}" data-action="sidebar-filter" data-status="Matricula">
-        <span class="sdot" style="background:var(--purple)"></span>Matricula<span class="scount">${c['Matricula']||0}</span>
-      </div>
       <div style="border-top:1px solid rgba(255,255,255,.08);margin:8px 0"></div>
       <div class="sidebar-item ${S.statusFilter==='Fechados'?'active':''}" data-action="sidebar-filter" data-status="Fechados">
         <span class="sdot" style="background:#22c55e"></span>Negócios Fechados<span class="scount">${(c['Retail']||0)+(c['Carteira']||0)}</span>
@@ -1441,7 +1438,8 @@ function renderList(){
 
 function origemVeiculo(r){if(!r)return'—';if(r.type==='MU')return'Usada';if(r.type==='MD')return'DEMO';if(r.stock==='Sim')return'Stock';if(r.enc)return'Encomenda';return'—';}
 function textoMatricula(r){r=r||{};return['*Pedido de matrícula*','NIF: '+(r.nif||'—'),'CC: '+(r.cc||'—'),'Nome: '+(r.id_cliente||'—'),'Chassis/VIN: '+(r.chas||'—'),'Nº Bizagi: '+(r.biz||'—')].join('\n');}
-function textoVenda(r){r=r||{};const modelo=[r.model,r.version].filter(Boolean).join(' ')||'—';const ret=r.retoma==='Sim'?('Retoma'+(r.retoma_mat?' ('+r.retoma_mat+')':'')):'Sem Retoma';return['*Comunicação de venda*','Modelo: '+modelo,'Origem: '+origemVeiculo(r),ret,'Pagamento: '+(r.fin||'—'),'Nome: '+(r.id_cliente||'—')].join('\n');}
+function tipoLabel(t){return{MN:'MN - Mota Nova',MD:'MD - Mota Demo',MU:'MU - Mota Usada'}[t]||(t||'—');}
+function textoVenda(r){r=r||{};const modelo=[r.model,r.version].filter(Boolean).join(' ')||'—';const ret=r.retoma==='Sim'?('Retoma'+(r.retoma_mat?' ('+r.retoma_mat+')':'')):'Sem Retoma';return['*Comunicação de venda*','Modelo: '+modelo,'Tipo: '+tipoLabel(r.type),ret,'Pagamento: '+(r.fin||'—'),'Nome: '+(r.id_cliente||'—')].join('\n');}
 function copiarTexto(txt,btn){
   const flash=()=>{if(!btn)return;const o=btn.getAttribute('data-label')||btn.textContent;if(!btn.getAttribute('data-label'))btn.setAttribute('data-label',o);btn.textContent='✓ Copiado';btn.classList.add('copied');setTimeout(()=>{btn.textContent=btn.getAttribute('data-label');btn.classList.remove('copied');},1600);};
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(flash).catch(()=>fallbackCopy(txt,flash));}
@@ -2524,20 +2522,6 @@ function bindEvents(){
       case'quick-quarter':{const d=new Date();const y=d.getFullYear();const q=Math.floor(d.getMonth()/3);const qm=[0,1,2].map(i=>`${y}/${String(q*3+i+1).padStart(2,'0')}`);const ms=availableMonths().filter(m=>qm.includes(m));setState({monthFilter:ms.length?ms:qm,filterYear:String(y)});break}
       case'toggle-filters':{const yrs=availableYears();setState({filtersOpen:!S.filtersOpen,filterYear:S.filterYear||yrs[0]||'2026'});break}
       case'set-year':setState({filterYear:el.dataset.year});break;
-      case'copy-pedido':{
-        e.stopPropagation();
-        const id=parseInt(el.dataset.id);
-        const r=S.records.find(x=>x.id===id);
-        if(r){
-          const txt=`Solicito pedido de matrícula desta viatura,\n• Modelo: ${r.model||''} ${r.version||''}\n• CLIENTE: ${r.id_cliente||''}\n• Encomenda: ${r.enc||''}\n• CHASSIS: ${r.chas||''}\n• Bizagi: ${r.biz||''}\nFINANCIAMENTO: ${r.fin||''}`;
-          const orig=el.innerHTML;
-          const done=()=>{el.innerHTML='✓ <span>Copiado</span>';el.classList.add('copied');setTimeout(()=>{el.innerHTML=orig;el.classList.remove('copied')},1800)};
-          navigator.clipboard.writeText(txt).then(done).catch(()=>{
-            const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);done();
-          });
-        }
-        break;
-      }
       case'confirm-cme':{
         e.stopPropagation();
         const id=parseInt(el.dataset.id);
