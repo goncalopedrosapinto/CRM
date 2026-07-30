@@ -455,6 +455,47 @@ html,body{overflow-x:hidden;max-width:100vw}
 .gpp-obj-bar{margin-top:12px;height:8px;background:var(--border);border-radius:6px;overflow:hidden}
 .gpp-obj-bar-fill{height:100%;border-radius:6px;background:var(--text3);transition:width .3s}
 .gpp-obj-bar-fill.ok{background:var(--green)}.gpp-obj-bar-fill.warn{background:var(--amber)}.gpp-obj-bar-fill.bad{background:var(--red)}
+.sidebar-evento{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ev-wrap{padding:14px 16px;max-width:760px;margin:0 auto}
+.ev-empty{padding:20px;text-align:center;color:var(--text3);font-size:13px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2)}
+.ev-head-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:16px;margin-bottom:4px}
+.ev-head-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.ev-head-nome{font-size:17px;font-weight:800;color:var(--text)}
+.ev-head-meta{font-size:12px;color:var(--text3);margin-top:2px}
+.ev-head-num{text-align:center;flex-shrink:0}
+.ev-head-num-b{font-size:30px;font-weight:800;color:var(--orange);line-height:1}
+.ev-head-num-l{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+.ev-lot{margin-top:14px}
+.ev-lot-txt{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:5px}
+.ev-lot-bar{height:9px;background:var(--border);border-radius:6px;overflow:hidden}
+.ev-lot-fill{height:100%;border-radius:6px;background:var(--green);transition:width .3s}
+.ev-lot-fill.ok{background:var(--green)}.ev-lot-fill.warn{background:var(--amber)}.ev-lot-fill.full{background:var(--red)}
+.ev-sec-h{font-size:12px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin:18px 0 8px;padding-left:2px}
+.ev-rank{display:flex;flex-direction:column;gap:6px}
+.ev-rank-row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:9px 12px}
+.ev-rank-row.me{border-color:var(--orange);background:var(--orange-bg)}
+.ev-rank-pos{font-size:16px;width:28px;text-align:center;flex-shrink:0}
+.ev-rank-nome{flex:1;font-weight:700;color:var(--text);font-size:14px}
+.ev-rank-tot{font-size:13px;color:var(--text2)}
+.ev-rank-acc{font-size:11px;color:var(--text3)}
+.ev-list{display:flex;flex-direction:column;gap:6px}
+.ev-item{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:9px 12px}
+.ev-item-main{flex:1;min-width:0}
+.ev-item-nome{font-weight:700;color:var(--text);font-size:14px}
+.ev-item-vend{font-weight:500;color:var(--text3);font-size:12px}
+.ev-item-sub{font-size:11px;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.insc-inp{border:1px solid var(--border);border-radius:6px;padding:5px 6px;font-size:12px;background:var(--surface);max-width:130px}
+.ev-estado-pill{font-size:12px;font-weight:700;flex-shrink:0}
+.ev-form{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:14px;margin:10px 0}
+.ev-form-h{font-size:14px;font-weight:800;color:var(--text);margin-bottom:12px}
+.ev-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ev-form-grid label{display:flex;flex-direction:column;font-size:11px;font-weight:600;color:var(--text2);gap:4px}
+.ev-form-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+.ev-topbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.ev-gestao{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.ev-badge-ativo{font-size:12px;font-weight:700;color:var(--green);background:var(--green-bg);padding:5px 10px;border-radius:6px}
+.ev-lot-edit{font-size:12px;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:6px}
+.ev-filtros{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
 
 .gpp-alerta{margin:4px 16px 8px;background:#fffbeb;border:1px solid #fde68a;border-radius:var(--r2);overflow:hidden}
 .gpp-alerta-head{display:flex;align-items:center;gap:10px;padding:12px 16px;font-size:13px;color:#92400e;cursor:pointer}
@@ -642,9 +683,9 @@ let S={
   screen:'loading',
   config:CONFIG,
   token:null,records:[],selected:null,form:{},
-  me:null,team:[],objetivos:[],objEquipa:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
+  me:null,team:[],objetivos:[],objEquipa:[],eventos:[],inscricoes:[],ranking:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
-  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',
+  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{Identificação:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
@@ -859,6 +900,49 @@ function objEquipaMesData(mesYM){return (mesYM||'').replace('/','-')+'-01';} // 
 function objEquipaGet(mesYM,tipo){const md=objEquipaMesData(mesYM);return (S.objEquipa||[]).find(o=>o.mes===md&&(o.tipo||'novas')===(tipo||'novas'));}
 async function saveObjEquipa(mesYM,val,tipo){tipo=tipo||'novas';const md=objEquipaMesData(mesYM);const ex=objEquipaGet(mesYM,tipo);const v=Math.max(0,parseInt(val,10)||0);if(ex){await supabaseApi('PATCH',`/objetivos_equipa?id=eq.${ex.id}`,{objetivo:v,updated_at:new Date().toISOString()})}else{await supabaseApi('POST','/objetivos_equipa',{mes:md,tipo:tipo,objetivo:v})}await loadObjEquipa()}
 async function loadNps(){try{const d=await supabaseApi('GET',`/nps?mes=eq.${curMes()}&select=*`);S.nps=d||[]}catch(e){S.nps=[]}}
+async function loadEventos(){try{const d=await supabaseApi('GET','/eventos?select=*&order=created_at.desc');S.eventos=d||[]}catch(e){S.eventos=[]}}
+async function loadInscricoes(){try{const d=await supabaseApi('GET','/inscricoes?select=*&order=created_at.asc');S.inscricoes=d||[]}catch(e){S.inscricoes=[]}}
+async function loadRanking(evId){if(!evId){S.ranking=[];return}try{const d=await supabaseApi('POST','/rpc/inscricoes_ranking',{p_evento:evId});S.ranking=d||[]}catch(e){S.ranking=[]}}
+function eventoAtivo(){return (S.eventos||[]).find(e=>e.ativo)||null}
+function eventoAtual(){const sel=S.eventoSel!=null?(S.eventos||[]).find(e=>e.id===S.eventoSel):null;return sel||eventoAtivo()||((S.eventos||[])[0])||null}
+async function recarregarEvento(){const ev=eventoAtual();await Promise.all([loadEventos(),loadInscricoes()]);const ev2=eventoAtual();await loadRanking(ev2?ev2.id:(ev?ev.id:null))}
+async function saveInscricaoNova(){
+  const ev=eventoAtual();if(!ev)return;
+  const cliente=(document.getElementById('insc-cliente')?.value||'').trim();
+  if(!cliente){setState({eventoErr:'Indica o nome do cliente.'});return;}
+  const body={evento_id:ev.id,cliente,
+    telefone:(document.getElementById('insc-telefone')?.value||'').trim()||null,
+    acompanhantes:parseInt(document.getElementById('insc-acompanhantes')?.value)||0,
+    estado:document.getElementById('insc-estado')?.value||'Confirmado',
+    obs:(document.getElementById('insc-obs')?.value||'').trim()||null};
+  setState({loading:true,eventoErr:''});
+  try{await supabaseApi('POST','/inscricoes',body);await recarregarEvento();setState({loading:false,inscAdding:false});}
+  catch(e){setState({loading:false,eventoErr:'Erro ao inscrever: '+e.message});}
+}
+async function saveInscricaoCampo(id,campo,valor){try{const b={};b[campo]=valor;await supabaseApi('PATCH',`/inscricoes?id=eq.${id}`,b);await recarregarEvento();render();}catch(e){setState({eventoErr:'Erro ao gravar: '+e.message})}}
+async function delInscricao(id){try{await supabaseApi('DELETE',`/inscricoes?id=eq.${id}`);await recarregarEvento();render();}catch(e){setState({eventoErr:'Erro ao apagar: '+e.message})}}
+async function saveEventoNovo(){
+  const nome=(document.getElementById('ev-nome')?.value||'').trim();
+  if(!nome){setState({eventoErr:'Indica o nome do evento.'});return;}
+  const body={nome,data:document.getElementById('ev-data')?.value||null,
+    local:(document.getElementById('ev-local')?.value||'').trim()||null,
+    lotacao:document.getElementById('ev-lotacao')?.value?parseInt(document.getElementById('ev-lotacao').value):null};
+  setState({loading:true,eventoErr:''});
+  try{await supabaseApi('POST','/eventos',body);await recarregarEvento();setState({loading:false,eventoAdding:false});}
+  catch(e){setState({loading:false,eventoErr:'Erro ao criar evento: '+e.message});}
+}
+async function saveEventoCampo(id,campo,valor){try{const b={};b[campo]=valor;await supabaseApi('PATCH',`/eventos?id=eq.${id}`,b);await recarregarEvento();render();}catch(e){setState({eventoErr:'Erro: '+e.message})}}
+async function ativarEvento(id){setState({loading:true,eventoErr:''});try{await supabaseApi('PATCH','/eventos?ativo=eq.true',{ativo:false});await supabaseApi('PATCH',`/eventos?id=eq.${id}`,{ativo:true});S.eventoSel=id;await recarregarEvento();setState({loading:false});}catch(e){setState({loading:false,eventoErr:'Erro ao ativar: '+e.message});}}
+async function delEvento(id){const n=(S.inscricoes||[]).filter(i=>i.evento_id===id).length;if(n>0){setState({eventoErr:`Não podes apagar: este evento tem ${n} inscrição(ões). Apaga-as primeiro.`});return;}try{await supabaseApi('DELETE',`/eventos?id=eq.${id}`);S.eventoSel=null;await recarregarEvento();render();}catch(e){setState({eventoErr:'Erro ao apagar: '+e.message})}}
+function exportInscricoes(){
+  const ev=eventoAtual();if(!ev)return;
+  const list=(S.inscricoes||[]).filter(i=>i.evento_id===ev.id);
+  const rows=[['Evento','Cliente','Telefone','Acompanhantes','Estado','Vendedor','Observações']];
+  list.forEach(i=>rows.push([ev.nome,i.cliente,i.telefone||'',i.acompanhantes||0,i.estado||'',vendName(i.vendedor_id)||'',(i.obs||'').replace(/\n/g,' ')]));
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const url=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
+  const a=document.createElement('a');a.href=url;a.download=`inscricoes_${ev.nome.replace(/\s+/g,'_')}.csv`;a.click();
+}
 async function saveNps(vid,patch){const ex=S.nps.find(n=>n.vendedor_id===vid);if(ex){await supabaseApi('PATCH',`/nps?id=eq.${ex.id}`,patch)}else{await supabaseApi('POST','/nps',Object.assign({vendedor_id:vid,mes:curMes()},patch))}await loadNps()}
 function npsOf(vid){return S.nps.find(n=>n.vendedor_id===vid)||null}
 function recsInContext(){return isAdmin()&&S.viewVendedor?S.records.filter(r=>r.vendedor_id===S.viewVendedor):S.records}
@@ -1103,6 +1187,90 @@ function renderViewSelector(){
     </div>`:''}
   </div>`}
 
+function eventoRankingHtml(){
+  const meuId=S.me&&S.me.id;
+  const rk=S.ranking||[];
+  if(!rk.length)return'<div class="ev-empty">Ainda não há inscrições.</div>';
+  const medalhas=['🥇','🥈','🥉'];
+  return`<div class="ev-rank">${rk.map((r,i)=>`
+    <div class="ev-rank-row ${r.vendedor_id===meuId?'me':''}">
+      <span class="ev-rank-pos">${medalhas[i]||('#'+(i+1))}</span>
+      <span class="ev-rank-nome">${esc((r.nome||'').split(' ')[0])}${r.vendedor_id===meuId?' <b>(tu)</b>':''}</span>
+      <span class="ev-rank-tot"><b>${r.total}</b> insc.${r.acompanhantes>0?` <span class="ev-rank-acc">+${r.acompanhantes} acomp.</span>`:''}</span>
+    </div>`).join('')}</div>`;
+}
+function eventoCabecalhoHtml(ev){
+  const rk=S.ranking||[];
+  const totalInsc=rk.reduce((a,r)=>a+Number(r.total||0),0);
+  const totalPessoas=rk.reduce((a,r)=>a+Number(r.total||0)+Number(r.acompanhantes||0),0);
+  const lot=ev.lotacao||0;
+  const pct=lot>0?Math.round((totalPessoas/lot)*100):null;
+  const barCls=pct==null?'':(pct>=100?'full':(pct>=80?'warn':'ok'));
+  return`<div class="ev-head-card">
+    <div class="ev-head-top">
+      <div><div class="ev-head-nome">${esc(ev.nome)}</div>
+      <div class="ev-head-meta">${ev.data?fmtDate(ev.data):''}${ev.local?` · ${esc(ev.local)}`:''}</div></div>
+      <div class="ev-head-num"><div class="ev-head-num-b">${totalInsc}</div><div class="ev-head-num-l">inscritos</div></div>
+    </div>
+    ${lot>0?`<div class="ev-lot"><div class="ev-lot-txt"><span>${totalPessoas} pessoas (c/ acompanhantes)</span><span>lotação ${lot} · ${pct}%</span></div>
+      <div class="ev-lot-bar"><div class="ev-lot-fill ${barCls}" style="width:${Math.min(100,pct)}%"></div></div></div>`:''}
+  </div>`;
+}
+function renderEventoVend(){
+  const ev=eventoAtual();
+  const estados=['Confirmado','Lista de espera','Não veio','Cancelado'];
+  const estadoCor={'Confirmado':'var(--green)','Lista de espera':'#e8a30c','Não veio':'var(--text3)','Cancelado':'var(--red)'};
+  const minhas=ev?(S.inscricoes||[]).filter(i=>i.evento_id===ev.id):[];
+  const form=S.inscAdding?`
+    <div class="ev-form">
+      <div class="ev-form-h">Inscrever cliente</div>
+      ${S.eventoErr?`<div class="error" style="margin-bottom:10px">${esc(S.eventoErr)}</div>`:''}
+      <div class="ev-form-grid">
+        <label>Cliente<input id="insc-cliente" class="field-input" placeholder="Nome do cliente"></label>
+        <label>Telefone<input id="insc-telefone" class="field-input" placeholder="—" inputmode="tel"></label>
+        <label>Acompanhantes<input id="insc-acompanhantes" class="field-input" type="number" min="0" value="0"></label>
+        <label>Estado<select id="insc-estado" class="field-input">${estados.map(e=>`<option ${e==='Confirmado'?'selected':''}>${e}</option>`).join('')}</select></label>
+        <label style="grid-column:1/-1">Observações<input id="insc-obs" class="field-input" placeholder="—"></label>
+      </div>
+      <div class="ev-form-btns">
+        <button class="btn btn-dark btn-sm" data-action="insc-add-cancel">Cancelar</button>
+        <button class="btn btn-orange btn-sm" data-action="insc-save-new">Inscrever</button>
+      </div>
+    </div>`:'';
+  let body;
+  if(!ev){body='<div class="ev-empty" style="margin-top:24px">Não há nenhum evento ativo de momento.</div>';}
+  else{
+    body=`${eventoCabecalhoHtml(ev)}
+      ${!S.inscAdding?`<button class="btn btn-orange" style="width:100%;margin:12px 0" data-action="insc-add-open">＋ Inscrever cliente</button>`:''}
+      ${form}
+      <div class="ev-sec-h">🏆 Ranking da equipa</div>
+      ${eventoRankingHtml()}
+      <div class="ev-sec-h">As minhas inscrições · ${minhas.length}</div>
+      ${S.eventoErr&&!S.inscAdding?`<div class="error" style="margin-bottom:10px">${esc(S.eventoErr)}</div>`:''}
+      ${minhas.length===0?'<div class="ev-empty">Ainda não inscreveste ninguém.</div>':`
+      <div class="ev-list">${minhas.map(i=>`
+        <div class="ev-item">
+          <div class="ev-item-main">
+            <div class="ev-item-nome">${esc(i.cliente)}</div>
+            <div class="ev-item-sub">${i.telefone?esc(i.telefone):'sem telefone'}${i.acompanhantes>0?` · +${i.acompanhantes} acomp.`:''}${i.obs?` · ${esc(i.obs)}`:''}</div>
+          </div>
+          <select class="insc-inp" data-insc-id="${i.id}" data-insc-f="estado" style="color:${estadoCor[i.estado]||'var(--text)'};font-weight:700">${estados.map(e=>`<option value="${e}" ${i.estado===e?'selected':''}>${e}</option>`).join('')}</select>
+          <button class="stock-del" data-action="insc-del" data-id="${i.id}" title="Apagar">🗑</button>
+        </div>`).join('')}</div>`}`;
+  }
+  return`
+  <div class="app-layout"><div class="main-panel" style="width:100%">
+  <div class="hdr">
+    <button class="hdr-back" data-action="evento-voltar">←</button>
+    <div class="hdr-accent"></div>
+    <div class="hdr-title">🎟️ Evento</div>
+    <button class="hdr-btn" data-action="refresh" ${S.loading?'disabled':''}>${S.loading?'…':'↻'}</button>
+    <button class="hdr-btn" data-action="logout">Sair</button>
+  </div>
+  <div class="content"><div class="ev-wrap">${body}</div></div>
+  </div></div>`;
+}
+
 function renderList(){
   const f=filtered(),c=statusCounts(),months=availableMonths();
   const af=(S.monthFilter.length>0?1:0)+(S.bevFilter!=='all'?1:0)+(S.xevFilter!=='all'?1:0);
@@ -1184,7 +1352,8 @@ function renderList(){
       ${!isAdmin()?`
       <div style="border-top:1px solid rgba(255,255,255,.08);margin:8px 0"></div>
       <div class="sidebar-item" data-action="go-stock-vend">🏍️&nbsp;&nbsp;Stock Usadas / Demos</div>
-      <div class="sidebar-item" data-action="go-escala">📅&nbsp;&nbsp;Escala</div>`:''}
+      <div class="sidebar-item" data-action="go-escala">📅&nbsp;&nbsp;Escala</div>
+      ${(()=>{const evA=eventoAtivo();if(!evA)return'';const n=(S.inscricoes||[]).filter(i=>i.evento_id===evA.id).length;return`<div class="sidebar-item sidebar-evento" data-action="go-evento"><span>🎟️&nbsp;&nbsp;${esc(evA.nome)}</span><span class="scount" style="background:var(--orange);color:#fff">${n}</span></div>`;})()}`:''}
       ${alertsHtml}
     </div>
     <div class="sidebar-close" data-action="toggle-sidebar">Fechar ✕</div>
@@ -1635,6 +1804,7 @@ function renderDashboard(){
     ['stock','🏍️','Stock Usadas'],
     ['escala','📅','Escala'],
     ['comissoes','💰','Resumo Comissões'],
+    ['evento','🎟️','Evento'],
     ['exportar','⬇️','Exportar'],
   ];
   const secLabel=(TOPICOS.find(t=>t[0]===sec)||[,,'Home'])[2];
@@ -2026,6 +2196,73 @@ function renderDashboard(){
       <div style="height:20px"></div>`}`;
   }
 
+  function eventoView(){
+    const ev=eventoAtual();
+    const estados=['Confirmado','Lista de espera','Não veio','Cancelado'];
+    const estadoCor={'Confirmado':'var(--green)','Lista de espera':'#e8a30c','Não veio':'var(--text3)','Cancelado':'var(--red)'};
+    // Barra de topo: seletor de evento + novo
+    const seletor=`<div class="ev-topbar">
+      <select class="gpp-mes-sel" data-action="evento-sel" style="max-width:260px">
+        ${(S.eventos||[]).length===0?'<option>— sem eventos —</option>':(S.eventos||[]).map(e=>`<option value="${e.id}" ${ev&&ev.id===e.id?'selected':''}>${esc(e.nome)}${e.ativo?' ✓ ativo':''}</option>`).join('')}
+      </select>
+      <button class="btn btn-dark btn-sm" data-action="evento-add-open">＋ Novo evento</button>
+    </div>`;
+    const formNovo=S.eventoAdding?`
+      <div class="ev-form">
+        <div class="ev-form-h">Novo evento</div>
+        ${S.eventoErr?`<div class="error" style="margin-bottom:10px">${esc(S.eventoErr)}</div>`:''}
+        <div class="ev-form-grid">
+          <label>Nome<input id="ev-nome" class="field-input" placeholder="Ex: Experience Day"></label>
+          <label>Data<input id="ev-data" class="field-input" type="date"></label>
+          <label>Local<input id="ev-local" class="field-input" placeholder="—"></label>
+          <label>Lotação<input id="ev-lotacao" class="field-input" type="number" min="0" placeholder="—"></label>
+        </div>
+        <div class="ev-form-btns">
+          <button class="btn btn-dark btn-sm" data-action="evento-add-cancel">Cancelar</button>
+          <button class="btn btn-orange btn-sm" data-action="evento-save-new">Criar evento</button>
+        </div>
+      </div>`:'';
+    if(!ev)return`<div class="gpp-card">${seletor}${formNovo}<div class="ev-empty" style="margin-top:16px">Ainda não há eventos. Cria o primeiro.</div></div>`;
+    const inscr=(S.inscricoes||[]).filter(i=>i.evento_id===ev.id);
+    // Filtros
+    const busca=(S.inscBusca||'').toLowerCase();
+    const vf=S.inscVendFiltro||'';
+    let lista=inscr;
+    if(busca)lista=lista.filter(i=>((i.cliente||'')+' '+(i.telefone||'')).toLowerCase().includes(busca));
+    if(vf)lista=lista.filter(i=>i.vendedor_id===vf);
+    const gestao=`<div class="ev-gestao">
+      ${ev.ativo?'<span class="ev-badge-ativo">✓ Evento ativo</span>':`<button class="btn btn-orange btn-sm" data-action="evento-ativar" data-id="${ev.id}">Tornar ativo</button>`}
+      <label class="ev-lot-edit">Lotação <input class="field-input" type="number" min="0" value="${ev.lotacao!=null?ev.lotacao:''}" placeholder="—" data-action="evento-lotacao" data-id="${ev.id}" style="width:90px"></label>
+      <button class="btn btn-danger btn-sm" data-action="evento-del" data-id="${ev.id}">Apagar evento</button>
+    </div>`;
+    return`<div class="ev-wrap">
+      <div class="gpp-card">${seletor}${formNovo}${gestao}</div>
+      ${eventoCabecalhoHtml(ev)}
+      <div class="ev-sec-h">🏆 Ranking por vendedor</div>
+      ${eventoRankingHtml()}
+      <div class="ev-sec-h">Todas as inscrições · ${inscr.length}</div>
+      ${S.eventoErr?`<div class="error" style="margin-bottom:10px">${esc(S.eventoErr)}</div>`:''}
+      <div class="ev-filtros">
+        <input id="insc-busca" class="field-input" placeholder="🔍 Procurar cliente/telefone" value="${esc(S.inscBusca||'')}" style="flex:1;min-width:160px">
+        <select class="field-input" data-action="insc-vend-filtro" style="max-width:170px">
+          <option value="">Todos os vendedores</option>
+          ${team.map(p=>`<option value="${p.id}" ${vf===p.id?'selected':''}>${esc((p.nome||'').split(' ')[0])}</option>`).join('')}
+        </select>
+        <button class="btn btn-dark btn-sm" data-action="export-inscricoes">⬇ CSV</button>
+      </div>
+      ${lista.length===0?'<div class="ev-empty">Sem inscrições.</div>':`
+      <div class="ev-list">${lista.map(i=>`
+        <div class="ev-item">
+          <div class="ev-item-main">
+            <div class="ev-item-nome">${esc(i.cliente)} <span class="ev-item-vend">· ${esc((vendName(i.vendedor_id)||'?').split(' ')[0])}</span></div>
+            <div class="ev-item-sub">${i.telefone?esc(i.telefone):'sem telefone'}${i.acompanhantes>0?` · +${i.acompanhantes} acomp.`:''}${i.obs?` · ${esc(i.obs)}`:''}</div>
+          </div>
+          <span class="ev-estado-pill" style="color:${estadoCor[i.estado]||'var(--text)'}">${esc(i.estado||'')}</span>
+        </div>`).join('')}</div>`}
+      <div style="height:20px"></div>
+    </div>`;
+  }
+
   function exportarView(){
     return`<div class="gpp-export">
       <div style="font-size:40px">⬇️</div>
@@ -2062,6 +2299,7 @@ function renderDashboard(){
   else if(sec==='stock')body=stockView('usada');
   else if(sec==='demos')body=stockView('demo');
   else if(sec==='comissoes')body=comissoesView();
+  else if(sec==='evento')body=eventoView();
   else if(sec==='exportar')body=exportarView();
   else body=tabelaResumo();
 
@@ -2078,7 +2316,7 @@ function renderDashboard(){
 function render(){
   const app=document.getElementById('app');
   const ce=app.querySelector('.content'),st=ce?ce.scrollTop:0,ps=app.dataset.screen||'';
-  const screens={loading:'<div class="content"><div class="center-screen"><p style="color:var(--text3)">A carregar...</p></div></div>',login:renderLogin,list:renderList,detail:renderDetail,edit:renderEdit,dashboard:renderDashboard,escala:renderEscala,password:renderPassword,stockvend:renderStockVend};
+  const screens={loading:'<div class="content"><div class="center-screen"><p style="color:var(--text3)">A carregar...</p></div></div>',login:renderLogin,list:renderList,detail:renderDetail,edit:renderEdit,dashboard:renderDashboard,escala:renderEscala,password:renderPassword,stockvend:renderStockVend,evento:renderEventoVend};
   const fn=screens[S.screen];
   app.innerHTML=typeof fn==='function'?fn():fn;
   app.dataset.screen=S.screen;
@@ -2104,6 +2342,12 @@ function bindEvents(){
       const inp=document.getElementById('gpp-search');
       if(inp){inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length);}
     }
+    if(el.id==='insc-busca'){
+      S.inscBusca=el.value;
+      render();
+      const inp=document.getElementById('insc-busca');
+      if(inp){inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length);}
+    }
   };
   app.onchange=function(e){
     const el=e.target;
@@ -2126,6 +2370,10 @@ function bindEvents(){
     if(el.dataset&&el.dataset.action==='carteira-mes-sel'){setState({carteiraMes:el.value});return;}
     if(el.dataset&&el.dataset.action==='dash-mes-sel'){setState({dashMes:el.value});return;}
     if(el.dataset&&el.dataset.action==='obj-equipa-save'){saveObjEquipa(el.dataset.mes,el.value,el.dataset.tipo||'novas').then(()=>render());return;}
+    if(el.dataset&&el.dataset.inscId){saveInscricaoCampo(el.dataset.inscId,el.dataset.inscF,el.value);return;}
+    if(el.dataset&&el.dataset.action==='evento-sel'){const id=parseInt(el.value);S.eventoSel=id;loadRanking(id).then(()=>render());return;}
+    if(el.dataset&&el.dataset.action==='insc-vend-filtro'){S.inscVendFiltro=el.value;render();return;}
+    if(el.dataset&&el.dataset.action==='evento-lotacao'){saveEventoCampo(parseInt(el.dataset.id),'lotacao',el.value?parseInt(el.value):null);return;}
     if(el.dataset&&el.dataset.action==='retail-vend'){setState({retailVend:el.value});return;}
     if(el.dataset&&el.dataset.action==='retail-tipo'){setState({retailTipo:el.value});return;}
     if(el.dataset&&el.dataset.field&&(el.dataset.field==='retoma'||el.dataset.field==='status'||el.dataset.field==='gar'||el.dataset.field==='type'||el.dataset.field==='origin')&&S.screen==='edit'){
@@ -2164,6 +2412,18 @@ function bindEvents(){
       case'export-comissoes':exportComissoes();break;
       case'go-escala':{setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false})).catch(e=>setState({error:e.message,loading:false,screen:'escala'}));break}
       case'go-stock-vend':{setState({loading:true});loadStockPublico().then(()=>setState({screen:'stockvend',loading:false}));break}
+      case'go-evento':{setState({loading:true});const ev=eventoAtual();S.eventoSel=ev?ev.id:null;recarregarEvento().then(()=>setState({screen:'evento',loading:false,inscAdding:false}));break}
+      case'evento-voltar':setState({screen:isAdmin()?'dashboard':'list'});break;
+      case'insc-add-open':setState({inscAdding:true,inscForm:{estado:'Confirmado',acompanhantes:0},eventoErr:''});break;
+      case'insc-add-cancel':setState({inscAdding:false,inscForm:{},eventoErr:''});break;
+      case'insc-save-new':saveInscricaoNova();break;
+      case'insc-del':delInscricao(el.dataset.id);break;
+      case'evento-add-open':setState({eventoAdding:true,eventoForm:{},eventoErr:''});break;
+      case'evento-add-cancel':setState({eventoAdding:false,eventoForm:{},eventoErr:''});break;
+      case'evento-save-new':saveEventoNovo();break;
+      case'evento-ativar':ativarEvento(parseInt(el.dataset.id));break;
+      case'evento-del':delEvento(parseInt(el.dataset.id));break;
+      case'export-inscricoes':exportInscricoes();break;
       case'back-from-stock':setState({screen:'list'});break;
       case'stock-assumir':stockMudarEstado(el.dataset.id,'A negociar',true);break;
       case'stock-largar':stockMudarEstado(el.dataset.id,'Disponível',false);break;
@@ -2178,7 +2438,7 @@ function bindEvents(){
       case'go-dashboard':setState({screen:'dashboard',viewVendedor:null,vselOpen:false,statusFilter:'all',alertFilter:null,alertIds:[],search:'',renderLimit:50});break;
       case'retail-modo':setState({retailModo:el.dataset.m});break;
       case'retail-ord':{const o=el.dataset.o;if(S.retailOrd===o)setState({retailDir:S.retailDir==='asc'?'desc':'asc'});else setState({retailOrd:o,retailDir:'asc'});break;}
-      case'gpp-sec':{const s=el.dataset.s;S.gppBusca='';if(s==='escala'){setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}else if(s==='stock'){setState({gppSec:s,dashAlertOpen:null});if(!S.stockLoaded)loadStock().then(()=>render());}else{setState({gppSec:s,dashAlertOpen:null});}break}
+      case'gpp-sec':{const s=el.dataset.s;S.gppBusca='';if(s==='escala'){setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}else if(s==='stock'){setState({gppSec:s,dashAlertOpen:null});if(!S.stockLoaded)loadStock().then(()=>render());}else if(s==='evento'){setState({gppSec:s,dashAlertOpen:null,eventoErr:''});const ev=eventoAtual();if(ev){S.eventoSel=ev.id;loadRanking(ev.id).then(()=>render());}}else{setState({gppSec:s,dashAlertOpen:null});}break}
       case'stock-cat':setState({stockCat:el.dataset.c,stockAdding:false});break;
       case'stock-vend-toggle':setState({stockVendOpen:!S.stockVendOpen});break;
       case'stock-add':setState({stockAdding:true,stockFormMax:false});break;
@@ -2206,7 +2466,7 @@ function bindEvents(){
       case'view-vendedor':{const id=el.dataset.id||null;setState({viewVendedor:id,screen:'list',vselOpen:false,statusFilter:'all',alertFilter:null,alertIds:[],search:'',monthFilter:[],renderLimit:50});break}
       case'save-nps':{e.stopPropagation();const vid=el.dataset.id;const gi=s=>{const x=document.querySelector(`[${s}="${vid}"]`);return x&&x.value!==''?parseFloat(x.value):null};const patch={num_inqueritos:gi('data-nps-inq')||0,nps:gi('data-nps-nps'),csi:gi('data-nps-csi')};el.textContent='\u2026';saveNps(vid,patch).then(()=>render()).catch(err=>{alert('Erro: '+err.message);render()});break}
       case'save-objetivo':{e.stopPropagation();const vid=el.dataset.id;const inp=document.querySelector(`[data-obj-input="${vid}"]`);const val=parseInt(inp&&inp.value?inp.value:'0')||0;el.textContent='\u2026';saveObjetivo(vid,val).then(()=>render()).catch(err=>{alert('Erro: '+err.message);render()});break}
-      case'refresh':{const p=isAdmin()?Promise.all([loadObjetivos(),loadObjEquipa(),loadTeam(),loadNps()]):Promise.resolve();p.then(()=>loadRecords());break}
+      case'refresh':{const p=isAdmin()?Promise.all([loadObjetivos(),loadObjEquipa(),loadTeam(),loadNps()]):Promise.resolve();p.then(()=>Promise.all([recarregarEvento(),loadRecords()]));break}
       case'open-sidebar':setState({sidebarOpen:!S.sidebarOpen});break;
       case'toggle-sidebar':setState({sidebarOpen:!S.sidebarOpen});break;
       case'close-sidebar':setState({sidebarOpen:false});break;
@@ -2294,7 +2554,7 @@ function bindEvents(){
 
 function collectFormData(){document.querySelectorAll('input[data-field],select[data-field],textarea[data-field]').forEach(el=>{const k=el.dataset.field;let v=el.value;if(el.dataset.fmt==='month'&&v)v=v.replace('-','/');S.form[k]=v})}
 
-function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps()]):loadTeam();return extra}).then(function(){return loadRecords()}).then(function(){setState({screen:isAdmin()?'dashboard':'list',loading:false})})}
+function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes()]):Promise.all([loadTeam(),loadEventos(),loadInscricoes()]);return extra}).then(function(){return loadRecords()}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:isAdmin()?'dashboard':'list',loading:false})})}
 (function(){
   S.screen='loading';render();
   refreshSession().then(function(token){
