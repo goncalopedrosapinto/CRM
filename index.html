@@ -5,9 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#ffffff">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
-<link rel="icon" type="image/png" href="favicon.png?v=1">
+<meta name="apple-mobile-web-app-title" content="Baviera">
+<meta name="theme-color" content="#0E2A4F">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
+<link rel="icon" type="image/png" href="favicon.png?v=2">
+<link rel="manifest" href="manifest.json?v=2">
 <title>Baviera Control</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -445,9 +447,9 @@ html,body{overflow-x:hidden;max-width:100vw}
 .gpp-totrow{background:var(--bg)}
 .gpp-totrow .gpp-rowlbl{font-weight:800}
 .gpp-grandtot{color:var(--orange);font-size:24px}
-.gpp-obj-card{margin-top:12px}
-.gpp-obj-grid{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.gpp-obj-cell{flex:1;min-width:88px}
+.gpp-obj-card{margin-top:12px;padding:16px}
+.gpp-obj-grid{display:flex;align-items:center;gap:12px;flex-wrap:nowrap}
+.gpp-obj-cell{flex:1;min-width:0}
 .gpp-obj-center{text-align:center}
 .gpp-obj-lbl{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px}
 .gpp-obj-sub{font-size:10px;font-weight:400;color:var(--text3)}
@@ -493,7 +495,93 @@ html,body{overflow-x:hidden;max-width:100vw}
 .ev-funil-pill{display:inline-block;font-size:10px;font-weight:700;color:#fff;padding:1px 7px;border-radius:10px;vertical-align:middle}
 .perd-brek{margin:6px 16px 10px;display:flex;flex-direction:column;gap:7px}
 .perd-brow{display:flex;align-items:center;gap:10px}
-/* --- Nav agrupada --- */
+/* ===== Navegação mobile: barra inferior + painel "Mais" ===== */
+.gpp-tabbar{display:none}
+.gpp-sheet,.gpp-sheet-bd{display:none}
+@media(max-width:700px){
+  /* menu lateral fora: no telemóvel usa-se a barra inferior */
+  .gpp-nav{display:none!important}
+  .gpp-tabbar{
+    display:flex;position:fixed;left:0;right:0;bottom:0;z-index:60;
+    background:rgba(26,26,46,.97);backdrop-filter:saturate(160%) blur(14px);
+    border-top:1px solid rgba(255,255,255,.08);
+    padding:6px 4px calc(6px + var(--safe-b));
+  }
+  .gpp-tab{
+    flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;
+    background:none;border:0;padding:6px 2px 4px;cursor:pointer;
+    color:rgba(255,255,255,.5);font-family:inherit;position:relative;
+    -webkit-tap-highlight-color:transparent;transition:color .15s;
+  }
+  .gpp-tab-ic{font-size:19px;line-height:1;position:relative;display:block;filter:grayscale(1) opacity(.65);transition:filter .15s}
+  .gpp-tab-lb{font-size:10px;font-weight:600;letter-spacing:.1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .gpp-tab.active{color:#fff}
+  .gpp-tab.active .gpp-tab-ic{filter:none}
+  .gpp-tab.active::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:26px;height:3px;border-radius:0 0 3px 3px;background:var(--orange)}
+  .gpp-tab-badge{
+    position:absolute;top:-5px;left:52%;min-width:16px;height:16px;padding:0 4px;
+    background:var(--orange);color:#fff;font-size:9px;font-weight:800;line-height:16px;
+    border-radius:9px;text-align:center;filter:none;
+  }
+  /* espaço para a barra não tapar conteúdo */
+  .content{padding-bottom:calc(var(--safe-b) + 76px)!important}
+
+  .gpp-sheet-bd{display:block;position:fixed;inset:0;z-index:70;background:rgba(15,15,26,.5);backdrop-filter:blur(2px);animation:fadeIn .18s ease}
+  .gpp-sheet{
+    display:flex;flex-direction:column;position:fixed;left:0;right:0;bottom:0;z-index:71;
+    max-height:82vh;background:var(--surface);
+    border-radius:20px 20px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,.28);
+    padding-bottom:calc(10px + var(--safe-b));animation:sheetUp .24s cubic-bezier(.2,.8,.25,1);
+  }
+  .gpp-sheet-grip{width:38px;height:4px;border-radius:3px;background:var(--border2);margin:10px auto 4px;flex-shrink:0}
+  .gpp-sheet-search{padding:6px 16px 10px;flex-shrink:0}
+  .gpp-sheet-search .gpp-search-inp{
+    width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--border);
+    background:var(--bg);color:var(--text);font-size:15px;font-family:inherit;
+  }
+  .gpp-sheet-search .gpp-search-inp:focus{outline:none;border-color:var(--orange);background:var(--surface)}
+  .gpp-sheet-scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 12px 8px}
+  .gpp-sheet-grupo{padding:12px 6px 7px;font-size:10px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;color:var(--text3)}
+  .gpp-sheet-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+  .gpp-sheet-item{
+    position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    padding:13px 4px;border-radius:14px;border:1px solid var(--border);background:var(--bg);
+    cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;
+  }
+  .gpp-sheet-item:active{transform:scale(.96)}
+  .gpp-sheet-item.active{border-color:var(--orange);background:var(--orange-bg)}
+  .gpp-sheet-ic{font-size:20px;line-height:1}
+  .gpp-sheet-lb{font-size:10px;font-weight:600;color:var(--text2);text-align:center;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .gpp-sheet-item .gpp-nav-badge{position:absolute;top:5px;right:5px;background:var(--orange);color:#fff}
+  .gpp-sres{display:flex;flex-direction:column;gap:6px}
+  .gpp-sres-item{
+    display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;gap:2px 8px;
+    text-align:left;padding:11px 13px;border-radius:12px;border:1px solid var(--border);
+    background:var(--bg);cursor:pointer;font-family:inherit;width:100%;
+  }
+  .gpp-sres-item:active{background:var(--surface)}
+  .gpp-sres-n{font-size:14px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .gpp-sres-s{grid-column:1;font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .gpp-sres-item .s-badge{grid-column:2;grid-row:1/3;align-self:center}
+  @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+  /* --- polimento geral no telemóvel --- */
+  .gpp-card{margin:8px 12px 14px;border-radius:16px}
+  .gpp-obj-card,.home-ritmo{padding:14px}
+  .gpp-obj-inp{font-size:20px;max-width:100%;padding:7px 6px}
+  .gpp-obj-real,.gpp-obj-pct{font-size:22px}
+  .gpp-obj-lbl{font-size:11px}
+  .gpp-obj-sub{font-size:9px;line-height:1.3}
+  .home-ritmo-legend{font-size:10px;gap:8px}
+  .home-ritmo-legend span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .home-acts,.home-inat,.perd-brek{margin-left:12px;margin-right:12px}
+  .gpp-tot-head{padding:14px 14px 4px;font-size:13px}
+  .gpp-sub-h{margin-left:12px;margin-right:12px}
+  .gpp-empty{margin-left:12px;margin-right:12px}
+  .gpp-alerta{margin-left:12px;margin-right:12px}
+}
+/* --- Nav agrupada (desktop) --- */
 .gpp-nav-grupo{padding:14px 18px 5px;font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.32)}
 .gpp-nav-item{display:flex;align-items:center;gap:10px}
 .gpp-nav-ic{width:18px;text-align:center;flex-shrink:0}
@@ -501,7 +589,7 @@ html,body{overflow-x:hidden;max-width:100vw}
 .gpp-nav-badge{flex-shrink:0;font-size:10px;font-weight:800;background:rgba(255,255,255,.12);color:rgba(255,255,255,.75);padding:1px 7px;border-radius:9px}
 .gpp-nav-badge.alert{background:var(--orange);color:#fff}
 /* --- Ritmo do mês --- */
-.home-ritmo{margin-top:12px}
+.home-ritmo{margin-top:12px;padding:16px}
 .home-ritmo-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
 .home-ritmo-t{font-size:13px;font-weight:800;color:var(--text)}
 .home-ritmo-s{font-size:11px;color:var(--text3);margin-top:2px}
@@ -568,10 +656,8 @@ html,body{overflow-x:hidden;max-width:100vw}
 .gpp-pend-desc{margin:0 16px 6px;font-size:12px;color:var(--text3)}
 .gpp-export{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center}
 @media(max-width:700px){
-  .gpp-nav{width:100%;min-width:0;flex-direction:row;overflow-x:auto;overflow-y:hidden;padding:0;flex-shrink:0}
-  .gpp-nav-logo{display:none}
-  .gpp-nav-item{white-space:nowrap;border-left:none;border-bottom:3px solid transparent;padding:12px 14px}
-  .gpp-nav-item.active{border-bottom-color:var(--orange);background:none}
+  /* .gpp-nav está escondida no telemóvel — ver barra inferior .gpp-tabbar */
+  .gpp-nav-item{white-space:nowrap}
 }
 
 .gpp-lclick{cursor:pointer}
@@ -732,7 +818,7 @@ let S={
   token:null,records:[],selected:null,form:{},
   me:null,team:[],objetivos:[],objEquipa:[],eventos:[],inscricoes:[],ranking:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
-  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',
+  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{INFO:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
@@ -1941,6 +2027,46 @@ function renderDashboard(){
     ${NAV_GRUPOS.map(([titulo,ids])=>`<div class="gpp-nav-grupo">${titulo}</div>${ids.map(itemNav).join('')}`).join('')}
   </div>`;
 
+  // --- Navegação mobile: barra inferior + painel "Mais" ---
+  const TABS_M=['home','pendentes','retail','carteira'];
+  const tabM=id=>{const t=TOPICOS.find(x=>x[0]===id);if(!t)return'';
+    const at=sec===id&&!S.gppBusca&&!S.gppMais;
+    const bd=id==='pendentes'&&nPend?`<span class="gpp-tab-badge">${nPend>99?'99+':nPend}</span>`:'';
+    return`<button class="gpp-tab ${at?'active':''}" data-action="gpp-sec" data-s="${id}"><span class="gpp-tab-ic">${t[1]}${bd}</span><span class="gpp-tab-lb">${t[2]}</span></button>`;};
+  const naMais=!S.gppBusca&&!TABS_M.includes(sec);
+  const tabbar=`<div class="gpp-tabbar">
+    ${TABS_M.map(tabM).join('')}
+    <button class="gpp-tab ${S.gppMais||naMais?'active':''}" data-action="gpp-mais"><span class="gpp-tab-ic">☰</span><span class="gpp-tab-lb">Mais</span></button>
+  </div>`;
+  const sheet=S.gppMais?`
+    <div class="gpp-sheet-bd" data-action="gpp-mais-close"></div>
+    <div class="gpp-sheet">
+      <div class="gpp-sheet-grip"></div>
+      <div class="gpp-sheet-search">
+        <input class="gpp-search-inp" id="gpp-search-m" placeholder="🔍 Pesquisar cliente, modelo, matrícula..." value="${esc(S.gppBusca||'')}">
+      </div>
+      <div class="gpp-sheet-scroll">
+        ${(S.gppBusca||'').trim()?(()=>{
+          const q=S.gppBusca.trim().toLowerCase();
+          const campos=r=>[r.id_cliente,r.model,r.version,r.mat,r.chas,r.enc].map(x=>(x||'').toString().toLowerCase());
+          const res=recs.filter(r=>campos(r).some(c=>c.includes(q)));
+          if(!res.length)return'<div class="gpp-empty" style="margin:12px 0">Nada encontrado.</div>';
+          return`<div class="gpp-sheet-grupo">${res.length} resultado${res.length>1?'s':''}</div>
+          <div class="gpp-sres">${res.slice(0,40).map(r=>`
+            <button class="gpp-sres-item" data-action="open-record-from-dash" data-id="${r.id}">
+              <span class="gpp-sres-n">${esc(r.id_cliente||'—')}</span>
+              <span class="gpp-sres-s">${esc(r.model||'')} ${esc(r.version||'')}${r.mat?' · '+esc(r.mat):''}</span>
+              <span class="s-badge s-${esc(r.status||'')}">${esc(r.status||'')}</span>
+            </button>`).join('')}</div>`;
+        })():`${NAV_GRUPOS.map(([titulo,ids])=>`<div class="gpp-sheet-grupo">${titulo}</div><div class="gpp-sheet-grid">${ids.map(id=>{const t=TOPICOS.find(x=>x[0]===id);if(!t)return'';return`<button class="gpp-sheet-item ${sec===id?'active':''}" data-action="gpp-sec" data-s="${id}"><span class="gpp-sheet-ic">${t[1]}</span><span class="gpp-sheet-lb">${t[2]}</span>${badgeDe(id)}</button>`;}).join('')}</div>`).join('')}
+        <div class="gpp-sheet-grupo">Conta</div>
+        <div class="gpp-sheet-grid">
+          <button class="gpp-sheet-item" data-action="go-password"><span class="gpp-sheet-ic">🔑</span><span class="gpp-sheet-lb">Password</span></button>
+          <button class="gpp-sheet-item" data-action="logout"><span class="gpp-sheet-ic">🚪</span><span class="gpp-sheet-lb">Sair</span></button>
+        </div>`}
+      </div>
+    </div>`:'';
+
   const header=`<div class="hdr">
     <div class="hdr-accent"></div>
     <div class="hdr-title">${esc(secLabel)}</div>
@@ -2520,7 +2646,9 @@ function renderDashboard(){
   <div class="main-panel" style="width:100%">
   ${header}
   <div class="content">${body}</div>
+  ${tabbar}
   </div>
+  ${sheet}
   </div>`;
 }
 function render(){
@@ -2550,6 +2678,12 @@ function bindEvents(){
       // Re-render mas devolver o foco ao campo
       render();
       const inp=document.getElementById('gpp-search');
+      if(inp){inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length);}
+    }
+    if(el.id==='gpp-search-m'){
+      S.gppBusca=el.value;
+      render();
+      const inp=document.getElementById('gpp-search-m');
       if(inp){inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length);}
     }
     if(el.id==='insc-busca'){
@@ -2617,7 +2751,7 @@ function bindEvents(){
       case'dash-periodo':setState({dashPeriodo:el.dataset.p});break;
       case'dash-section':setState({dashSection:el.dataset.s,dashAlertOpen:null});break;
       case'dash-alert-toggle':setState({dashAlertOpen:S.dashAlertOpen===el.dataset.id?null:el.dataset.id});break;
-      case'open-record-from-dash':{const r=S.records.find(x=>String(x.id)===String(el.dataset.id));if(r)setState({selected:r,screen:'detail'});break}
+      case'open-record-from-dash':{const r=S.records.find(x=>String(x.id)===String(el.dataset.id));if(r)setState({selected:r,screen:'detail',gppMais:false});break}
       case'export-csv':{if(!S.stockLoaded){loadStock().then(()=>exportCSV(true));}else exportCSV(true);break}
       case'export-csv-safe':{if(!S.stockLoaded){loadStock().then(()=>exportCSV(false));}else exportCSV(false);break}
       case'export-comissoes':exportComissoes();break;
@@ -2649,7 +2783,9 @@ function bindEvents(){
       case'go-dashboard':setState({screen:'dashboard',viewVendedor:null,vselOpen:false,statusFilter:'all',alertFilter:null,alertIds:[],search:'',renderLimit:50});break;
       case'retail-modo':setState({retailModo:el.dataset.m});break;
       case'retail-ord':{const o=el.dataset.o;if(S.retailOrd===o)setState({retailDir:S.retailDir==='asc'?'desc':'asc'});else setState({retailOrd:o,retailDir:'asc'});break;}
-      case'gpp-sec':{const s=el.dataset.s;S.gppBusca='';if(s==='escala'){setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}else if(s==='stock'){setState({gppSec:s,dashAlertOpen:null});if(!S.stockLoaded)loadStock().then(()=>render());}else if(s==='evento'){setState({gppSec:s,dashAlertOpen:null,eventoErr:''});const ev=eventoAtual();if(ev){S.eventoSel=ev.id;loadRanking(ev.id).then(()=>render());}}else{setState({gppSec:s,dashAlertOpen:null});}break}
+      case'gpp-mais':setState({gppMais:!S.gppMais});break;
+      case'gpp-mais-close':setState({gppMais:false});break;
+      case'gpp-sec':{const s=el.dataset.s;S.gppBusca='';S.gppMais=false;if(s==='escala'){setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}else if(s==='stock'){setState({gppSec:s,dashAlertOpen:null});if(!S.stockLoaded)loadStock().then(()=>render());}else if(s==='evento'){setState({gppSec:s,dashAlertOpen:null,eventoErr:''});const ev=eventoAtual();if(ev){S.eventoSel=ev.id;loadRanking(ev.id).then(()=>render());}}else{setState({gppSec:s,dashAlertOpen:null});}break}
       case'stock-cat':setState({stockCat:el.dataset.c,stockAdding:false});break;
       case'stock-vend-toggle':setState({stockVendOpen:!S.stockVendOpen});break;
       case'stock-add':setState({stockAdding:true,stockFormMax:false});break;
