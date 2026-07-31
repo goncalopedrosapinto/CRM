@@ -153,7 +153,7 @@ select.field-input{padding-right:34px;background-image:url("data:image/svg+xml,%
 }
 .sidebar-header{padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
 .sidebar-logo{display:flex;align-items:center;gap:10px}
-.sidebar-logo-icon{width:36px;height:36px;border-radius:10px;background:var(--orange);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px}
+.sidebar-logo-icon{width:36px;height:36px;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .sidebar-logo-text{font-size:15px;font-weight:800;letter-spacing:-.3px}
 .sidebar-logo-sub{font-size:10px;color:rgba(255,255,255,.4);font-weight:500;margin-top:1px}
 .sidebar-nav{padding:12px 0;flex:1;overflow-y:auto}
@@ -641,7 +641,7 @@ html,body{overflow-x:hidden;max-width:100vw}
 
 .gpp-nav{width:190px;min-width:190px;background:#1a1a2e;color:#fff;display:flex;flex-direction:column;overflow-y:auto;padding-bottom:20px}
 .gpp-nav-logo{display:flex;align-items:center;gap:10px;padding:18px 16px 14px;font-weight:800;font-size:14px;border-bottom:1px solid rgba(255,255,255,.08)}
-.gpp-nav-b{width:28px;height:28px;border-radius:8px;background:var(--orange);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0}
+.gpp-nav-b{width:28px;height:28px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .gpp-nav-item{padding:11px 16px;font-size:13px;color:rgba(255,255,255,.65);cursor:pointer;border-left:3px solid transparent}
 .gpp-nav-item:hover{color:#fff;background:rgba(255,255,255,.04)}
 .gpp-nav-item.active{color:#fff;background:rgba(255,255,255,.08);border-left-color:var(--orange);font-weight:600}
@@ -1195,6 +1195,7 @@ function vendedoresInativos(records,dias){
 function negToMonth(r){if(!r.neg)return'';try{const d=new Date(r.neg);return`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`}catch{return''}}
 function getMonth(r){return S.statusFilter==='Fechados'?negToMonth(r):(r.mes1||'')}
 function esc(s){var x=String(s||'');x=x.replace(/&/g,'&amp;');x=x.replace(/</g,'&lt;');x=x.replace(/>/g,'&gt;');x=x.replace(/"/g,'&quot;');return x}
+function logoSVG(px,idn){idn='lg_'+(idn||'x');return`<svg width="${px}" height="${px}" viewBox="0 0 64 64" fill="none" aria-hidden="true" style="display:block"><defs><linearGradient id="${idn}" x1="0" y1="0" x2="64" y2="64"><stop offset="0" stop-color="#16386B"/><stop offset="1" stop-color="#0B1E3C"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#${idn})"/><path d="M4,50 L15,50 L28,14 L17,14 Z" fill="#1B5FA8"/><path d="M20,50 L31,50 L44,14 L33,14 Z" fill="#3E9BE0"/><path d="M36,50 L47,50 L60,14 L49,14 Z" fill="#E0242C"/></svg>`;}
 
 function renderCard(r){return`
   <div class="card" data-action="open-detail" data-id="${r.id}">
@@ -1325,8 +1326,8 @@ function renderPassword(){
 
 function renderLogin(){return`
 <div class="content"><div class="center-screen"><div class="center-box">
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:28px">
-    <div class="hdr-accent" style="height:36px;width:5px;border-radius:5px"></div>
+  <div style="display:flex;align-items:center;gap:11px;margin-bottom:28px">
+    ${logoSVG(40,'login')}
     <div><div style="font-size:22px;font-weight:800;letter-spacing:-.5px">Baviera Control</div>
     <div style="font-size:12px;color:var(--text3)">Pipeline de vendas</div></div>
   </div>
@@ -1465,7 +1466,7 @@ function renderList(){
     <div class="sidebar-inner">
     <div class="sidebar-header">
       <div class="sidebar-logo">
-        <div class="sidebar-logo-icon">B</div>
+        <div class="sidebar-logo-icon">${logoSVG(36,'vend')}</div>
         <div><div class="sidebar-logo-text">Baviera Control</div>
         <div class="sidebar-logo-sub">Pipeline de vendas</div></div>
       </div>
@@ -2020,7 +2021,7 @@ function renderDashboard(){
   const itemNav=id=>{const t=TOPICOS.find(x=>x[0]===id);if(!t)return'';
     return`<div class="gpp-nav-item ${sec===id&&!S.gppBusca?'active':''}" data-action="gpp-sec" data-s="${id}"><span class="gpp-nav-ic">${t[1]}</span><span class="gpp-nav-lb">${t[2]}</span>${badgeDe(id)}</div>`;};
   const nav=`<div class="gpp-nav">
-    <div class="gpp-nav-logo"><span class="gpp-nav-b">B</span> GPP</div>
+    <div class="gpp-nav-logo"><span class="gpp-nav-b">${logoSVG(28,'nav')}</span> GPP</div>
     <div class="gpp-nav-search">
       <input class="gpp-search-inp" id="gpp-search" placeholder="🔍 Pesquisar..." value="${esc(S.gppBusca||'')}" data-action="gpp-search-input">
     </div>
