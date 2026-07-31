@@ -1,0 +1,59 @@
+<!DOCTYPE html><html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ícones · Baviera Control</title>
+<style>
+:root{--nevoa:#8A93A6;--linha:rgba(255,255,255,.09)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0B0F1A;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;padding:34px 18px 70px}
+.wrap{max-width:760px;margin:0 auto}
+.eyebrow{font-size:11px;letter-spacing:2.4px;text-transform:uppercase;color:var(--nevoa);font-weight:700}
+h1{font-size:26px;font-weight:800;margin:8px 0 6px}
+.lede{color:var(--nevoa);font-size:13px;line-height:1.6;max-width:520px}
+.bloco{margin-top:36px;border-top:1px solid var(--linha);padding-top:20px}
+.t{font-size:15px;font-weight:800;margin-bottom:3px}
+.d{color:var(--nevoa);font-size:12px;line-height:1.55;margin-bottom:16px;max-width:520px}
+.linha{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-end}
+.item{display:flex;flex-direction:column;align-items:center;gap:8px}
+.cap{font-size:10px;color:var(--nevoa)}
+/* mocks */
+.ios{width:76px;height:76px;border-radius:17px;overflow:hidden;box-shadow:0 6px 16px rgba(0,0,0,.4)}
+.ios img{width:100%;height:100%;display:block}
+.andr{width:72px;height:72px;border-radius:50%;overflow:hidden;box-shadow:0 6px 16px rgba(0,0,0,.4);background:#000}
+.andr.sq{border-radius:20px}
+.andr img{width:100%;height:100%;display:block}
+.fav{display:inline-flex;align-items:center;gap:8px;background:#fff;color:#1a1a2e;border-radius:8px 8px 0 0;padding:7px 12px;font-size:12px;font-weight:600}
+.fav img{width:16px;height:16px;border-radius:3px}
+.springboard{background:linear-gradient(160deg,#2a3550,#0e1524);border-radius:22px;padding:20px 24px;display:flex;gap:22px;flex-wrap:wrap}
+.app{display:flex;flex-direction:column;align-items:center;gap:6px;width:66px}
+.app .ios{width:60px;height:60px;border-radius:14px}
+.app .lbl{font-size:10px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+</style></head><body><div class="wrap">
+<div class="eyebrow">Baviera Control</div><h1>Ícone da app</h1>
+<p class="lede">A marca 01 como ícone, nas versões que cada sistema precisa. Testa no telemóvel.</p>
+
+<div class="bloco"><div class="t">iOS — ecrã inicial</div>
+<div class="d">O iOS arredonda o quadrado sozinho. Fundo cheio, sem transparência, senão apareceriam cantos pretos.</div>
+<div class="springboard">
+  <div class="app"><div class="ios"><img src="apple-touch-icon.png"></div><span class="lbl">Baviera</span></div>
+  <div class="app"><div class="ios"><img src="apple-touch-icon.png"></div><span class="lbl">Baviera</span></div>
+</div></div>
+
+<div class="bloco"><div class="t">Android — com máscara do lançador</div>
+<div class="d">O Android corta o ícone. Por isso a versão "maskable" tem as lâminas mais pequenas e centradas — repara que sobrevivem tanto ao círculo como ao quadrado arredondado.</div>
+<div class="linha">
+  <div class="item"><div class="andr"><img src="icon-maskable-512.png"></div><span class="cap">círculo</span></div>
+  <div class="item"><div class="andr sq"><img src="icon-maskable-512.png"></div><span class="cap">quadrado</span></div>
+  <div class="item"><div class="andr" style="border-radius:22px 6px 22px 6px"><img src="icon-maskable-512.png"></div><span class="cap">squircle</span></div>
+</div></div>
+
+<div class="bloco"><div class="t">Se usasse a versão cheia no Android (errado)</div>
+<div class="d">A versão de cantos arredondados, cortada em círculo, perde as pontas das lâminas. É por isto que existe a maskable.</div>
+<div class="linha">
+  <div class="item"><div class="andr"><img src="icon-512.png"></div><span class="cap">cortado ✗</span></div>
+  <div class="item"><div class="andr sq"><img src="icon-maskable-512.png"></div><span class="cap">correto ✓</span></div>
+</div></div>
+
+<div class="bloco"><div class="t">Separador do browser</div>
+<div class="fav"><img src="favicon.png"> Baviera Control</div>
+</div>
+
+</div></body></html>
