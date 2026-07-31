@@ -495,6 +495,27 @@ html,body{overflow-x:hidden;max-width:100vw}
 .ev-funil-pill{display:inline-block;font-size:10px;font-weight:700;color:#fff;padding:1px 7px;border-radius:10px;vertical-align:middle}
 .perd-brek{margin:6px 16px 10px;display:flex;flex-direction:column;gap:7px}
 .perd-brow{display:flex;align-items:center;gap:10px}
+.fun-card{padding:16px}
+.fun-h{font-size:14px;font-weight:800;color:var(--text);margin-bottom:12px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.fun-h span{font-size:11px;font-weight:500;color:var(--text3)}
+.fun-bar{display:flex;height:14px;border-radius:8px;overflow:hidden;background:var(--border)}
+.fun-seg{height:100%}
+.fun-leg{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px}
+.fun-legi{font-size:11px;color:var(--text2);display:inline-flex;align-items:center;gap:5px}
+.fun-legi i{width:9px;height:9px;border-radius:3px;display:inline-block}
+.fun-metric{display:flex;align-items:center;gap:12px;margin-top:14px}
+.fun-metric-n{font-size:30px;font-weight:800;line-height:1;flex-shrink:0}
+.fun-metric-n.ok{color:var(--green)}.fun-metric-n.bad{color:var(--red)}
+.fun-metric-l{font-size:12px;color:var(--text3);line-height:1.4}
+.fun-warn{margin-top:14px;background:#fffbeb;border:1px solid #fde68a;border-radius:var(--r);padding:11px 13px;font-size:12px;color:#92400e;line-height:1.5}
+.fun-empty-h{font-size:12.5px;color:var(--text2);line-height:1.6}
+.fun-fases{margin-top:14px;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--border);padding-top:12px}
+.fun-fase{display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.fun-fase-l{display:inline-flex;align-items:center;gap:7px;font-weight:600;color:var(--text2)}
+.fun-fase-l i{width:9px;height:9px;border-radius:3px}
+.fun-fase-v{font-weight:700;color:var(--text)}
+.fun-fase-s{font-weight:400;color:var(--text3);font-size:11px}
+.fun-desde{margin-top:12px;font-size:11px;color:var(--text3);border-top:1px solid var(--border);padding-top:10px}
 /* ===== Navegação mobile: barra inferior + painel "Mais" ===== */
 .gpp-tabbar{display:none}
 .gpp-sheet,.gpp-sheet-bd{display:none}
@@ -816,7 +837,7 @@ let S={
   screen:'loading',
   config:CONFIG,
   token:null,records:[],selected:null,form:{},
-  me:null,team:[],objetivos:[],objEquipa:[],eventos:[],inscricoes:[],ranking:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
+  me:null,team:[],objetivos:[],objEquipa:[],eventos:[],inscricoes:[],ranking:[],transicoes:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
   pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',
 
@@ -1034,6 +1055,7 @@ function objEquipaGet(mesYM,tipo){const md=objEquipaMesData(mesYM);return (S.obj
 async function saveObjEquipa(mesYM,val,tipo){tipo=tipo||'novas';const md=objEquipaMesData(mesYM);const ex=objEquipaGet(mesYM,tipo);const v=Math.max(0,parseInt(val,10)||0);if(ex){await supabaseApi('PATCH',`/objetivos_equipa?id=eq.${ex.id}`,{objetivo:v,updated_at:new Date().toISOString()})}else{await supabaseApi('POST','/objetivos_equipa',{mes:md,tipo:tipo,objetivo:v})}await loadObjEquipa()}
 async function loadNps(){try{const d=await supabaseApi('GET',`/nps?mes=eq.${curMes()}&select=*`);S.nps=d||[]}catch(e){S.nps=[]}}
 async function loadEventos(){try{const d=await supabaseApi('GET','/eventos?select=*&order=created_at.desc');S.eventos=d||[]}catch(e){S.eventos=[]}}
+async function loadTransicoes(){try{const d=await supabaseApi('GET','/status_historico?select=*&order=quando.asc');S.transicoes=d||[]}catch(e){S.transicoes=[]}}
 async function loadInscricoes(){try{const d=await supabaseApi('GET','/inscricoes?select=*&order=created_at.asc');S.inscricoes=d||[]}catch(e){S.inscricoes=[]}}
 async function loadRanking(evId){if(!evId){S.ranking=[];return}try{const d=await supabaseApi('POST','/rpc/inscricoes_ranking',{p_evento:evId});S.ranking=d||[]}catch(e){S.ranking=[]}}
 function eventoAtivo(){return (S.eventos||[]).find(e=>e.ativo)||null}
@@ -2235,9 +2257,58 @@ function renderDashboard(){
 
   // ---- Funil (todos os vendedores) ----
   function funilView(){
+    const FUN=['Quente','Morno','Frio'];
     const grupos={Quente:[],Morno:[],Frio:[]};
     recs.filter(r=>FUNIL.includes(r.status)).forEach(r=>grupos[r.status].push(r));
     const cores={Quente:'var(--red)',Morno:'var(--amber)',Frio:'var(--slate)'};
+    const nFunil=grupos.Quente.length+grupos.Morno.length+grupos.Frio.length;
+    const nCart=recs.filter(r=>r.status==='Carteira').length;
+    const nRet=recs.filter(r=>r.status==='Retail').length;
+    const nPerd=recs.filter(r=>r.status==='Perdido').length;
+
+    // ---------- A · FOTO (distribuição atual) ----------
+    const segs=[['Em funil',nFunil,'var(--slate)'],['Carteira',nCart,'var(--blue)'],['Retail',nRet,'var(--green)'],['Perdido',nPerd,'var(--red)']];
+    const totSeg=segs.reduce((a,s)=>a+s[1],0)||1;
+    const barra=`<div class="fun-bar">${segs.map(([l,n,c])=>n?`<div class="fun-seg" style="width:${n/totSeg*100}%;background:${c}" title="${l}: ${n}"></div>`:'').join('')}</div>
+      <div class="fun-leg">${segs.map(([l,n,c])=>`<span class="fun-legi"><i style="background:${c}"></i>${l} <b>${n}</b></span>`).join('')}</div>`;
+    const convFoto = nPerd>0 ? Math.round((nCart+nRet)/(nCart+nRet+nPerd)*100) : null;
+    const fotoConv = convFoto!=null
+      ? `<div class="fun-metric"><div class="fun-metric-n ok">${convFoto}%</div><div class="fun-metric-l">fecharam vs. perderam-se (foto de todos os negócios até hoje)</div></div>`
+      : `<div class="fun-warn">⚠️ Conversão não calculável: tens <b>0 perdidos</b> registados. Sem derrotas, qualquer taxa daria ~100% e seria mentira. Marca os negócios perdidos para isto ganhar sentido.</div>`;
+    const foto=`<div class="gpp-card fun-card">
+      <div class="fun-h">📸 Agora <span>foto do pipeline neste instante</span></div>
+      ${barra}
+      ${fotoConv}
+    </div>`;
+
+    // ---------- B · AO LONGO DO TEMPO (histórico) ----------
+    const trans=(S.transicoes||[]).filter(t=>t.de);
+    const saidas=trans.filter(t=>FUN.includes(t.de));
+    const avancou=saidas.filter(t=>t.para==='Carteira'||t.para==='Retail').length;
+    const perdeu=saidas.filter(t=>t.para==='Perdido').length;
+    const convHist=(avancou+perdeu)>0?Math.round(avancou/(avancou+perdeu)*100):null;
+    const desde=trans.length?new Date(trans[0].quando).toLocaleDateString('pt-PT'):null;
+    let histBody;
+    if(!trans.length){
+      histBody=`<div class="fun-empty-h">🎬 O filme começou agora. A partir deste momento, <b>cada</b> mudança de status é gravada. Daqui a algumas semanas esta secção mostra a conversão real por fase e o tempo médio em cada uma — coisas que a foto acima nunca consegue medir.</div>`;
+    }else{
+      const porFase=FUN.map(f=>{
+        const s=saidas.filter(t=>t.de===f);
+        const av=s.filter(t=>t.para==='Carteira'||t.para==='Retail').length;
+        const pe=s.filter(t=>t.para==='Perdido').length;
+        const pct=(av+pe)>0?Math.round(av/(av+pe)*100):null;
+        return `<div class="fun-fase"><span class="fun-fase-l"><i style="background:${cores[f]}"></i>${f}</span><span class="fun-fase-v">${pct!=null?pct+'% avança':'—'} <span class="fun-fase-s">(${av}✓ / ${pe}✗)</span></span></div>`;
+      }).join('');
+      histBody=`<div class="fun-metric">${convHist!=null?`<div class="fun-metric-n ${convHist>=50?'ok':'bad'}">${convHist}%</div><div class="fun-metric-l">dos que saíram do funil avançaram (${avancou}✓ / ${perdeu}✗ perdidos)</div>`:`<div class="fun-metric-l">Ainda sem saídas do funil registadas.</div>`}</div>
+        ${saidas.length?`<div class="fun-fases">${porFase}</div>`:''}
+        <div class="fun-desde">${trans.length} transição(ões) registada(s) desde ${desde}</div>`;
+    }
+    const hist=`<div class="gpp-card fun-card">
+      <div class="fun-h">🎬 Ao longo do tempo <span>conversão real, a partir do histórico</span></div>
+      ${histBody}
+    </div>`;
+
+    // ---------- Listas por fase ----------
     const bloco=(estado)=>{
       const lista=grupos[estado];
       return`<div class="gpp-sub-h" style="border-left:3px solid ${cores[estado]}">${estado} · <b>${lista.length}</b></div>
@@ -2247,7 +2318,9 @@ function renderDashboard(){
           <td>${esc(r.model||'')} ${esc(r.version||'')}</td><td style="color:var(--text2)">${esc(r.obs||'')}</td></tr>`).join('')}
       </tbody></table></div>`:'<div class="gpp-empty">Sem negócios.</div>'}`;
     };
-    return`<div class="gpp-tot-head">Funil de toda a equipa · <b>${grupos.Quente.length+grupos.Morno.length+grupos.Frio.length}</b> negócios</div>
+    return`<div class="gpp-tot-head">Funil · <b>${nFunil}</b> negócios em aberto</div>
+      ${foto}${hist}
+      <div class="gpp-sub-h" style="border-left:3px solid var(--text3)">Negócios por fase</div>
       ${bloco('Quente')}${bloco('Morno')}${bloco('Frio')}`;
   }
 
@@ -2786,7 +2859,7 @@ function bindEvents(){
       case'retail-ord':{const o=el.dataset.o;if(S.retailOrd===o)setState({retailDir:S.retailDir==='asc'?'desc':'asc'});else setState({retailOrd:o,retailDir:'asc'});break;}
       case'gpp-mais':setState({gppMais:!S.gppMais});break;
       case'gpp-mais-close':setState({gppMais:false});break;
-      case'gpp-sec':{const s=el.dataset.s;S.gppBusca='';S.gppMais=false;if(s==='escala'){setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}else if(s==='stock'){setState({gppSec:s,dashAlertOpen:null});if(!S.stockLoaded)loadStock().then(()=>render());}else if(s==='evento'){setState({gppSec:s,dashAlertOpen:null,eventoErr:''});const ev=eventoAtual();if(ev){S.eventoSel=ev.id;loadRanking(ev.id).then(()=>render());}}else{setState({gppSec:s,dashAlertOpen:null});}break}
+      case'gpp-sec':{const s=el.dataset.s;S.gppBusca='';S.gppMais=false;if(s==='escala'){setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}else if(s==='stock'){setState({gppSec:s,dashAlertOpen:null});if(!S.stockLoaded)loadStock().then(()=>render());}else if(s==='evento'){setState({gppSec:s,dashAlertOpen:null,eventoErr:''});const ev=eventoAtual();if(ev){S.eventoSel=ev.id;loadRanking(ev.id).then(()=>render());}}else if(s==='funil'){setState({gppSec:s,dashAlertOpen:null});loadTransicoes().then(()=>render());}else{setState({gppSec:s,dashAlertOpen:null});}break}
       case'stock-cat':setState({stockCat:el.dataset.c,stockAdding:false});break;
       case'stock-vend-toggle':setState({stockVendOpen:!S.stockVendOpen});break;
       case'stock-add':setState({stockAdding:true,stockFormMax:false});break;
@@ -2890,7 +2963,7 @@ function bindEvents(){
 
 function collectFormData(){document.querySelectorAll('input[data-field],select[data-field],textarea[data-field]').forEach(el=>{const k=el.dataset.field;let v=el.value;if(el.dataset.fmt==='month'&&v)v=v.replace('-','/');S.form[k]=v})}
 
-function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes()]):Promise.all([loadTeam(),loadEventos(),loadInscricoes()]);return extra}).then(function(){return loadRecords()}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:isAdmin()?'dashboard':'list',loading:false})})}
+function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes(),loadTransicoes()]):Promise.all([loadTeam(),loadEventos(),loadInscricoes()]);return extra}).then(function(){return loadRecords()}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:isAdmin()?'dashboard':'list',loading:false})})}
 (function(){
   S.screen='loading';render();
   refreshSession().then(function(token){
