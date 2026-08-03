@@ -539,6 +539,16 @@ html,body{overflow-x:hidden;max-width:100vw}
 .norma-4m.warn{color:#b45309}
 .norma-4m.bad{color:var(--red)}
 .norma-warn2{margin-top:8px;font-size:12px;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:var(--r);padding:9px 12px}
+.norma-subst-btn{display:inline-block;margin-top:5px;font-size:10px;font-weight:700;color:var(--blue);background:var(--blue-bg,#eff6ff);border:1px solid var(--blue);border-radius:20px;padding:2px 9px;cursor:pointer;font-family:inherit}
+.norma-subst-btn.on{background:var(--blue);color:#fff}
+.norma-subst-tag{margin-top:5px;font-size:10px;font-weight:600;color:#b45309}
+.norma-subrow td{background:var(--bg);padding:12px 14px !important}
+.norma-sub{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.norma-sub-l{font-size:12px;font-weight:700;color:var(--text2)}
+.norma-sub-nota{font-size:11px;color:var(--text3);margin-top:7px;line-height:1.4}
+.norma-obsrow td{padding:0 8px 10px !important;border-top:none !important}
+.norma-obs{width:100%;max-width:none;font-size:12px;color:var(--text2);background:var(--bg);border-style:dashed}
+.norma-obs:focus{background:var(--surface);border-style:solid}
 /* ===== Navegação mobile: barra inferior + painel "Mais" ===== */
 .gpp-tabbar{display:none}
 .gpp-sheet,.gpp-sheet-bd{display:none}
@@ -862,7 +872,7 @@ let S={
   token:null,records:[],selected:null,form:{},
   me:null,team:[],objetivos:[],objEquipa:[],eventos:[],inscricoes:[],ranking:[],transicoes:[],norma:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
-  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',
+  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{INFO:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
@@ -2420,17 +2430,31 @@ function renderDashboard(){
       ${passaram?`<div class="norma-nok" style="margin-top:8px">🔴 <b>${passaram}</b> demo${passaram>1?'s':''} já passou dos 4 meses de matrícula</div>`:''}
       ${perto?`<div class="norma-warn2">🟠 <b>${perto}</b> demo${perto>1?'s':''} a menos de 30 dias dos 4 meses</div>`:''}
     </div>`;
-    const linha=n=>{const q=quatroM(n);return`<tr>
-      <td class="norma-modelo">${esc(n.modelo)}</td>
+    const linha=n=>{const q=quatroM(n);const aberto=String(S.normaSubst)===String(n.id);const temEnc=n.encomenda&&n.encomenda.trim();return`<tr>
+      <td class="norma-modelo">${esc(n.modelo)}
+        ${n.estado==='Matriculada'?`<button class="norma-subst-btn ${aberto?'on':''}" data-action="norma-substituir" data-id="${n.id}">🔄 Substituir</button>`:''}
+        ${temEnc&&!aberto?`<div class="norma-subst-tag">🔄 Subst. encomendada: <b>${esc(n.encomenda)}</b></div>`:''}
+      </td>
       <td><select class="norma-inp" data-norma-id="${n.id}" data-norma-f="estado" style="color:${cor[n.estado]||'var(--text)'};font-weight:700">${estados.map(e=>`<option value="${e}" ${n.estado===e?'selected':''}>${e}</option>`).join('')}</select></td>
-      <td><input class="norma-inp" data-norma-id="${n.id}" data-norma-f="matricula" value="${esc(n.matricula||'')}" placeholder="${n.estado==='Encomendada'?'(encom.)':'—'}" style="max-width:100px;font-weight:600"></td>
-      <td><input class="norma-inp" data-norma-id="${n.id}" data-norma-f="data_matricula" type="date" value="${esc(n.data_matricula||'')}" style="max-width:140px">${q.txt?`<div class="norma-4m ${q.cls}">4 meses: ${q.txt}</div>`:''}</td>
+      <td>${n.estado==='Encomendada'
+        ?`<input class="norma-inp" data-norma-id="${n.id}" data-norma-f="encomenda" value="${esc(n.encomenda||'')}" placeholder="Nº encomenda" style="max-width:120px;font-weight:600">`
+        :`<input class="norma-inp" data-norma-id="${n.id}" data-norma-f="matricula" value="${esc(n.matricula||'')}" placeholder="—" style="max-width:100px;font-weight:600">`}</td>
+      <td><input class="norma-inp" data-norma-id="${n.id}" data-norma-f="data_matricula" type="date" value="${esc(n.data_matricula||'')}" style="max-width:140px">${(q.txt&&n.estado==='Matriculada')?`<div class="norma-4m ${q.cls}">4 meses: ${q.txt}</div>`:''}</td>
       <td><input class="norma-inp stock-num" data-norma-id="${n.id}" data-norma-f="kms" type="number" value="${n.kms!=null?n.kms:''}" placeholder="—" style="max-width:75px"></td>
       <td><div class="stock-eurwrap"><input class="norma-inp stock-num" data-norma-id="${n.id}" data-norma-f="preco" type="number" value="${n.preco!=null?n.preco:''}" placeholder="—"><span class="stock-eur2">€</span></div></td>
-    </tr>`;};
+    </tr>
+    <tr class="norma-obsrow"><td colspan="6"><input class="norma-inp norma-obs" data-norma-id="${n.id}" data-norma-f="obs" value="${esc(n.obs||'')}" placeholder="📝 Observações — ex: cor, extras, estado, a quem está atribuída..."></td></tr>
+    ${aberto?`<tr class="norma-subrow"><td colspan="6">
+      <div class="norma-sub">
+        <span class="norma-sub-l">🔄 Substituir esta demo — nº de encomenda da nova:</span>
+        <input class="norma-inp" data-norma-id="${n.id}" data-norma-f="encomenda" value="${esc(n.encomenda||'')}" placeholder="Ex: ENC-2026-0142" style="max-width:200px;font-weight:600">
+        <button class="btn btn-dark btn-sm" data-action="norma-subst-fechar">Fechar</button>
+      </div>
+      <div class="norma-sub-nota">A demo atual continua a contar enquanto estiver matriculada. Quando a nova chegar, muda o estado e a matrícula.</div>
+    </td></tr>`:''}`;};
     return`${cab}
       <div class="gpp-card"><table class="gpp-ltable norma-tab">
-        <thead><tr><th>Modelo (norma)</th><th>Estado</th><th>Matrícula</th><th>Matriculada em</th><th>Km</th><th>Preço</th></tr></thead>
+        <thead><tr><th>Modelo (norma)</th><th>Estado</th><th>Matrícula / Enc.</th><th>Matriculada em</th><th>Km</th><th>Preço</th></tr></thead>
         <tbody>${norma.map(linha).join('')}</tbody>
       </table></div>`;
   }
@@ -2927,7 +2951,8 @@ function bindEvents(){
       case'insc-add-cancel':setState({inscAdding:false,inscForm:{},eventoErr:''});break;
       case'insc-save-new':saveInscricaoNova();break;
       case'insc-del':delInscricao(el.dataset.id);break;
-      case'evento-add-open':setState({eventoAdding:true,eventoForm:{},eventoErr:''});break;
+      case'norma-substituir':setState({normaSubst:String(S.normaSubst)===String(el.dataset.id)?null:el.dataset.id});break;
+      case'norma-subst-fechar':setState({normaSubst:null});break;
       case'evento-add-cancel':setState({eventoAdding:false,eventoForm:{},eventoErr:''});break;
       case'evento-save-new':saveEventoNovo();break;
       case'evento-ativar':ativarEvento(parseInt(el.dataset.id));break;
