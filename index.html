@@ -557,6 +557,40 @@ html,body{overflow-x:hidden;max-width:100vw}
 .stock-seg-lista{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .stock-seg-item{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #a5f3fc;border-radius:20px;padding:3px 4px 3px 11px;font-size:12px;color:#155e75}
 .norma-sub-seg{margin-top:7px;font-size:11px;color:#155e75;background:#ecfeff;border:1px solid #a5f3fc;border-radius:var(--r);padding:8px 11px;line-height:1.4}
+/* --- lista compacta de demos --- */
+.ndemo-legend{display:grid;grid-template-columns:16px minmax(110px,1.5fr) 1fr 1.3fr 1.2fr 18px;gap:10px;padding:8px 14px 4px;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);font-weight:700}
+.ndemo-list{padding:0;overflow:hidden}
+.ndemo{border-bottom:1px solid var(--border)}
+.ndemo:last-child{border-bottom:none}
+.ndemo-head{display:grid;grid-template-columns:16px minmax(110px,1.5fr) 1fr 1.3fr 1.2fr 18px;gap:10px;align-items:center;padding:12px 14px;cursor:pointer}
+.ndemo-head:hover{background:var(--bg)}
+.ndemo.open .ndemo-head{background:var(--bg)}
+.ndemo-dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.ndemo-modelo{font-weight:700;font-size:13px}
+.ndemo-atual{font-size:12px;font-weight:600}
+.ndemo-futura{font-size:12px;color:var(--text2)}
+.ndemo-obs{font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ndemo-ntemos{color:var(--red);font-weight:700}
+.ndemo-mut{color:var(--text3)}
+.ndemo-chev{color:var(--text3);font-size:11px;text-align:center}
+.ndemo-flag{font-size:11px;margin-right:2px}
+.ndemo-ficha{padding:2px 14px 16px;background:var(--bg)}
+.ndemo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:12px}
+.ndemo-f{display:flex;flex-direction:column;gap:4px}
+.ndemo-f label{font-size:11px;font-weight:600;color:var(--text2)}
+.ndemo-f .norma-inp{width:100%}
+@media(max-width:700px){
+  .ndemo-legend{display:none}
+  .ndemo-head{grid-template-columns:14px 1fr 16px;grid-template-areas:'dot modelo chev' 'dot atual chev' 'dot futura chev' 'dot obs chev';gap:2px 10px;row-gap:3px}
+  .ndemo-dot{grid-area:dot;align-self:start;margin-top:5px}
+  .ndemo-modelo{grid-area:modelo}
+  .ndemo-atual{grid-area:atual}
+  .ndemo-atual::before{content:'Atual: ';color:var(--text3);font-weight:400}
+  .ndemo-futura{grid-area:futura}
+  .ndemo-futura::before{content:'Futura: ';color:var(--text3)}
+  .ndemo-obs{grid-area:obs;white-space:normal}
+  .ndemo-chev{grid-area:chev;align-self:center}
+}
 .stock-vend-seg{font-size:10px;font-weight:700;color:#0891b2;background:#ecfeff;border-radius:10px;padding:1px 7px;display:inline-block}
 .fun-atr-count{font-size:11px;font-weight:700;color:#b45309;margin-left:6px}
 .fun-atr{background:#fffbeb}
@@ -891,7 +925,7 @@ let S={
   token:null,records:[],selected:null,form:{},
   me:null,team:[],objetivos:[],objEquipa:[],eventos:[],inscricoes:[],ranking:[],transicoes:[],norma:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
-  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',
+  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{INFO:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
@@ -1831,6 +1865,7 @@ function renderEscala(){
     <div class="hdr-sub" style="min-width:120px;text-align:center">${esc(escalaMesLabel())}</div>
     <button class="hdr-btn" data-action="escala-next">›</button>
     <button class="hdr-btn" data-action="escala-export" title="Exportar para Excel">⬇ Excel</button>
+    <button class="hdr-btn" data-action="escala-pdf" title="Exportar PDF (1 página)">⬇ PDF</button>
     <button class="hdr-btn" data-action="go-password" title="Alterar password">🔑</button>
     <button class="hdr-btn" data-action="logout">Sair</button>
   </div>
@@ -1940,6 +1975,60 @@ function renderEscalaPicker(){
       </div>
     </div>
   </div>`;
+}
+function exportEscalaPDF(){
+  const dias=escalaDias();
+  const linhasDisp=[...new Set(S.team.map(p=>p.linha))].sort();
+  const linhaAtiva=isAdmin()?(S.escalaLinha||linhasDisp[0]||'auto'):((S.me&&S.me.linha)||'auto');
+  const vendedores=S.team.filter(p=>p.linha===linhaAtiva);
+  const estados=ESTADOS_ESCALA;
+  const estCor={Stand:'#dcfce7',Apoio:'#dbeafe',Livre:'#f1f5f9',Folga:'#e5e7eb','Férias':'#fce7f3',Ausente:'#fee2e2','Formação':'#fef9c3'};
+  const porDiaEstado=dia=>{const m={};estados.forEach(s=>m[s]=[]);vendedores.forEach(v=>{const e=S.escala[dia+'|'+v.id];if(e&&m[e.estado])m[e.estado].push(v)});return m;};
+  const linhasHTML=dias.map(d=>{
+    if(d.dom)return`<tr class="dom"><td>${d.sem}</td><td>${String(d.d).padStart(2,'0')}</td><td>${d.dia}</td><td colspan="${estados.length}" class="enc">ENCERRADO</td></tr>`;
+    const grp=porDiaEstado(d.iso);
+    return`<tr><td>${d.sem}</td><td>${String(d.d).padStart(2,'0')}</td><td>${d.dia}</td>${estados.map(s=>`<td style="background:${estCor[s]||'#fff'}">${grp[s].map(v=>esc(vendIniciais(v))).join(' ')}</td>`).join('')}</tr>`;
+  }).join('');
+  const resumoHTML=vendedores.map(v=>{
+    let stand=0,apoio=0,out=0,ferias=0,folga=0,fds=0;
+    dias.forEach(d=>{const e=S.escala[d.iso+'|'+v.id];if(!e)return;const s=e.estado;
+      if(s==='Stand')stand++;else if(s==='Apoio')apoio++;else if(s==='Livre'||s==='Ausente'||s==='Formação')out++;
+      else if(s==='Férias')ferias++;else if(s==='Folga')folga++;
+      if((s==='Stand'||s==='Apoio')&&isFimSemana(d.iso))fds++;});
+    return`<tr><td>${esc(v.nome||'?')}</td><td>${stand||'—'}</td><td>${apoio||'—'}</td><td>${out||'—'}</td><td><b>${stand+apoio+out}</b></td><td>${ferias||'—'}</td><td>${folga||'—'}</td><td>${fds||'—'}</td></tr>`;
+  }).join('');
+  const html=`<!DOCTYPE html><html lang="pt"><head><meta charset="utf-8"><title>Escala ${esc(escalaMesLabel())}</title><style>
+    @page{size:A4 landscape;margin:7mm}
+    *{box-sizing:border-box}
+    body{font-family:Arial,Helvetica,sans-serif;margin:0;color:#111}
+    h1{font-size:14px;margin:0 0 6px}
+    h1 span{font-weight:400;color:#666}
+    table{border-collapse:collapse;width:100%;font-size:8px;table-layout:fixed}
+    th,td{border:1px solid #cbd5e1;padding:1.5px 2px;text-align:center;overflow:hidden}
+    thead th{background:#1a1a2e;color:#fff}
+    .grid td:nth-child(1),.grid td:nth-child(2),.grid td:nth-child(3),.grid th:nth-child(1),.grid th:nth-child(2),.grid th:nth-child(3){width:22px;color-adjust:exact}
+    .dom td{background:#f8fafc;color:#94a3b8}
+    .enc{font-weight:700;letter-spacing:1px;color:#cbd5e1}
+    .resumo{margin-top:7px}
+    .resumo th:first-child,.resumo td:first-child{text-align:left;padding-left:5px;width:120px}
+    .rt{font-size:11px;font-weight:700;margin:8px 0 3px}
+    body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  </style></head><body>
+    <h1>Escala ${esc(linhaLabel(linhaAtiva))} <span>— ${esc(escalaMesLabel())}</span></h1>
+    <table class="grid">
+      <thead><tr><th>Sem</th><th>Data</th><th>Dia</th>${estados.map(s=>`<th>${esc(s)}</th>`).join('')}</tr></thead>
+      <tbody>${linhasHTML}</tbody>
+    </table>
+    <div class="rt">Resumo do mês</div>
+    <table class="resumo">
+      <thead><tr><th>Vendedor</th><th>Stand</th><th>Apoio</th><th>Out</th><th>Σ</th><th>Férias</th><th>Folga</th><th>FDS</th></tr></thead>
+      <tbody>${resumoHTML}</tbody>
+    </table>
+  </body></html>`;
+  const w=window.open('','_blank');
+  if(!w){alert('Permite janelas pop-up neste site para exportar o PDF.');return;}
+  w.document.write(html);w.document.close();w.focus();
+  setTimeout(()=>{try{w.print()}catch(e){}},450);
 }
 function exportEscala(){
   const dias=escalaDias();
@@ -2505,24 +2594,22 @@ function renderDashboard(){
   // ---- Stock de motas usadas (admin) ----
   function normaView(){
     const norma=(S.norma||[]).slice().sort((a,b)=>a.ordem-b.ordem);
-    const total=norma.length||13;
+    const total=norma.length||14;
     const nMat=norma.filter(n=>n.estado==='Matriculada').length;
     const nEnc=norma.filter(n=>n.estado==='Encomendada').length;
     const nFalta=total-nMat-nEnc;
     const estados=['Matriculada','Encomendada','Em falta'];
     const cor={'Matriculada':'var(--green)','Encomendada':'#e8a30c','Em falta':'var(--red)'};
     const cumpreMin=(nMat+nEnc)>=total;
-    // --- calculo dos 4 meses ---
     const hoje=new Date();hoje.setHours(0,0,0,0);
     const mais4=d=>{if(!d)return null;const dt=new Date(d+'T00:00:00');dt.setMonth(dt.getMonth()+4);return dt;};
     const fmtD=dt=>dt.toLocaleDateString('pt-PT');
     const quatroM=n=>{const lim=mais4(n.data_matricula);if(!lim)return{txt:'',cls:''};const dias=Math.round((lim-hoje)/86400000);
       if(dias<0)return{txt:`passou há ${-dias}d`,cls:'bad',lim};
       if(dias<=30)return{txt:`faltam ${dias}d`,cls:'warn',lim};
-      const meses=Math.round(dias/30);return{txt:fmtD(lim),cls:'ok',lim};};
-    const passaram=norma.filter(n=>{const q=quatroM(n);return q.lim&&q.cls==='bad';}).length;
-    const perto=norma.filter(n=>quatroM(n).cls==='warn').length;
-    const fmtE=n=>n!=null&&n!==''?Number(n).toLocaleString('pt-PT')+' €':'—';
+      return{txt:fmtD(lim),cls:'ok',lim};};
+    const passaram=norma.filter(n=>{const q=quatroM(n);return q.lim&&q.cls==='bad'&&n.estado==='Matriculada';}).length;
+    const perto=norma.filter(n=>{const q=quatroM(n);return q.cls==='warn'&&n.estado==='Matriculada';}).length;
     const barra=`<div class="norma-bar">
         ${nMat?`<div style="width:${nMat/total*100}%;background:var(--green)"></div>`:''}
         ${nEnc?`<div style="width:${nEnc/total*100}%;background:#e8a30c"></div>`:''}
@@ -2530,7 +2617,7 @@ function renderDashboard(){
       </div>`;
     const cab=`<div class="gpp-card norma-cab">
       <div class="norma-cab-top">
-        <div><div class="norma-t">Stock Norma · coluna M</div>
+        <div><div class="norma-t">Programa de Demos · coluna M</div>
         <div class="norma-s">Obrigatório: <b>${total}</b> demos matriculadas — ou no mínimo encomendadas</div></div>
         <div class="norma-score ${cumpreMin?'ok':'bad'}">${nMat}<span>/${total}</span></div>
       </div>
@@ -2541,38 +2628,40 @@ function renderDashboard(){
         <span><i style="background:var(--border)"></i>Em falta <b>${Math.max(0,nFalta)}</b></span>
       </div>
       ${cumpreMin?`<div class="norma-ok">✓ Cumpres o mínimo (${nMat+nEnc}/${total})${nMat<total?` — mas faltam ${total-nMat} por matricular`:' — todas matriculadas 🎉'}</div>`:`<div class="norma-nok">⚠️ Faltam ${total-nMat-nEnc} para o mínimo (encomenda ou matricula)</div>`}
-      ${passaram?`<div class="norma-nok" style="margin-top:8px">🔴 <b>${passaram}</b> demo${passaram>1?'s':''} já passou dos 4 meses de matrícula</div>`:''}
+      ${passaram?`<div class="norma-nok" style="margin-top:8px">🔴 <b>${passaram}</b> demo${passaram>1?'s':''} já passou dos 4 meses</div>`:''}
       ${perto?`<div class="norma-warn2">🟠 <b>${perto}</b> demo${perto>1?'s':''} a menos de 30 dias dos 4 meses</div>`:''}
     </div>`;
-    const linha=n=>{const q=quatroM(n);const aberto=String(S.normaSubst)===String(n.id);const temEnc=n.encomenda&&n.encomenda.trim();return`<tr>
-      <td class="norma-modelo">${esc(n.modelo)}
-        ${n.estado==='Matriculada'?`<button class="norma-subst-btn ${aberto?'on':''}" data-action="norma-substituir" data-id="${n.id}">🔄 Substituir</button>`:''}
-        ${temEnc&&!aberto?`<div class="norma-subst-tag">🔄 Subst. encomendada: <b>${esc(n.encomenda)}</b></div>`:''}
-      </td>
-      <td><select class="norma-inp" data-norma-id="${n.id}" data-norma-f="estado" style="color:${cor[n.estado]||'var(--text)'};font-weight:700">${estados.map(e=>`<option value="${e}" ${n.estado===e?'selected':''}>${e}</option>`).join('')}</select></td>
-      <td>${n.estado==='Encomendada'
-        ?`<input class="norma-inp" data-norma-id="${n.id}" data-norma-f="encomenda" value="${esc(n.encomenda||'')}" placeholder="Nº encomenda" style="max-width:120px;font-weight:600">`
-        :`<input class="norma-inp" data-norma-id="${n.id}" data-norma-f="matricula" value="${esc(n.matricula||'')}" placeholder="—" style="max-width:100px;font-weight:600">`}</td>
-      <td><input class="norma-inp" data-norma-id="${n.id}" data-norma-f="data_matricula" type="date" value="${esc(n.data_matricula||'')}" style="max-width:140px">${(q.txt&&n.estado==='Matriculada')?`<div class="norma-4m ${q.cls}">4 meses: ${q.txt}</div>`:''}</td>
-      <td><input class="norma-inp stock-num" data-norma-id="${n.id}" data-norma-f="kms" type="number" value="${n.kms!=null?n.kms:''}" placeholder="—" style="max-width:75px"></td>
-      <td><div class="stock-eurwrap"><input class="norma-inp stock-num" data-norma-id="${n.id}" data-norma-f="preco" type="number" value="${n.preco!=null?n.preco:''}" placeholder="—"><span class="stock-eur2">€</span></div></td>
-      <td style="text-align:center"><button class="toggle-btn stock-seg-toggle stock-max-mini ${n.tem_seguro?'on':''}" data-action="norma-toggle-seguro" data-id="${n.id}">${n.tem_seguro?'✓':'—'}</button></td>
-    </tr>
-    <tr class="norma-obsrow"><td colspan="7"><input class="norma-inp norma-obs" data-norma-id="${n.id}" data-norma-f="obs" value="${esc(n.obs||'')}" placeholder="📝 Observações — ex: cor, extras, estado, a quem está atribuída..."></td></tr>
-    ${aberto?`<tr class="norma-subrow"><td colspan="7">
-      <div class="norma-sub">
-        <span class="norma-sub-l">🔄 Substituir esta demo — nº de encomenda da nova:</span>
-        <input class="norma-inp" data-norma-id="${n.id}" data-norma-f="encomenda" value="${esc(n.encomenda||'')}" placeholder="Ex: ENC-2026-0142" style="max-width:200px;font-weight:600">
-        <button class="btn btn-dark btn-sm" data-action="norma-subst-fechar">Fechar</button>
-      </div>
-      <div class="norma-sub-nota">A demo atual continua a contar enquanto estiver matriculada. Quando a nova chegar, muda o estado e a matrícula.</div>
-      ${n.tem_seguro?`<div class="norma-sub-seg">🛡️ Esta demo tem <b>seguro ativo</b> — quando sair, lembra-te de o anular ou transferir para a nova.</div>`:''}
-    </td></tr>`:''}`;};
+    const atualTxt=n=>n.matricula?esc(n.matricula):(n.estado==='Em falta'?'<span class="ndemo-ntemos">Ñ TEMOS</span>':n.estado==='Encomendada'?'<span class="ndemo-mut">Encomendada</span>':'<span class="ndemo-mut">—</span>');
+    const item=n=>{
+      const q=quatroM(n);const aberto=String(S.normaAberta)===String(n.id);
+      const flag=(q.txt&&n.estado==='Matriculada'&&q.cls==='bad')?'<span class="ndemo-flag">🔴</span>':(q.txt&&n.estado==='Matriculada'&&q.cls==='warn')?'<span class="ndemo-flag">🟠</span>':'';
+      return`<div class="ndemo ${aberto?'open':''}">
+        <div class="ndemo-head" data-action="norma-abrir" data-id="${n.id}">
+          <span class="ndemo-dot" style="background:${cor[n.estado]||'var(--text3)'}" title="${esc(n.estado||'')}"></span>
+          <span class="ndemo-modelo">${esc(n.modelo)}</span>
+          <span class="ndemo-atual">${atualTxt(n)}</span>
+          <span class="ndemo-futura">${n.encomenda?esc(n.encomenda):'<span class="ndemo-mut">—</span>'}</span>
+          <span class="ndemo-obs">${flag}${n.tem_seguro?'<span class="ndemo-flag">🛡️</span>':''}${n.obs?' '+esc(n.obs):''}</span>
+          <span class="ndemo-chev">${aberto?'▾':'▸'}</span>
+        </div>
+        ${aberto?`<div class="ndemo-ficha">
+          <div class="ndemo-grid">
+            <div class="ndemo-f"><label>Estado</label><select class="norma-inp" data-norma-id="${n.id}" data-norma-f="estado" style="color:${cor[n.estado]};font-weight:700">${estados.map(e=>`<option value="${e}" ${n.estado===e?'selected':''}>${e}</option>`).join('')}</select></div>
+            <div class="ndemo-f"><label>Atual (matrícula)</label><input class="norma-inp" data-norma-id="${n.id}" data-norma-f="matricula" value="${esc(n.matricula||'')}" placeholder="Ñ TEMOS"></div>
+            <div class="ndemo-f"><label>Futura a associar (proposta / VIN)</label><input class="norma-inp" data-norma-id="${n.id}" data-norma-f="encomenda" value="${esc(n.encomenda||'')}" placeholder="Ex: Proposta Nº 4405 / VIN…"></div>
+            <div class="ndemo-f"><label>Matriculada em</label><input class="norma-inp" type="date" data-norma-id="${n.id}" data-norma-f="data_matricula" value="${esc(n.data_matricula||'')}">${(q.txt&&n.estado==='Matriculada')?`<div class="norma-4m ${q.cls}">4 meses: ${q.txt}</div>`:''}</div>
+            <div class="ndemo-f"><label>Km</label><input class="norma-inp stock-num" type="number" data-norma-id="${n.id}" data-norma-f="kms" value="${n.kms!=null?n.kms:''}" placeholder="—"></div>
+            <div class="ndemo-f"><label>Preço</label><div class="stock-eurwrap"><input class="norma-inp stock-num" type="number" data-norma-id="${n.id}" data-norma-f="preco" value="${n.preco!=null?n.preco:''}" placeholder="—"><span class="stock-eur2">€</span></div></div>
+            <div class="ndemo-f"><label>Seguro</label><button class="toggle-btn stock-seg-toggle ${n.tem_seguro?'on':''}" data-action="norma-toggle-seguro" data-id="${n.id}" style="width:fit-content;padding:6px 12px">${n.tem_seguro?'✓ Tem seguro':'— Sem seguro'}</button></div>
+          </div>
+          <div class="ndemo-f"><label>Observações</label><input class="norma-inp norma-obs" data-norma-id="${n.id}" data-norma-f="obs" value="${esc(n.obs||'')}" placeholder="Ex: já em parque, cor, extras, a quem está atribuída…"></div>
+          ${n.tem_seguro?`<div class="norma-sub-seg">🛡️ Tem seguro ativo — quando esta demo sair, lembra-te de o anular ou transferir para a nova.</div>`:''}
+        </div>`:''}
+      </div>`;
+    };
     return`${cab}
-      <div class="gpp-card"><table class="gpp-ltable norma-tab">
-        <thead><tr><th>Modelo (norma)</th><th>Estado</th><th>Matrícula / Enc.</th><th>Matriculada em</th><th>Km</th><th>Preço</th><th>Seguro</th></tr></thead>
-        <tbody>${norma.map(linha).join('')}</tbody>
-      </table></div>`;
+      <div class="ndemo-legend"><span></span><span>Modelo</span><span>Atual</span><span>Futura (associar)</span><span>Obs</span><span></span></div>
+      <div class="gpp-card ndemo-list">${norma.map(item).join('')}</div>`;
   }
   function stockView(catParam){
     if(!S.stockLoaded)return'<div class="gpp-empty" style="margin-top:12px">A carregar stock…</div>';
@@ -3093,7 +3182,7 @@ function bindEvents(){
       case'insc-add-cancel':setState({inscAdding:false,inscForm:{},eventoErr:''});break;
       case'insc-save-new':saveInscricaoNova();break;
       case'insc-del':delInscricao(el.dataset.id);break;
-      case'norma-substituir':setState({normaSubst:String(S.normaSubst)===String(el.dataset.id)?null:el.dataset.id});break;
+      case'norma-abrir':setState({normaAberta:String(S.normaAberta)===String(el.dataset.id)?null:el.dataset.id});break;
       case'norma-toggle-seguro':{const n=(S.norma||[]).find(x=>String(x.id)===String(el.dataset.id));if(n)saveNormaCampo(el.dataset.id,'tem_seguro',!n.tem_seguro);break;}
       case'norma-subst-fechar':setState({normaSubst:null});break;
       case'evento-add-cancel':setState({eventoAdding:false,eventoForm:{},eventoErr:''});break;
@@ -3110,6 +3199,7 @@ function bindEvents(){
       case'escala-linha':setState({escalaLinha:el.dataset.linha});break;
       case'escala-toggle':{if(!isAdmin())break;const dia=el.dataset.dia,vid=el.dataset.vid,estado=el.dataset.estado;const e=S.escala[dia+'|'+vid];const novoEstado=(e&&e.estado===estado)?'':estado;saveEscalaCell(dia,vid,novoEstado).then(()=>render()).catch(err=>{alert('Erro: '+err.message);render()});break}
       case'escala-export':exportEscala();break;
+      case'escala-pdf':exportEscalaPDF();break;
       case'escala-prev':escalaShiftMes(-1);loadEscala().then(()=>render());break;
       case'escala-next':escalaShiftMes(1);loadEscala().then(()=>render());break;
       case'go-dashboard':setState({screen:'dashboard',viewVendedor:null,vselOpen:false,statusFilter:'all',alertFilter:null,alertIds:[],search:'',renderLimit:50});break;
