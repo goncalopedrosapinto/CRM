@@ -860,7 +860,7 @@ const SDOT={Retail:'var(--green)',Carteira:'var(--blue)',Quente:'var(--red)',Mor
 const MOTIVOS_PERDA=['Preço','Concorrência','Prazo de entrega','Financiamento','Retoma','Desistência','Adiado','Outro'];
 const TYPES=['MN','MD','MU'],ORIGINS=['','Cliente','Recom.','Stand','Evento','Lead'],PROFILES=['','Particular','Empresa','Protocolo','Estado'],GAR_PERIODOS=['1 ano','2 anos','3 anos','4 anos','5 anos'],FINS=['','PP','Fext','Fint'];
 const FIELD_GROUPS=[
-  {g:'INFO',fields:[{k:'status',l:'Status',t:'select',o:STATUSES},{k:'motivo_perda',l:'Motivo da Perda',t:'select',o:MOTIVOS_PERDA,show:'perdido'},{k:'alert_date',l:'Alertar no dia',t:'date',show:'funil'}]},
+  {g:'INFO',fields:[{k:'status',l:'Status',t:'select',o:STATUSES},{k:'motivo_perda',l:'Motivo da Perda',t:'select',o:MOTIVOS_PERDA,show:'perdido'},{k:'alert_date',l:'Alertar no dia (sugerido — podes mudar)',t:'date',show:'funil'}]},
   {g:'Identificação',fields:[{k:'id_cliente',l:'Cliente',t:'text'},{k:'local',l:'Código Postal',t:'text'},{k:'nif',l:'NIF',t:'text'},{k:'morada',l:'Morada',t:'text'},{k:'cc',l:'CC',t:'text'},{k:'email',l:'Email',t:'text'},{k:'contacto',l:'Contacto',t:'text'}]},
   {g:'Negócio',fields:[{k:'neg',l:'Data Negócio',t:'date'},{k:'mes1',l:'Mês Referência',t:'month'},{k:'type',l:'Tipo',t:'select',o:TYPES},{k:'pvp',l:'PVP (€)',t:'number'},{k:'origin',l:'Origem',t:'select',o:ORIGINS},{k:'lead_webapp',l:'Nº Lead (WebApp)',t:'text',show:'lead'},{k:'profile',l:'Perfil',t:'select',o:PROFILES},{k:'retoma',l:'Retoma?',t:'select',o:['Não','Sim']},{k:'retoma_mat',l:'Matrícula da Retoma',t:'text',show:'retoma'},{k:'biz',l:'Bizagi',t:'text'},{k:'fin',l:'Financiamento',t:'select',o:FINS}]},
   {g:'Viatura',fields:[{k:'stock_id',l:'Mota do Stock (modelo · matrícula)',t:'stockpick',show:'stockpick'},{k:'model',l:'Modelo',t:'text'},{k:'version',l:'Versão',t:'text'},{k:'stock',l:'Em Stock?',t:'select',o:['Não','Sim']},{k:'enc',l:'Encomenda',t:'text'},{k:'chas',l:'Chassis',t:'text'},{k:'mat',l:'Matrícula',t:'text'},{k:'gar',l:'Garantia?',t:'select',o:['Não','Sim']},{k:'gar_periodo',l:'Período de Garantia',t:'select',o:GAR_PERIODOS,show:'garantia'}]},
@@ -1155,7 +1155,13 @@ function statsFor(recs){const ym=curYM();const fech=recs.filter(r=>(r.status==='
 function lastUpdateDays(recs){let m=0;recs.forEach(r=>{const t=new Date(r.updated_at||r.status_updated_at||r.created_at||0).getTime();if(t>m)m=t});if(!m)return null;return Math.floor((Date.now()-m)/86400000)}
 function lastUpdateDaysR(r){const t=new Date(r.updated_at||r.status_updated_at||r.created_at||0).getTime();if(!t)return 999;return Math.floor((Date.now()-t)/86400000)}
 async function loadRecords(){setState({loading:true,error:''});try{const d=await supabaseApi('GET','/baviera_control?select=*&order=neg.desc.nullslast');setState({records:d,loading:false})}catch(e){setState({error:'Erro: '+e.message,loading:false})}}
-async function saveRecord(){setState({loading:true,error:''});try{const b={...S.form};['neg','dmat','col_298','alert_date'].forEach(k=>{if(!b[k])b[k]=null});['qor','xev','bev','m_flag','csc','cme'].forEach(k=>{b[k]=b[k]?parseInt(b[k]):null});b.pvp=b.pvp?parseFloat(b.pvp):null;b.stock_id=b.stock_id?parseInt(b.stock_id):null;if(!isAdmin())delete b.obs_gestor;delete b.id;delete b.created_at;delete b.updated_at;delete b.updated_by;if(!S.selected&&isAdmin())b.vendedor_id=S.viewVendedor||S.me.id;if(S.selected){if(b.status!==S.selected.status)b.status_updated_at=new Date().toISOString();delete b.status_updated_at_keep;await supabaseApi('PATCH',`/baviera_control?id=eq.${S.selected.id}`,b)}else{b.status_updated_at=new Date().toISOString();await supabaseApi('POST','/baviera_control',b)}await syncStockComNegocio(b.stock_id,b.status);await loadRecords();setState({screen:'list',selected:null,loading:false})}catch(e){setState({error:'Erro ao guardar: '+e.message,loading:false})}}
+async function saveRecord(){
+  // Validação: não deixa marcar Perdido sem dizer porquê
+  if(S.form.status==='Perdido'&&!S.form.motivo_perda){
+    setState({error:'Indica o motivo da perda antes de guardar. Sem motivo, não é possível perceber onde estamos a perder negócio.',loading:false,openGroups:Object.assign({},S.openGroups,{INFO:true})});
+    return;
+  }
+  setState({loading:true,error:''});try{const b={...S.form};['neg','dmat','col_298','alert_date'].forEach(k=>{if(!b[k])b[k]=null});['qor','xev','bev','m_flag','csc','cme'].forEach(k=>{b[k]=b[k]?parseInt(b[k]):null});b.pvp=b.pvp?parseFloat(b.pvp):null;b.stock_id=b.stock_id?parseInt(b.stock_id):null;if(!isAdmin())delete b.obs_gestor;delete b.id;delete b.created_at;delete b.updated_at;delete b.updated_by;if(!S.selected&&isAdmin())b.vendedor_id=S.viewVendedor||S.me.id;if(S.selected){if(b.status!==S.selected.status)b.status_updated_at=new Date().toISOString();delete b.status_updated_at_keep;await supabaseApi('PATCH',`/baviera_control?id=eq.${S.selected.id}`,b)}else{b.status_updated_at=new Date().toISOString();await supabaseApi('POST','/baviera_control',b)}await syncStockComNegocio(b.stock_id,b.status);await loadRecords();setState({screen:'list',selected:null,loading:false})}catch(e){setState({error:'Erro ao guardar: '+e.message,loading:false})}}
 async function syncStockComNegocio(stockId,status){
   // Estado da mota acompanha o negocio: funil=A negociar; carteira/retail=Vendida; perdido=Disponivel
   if(!stockId)return;
@@ -1200,6 +1206,12 @@ function groupByMonth(records){const g={};records.forEach(r=>{const m=getMonth(r
 
 // MD/MU já identificada (chassis ou matrícula) não precisa de encomenda: a mota existe fisicamente
 function dispensaEncomenda(r){return (r.type==='MD'||r.type==='MU')&&!!(r.chas||r.mat);}
+const DIAS_ALERTA={Quente:3,Morno:7,Frio:21};
+function sugereAlerta(status){
+  const d=DIAS_ALERTA[status];if(!d)return'';
+  const dt=new Date();dt.setDate(dt.getDate()+d);
+  return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+}
 function funilAtrasado(r){
   if(!r||!FUNIL.includes(r.status))return false;
   const t=new Date();const todayStr=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
@@ -2018,6 +2030,82 @@ function exportComissoes(){
   a.href=url;a.download=`comissoes_${mesSel.replace('/','-')}.csv`;a.click();
   URL.revokeObjectURL(url);
 }
+// ---- Cópia de segurança: um CSV por conjunto de dados ----
+function csvDescarregar(nome,linhas){
+  if(!linhas||!linhas.length)return;
+  const esc2=v=>{v=(v==null?'':String(v));return /[",\n;]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+  const csv=linhas.map(r=>r.map(esc2).join(';')).join('\n');
+  const url=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
+  const a=document.createElement('a');a.href=url;a.download=nome;a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),4000);
+}
+function tabelaParaLinhas(arr,cols){
+  if(!arr||!arr.length)return null;
+  const bool=v=>v===true?'Sim':(v===false?'Não':'');
+  const linhas=[cols.map(c=>c.l)];
+  arr.forEach(o=>linhas.push(cols.map(c=>{const v=o[c.c];return c.f?c.f(v,o):(typeof v==='boolean'?bool(v):v)})));
+  return linhas;
+}
+async function exportarTudo(){
+  const nome=v=>vendName(v)||'';
+  const hoje=new Date().toISOString().slice(0,10);
+  setState({loading:true});
+  try{
+    // garantir que está tudo carregado
+    await Promise.all([
+      (!S.stockLoaded?loadStock():Promise.resolve()),
+      loadNorma(),loadEventos(),loadInscricoes(),loadTransicoes(),loadObjEquipa(),loadEscala()
+    ]);
+  }catch(e){/* segue com o que houver */}
+  const ficheiros=[];
+  // 1. Negócios (usa o export completo já existente)
+  ficheiros.push(()=>exportCSV(true));
+  // 2. Stock (usadas + demos)
+  ficheiros.push(()=>csvDescarregar(`baviera_stock_${hoje}.csv`,tabelaParaLinhas(S.stock,[
+    {c:'id',l:'ID'},{c:'categoria',l:'Categoria'},{c:'modelo',l:'Modelo'},{c:'matricula',l:'Matricula'},{c:'kms',l:'Km'},
+    {c:'valor_min',l:'ValorMin'},{c:'valor_anunciado',l:'Anunciado'},{c:'valor_campanha',l:'Campanha'},
+    {c:'estado',l:'Estado'},{c:'negociado_por',l:'NegociadoPor',f:nome},{c:'maxterauto',l:'Maxterauto'},
+    {c:'tem_seguro',l:'TemSeguro'},{c:'seguro_anulado',l:'SeguroAnulado'},{c:'created_at',l:'Criado'},{c:'updated_at',l:'Atualizado'}
+  ])));
+  // 3. Stock Norma
+  ficheiros.push(()=>csvDescarregar(`baviera_stock_norma_${hoje}.csv`,tabelaParaLinhas(S.norma,[
+    {c:'ordem',l:'Ordem'},{c:'modelo',l:'Modelo'},{c:'coluna',l:'Coluna'},{c:'estado',l:'Estado'},
+    {c:'matricula',l:'Matricula'},{c:'data_matricula',l:'DataMatricula'},{c:'encomenda',l:'Encomenda'},
+    {c:'kms',l:'Km'},{c:'preco',l:'Preco'},{c:'tem_seguro',l:'TemSeguro'},{c:'obs',l:'Obs'}
+  ])));
+  // 4. Eventos
+  ficheiros.push(()=>csvDescarregar(`baviera_eventos_${hoje}.csv`,tabelaParaLinhas(S.eventos,[
+    {c:'id',l:'ID'},{c:'nome',l:'Nome'},{c:'data',l:'Data'},{c:'local',l:'Local'},{c:'lotacao',l:'Lotacao'},{c:'ativo',l:'Ativo'}
+  ])));
+  // 5. Inscrições
+  ficheiros.push(()=>csvDescarregar(`baviera_inscricoes_${hoje}.csv`,tabelaParaLinhas(S.inscricoes,[
+    {c:'id',l:'ID'},{c:'evento_id',l:'EventoID',f:(v)=>{const e=(S.eventos||[]).find(x=>x.id===v);return e?e.nome:v}},
+    {c:'cliente',l:'Cliente'},{c:'telefone',l:'Telefone'},{c:'acompanhantes',l:'Acompanhantes'},
+    {c:'estado',l:'Estado'},{c:'funil',l:'Funil'},{c:'vendedor_id',l:'Vendedor',f:nome},{c:'obs',l:'Obs'},{c:'created_at',l:'Criado'}
+  ])));
+  // 6. Histórico de status
+  ficheiros.push(()=>csvDescarregar(`baviera_historico_status_${hoje}.csv`,tabelaParaLinhas(S.transicoes,[
+    {c:'negocio_id',l:'NegocioID'},{c:'de',l:'De'},{c:'para',l:'Para'},{c:'quem',l:'Quem',f:nome},{c:'quando',l:'Quando'}
+  ])));
+  // 7. Objetivos de equipa
+  ficheiros.push(()=>csvDescarregar(`baviera_objetivos_${hoje}.csv`,tabelaParaLinhas(S.objEquipa,[
+    {c:'mes',l:'Mes'},{c:'tipo',l:'Tipo'},{c:'objetivo',l:'Objetivo'}
+  ])));
+  // 8. Escala (formato próprio, já existente)
+  ficheiros.push(()=>{try{exportEscala()}catch(e){}});
+  // 9. Equipa
+  ficheiros.push(()=>csvDescarregar(`baviera_equipa_${hoje}.csv`,tabelaParaLinhas(S.team,[
+    {c:'id',l:'ID'},{c:'nome',l:'Nome'},{c:'role',l:'Papel'},{c:'linha',l:'Linha'}
+  ])));
+  // descarregar em sequência (os browsers bloqueiam se for tudo ao mesmo tempo)
+  let i=0;
+  const proximo=()=>{
+    if(i>=ficheiros.length){setState({loading:false});return;}
+    try{ficheiros[i]()}catch(e){console.error('export',i,e)}
+    i++;setTimeout(proximo,450);
+  };
+  proximo();
+}
 function exportCSV(incluirPessoais){
   if(incluirPessoais===undefined)incluirPessoais=true;
   const bool=v=>v===true?'Sim':(v===false?'Não':'');
@@ -2814,6 +2902,15 @@ function renderDashboard(){
         O CSV completo inclui <b>NIF, CC, morada, email, contacto</b> e a observação do chefe. Para um ficheiro que possas partilhar sem expor dados pessoais, usa a versão limpa:
       </div>
       <button class="btn btn-dark btn-sm" data-action="export-csv-safe" style="margin-top:10px">⬇ CSV sem dados pessoais</button>
+      <div style="border-top:1px solid var(--border);width:100%;max-width:420px;margin:24px 0 0"></div>
+      <div style="font-size:16px;font-weight:700;margin:20px 0 4px">🗄️ Cópia de segurança completa</div>
+      <div style="font-size:12px;color:var(--text3);max-width:420px;text-align:center;line-height:1.55;margin-bottom:14px">
+        O CSV acima só leva os <b>negócios</b>. Isto descarrega <b>tudo</b> — negócios, stock, stock norma, eventos, inscrições, histórico de status, objetivos, escala e equipa — num ficheiro por conjunto. Se um dia perderes o acesso, é isto que te salva.
+      </div>
+      <button class="btn btn-orange" data-action="export-tudo" ${S.loading?'disabled':''} style="padding:12px 28px">${S.loading?'A preparar…':'⬇ Descarregar tudo (9 ficheiros)'}</button>
+      <div style="font-size:11px;color:var(--text3);max-width:400px;text-align:center;line-height:1.5;margin-top:10px">
+        O browser vai pedir autorização para descarregar vários ficheiros — aceita. Conjuntos sem dados não geram ficheiro.
+      </div>
     </div>`;
   }
 
@@ -2939,7 +3036,12 @@ function bindEvents(){
     if(el.dataset&&el.dataset.action==='retail-vend'){setState({retailVend:el.value});return;}
     if(el.dataset&&el.dataset.action==='retail-tipo'){setState({retailTipo:el.value});return;}
     if(el.dataset&&el.dataset.field&&(el.dataset.field==='retoma'||el.dataset.field==='status'||el.dataset.field==='gar'||el.dataset.field==='type'||el.dataset.field==='origin')&&S.screen==='edit'){
-      collectFormData();render();return;
+      collectFormData();
+      // Sugestão automática de data de alerta ao passar para funil (só se estiver vazia)
+      if(el.dataset.field==='status'&&FUNIL.includes(S.form.status)&&!S.form.alert_date){
+        S.form.alert_date=sugereAlerta(S.form.status);
+      }
+      render();return;
     }
   };
   app.onclick=function(e){
@@ -2972,6 +3074,7 @@ function bindEvents(){
       case'open-record-from-dash':{const r=S.records.find(x=>String(x.id)===String(el.dataset.id));if(r)setState({selected:r,screen:'detail',gppMais:false});break}
       case'export-csv':{if(!S.stockLoaded){loadStock().then(()=>exportCSV(true));}else exportCSV(true);break}
       case'export-csv-safe':{if(!S.stockLoaded){loadStock().then(()=>exportCSV(false));}else exportCSV(false);break}
+      case'export-tudo':exportarTudo();break;
       case'export-comissoes':exportComissoes();break;
       case'go-escala':{setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false})).catch(e=>setState({error:e.message,loading:false,screen:'escala'}));break}
       case'go-stock-vend':{setState({loading:true});loadStockPublico().then(()=>setState({screen:'stockvend',loading:false}));break}
