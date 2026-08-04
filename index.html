@@ -566,7 +566,9 @@ html,body{overflow-x:hidden;max-width:100vw}
 .ndemo-head:hover{background:var(--bg)}
 .ndemo.open .ndemo-head{background:var(--bg)}
 .ndemo-dot{width:9px;height:9px;border-radius:50%;display:inline-block}
-.ndemo-modelo{font-weight:700;font-size:13px}
+.ndemo-modelo{font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:8px}
+.ndemo-vend{width:15px;height:15px;flex-shrink:0;border:1.5px solid var(--border2);border-radius:4px;background:transparent;cursor:pointer;font-size:10px;font-weight:800;color:#fff;padding:0;display:inline-flex;align-items:center;justify-content:center;line-height:1;font-family:inherit;white-space:nowrap}
+.ndemo-vend.on{width:auto;height:auto;padding:2px 8px;border-radius:20px;background:var(--red);border-color:var(--red);gap:3px}
 .ndemo-atual{font-size:12px;font-weight:600}
 .ndemo-futura{font-size:12px;color:var(--text2)}
 .ndemo-obs{font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -2638,7 +2640,7 @@ function renderDashboard(){
       return`<div class="ndemo ${aberto?'open':''}">
         <div class="ndemo-head" data-action="norma-abrir" data-id="${n.id}">
           <span class="ndemo-dot" style="background:${cor[n.estado]||'var(--text3)'}" title="${esc(n.estado||'')}"></span>
-          <span class="ndemo-modelo">${esc(n.modelo)}</span>
+          <span class="ndemo-modelo">${esc(n.modelo)}<button class="ndemo-vend ${n.vendida?'on':''}" data-action="norma-vendida" data-id="${n.id}" title="${n.vendida?'Vendida — clica para desmarcar':'Marcar a atual como vendida'}">${n.vendida?'✓ vendida':''}</button></span>
           <span class="ndemo-atual">${atualTxt(n)}</span>
           <span class="ndemo-futura">${n.encomenda?esc(n.encomenda):'<span class="ndemo-mut">—</span>'}</span>
           <span class="ndemo-obs">${flag}${n.tem_seguro?'<span class="ndemo-flag">🛡️</span>':''}${n.obs?' '+esc(n.obs):''}</span>
@@ -3183,6 +3185,7 @@ function bindEvents(){
       case'insc-save-new':saveInscricaoNova();break;
       case'insc-del':delInscricao(el.dataset.id);break;
       case'norma-abrir':setState({normaAberta:String(S.normaAberta)===String(el.dataset.id)?null:el.dataset.id});break;
+      case'norma-vendida':{const n=(S.norma||[]).find(x=>String(x.id)===String(el.dataset.id));if(n)saveNormaCampo(el.dataset.id,'vendida',!n.vendida);break;}
       case'norma-toggle-seguro':{const n=(S.norma||[]).find(x=>String(x.id)===String(el.dataset.id));if(n)saveNormaCampo(el.dataset.id,'tem_seguro',!n.tem_seguro);break;}
       case'norma-subst-fechar':setState({normaSubst:null});break;
       case'evento-add-cancel':setState({eventoAdding:false,eventoForm:{},eventoErr:''});break;
