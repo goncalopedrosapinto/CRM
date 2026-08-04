@@ -558,6 +558,10 @@ html,body{overflow-x:hidden;max-width:100vw}
 .stock-seg-item{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #a5f3fc;border-radius:20px;padding:3px 4px 3px 11px;font-size:12px;color:#155e75}
 .norma-sub-seg{margin-top:7px;font-size:11px;color:#155e75;background:#ecfeff;border:1px solid #a5f3fc;border-radius:var(--r);padding:8px 11px;line-height:1.4}
 .stock-vend-seg{font-size:10px;font-weight:700;color:#0891b2;background:#ecfeff;border-radius:10px;padding:1px 7px;display:inline-block}
+.fun-atr-count{font-size:11px;font-weight:700;color:#b45309;margin-left:6px}
+.fun-atr{background:#fffbeb}
+.fun-atr:hover{background:#fef3c7}
+.fun-atr-dot{font-size:10px}
 /* ===== Navegação mobile: barra inferior + painel "Mais" ===== */
 .gpp-tabbar{display:none}
 .gpp-sheet,.gpp-sheet-bd{display:none}
@@ -1196,17 +1200,19 @@ function groupByMonth(records){const g={};records.forEach(r=>{const m=getMonth(r
 
 // MD/MU já identificada (chassis ou matrícula) não precisa de encomenda: a mota existe fisicamente
 function dispensaEncomenda(r){return (r.type==='MD'||r.type==='MU')&&!!(r.chas||r.mat);}
+function funilAtrasado(r){
+  if(!r||!FUNIL.includes(r.status))return false;
+  const t=new Date();const todayStr=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+  if(r.alert_date)return r.alert_date<=todayStr;
+  if(r.status_updated_at)return Math.floor((Date.now()-new Date(r.status_updated_at).getTime())/86400000)>=10;
+  return false;
+}
 function calcAlerts(records){
   const now=Date.now();const day=86400000;const alerts=[];
   const matAlert=records.filter(r=>r.status==='Matricula'&&r.status_updated_at&&!r.mat&&(now-new Date(r.status_updated_at).getTime())>=2*day);
   if(matAlert.length)alerts.push({id:'mat',icon:'🔴',label:`${matAlert.length} matrícula${matAlert.length>1?'s':''} há +2 dias`,count:matAlert.length,ids:matAlert.map(r=>r.id)});
   const funilGroups={Quente:[],Morno:[],Frio:[]};
-  const _t=new Date();const todayStr=`${_t.getFullYear()}-${String(_t.getMonth()+1).padStart(2,'0')}-${String(_t.getDate()).padStart(2,'0')}`;
-  records.forEach(r=>{
-    if(!FUNIL.includes(r.status))return;
-    if(r.alert_date){ if(r.alert_date<=todayStr)funilGroups[r.status].push(r); }
-    else if(r.status_updated_at){ const days=Math.floor((now-new Date(r.status_updated_at).getTime())/day); if(days>=10)funilGroups[r.status].push(r); }
-  });
+  records.forEach(r=>{ if(FUNIL.includes(r.status)&&funilAtrasado(r))funilGroups[r.status].push(r); });
   Object.entries(funilGroups).forEach(([s,recs])=>{if(recs.length)alerts.push({id:'funil_'+s,icon:'🟡',label:`${recs.length} ${s.toLowerCase()} para contactar`,count:recs.length,ids:recs.map(r=>r.id)})});
   const cartAlert=records.filter(r=>r.status==='Carteira'&&!r.enc&&r.type!=='MU'&&!dispensaEncomenda(r));
   if(cartAlert.length)alerts.push({id:'cart',icon:'🔵',label:`${cartAlert.length} carteira${cartAlert.length>1?'s':''} sem encomenda`,count:cartAlert.length,ids:cartAlert.map(r=>r.id)});
@@ -2077,7 +2083,8 @@ function renderDashboard(){
   const secLabel=(TOPICOS.find(t=>t[0]===sec)||[,,'Home'])[2];
 
   const alertasNav=calcAlerts(recs);
-  const nPend=alertasNav.reduce((a,x)=>a+(x.count||0),0);
+  const nSem298=recs.filter(r=>r.status==='Retail'&&!r.col_298).length;
+  const nPend=alertasNav.filter(x=>!String(x.id).startsWith('funil_')).reduce((a,x)=>a+(x.count||0),0)+nSem298;
   const nPerd=recs.filter(r=>r.status==='Perdido').length;
   const badgeDe=id=>{
     if(id==='pendentes'&&nPend)return`<span class="gpp-nav-badge alert">${nPend}</span>`;
@@ -2354,11 +2361,12 @@ function renderDashboard(){
 
     // ---------- Listas por fase ----------
     const bloco=(estado)=>{
-      const lista=grupos[estado];
-      return`<div class="gpp-sub-h" style="border-left:3px solid ${cores[estado]}">${estado} · <b>${lista.length}</b></div>
+      const lista=grupos[estado].slice().sort((a,b)=>(funilAtrasado(b)?1:0)-(funilAtrasado(a)?1:0));
+      const nAtr=lista.filter(funilAtrasado).length;
+      return`<div class="gpp-sub-h" style="border-left:3px solid ${cores[estado]}">${estado} · <b>${lista.length}</b>${nAtr?` <span class="fun-atr-count">🟡 ${nAtr} a contactar</span>`:''}</div>
       ${lista.length?`<div class="gpp-card"><table class="gpp-ltable"><thead><tr><th>Vendedor</th><th>Cliente</th><th>Modelo</th><th>Obs</th></tr></thead><tbody>
-        ${lista.map(r=>`<tr class="gpp-lrow" data-action="open-record-from-dash" data-id="${r.id}">
-          <td>${esc(vendName(r.vendedor_id)||'')}</td><td>${esc(r.id_cliente||'—')}</td>
+        ${lista.map(r=>`<tr class="gpp-lrow ${funilAtrasado(r)?'fun-atr':''}" data-action="open-record-from-dash" data-id="${r.id}">
+          <td>${esc(vendName(r.vendedor_id)||'')}</td><td>${funilAtrasado(r)?'<span class="fun-atr-dot" title="a contactar">🟡</span> ':''}${esc(r.id_cliente||'—')}</td>
           <td>${esc(r.model||'')} ${esc(r.version||'')}</td><td style="color:var(--text2)">${esc(r.obs||'')}</td></tr>`).join('')}
       </tbody></table></div>`:'<div class="gpp-empty">Sem negócios.</div>'}`;
     };
@@ -2373,7 +2381,8 @@ function renderDashboard(){
     // Retail sem 298 (não está no calcAlerts, é específico)
     const semData=recs.filter(r=>r.status==='Retail'&&!r.col_298);
     // Todos os alertas dos vendedores (calcAlerts cobre matrícula, funil parado, carteira s/ enc, CME, Bizagi)
-    const alertas=calcAlerts(recs);
+    // Os alertas de funil (Quente/Morno/Frio) NÃO entram aqui — vivem no tópico Funil, para não duplicar
+    const alertas=calcAlerts(recs).filter(a=>!String(a.id).startsWith('funil_'));
     const linhaRec=r=>`<tr class="gpp-lrow" data-action="open-record-from-dash" data-id="${r.id}">
       <td>${esc(r.id_cliente||'—')}</td><td>${esc(r.model||'')} ${esc(r.version||'')}</td>
       <td><span class="gpp-tipo-badge">${esc(r.type||'?')}</span></td>
