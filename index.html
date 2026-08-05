@@ -558,6 +558,7 @@ html,body{overflow-x:hidden;max-width:100vw}
 .stock-seg-item{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #a5f3fc;border-radius:20px;padding:3px 4px 3px 11px;font-size:12px;color:#155e75}
 .norma-sub-seg{margin-top:7px;font-size:11px;color:#155e75;background:#ecfeff;border:1px solid #a5f3fc;border-radius:var(--r);padding:8px 11px;line-height:1.4}
 /* --- lista compacta de demos --- */
+.norma-toolbar{display:flex;justify-content:flex-end;margin-bottom:8px}
 .ndemo-legend{display:grid;grid-template-columns:16px minmax(110px,1.5fr) 1fr 1.3fr 1.2fr 18px;gap:10px;padding:8px 14px 4px;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);font-weight:700}
 .ndemo-list{padding:0;overflow:hidden}
 .ndemo{border-bottom:1px solid var(--border)}
@@ -1978,6 +1979,61 @@ function renderEscalaPicker(){
     </div>
   </div>`;
 }
+function exportNormaPDF(){
+  const norma=(S.norma||[]).slice().sort((a,b)=>a.ordem-b.ordem);
+  const total=norma.length||14;
+  const nMat=norma.filter(n=>n.estado==='Matriculada').length;
+  const nEnc=norma.filter(n=>n.estado==='Encomendada').length;
+  const nFalta=Math.max(0,total-nMat-nEnc);
+  const estCor={'Matriculada':'#16a34a','Encomendada':'#e8a30c','Em falta':'#dc2626'};
+  const atual=n=>n.matricula?n.matricula:(n.estado==='Em falta'?'Ñ TEMOS':n.estado==='Encomendada'?'Encomendada':'—');
+  const rows=norma.map(n=>`<tr>
+    <td class="c">${n.ordem}</td>
+    <td class="modelo">${esc(n.modelo)}${n.vendida?' <span class="vend">VENDIDA</span>':''}</td>
+    <td><span class="dot" style="background:${estCor[n.estado]||'#999'}"></span>${esc(n.estado||'')}</td>
+    <td>${esc(atual(n))}</td>
+    <td>${n.encomenda?esc(n.encomenda):'—'}</td>
+    <td class="obs">${n.obs?esc(n.obs):''}</td>
+  </tr>`).join('');
+  const html=`<!DOCTYPE html><html lang="pt"><head><meta charset="utf-8"><title>Programa de Demos</title><style>
+    @page{size:A4 portrait;margin:12mm}
+    *{box-sizing:border-box}
+    body{font-family:Arial,Helvetica,sans-serif;margin:0;color:#111;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    h1{font-size:16px;margin:0 0 2px}
+    .sub{font-size:11px;color:#666;margin-bottom:10px}
+    .resumo{display:flex;gap:16px;align-items:center;margin-bottom:12px;font-size:11px}
+    .resumo .big{font-size:15px;font-weight:700}
+    .rk{display:inline-flex;align-items:center;gap:5px}
+    .rk i{width:10px;height:10px;border-radius:2px;display:inline-block}
+    table{border-collapse:collapse;width:100%;font-size:10px}
+    th,td{border:1px solid #cbd5e1;padding:5px 7px;text-align:left}
+    thead th{background:#1a1a2e;color:#fff;font-size:9px;text-transform:uppercase;letter-spacing:.4px}
+    td.c{text-align:center;color:#999;width:22px}
+    .modelo{font-weight:700}
+    .vend{color:#fff;background:#dc2626;font-size:8px;font-weight:800;padding:1px 5px;border-radius:8px}
+    .dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px}
+    .obs{color:#555;font-size:9px}
+    .foot{margin-top:10px;font-size:9px;color:#999}
+  </style></head><body>
+    <h1>Programa de Demos — coluna M</h1>
+    <div class="sub">Baviera Control · ${new Date().toLocaleDateString('pt-PT')}</div>
+    <div class="resumo">
+      <span class="big">${nMat}/${total}</span>
+      <span class="rk"><i style="background:#16a34a"></i>Matriculadas ${nMat}</span>
+      <span class="rk"><i style="background:#e8a30c"></i>Encomendadas ${nEnc}</span>
+      <span class="rk"><i style="background:#e5e7eb"></i>Em falta ${nFalta}</span>
+    </div>
+    <table>
+      <thead><tr><th>#</th><th>Modelo</th><th>Estado</th><th>Atual</th><th>Futura (associar)</th><th>Obs</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="foot">Obrigatório: ${total} demos matriculadas — ou no mínimo encomendadas.</div>
+  </body></html>`;
+  const w=window.open('','_blank');
+  if(!w){alert('Permite janelas pop-up neste site para exportar o PDF.');return;}
+  w.document.write(html);w.document.close();w.focus();
+  setTimeout(()=>{try{w.print()}catch(e){}},450);
+}
 function exportEscalaPDF(){
   const dias=escalaDias();
   const linhasDisp=[...new Set(S.team.map(p=>p.linha))].sort();
@@ -2662,6 +2718,7 @@ function renderDashboard(){
       </div>`;
     };
     return`${cab}
+      <div class="norma-toolbar"><button class="btn btn-dark btn-sm" data-action="norma-pdf">⬇ PDF (1 página)</button></div>
       <div class="ndemo-legend"><span></span><span>Modelo</span><span>Atual</span><span>Futura (associar)</span><span>Obs</span><span></span></div>
       <div class="gpp-card ndemo-list">${norma.map(item).join('')}</div>`;
   }
@@ -3184,6 +3241,7 @@ function bindEvents(){
       case'insc-add-cancel':setState({inscAdding:false,inscForm:{},eventoErr:''});break;
       case'insc-save-new':saveInscricaoNova();break;
       case'insc-del':delInscricao(el.dataset.id);break;
+      case'norma-pdf':exportNormaPDF();break;
       case'norma-abrir':setState({normaAberta:String(S.normaAberta)===String(el.dataset.id)?null:el.dataset.id});break;
       case'norma-vendida':{const n=(S.norma||[]).find(x=>String(x.id)===String(el.dataset.id));if(n)saveNormaCampo(el.dataset.id,'vendida',!n.vendida);break;}
       case'norma-toggle-seguro':{const n=(S.norma||[]).find(x=>String(x.id)===String(el.dataset.id));if(n)saveNormaCampo(el.dataset.id,'tem_seguro',!n.tem_seguro);break;}
