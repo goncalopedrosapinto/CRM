@@ -559,6 +559,15 @@ html,body{overflow-x:hidden;max-width:100vw}
 .norma-sub-seg{margin-top:7px;font-size:11px;color:#155e75;background:#ecfeff;border:1px solid #a5f3fc;border-radius:var(--r);padding:8px 11px;line-height:1.4}
 /* --- lista compacta de demos --- */
 .norma-toolbar{display:flex;justify-content:flex-end;margin-bottom:8px}
+.vd-form{padding:16px;border:1.5px solid var(--orange)}
+.vd-form-t{font-size:15px;font-weight:800;margin-bottom:2px}
+.vd-form-sub{font-size:12px;color:var(--text3);margin-bottom:14px}
+.vd-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.vd-f{display:flex;flex-direction:column;gap:4px}
+.vd-f label{font-size:11px;font-weight:600;color:var(--text2)}
+.vd-f .norma-inp{width:100%}
+.vd-margem{font-size:16px;font-weight:800;color:var(--green);padding:7px 0}
+.vd-badge{display:inline-block;font-size:9px;font-weight:800;color:#fff;background:#0891b2;border-radius:9px;padding:1px 6px;margin-left:6px;vertical-align:middle}
 .ndemo-legend{display:grid;grid-template-columns:16px minmax(110px,1.5fr) 1fr 1.3fr 1.2fr 18px;gap:10px;padding:8px 14px 4px;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);font-weight:700}
 .ndemo-list{padding:0;overflow:hidden}
 .ndemo{border-bottom:1px solid var(--border)}
@@ -928,7 +937,7 @@ let S={
   token:null,records:[],selected:null,form:{},
   me:null,team:[],objetivos:[],objEquipa:[],eventos:[],inscricoes:[],ranking:[],transicoes:[],norma:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
-  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',
+  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',vdAdding:false,vdForm:{},vdErr:'',
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{INFO:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
@@ -1207,6 +1216,35 @@ function statsFor(recs){const ym=curYM();const fech=recs.filter(r=>(r.status==='
 function lastUpdateDays(recs){let m=0;recs.forEach(r=>{const t=new Date(r.updated_at||r.status_updated_at||r.created_at||0).getTime();if(t>m)m=t});if(!m)return null;return Math.floor((Date.now()-m)/86400000)}
 function lastUpdateDaysR(r){const t=new Date(r.updated_at||r.status_updated_at||r.created_at||0).getTime();if(!t)return 999;return Math.floor((Date.now()-t)/86400000)}
 async function loadRecords(){setState({loading:true,error:''});try{const d=await supabaseApi('GET','/baviera_control?select=*&order=neg.desc.nullslast');setState({records:d,loading:false})}catch(e){setState({error:'Erro: '+e.message,loading:false})}}
+async function saveVendaDireta(){
+  const f=S.vdForm||{};
+  if(!f.vendedor_id){setState({vdErr:'Escolhe o vendedor que retomou a mota.'});return;}
+  if(!f.model||!f.model.trim()){setState({vdErr:'Indica o modelo.'});return;}
+  if(!f.id_cliente||!f.id_cliente.trim()){setState({vdErr:'Indica o nome do comerciante.'});return;}
+  const saida=f.pvp===''||f.pvp==null?null:parseFloat(f.pvp);
+  if(saida==null){setState({vdErr:'Indica o valor de saída (venda ao comerciante).'});return;}
+  const hoje=new Date().toISOString().slice(0,10);
+  const body={
+    vendedor_id:f.vendedor_id,
+    type:'MU',
+    status:'Retail',
+    id_cliente:f.id_cliente.trim(),
+    model:f.model.trim(),
+    mat:f.mat?f.mat.trim():null,
+    pvp:saida,
+    valor_entrada:(f.valor_entrada===''||f.valor_entrada==null)?null:parseFloat(f.valor_entrada),
+    venda_direta:true,
+    origin:'Comerciante',
+    neg:hoje,
+    col_298:hoje
+  };
+  setState({loading:true,vdErr:''});
+  try{
+    await supabaseApi('POST','/baviera_control',body);
+    await loadRecords();
+    setState({loading:false,vdAdding:false,vdForm:{}});
+  }catch(e){setState({loading:false,vdErr:'Erro ao gravar: '+(e.message||e)});}
+}
 async function saveRecord(){
   // Validação: não deixa marcar Perdido sem dizer porquê
   if(S.form.status==='Perdido'&&!S.form.motivo_perda){
@@ -1272,6 +1310,7 @@ function funilAtrasado(r){
   return false;
 }
 function calcAlerts(records){
+  records=(records||[]).filter(r=>!r.venda_direta);
   const now=Date.now();const day=86400000;const alerts=[];
   const matAlert=records.filter(r=>r.status==='Matricula'&&r.status_updated_at&&!r.mat&&(now-new Date(r.status_updated_at).getTime())>=2*day);
   if(matAlert.length)alerts.push({id:'mat',icon:'🔴',label:`${matAlert.length} matrícula${matAlert.length>1?'s':''} há +2 dias`,count:matAlert.length,ids:matAlert.map(r=>r.id)});
@@ -2534,7 +2573,7 @@ function renderDashboard(){
     const arr=recs.filter(r=>r.status===status&&dataFn(r)===mesSel);
     const novas=arr.filter(isNovas),usadas=arr.filter(isUsadas);
     const linha=r=>`<tr class="gpp-lrow2" data-id="${r.id}">
-      <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}">${esc(r.id_cliente||'—')}</td>
+      <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}">${esc(r.id_cliente||'—')}${r.venda_direta?'<span class="vd-badge">🤝</span>':''}</td>
       <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}">${esc(r.model||'')} ${esc(r.version||'')}</td>
       <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}"><b>${esc(r.mat||'—')}</b></td>
       <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}"><span class="gpp-tipo-badge">${esc(r.type||'?')}</span></td>
@@ -2816,11 +2855,32 @@ function renderDashboard(){
   // ---- Retail: modo Mês ou De sempre, com filtros e ordenação ----
   function retailView(){
     const modo=S.retailModo||'mes'; // 'mes' | 'sempre'
+    const vdF=S.vdForm||{};
+    const vdBloco=S.vdAdding?`
+      <div class="gpp-card vd-form" style="margin:0 16px 14px">
+        <div class="vd-form-t">🤝 Venda direta a comerciante</div>
+        <div class="vd-form-sub">Entra como retail (usada) com a tua pessoa como vendedor.</div>
+        ${S.vdErr?`<div class="error" style="margin-bottom:10px">${esc(S.vdErr)}</div>`:''}
+        <div class="vd-grid">
+          <div class="vd-f"><label>Vendedor (quem retomou) *</label><select class="norma-inp" data-vd-f="vendedor_id"><option value="">— escolher —</option>${S.team.filter(p=>p.role==='vendedor').map(p=>`<option value="${p.id}" ${vdF.vendedor_id===p.id?'selected':''}>${esc(p.nome||'')}</option>`).join('')}</select></div>
+          <div class="vd-f"><label>Modelo *</label><input class="norma-inp" data-vd-f="model" value="${esc(vdF.model||'')}" placeholder="Ex: R 1250 GS"></div>
+          <div class="vd-f"><label>Matrícula</label><input class="norma-inp" data-vd-f="mat" value="${esc(vdF.mat||'')}" placeholder="Ex: AA-00-AA"></div>
+          <div class="vd-f"><label>Comerciante *</label><input class="norma-inp" data-vd-f="id_cliente" value="${esc(vdF.id_cliente||'')}" placeholder="Nome do comerciante"></div>
+          <div class="vd-f"><label>Valor de entrada</label><div class="stock-eurwrap"><input class="norma-inp stock-num" data-vd-f="valor_entrada" type="number" value="${vdF.valor_entrada!=null?vdF.valor_entrada:''}" placeholder="quanto entrou"><span class="stock-eur2">€</span></div></div>
+          <div class="vd-f"><label>Valor de saída *</label><div class="stock-eurwrap"><input class="norma-inp stock-num" data-vd-f="pvp" type="number" value="${vdF.pvp!=null?vdF.pvp:''}" placeholder="venda ao comerciante"><span class="stock-eur2">€</span></div></div>
+          <div class="vd-f"><label>Margem</label><div class="vd-margem">${(vdF.pvp!=null&&vdF.pvp!==''&&vdF.valor_entrada!=null&&vdF.valor_entrada!=='')?(Number(vdF.pvp)-Number(vdF.valor_entrada)).toLocaleString('pt-PT')+' €':'—'}</div></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn btn-orange btn-sm" data-action="vd-save" ${S.loading?'disabled':''}>${S.loading?'A gravar…':'Registar venda'}</button>
+          <button class="btn btn-dark btn-sm" data-action="vd-cancel">Cancelar</button>
+        </div>
+      </div>`:`<div style="margin:0 16px 14px"><button class="btn btn-dark btn-sm" data-action="vd-add">🤝 Registar venda direta a comerciante</button></div>`;
     if(modo==='mes')return`
       <div class="retail-tabs">
         <button class="retail-tab active" data-action="retail-modo" data-m="mes">Por mês</button>
         <button class="retail-tab" data-action="retail-modo" data-m="sempre">De sempre</button>
       </div>
+      ${vdBloco}
       ${listaEstado('Retail',retailYM)}`;
     // MODO DE SEMPRE
     let arr=recs.filter(r=>r.status==='Retail');
@@ -2840,6 +2900,7 @@ function renderDashboard(){
         <button class="retail-tab" data-action="retail-modo" data-m="mes">Por mês</button>
         <button class="retail-tab active" data-action="retail-modo" data-m="sempre">De sempre</button>
       </div>
+      ${vdBloco}
       <div class="retail-filtros">
         <input class="retail-fsel" id="retail-mat-search" placeholder="🔍 Matrícula ou cliente" value="${esc(S.retailMat||'')}" data-action="retail-mat-input" style="min-width:180px">
         <select class="retail-fsel" data-action="retail-vend">
@@ -2857,7 +2918,7 @@ function renderDashboard(){
       <div class="gpp-card" style="margin:0 16px 20px"><table class="gpp-ltable">
         <thead><tr>${th('cliente','Cliente')}${th('modelo','Modelo')}${th('tipo','Tipo')}${th('vend','Vendedor')}${th('data','Data 298')}</tr></thead>
         <tbody>${arr.map(r=>`<tr class="gpp-lrow" data-action="open-record-from-dash" data-id="${r.id}">
-          <td style="font-weight:600">${esc(r.id_cliente||'—')}</td>
+          <td style="font-weight:600">${esc(r.id_cliente||'—')}${r.venda_direta?'<span class="vd-badge">🤝 comerciante</span>':''}</td>
           <td>${esc(r.model||'')} ${esc(r.version||'')}</td>
           <td><span class="gpp-tipo-badge">${esc(r.type||'?')}</span></td>
           <td>${esc(vendName(r.vendedor_id)||'')}</td>
@@ -3157,6 +3218,7 @@ function bindEvents(){
   app.onchange=function(e){
     const el=e.target;
     if(el.dataset&&el.dataset.obsGestor){saveObsGestor(el.dataset.obsGestor,el.value);return;}
+    if(el.dataset&&el.dataset.vdF){S.vdForm=Object.assign({},S.vdForm,{[el.dataset.vdF]:el.value});if(el.dataset.vdF==='pvp'||el.dataset.vdF==='valor_entrada')render();return;}
     if(el.classList&&el.classList.contains('stock-kms-inp')){saveKmsVend(el.dataset.kmsTipo,el.dataset.kmsId,el.value);return;}
     if(el.classList&&el.classList.contains('stock-vend-estado')){
       const estado=el.value;
@@ -3241,6 +3303,9 @@ function bindEvents(){
       case'insc-add-cancel':setState({inscAdding:false,inscForm:{},eventoErr:''});break;
       case'insc-save-new':saveInscricaoNova();break;
       case'insc-del':delInscricao(el.dataset.id);break;
+      case'vd-add':setState({vdAdding:true,vdForm:{},vdErr:''});break;
+      case'vd-cancel':setState({vdAdding:false,vdForm:{},vdErr:''});break;
+      case'vd-save':saveVendaDireta();break;
       case'norma-pdf':exportNormaPDF();break;
       case'norma-abrir':setState({normaAberta:String(S.normaAberta)===String(el.dataset.id)?null:el.dataset.id});break;
       case'norma-vendida':{const n=(S.norma||[]).find(x=>String(x.id)===String(el.dataset.id));if(n)saveNormaCampo(el.dataset.id,'vendida',!n.vendida);break;}
