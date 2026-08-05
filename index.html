@@ -2366,6 +2366,7 @@ function renderDashboard(){
   const TOPICOS=[
     ['home','🏠','Home'],
     ['retail','✅','Retail'],
+    ['comercio','🤝','Vendas Comerciante'],
     ['carteira','📦','Carteira'],
     ['funil','🔻','Funil'],
     ['perdidos','❌','Perdidos'],
@@ -2379,7 +2380,7 @@ function renderDashboard(){
   ];
   const NAV_GRUPOS=[
     ['Diário',['home','pendentes','perdidos']],
-    ['Negócio',['retail','carteira','funil']],
+    ['Negócio',['retail','comercio','carteira','funil']],
     ['Recursos',['stock','demos','evento','escala']],
     ['Ferramentas',['comissoes','exportar']]
   ];
@@ -2874,10 +2875,9 @@ function renderDashboard(){
   }
 
   // ---- Retail: modo Mês ou De sempre, com filtros e ordenação ----
-  function retailView(){
-    const modo=S.retailModo||'mes'; // 'mes' | 'sempre'
+  function vdBlocoHTML(){
     const vdF=S.vdForm||{};
-    const vdBloco=S.vdAdding?`
+    return S.vdAdding?`
       <div class="gpp-card vd-form" style="margin:0 16px 14px">
         <div class="vd-form-t">🤝 Venda direta a comerciante</div>
         <div class="vd-form-sub">Conta como <b>retail de usadas para o bolo da empresa</b>. <b>Não conta para o vendedor</b> — o nome fica só como referência de quem trabalhou o preço.</div>
@@ -2897,6 +2897,34 @@ function renderDashboard(){
           <button class="btn btn-dark btn-sm" data-action="vd-cancel">Cancelar</button>
         </div>
       </div>`:`<div style="margin:0 16px 14px"><button class="btn btn-dark btn-sm" data-action="vd-add">🤝 Registar venda direta a comerciante</button></div>`;
+  }
+  function comercioView(){
+    const fmtE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:0})+' €';
+    const fmtMes=d=>{if(!d)return'—';const parts=String(d).slice(0,7).split('-');if(parts.length<2)return String(d).slice(0,10);const mi=(+parts[1])-1;return (MONTH_NAMES[mi]||parts[1])+' '+parts[0];};
+    const com=(recs||[]).filter(r=>r.venda_direta).slice().sort((a,b)=>String(b.col_298||'').localeCompare(String(a.col_298||'')));
+    const totalVal=com.reduce((a,r)=>a+(parseFloat(r.pvp)||0),0);
+    return`${vdBlocoHTML()}
+      <div class="gpp-tot-head" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <span>🤝 Vendas a comerciante · <b>${com.length}</b> mota${com.length!==1?'s':''}${totalVal?` · ${fmtE(totalVal)}`:''}</span>
+      </div>
+      <div class="gpp-pend-desc" style="margin:2px 16px 10px">Contam para o bolo da empresa. <b>Não</b> contam como retail para nenhum vendedor — o vendedor indicado é só quem trabalhou o preço.</div>
+      ${com.length===0?'<div class="gpp-empty">Ainda sem vendas a comerciante registadas.</div>':`
+      <div class="gpp-card" style="margin:0 16px 20px;overflow-x:auto"><table class="gpp-ltable">
+        <thead><tr><th>Comerciante</th><th>Mês retail / fatura</th><th>Modelo</th><th>Matrícula</th><th>Tipo</th><th>Trabalhado por</th><th>Valor</th></tr></thead>
+        <tbody>${com.map(r=>`<tr class="gpp-lrow" data-action="open-record-from-dash" data-id="${r.id}">
+          <td style="font-weight:600">${esc(r.id_cliente||'—')}</td>
+          <td>${fmtMes(r.col_298)}</td>
+          <td>${esc(r.model||'')} ${esc(r.version||'')}</td>
+          <td>${esc(r.mat||'—')}</td>
+          <td><span class="gpp-tipo-badge">${esc(r.type||'MU')}</span></td>
+          <td style="color:var(--text3)">${esc(vendName(r.vendedor_id)||'—')}</td>
+          <td style="color:var(--text3)">${r.pvp!=null?fmtE(parseFloat(r.pvp)):'—'}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>`}`;
+  }
+  function retailView(){
+    const modo=S.retailModo||'mes'; // 'mes' | 'sempre'
+    const vdBloco=vdBlocoHTML();
     if(modo==='mes')return`
       <div class="retail-tabs">
         <button class="retail-tab active" data-action="retail-modo" data-m="mes">Por mês</button>
@@ -3181,6 +3209,7 @@ function renderDashboard(){
   else if(sec==='perdidos')body=perdidosView();
   else if(sec==='carteira')body=carteiraChart()+listaEstado('Carteira',r=>r.mes1);
   else if(sec==='retail')body=retailView();
+  else if(sec==='comercio')body=comercioView();
   else if(sec==='pendentes')body=pendentesView();
   else if(sec==='stock')body=stockView('usada');
   else if(sec==='demos')body=normaView();
