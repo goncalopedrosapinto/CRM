@@ -1210,7 +1210,12 @@ function exportInscricoes(){
 }
 async function saveNps(vid,patch){const ex=S.nps.find(n=>n.vendedor_id===vid);if(ex){await supabaseApi('PATCH',`/nps?id=eq.${ex.id}`,patch)}else{await supabaseApi('POST','/nps',Object.assign({vendedor_id:vid,mes:curMes()},patch))}await loadNps()}
 function npsOf(vid){return S.nps.find(n=>n.vendedor_id===vid)||null}
-function recsInContext(){return isAdmin()&&S.viewVendedor?S.records.filter(r=>r.vendedor_id===S.viewVendedor):S.records}
+function recsInContext(){
+  // Vendas a comerciante (venda_direta) contam para o BOLO da empresa, nunca para o vendedor.
+  // Ficam fora de qualquer vista pessoal; so aparecem na vista de empresa (admin sem vendedor escolhido).
+  if(isAdmin())return S.viewVendedor?S.records.filter(r=>r.vendedor_id===S.viewVendedor&&!r.venda_direta):S.records;
+  return (S.records||[]).filter(r=>!r.venda_direta);
+}
 function recsOf(vid){return S.records.filter(r=>r.vendedor_id===vid)}
 function statsFor(recs){const ym=curYM();const fech=recs.filter(r=>(r.status==='Retail'||r.status==='Carteira')&&negYM(r)===ym);const funil=recs.filter(r=>FUNIL.includes(r.status));const bev=fech.filter(r=>r.bev).length;const fechTotal=recs.filter(r=>r.status==='Retail'||r.status==='Carteira').length;const perdidos=recs.filter(r=>r.status==='Perdido').length;return{fechados:fech.length,funil:funil.length,bev,fechTotal,perdidos,alerts:calcAlerts(recs)}}
 function lastUpdateDays(recs){let m=0;recs.forEach(r=>{const t=new Date(r.updated_at||r.status_updated_at||r.created_at||0).getTime();if(t>m)m=t});if(!m)return null;return Math.floor((Date.now()-m)/86400000)}
@@ -1224,6 +1229,7 @@ async function saveVendaDireta(){
   const saida=f.pvp===''||f.pvp==null?null:parseFloat(f.pvp);
   if(saida==null){setState({vdErr:'Indica o valor de saída (venda ao comerciante).'});return;}
   const hoje=new Date().toISOString().slice(0,10);
+  const mesRetail=(f.col_298&&String(f.col_298).trim())?String(f.col_298).trim():hoje;
   const body={
     vendedor_id:f.vendedor_id,
     type:'MU',
@@ -1236,7 +1242,7 @@ async function saveVendaDireta(){
     venda_direta:true,
     origin:'Comerciante',
     neg:hoje,
-    col_298:hoje
+    col_298:mesRetail
   };
   setState({loading:true,vdErr:''});
   try{
@@ -2186,7 +2192,7 @@ function exportComissoes(){
   rows.push(['Vendedor','Cliente','Modelo','Versao','Matricula','Tipo','Data298','SeguroNosso','CCGo','Lifestyle','Retoma','Financiamento','Fint'].map(esc2).join(';'));
   const vends=S.team.filter(p=>p.role==='vendedor');
   vends.forEach(p=>{
-    const meus=base.filter(r=>r.vendedor_id===p.id);
+    const meus=base.filter(r=>r.vendedor_id===p.id&&!r.venda_direta);
     meus.forEach(r=>{
       rows.push([
         p.nome||'', r.id_cliente||'', r.model||'', r.version||'', r.mat||'', r.type||'',
@@ -2209,7 +2215,22 @@ function exportComissoes(){
       rows.push('');
     }
   });
-  // Total equipa
+  // Comercio (venda a comerciante): conta para a empresa, nao para vendedor
+  const comExp=base.filter(r=>r.venda_direta);
+  if(comExp.length){
+    rows.push(['COMERCIO (empresa - nao conta p/ vendedor)','','','','','','','','','','','',''].map(esc2).join(';'));
+    comExp.forEach(r=>{
+      rows.push([
+        'Comercio ('+(vendName(r.vendedor_id)||'')+')', r.id_cliente||'', r.model||'', r.version||'', r.mat||'', r.type||'',
+        r.col_298?String(r.col_298).slice(0,10):'',
+        r.flag_seguro?'Sim':'Nao', r.flag_ccgo?'Sim':'Nao', r.flag_lifestyle?'Sim':'Nao',
+        r.retoma==='Sim'?'Sim':'Nao', r.fin||'', r.fin==='Fint'?'Sim':'Nao'
+      ].map(esc2).join(';'));
+    });
+    rows.push(['TOTAL COMERCIO', comExp.length+' retails','','','','','','','','','','',''].map(esc2).join(';'));
+    rows.push('');
+  }
+  // Total equipa (inclui comercio = bolo da empresa)
   rows.push(['TOTAL EQUIPA', base.length+' retails','','','','','',
     base.filter(r=>r.flag_seguro).length,
     base.filter(r=>r.flag_ccgo).length,
@@ -2859,12 +2880,13 @@ function renderDashboard(){
     const vdBloco=S.vdAdding?`
       <div class="gpp-card vd-form" style="margin:0 16px 14px">
         <div class="vd-form-t">🤝 Venda direta a comerciante</div>
-        <div class="vd-form-sub">Entra como retail (usada) com a tua pessoa como vendedor.</div>
+        <div class="vd-form-sub">Conta como <b>retail de usadas para o bolo da empresa</b>. <b>Não conta para o vendedor</b> — o nome fica só como referência de quem trabalhou o preço.</div>
         ${S.vdErr?`<div class="error" style="margin-bottom:10px">${esc(S.vdErr)}</div>`:''}
         <div class="vd-grid">
           <div class="vd-f"><label>Vendedor (quem retomou) *</label><select class="norma-inp" data-vd-f="vendedor_id"><option value="">— escolher —</option>${S.team.filter(p=>p.role==='vendedor').map(p=>`<option value="${p.id}" ${vdF.vendedor_id===p.id?'selected':''}>${esc(p.nome||'')}</option>`).join('')}</select></div>
           <div class="vd-f"><label>Modelo *</label><input class="norma-inp" data-vd-f="model" value="${esc(vdF.model||'')}" placeholder="Ex: R 1250 GS"></div>
           <div class="vd-f"><label>Matrícula</label><input class="norma-inp" data-vd-f="mat" value="${esc(vdF.mat||'')}" placeholder="Ex: AA-00-AA"></div>
+          <div class="vd-f"><label>Mês de retail (data 298) *</label><input class="norma-inp" type="date" data-vd-f="col_298" value="${esc(vdF.col_298||new Date().toISOString().slice(0,10))}"></div>
           <div class="vd-f"><label>Comerciante *</label><input class="norma-inp" data-vd-f="id_cliente" value="${esc(vdF.id_cliente||'')}" placeholder="Nome do comerciante"></div>
           <div class="vd-f"><label>Valor de entrada</label><div class="stock-eurwrap"><input class="norma-inp stock-num" data-vd-f="valor_entrada" type="number" value="${vdF.valor_entrada!=null?vdF.valor_entrada:''}" placeholder="quanto entrou"><span class="stock-eur2">€</span></div></div>
           <div class="vd-f"><label>Valor de saída *</label><div class="stock-eurwrap"><input class="norma-inp stock-num" data-vd-f="pvp" type="number" value="${vdF.pvp!=null?vdF.pvp:''}" placeholder="venda ao comerciante"><span class="stock-eur2">€</span></div></div>
@@ -2937,7 +2959,7 @@ function renderDashboard(){
       ['fin','Fint',r=>r.fin==='Fint'],
     ];
     const linhaVend=p=>{
-      const meus=base.filter(r=>r.vendedor_id===p.id);
+      const meus=base.filter(r=>r.vendedor_id===p.id&&!r.venda_direta);
       const cel=(fn)=>{
         if(!meus.length)return'<td class="com-cel">—</td>';
         const n=meus.filter(fn).length;
@@ -2976,13 +2998,14 @@ function renderDashboard(){
           </tr></thead>
           <tbody>
             ${team.filter(p=>p.role==='vendedor').map(linhaVend).join('')}
+            ${(()=>{const com=base.filter(r=>r.venda_direta);if(!com.length)return'';const cel=fn=>`<td class="com-cel"><b>${com.filter(fn).length}</b></td>`;return`<tr style="background:var(--amber-bg)"><td class="com-nome">🤝 Comércio (empresa)</td><td class="com-cel com-base">${com.length}</td>${ITENS.map(([,,fn])=>cel(fn)).join('')}</tr>`;})()}
             ${linhaTotal()}
           </tbody>
         </table>
       </div>
-      <div class="gpp-pend-desc" style="margin-top:10px">Conta os retails com data <b>298</b> dentro do mês selecionado. A percentagem é sobre os retails do próprio vendedor.</div>
+      <div class="gpp-pend-desc" style="margin-top:10px">Conta os retails com data <b>298</b> dentro do mês selecionado. A percentagem é sobre os retails do próprio vendedor. As <b>vendas a comerciante (🤝)</b> contam para o total da empresa mas <b>não</b> para nenhum vendedor.</div>
       ${team.filter(p=>p.role==='vendedor').map(p=>{
-        const meus=base.filter(r=>r.vendedor_id===p.id);
+        const meus=base.filter(r=>r.vendedor_id===p.id&&!r.venda_direta);
         if(!meus.length)return`<div class="gpp-sub-h" style="border-left:3px solid var(--border2)">${esc(p.nome||'?')} · <b>0</b></div><div class="gpp-empty">Sem retails entregues neste mês.</div>`;
         const tot=fn=>meus.filter(fn).length;
         return`<div class="gpp-sub-h" style="border-left:3px solid var(--orange)">${esc(p.nome||'?')} · <b>${meus.length}</b> retail${meus.length!==1?'s':''}</div>
@@ -3009,6 +3032,11 @@ function renderDashboard(){
           </table>
         </div>`;
       }).join('')}
+      ${(()=>{const com=base.filter(r=>r.venda_direta);if(!com.length)return'';return`<div class="gpp-sub-h" style="border-left:3px solid var(--amber)">🤝 Comércio (empresa) · <b>${com.length}</b> — não conta para vendedor</div>
+        <div class="gpp-card" style="margin:0 16px;overflow-x:auto"><table class="gpp-ltable com-det">
+          <thead><tr><th>Comerciante</th><th>Modelo</th><th>Matrícula</th><th>Data 298</th><th>Trabalhado por</th></tr></thead>
+          <tbody>${com.map(r=>`<tr class="gpp-lrow" data-action="open-record-from-dash" data-id="${r.id}"><td style="font-weight:600">${esc(r.id_cliente||'—')}</td><td>${esc(r.model||'')} ${esc(r.version||'')}</td><td>${esc(r.mat||'—')}</td><td style="color:var(--text3)">${r.col_298?esc(String(r.col_298).slice(0,10)):'—'}</td><td style="color:var(--text3)">${esc(vendName(r.vendedor_id)||'—')}</td></tr>`).join('')}</tbody>
+        </table></div>`;})()}
       <div style="height:20px"></div>`}`;
   }
 
