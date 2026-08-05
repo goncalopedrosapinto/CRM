@@ -938,7 +938,7 @@ let S={
   token:null,records:[],selected:null,form:{},
   me:null,team:[],objetivos:[],objEquipa:[],eventos:[],inscricoes:[],ranking:[],transicoes:[],norma:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
-  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',vdAdding:false,vdForm:{},vdErr:'',depTaxa:0,depManual:{},
+  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',vdAdding:false,vdForm:{},vdErr:'',depTaxa:0,depManual:{},depPrep:{},
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{INFO:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
@@ -2983,7 +2983,7 @@ function renderDashboard(){
     const arr=(S.stock||[]).filter(m=>(m.categoria||'usada')==='usada'&&m.estado!=='Vendida').slice().sort(byRec);
     const taxa=Number(S.depTaxa)||0;
     const man=S.depManual||{};
-    let tEnt=0,tDep=0,tApos=0,nEnt=0;
+    let tEnt=0,tDep=0,tPrep=0,tApos=0,nEnt=0;
     const linhas=arr.map(m=>{
       const entrada=(m.valor_entrada!=null&&m.valor_entrada!=='')?Number(m.valor_entrada):null;
       const meses=mesesEmStock(m.data_rececao);
@@ -2993,8 +2993,9 @@ function renderDashboard(){
       if(ehManual)dep=Number(ov)||0;
       else if(entrada!=null&&meses!=null)dep=entrada*taxa/100*meses;
       else dep=0;
-      const apos=entrada!=null?Math.max(0,entrada-dep):null;
-      if(entrada!=null){tEnt+=entrada;tDep+=dep;tApos+=apos;nEnt++;}
+      const prep=Number((S.depPrep||{})[m.id])||0;
+      const apos=entrada!=null?Math.max(0,entrada-dep+prep):null;
+      if(entrada!=null){tEnt+=entrada;tDep+=dep;tPrep+=prep;tApos+=apos;nEnt++;}
       const campoVal=ehManual?String(ov):((entrada!=null&&meses!=null)?String(Math.round(dep)):'');
       return `<tr class="gpp-lrow">
         <td style="font-weight:600">${esc(m.modelo||'—')}</td>
@@ -3003,6 +3004,7 @@ function renderDashboard(){
         <td style="text-align:right">${meses!=null?(meses+(meses===1?' mês':' meses')):'—'}</td>
         <td style="text-align:right">${entrada!=null?fmtE(entrada):'—'}</td>
         <td style="text-align:right"><div class="stock-eurwrap"><input class="stock-inp stock-num" data-dep-id="${m.id}" type="number" value="${campoVal}" placeholder="0" style="${ehManual?'border-color:var(--orange)':''}"><span class="stock-eur2">€</span></div></td>
+        <td style="text-align:right"><div class="stock-eurwrap"><input class="stock-inp stock-num" data-dep-prep="${m.id}" type="number" value="${prep?String(prep):''}" placeholder="0"><span class="stock-eur2">€</span></div></td>
         <td style="text-align:right;font-weight:700;color:${apos!=null?'var(--green)':'var(--text3)'}">${apos!=null?fmtE(apos):'—'}</td>
       </tr>`;
     }).join('');
@@ -3020,16 +3022,17 @@ function renderDashboard(){
       </div>
       ${arr.length===0?'<div class="gpp-empty">Sem usadas por vender em stock.</div>':`
       <div class="gpp-card" style="margin:0 16px 8px;overflow-x:auto"><table class="gpp-ltable">
-        <thead><tr><th>Modelo</th><th>Matrícula</th><th>Recebida</th><th style="text-align:right">Em stock</th><th style="text-align:right">Entrada</th><th style="text-align:right">Depreciação</th><th style="text-align:right">Valor após depreciação</th></tr></thead>
+        <thead><tr><th>Modelo</th><th>Matrícula</th><th>Recebida</th><th style="text-align:right">Em stock</th><th style="text-align:right">Entrada</th><th style="text-align:right">Depreciação</th><th style="text-align:right">Preparação</th><th style="text-align:right">Valor mínimo de venda</th></tr></thead>
         <tbody>${linhas}</tbody>
         <tfoot><tr style="background:var(--bg);font-weight:700">
           <td colspan="4">Total (${nEnt} com entrada)</td>
           <td style="text-align:right">${fmtE(tEnt)}</td>
           <td style="text-align:right">${fmtE(tDep)}</td>
+          <td style="text-align:right">${fmtE(tPrep)}</td>
           <td style="text-align:right">${fmtE(tApos)}</td>
         </tr></tfoot>
       </table></div>`}
-      <div class="gpp-pend-desc" style="margin:0 16px 16px">Só motas por vender. A data <b>Recebida</b> tem de estar preenchida para o cálculo automático — as que não têm aparecem a vermelho e ficam a zero até meteres a data (ou um valor à mão).</div>`;
+      <div class="gpp-pend-desc" style="margin:0 16px 16px">Só motas por vender. <b>Valor mínimo de venda = entrada − depreciação + preparação.</b> A data <b>Recebida</b> tem de estar preenchida para o cálculo automático da depreciação — as que não têm aparecem a vermelho. O botão "Limpar ajustes" só mexe na depreciação; a preparação mantém-se.</div>`;
   }
 
   function retailView(){
@@ -3393,6 +3396,7 @@ function bindEvents(){
   app.onchange=function(e){
     const el=e.target;
     if(el.dataset&&el.dataset.depId){const id=el.dataset.depId,v=el.value;const nm=Object.assign({},S.depManual||{});if(v===''||v==null){delete nm[id];}else{nm[id]=v;}S.depManual=nm;render();return;}
+    if(el.dataset&&el.dataset.depPrep){const id=el.dataset.depPrep,v=el.value;const nm=Object.assign({},S.depPrep||{});if(v===''||v==null){delete nm[id];}else{nm[id]=v;}S.depPrep=nm;render();return;}
     if(el.dataset&&el.dataset.obsGestor){saveObsGestor(el.dataset.obsGestor,el.value);return;}
     if(el.dataset&&el.dataset.vdF){S.vdForm=Object.assign({},S.vdForm,{[el.dataset.vdF]:el.value});if(el.dataset.vdF==='pvp'||el.dataset.vdF==='valor_entrada')render();return;}
     if(el.classList&&el.classList.contains('stock-kms-inp')){saveKmsVend(el.dataset.kmsTipo,el.dataset.kmsId,el.value);return;}
