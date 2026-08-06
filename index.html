@@ -1805,6 +1805,29 @@ function origemVeiculo(r){if(!r)return'—';if(r.type==='MU')return'Usada';if(r.
 function textoMatricula(r){r=r||{};return['*Pedido de matrícula*','NIF: '+(r.nif||'—'),'CC: '+(r.cc||'—'),'Nome: '+(r.id_cliente||'—'),'Chassis/VIN: '+(r.chas||'—'),'Nº Bizagi: '+(r.biz||'—')].join('\n');}
 function tipoLabel(t){return{MN:'MN - Mota Nova',MD:'MD - Mota Demo',MU:'MU - Mota Usada'}[t]||(t||'—');}
 function textoVenda(r){r=r||{};const modelo=[r.model,r.version].filter(Boolean).join(' ')||'—';const ret=r.retoma==='Sim'?('Retoma'+(r.retoma_mat?' ('+r.retoma_mat+')':'')):'Sem Retoma';return['*Comunicação de venda*','Modelo: '+modelo,'Tipo: '+tipoLabel(r.type),ret,'Pagamento: '+(r.fin||'—'),'Nome: '+(r.id_cliente||'—')].join('\n');}
+  function pedAutLista(){
+    const norma=(S.norma||[]).slice();
+    const rank=n=>n.vendida?0:(n.estado!=='Matriculada'?1:2);
+    return norma.sort((a,b)=>rank(a)-rank(b)||(a.ordem||0)-(b.ordem||0));
+  }
+  function pedAutRef(n){
+    const ch=(n.chassi||'').toString().trim();
+    if(ch)return'Chassi '+ch;
+    const en=(n.encomenda||'').toString().trim();
+    if(en)return'Encomenda '+en;
+    return'(sem chassis nem encomenda)';
+  }
+  function pedAutTexto(){
+    const sel=S.pedAutSel||{};
+    const esc2=pedAutLista().filter(n=>sel[String(n.id)]).sort((a,b)=>(a.ordem||0)-(b.ordem||0));
+    if(!esc2.length)return'';
+    const pl=esc2.length>1;
+    const linhas=esc2.map(n=>{
+      const mot=sel[String(n.id)]==='vendida'?'mota anterior vendida':'em falta para cumprir com os demonstradores mínimos';
+      return '• '+pedAutRef(n)+' — '+(n.modelo||'')+' — motivo: '+mot;
+    });
+    return 'Eng. Ruben,\n\nSolicito autorização para matricular '+(pl?'os seguintes demonstradores':'o seguinte demonstrador')+':\n\n'+linhas.join('\n');
+  }
 function copiarTexto(txt,btn){
   const flash=()=>{if(!btn)return;const o=btn.getAttribute('data-label')||btn.textContent;if(!btn.getAttribute('data-label'))btn.setAttribute('data-label',o);btn.textContent='✓ Copiado';btn.classList.add('copied');setTimeout(()=>{btn.textContent=btn.getAttribute('data-label');btn.classList.remove('copied');},1600);};
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(flash).catch(()=>fallbackCopy(txt,flash));}
@@ -3018,29 +3041,6 @@ function renderDashboard(){
 
   // ---- Exportar ----
   // ---- Stock de motas usadas (admin) ----
-  function pedAutLista(){
-    const norma=(S.norma||[]).slice();
-    const rank=n=>n.vendida?0:(n.estado!=='Matriculada'?1:2);
-    return norma.sort((a,b)=>rank(a)-rank(b)||(a.ordem||0)-(b.ordem||0));
-  }
-  function pedAutRef(n){
-    const ch=(n.chassi||'').toString().trim();
-    if(ch)return'Chassi '+ch;
-    const en=(n.encomenda||'').toString().trim();
-    if(en)return'Encomenda '+en;
-    return'(sem chassis nem encomenda)';
-  }
-  function pedAutTexto(){
-    const sel=S.pedAutSel||{};
-    const esc2=pedAutLista().filter(n=>sel[String(n.id)]).sort((a,b)=>(a.ordem||0)-(b.ordem||0));
-    if(!esc2.length)return'';
-    const pl=esc2.length>1;
-    const linhas=esc2.map(n=>{
-      const mot=sel[String(n.id)]==='vendida'?'mota anterior vendida':'em falta para cumprir com os demonstradores mínimos';
-      return '• '+pedAutRef(n)+' — '+(n.modelo||'')+' — motivo: '+mot;
-    });
-    return 'Eng. Ruben,\n\nSolicito autorização para matricular '+(pl?'os seguintes demonstradores':'o seguinte demonstrador')+':\n\n'+linhas.join('\n');
-  }
   function pedAutPainel(){
     if(!S.pedAutOpen)return'';
     const sel=S.pedAutSel||{};
@@ -3362,13 +3362,11 @@ function renderDashboard(){
 
   function retailView(){
     const modo=S.retailModo||'mes'; // 'mes' | 'sempre'
-    const vdBloco=vdBlocoHTML();
     if(modo==='mes')return`
       <div class="retail-tabs">
         <button class="retail-tab active" data-action="retail-modo" data-m="mes">Por mês</button>
         <button class="retail-tab" data-action="retail-modo" data-m="sempre">De sempre</button>
       </div>
-      ${vdBloco}
       ${listaEstado('Retail',retailYM)}`;
     // MODO DE SEMPRE
     let arr=recs.filter(r=>r.status==='Retail');
@@ -3388,7 +3386,6 @@ function renderDashboard(){
         <button class="retail-tab" data-action="retail-modo" data-m="mes">Por mês</button>
         <button class="retail-tab active" data-action="retail-modo" data-m="sempre">De sempre</button>
       </div>
-      ${vdBloco}
       <div class="retail-filtros">
         <input class="retail-fsel" id="retail-mat-search" placeholder="🔍 Matrícula ou cliente" value="${esc(S.retailMat||'')}" data-action="retail-mat-input" style="min-width:180px">
         <select class="retail-fsel" data-action="retail-vend">
