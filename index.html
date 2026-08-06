@@ -850,7 +850,7 @@ html,body{overflow-x:hidden;max-width:100vw}
 .stock-tab{padding:8px 18px;border-radius:var(--r);border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-size:14px;font-weight:600;cursor:pointer}
 .stock-tab.active{background:var(--text);color:#fff;border-color:var(--text)}
 .stock-tbl th{white-space:nowrap}
-.stock-tbl{min-width:1650px}
+.stock-tbl{min-width:1720px}
 .stock-tbl td{padding:8px 10px}
 .stock-tbl input.stock-inp,.stock-tbl select.stock-inp{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--surface);color:var(--text)}
 .stock-modelo-inp{min-width:130px;font-weight:600}
@@ -1001,6 +1001,7 @@ function jwtSub(t){try{return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').
 async function loadMe(){const uid=jwtSub(S.token);if(!uid)throw new Error('Token invalido');const d=await supabaseApi('GET',`/profiles?id=eq.${uid}&select=*`);if(!d||!d.length)throw new Error('Perfil nao encontrado. Corre o schema SQL (tabela profiles + trigger).');S.me=d[0]}
 function isAdmin(){return S.me&&S.me.role==='admin'}
 async function loadTeam(){const d=await supabaseApi('GET','/profiles?select=*&order=nome.asc');S.team=(d||[]).filter(p=>p.role==='vendedor')}
+function diasEmStock(d){if(!d)return null;const dt=new Date(String(d).slice(0,10)+'T00:00:00');if(isNaN(dt.getTime()))return null;const h=new Date();const hoje=new Date(h.getFullYear(),h.getMonth(),h.getDate());const n=Math.round((hoje-dt)/86400000);return n<0?null:n;}
 function vendName(id){if(!id)return null;const p=S.team.find(x=>x.id===id)||(S.me&&S.me.id===id?S.me:null);return p?(p.nome||'?'):'?'}
 function curMes(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`}
 function curYM(){const d=new Date();return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`}
@@ -2270,6 +2271,7 @@ function stockExportCols(){
     {c:'ano',l:'Ano'},
     {c:'kms',l:'Km'},
     {c:'data_rececao',l:'Recebida',f:v=>v?String(v).slice(0,10):''},
+    {c:'data_rececao',l:'Dias em stock',num:true,f:v=>{const n=diasEmStock(v);return n==null?'':n;}},
     {c:'valor_entrada',l:'Valor entrada',num:true},
     {c:'valor_min',l:'Valor mínimo',num:true},
     {c:'valor_anunciado',l:'Valor anunciado',num:true},
@@ -2432,6 +2434,7 @@ function EXPORT_FOLHAS(){
     {nome:'Stock Usadas',path:'/stock_usadas?select=*&order=id.asc',cols:[
       {c:'id',l:'ID'},{c:'categoria',l:'Categoria'},{c:'modelo',l:'Modelo'},{c:'matricula',l:'Matrícula'},
       {c:'ano',l:'Ano'},{c:'kms',l:'Km'},{c:'data_rececao',l:'Recebida',f:d},
+      {c:'data_rececao',l:'Dias em stock',f:v=>{const n=diasEmStock(v);return n==null?'':n;}},
       {c:'valor_entrada',l:'Valor entrada'},{c:'valor_min',l:'Valor mínimo'},{c:'valor_anunciado',l:'Anunciado'},{c:'valor_campanha',l:'Campanha'},
       {c:'estado',l:'Estado'},{c:'negociado_por',l:'Negociado por',f:nome},
       {c:'consignada',l:'Consignada',f:sn},{c:'maxterauto',l:'Maxterauto',f:sn},
@@ -3100,6 +3103,7 @@ function renderDashboard(){
             <td><input class="stock-inp stock-num" data-stock-id="${m.id}" data-stock-f="ano" type="number" value="${m.ano!=null?m.ano:''}" placeholder="—" style="max-width:64px"></td>
             <td><input class="stock-inp stock-num" data-stock-id="${m.id}" data-stock-f="kms" type="number" value="${m.kms!=null?m.kms:''}" placeholder="—" style="max-width:70px"></td>
             <td><input class="stock-inp" data-stock-id="${m.id}" data-stock-f="data_rececao" type="date" value="${m.data_rececao?String(m.data_rececao).slice(0,10):''}" style="max-width:140px"></td>
+            ${(()=>{const dias=diasEmStock(m.data_rececao);if(dias==null)return '<td style="text-align:right;color:var(--text3)">—</td>';const vend=m.estado==='Vendida';const cor=vend?'var(--text3)':(dias>=180?'var(--red)':(dias>=90?'var(--amber)':'var(--text3)'));const peso=(!vend&&dias>=90)?'700':'500';return `<td style="text-align:right;white-space:nowrap;color:${cor};font-weight:${peso}" title="${vend?'Desde a receção (sem data de venda registada)':'Dias em stock'}">${dias}</td>`;})()}
             ${ehDemo?'':`<td><div class="stock-eurwrap"><input class="stock-inp stock-num" data-stock-id="${m.id}" data-stock-f="valor_entrada" type="number" value="${m.valor_entrada!=null?m.valor_entrada:''}" placeholder="—"><span class="stock-eur2">€</span></div></td>
             <td><div class="stock-eurwrap"><input class="stock-inp stock-num" data-stock-id="${m.id}" data-stock-f="valor_min" type="number" value="${m.valor_min!=null?m.valor_min:''}" placeholder="—"><span class="stock-eur2">€</span></div></td>
             <td><div class="stock-eurwrap"><input class="stock-inp stock-num" data-stock-id="${m.id}" data-stock-f="valor_anunciado" type="number" value="${m.valor_anunciado!=null?m.valor_anunciado:''}" placeholder="—"><span class="stock-eur2">€</span></div></td>
@@ -3116,7 +3120,7 @@ function renderDashboard(){
             <td><button class="stock-del" data-action="stock-del" data-id="${m.id}" title="Apagar">🗑</button></td>
           </tr>`;
     const cabecalho=`<thead><tr>
-          <th>Modelo</th><th>Matrícula</th><th>Ano</th><th>Km</th><th>Recebida</th>${ehDemo?'':'<th>Entrada</th><th>Valor mín</th><th>Anunciado</th><th>Campanha</th>'}<th>Estado</th><th>Negociado por</th><th>Consignada</th><th>Maxterauto</th><th>Seguro</th><th></th>
+          <th>Modelo</th><th>Matrícula</th><th>Ano</th><th>Km</th><th>Recebida</th><th style="text-align:right">Dias</th>${ehDemo?'':'<th>Entrada</th><th>Valor mín</th><th>Anunciado</th><th>Campanha</th>'}<th>Estado</th><th>Negociado por</th><th>Consignada</th><th>Maxterauto</th><th>Seguro</th><th></th>
         </tr></thead>`;
     return`
     <div class="stock-head">
