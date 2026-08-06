@@ -568,6 +568,26 @@ html,body{overflow-x:hidden;max-width:100vw}
 .vd-f .norma-inp{width:100%}
 .vd-margem{font-size:16px;font-weight:800;color:var(--green);padding:7px 0}
 .vd-badge{display:inline-block;font-size:9px;font-weight:800;color:#fff;background:#0891b2;border-radius:9px;padding:1px 6px;margin-left:6px;vertical-align:middle}
+.pa-card{margin:0 16px 12px;padding:14px 16px}
+.pa-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+.pa-sub{font-size:12px;color:var(--text3);margin-bottom:10px}
+.pa-list{border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.pa-row{display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:center;padding:9px 10px;border-bottom:1px solid var(--border);cursor:pointer}
+.pa-row:last-child{border-bottom:none}
+.pa-row.on{background:var(--orange-bg)}
+.pa-chk{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--border2);background:var(--surface);cursor:pointer;font-size:12px;font-weight:800;color:#fff;padding:0;line-height:1;font-family:inherit}
+.pa-chk.on{background:var(--orange);border-color:var(--orange)}
+.pa-info{min-width:0}
+.pa-mod{font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pa-tag{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:#fff;background:var(--text3);padding:1px 6px;border-radius:8px}
+.pa-tag.vend{background:var(--red)}
+.pa-ref{font-size:11px;color:var(--text3);margin-top:2px}
+.pa-ref.falta{color:var(--red);font-weight:600}
+.pa-mot{max-width:210px;font-size:12px}
+.pa-prev{margin-top:12px;padding:12px 14px;background:var(--bg);border:1px dashed var(--border2);border-radius:10px;font-size:12.5px;line-height:1.6;color:var(--text2);white-space:normal}
+.pa-acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.pa-vazio{margin-top:10px;font-size:12px;color:var(--text3)}
+@media(max-width:700px){.pa-row{grid-template-columns:26px 1fr;row-gap:6px}.pa-mot{grid-column:2;max-width:100%;width:100%}}
 .ndemo-legend{display:grid;grid-template-columns:16px minmax(110px,1.5fr) 1fr 1.3fr 1.2fr 18px;gap:10px;padding:8px 14px 4px;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);font-weight:700}
 .ndemo-list{padding:0;overflow:hidden}
 .ndemo{border-bottom:1px solid var(--border)}
@@ -670,7 +690,7 @@ html,body{overflow-x:hidden;max-width:100vw}
   .gpp-sheet-item:active{transform:scale(.96)}
   .gpp-sheet-item.active{border-color:var(--orange);background:var(--orange-bg)}
   .gpp-sheet-ic{font-size:20px;line-height:1}
-  .gpp-sheet-lb{font-size:10px;font-weight:600;color:var(--text2);text-align:center;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .gpp-sheet-lb{font-size:10px;font-weight:600;color:var(--text2);text-align:center;line-height:1.15;max-width:100%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
   .gpp-sheet-item .gpp-nav-badge{position:absolute;top:5px;right:5px;background:var(--orange);color:#fff}
   .gpp-sres{display:flex;flex-direction:column;gap:6px}
   .gpp-sres-item{
@@ -758,7 +778,11 @@ html,body{overflow-x:hidden;max-width:100vw}
 .gpp-alerta-item:active{background:#fef3c7}
 .gpp-alerta-tipo{font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;background:#fde68a;color:#92400e}
 
-.gpp-nav{width:190px;min-width:190px;background:#1a1a2e;color:#fff;display:flex;flex-direction:column;overflow-y:auto;padding-bottom:20px}
+.gpp-side{width:190px;min-width:190px;flex-shrink:0;background:#1a1a2e;display:flex;flex-direction:column;overflow:hidden;transition:width .2s ease,min-width .2s ease}
+.app-layout.side-off .gpp-side{width:0;min-width:0}
+.gpp-hamb{display:flex;flex-direction:column;gap:4px;padding:8px 6px;cursor:pointer;background:none;border:0;flex-shrink:0}
+.gpp-hamb span{display:block;width:18px;height:2px;background:var(--text);border-radius:2px}
+.gpp-nav{width:100%;min-width:0;background:#1a1a2e;color:#fff;display:flex;flex-direction:column;overflow-y:auto;padding-bottom:20px;flex:1}
 .gpp-nav-logo{display:flex;align-items:center;gap:10px;padding:18px 16px 14px;font-weight:800;font-size:14px;border-bottom:1px solid rgba(255,255,255,.08)}
 .gpp-nav-b{width:28px;height:28px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .gpp-nav-item{padding:11px 16px;font-size:13px;color:rgba(255,255,255,.65);cursor:pointer;border-left:3px solid transparent}
@@ -777,6 +801,8 @@ html,body{overflow-x:hidden;max-width:100vw}
 @media(max-width:700px){
   /* .gpp-nav está escondida no telemóvel — ver barra inferior .gpp-tabbar */
   .gpp-nav-item{white-space:nowrap}
+  .gpp-side,.app-layout.side-off .gpp-side{width:100%;min-width:0;flex-shrink:0;max-height:38vh;overflow-y:auto}
+  .gpp-hamb{display:none}
 }
 
 .gpp-lclick{cursor:pointer}
@@ -851,6 +877,8 @@ html,body{overflow-x:hidden;max-width:100vw}
 .stock-tab.active{background:var(--text);color:#fff;border-color:var(--text)}
 .stock-tbl th{white-space:nowrap}
 .stock-tbl{min-width:1720px}
+.com-tbl{min-width:820px}
+.dep-tbl{min-width:860px}
 .stock-tbl td{padding:8px 10px}
 .stock-tbl input.stock-inp,.stock-tbl select.stock-inp{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--surface);color:var(--text)}
 .stock-modelo-inp{min-width:130px;font-weight:600}
@@ -938,7 +966,7 @@ let S={
   token:null,records:[],selected:null,form:{},
   me:null,team:[],objetivos:[],objEquipa:[],eventos:[],inscricoes:[],ranking:[],transicoes:[],norma:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
-  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',vdAdding:false,vdForm:{},vdErr:'',depTaxa:0,depManual:{},depPrep:{},exportBusy:false,exportMsg:'',
+  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',vdAdding:false,vdForm:{},vdErr:'',depTaxa:0,depManual:{},depPrep:{},exportBusy:false,exportMsg:'',gppSideOff:(()=>{try{return localStorage.getItem('bc_side')==='1'}catch(e){return false}})(),pedAutOpen:false,pedAutSel:{},
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{INFO:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
@@ -2443,7 +2471,7 @@ function EXPORT_FOLHAS(){
     ]},
     {nome:'Stock Norma',path:'/stock_norma?select=*&order=ordem.asc',cols:[
       {c:'id',l:'ID'},{c:'ordem',l:'Ordem'},{c:'modelo',l:'Modelo'},{c:'coluna',l:'Coluna'},{c:'estado',l:'Estado'},
-      {c:'matricula',l:'Matrícula'},{c:'data_matricula',l:'Data matrícula',f:d},{c:'encomenda',l:'Encomenda'},
+      {c:'matricula',l:'Matrícula'},{c:'data_matricula',l:'Data matrícula',f:d},{c:'chassi',l:'Nº chassis'},{c:'encomenda',l:'Encomenda'},
       {c:'kms',l:'Km'},{c:'preco',l:'Preço'},{c:'tem_seguro',l:'Tem seguro',f:sn},{c:'vendida',l:'Vendida',f:sn},
       {c:'obs',l:'Observações'},{c:'updated_at',l:'Atualizado',f:dt},
     ]},
@@ -2562,7 +2590,7 @@ async function exportarTudo(){
   // 3. Stock Norma
   ficheiros.push(()=>csvDescarregar(`baviera_stock_norma_${hoje}.csv`,tabelaParaLinhas(S.norma,[
     {c:'ordem',l:'Ordem'},{c:'modelo',l:'Modelo'},{c:'coluna',l:'Coluna'},{c:'estado',l:'Estado'},
-    {c:'matricula',l:'Matricula'},{c:'data_matricula',l:'DataMatricula'},{c:'encomenda',l:'Encomenda'},
+    {c:'matricula',l:'Matricula'},{c:'data_matricula',l:'DataMatricula'},{c:'chassi',l:'Chassis'},{c:'encomenda',l:'Encomenda'},
     {c:'kms',l:'Km'},{c:'preco',l:'Preco'},{c:'tem_seguro',l:'TemSeguro'},{c:'obs',l:'Obs'}
   ])));
   // 4. Eventos
@@ -2644,7 +2672,7 @@ function renderDashboard(){
     ['home','🏠','Home'],
     ['retail','✅','Retail'],
     ['comercio','🤝','Vendas Comerciante'],
-    ['depreciacao','📉','Calculadora Depreciação'],
+    ['depreciacao','📉','Depreciação'],
     ['carteira','📦','Carteira'],
     ['funil','🔻','Funil'],
     ['perdidos','❌','Perdidos'],
@@ -2724,6 +2752,7 @@ function renderDashboard(){
     </div>`:'';
 
   const header=`<div class="hdr">
+    <button class="gpp-hamb" data-action="gpp-toggle-side" title="${S.gppSideOff?'Mostrar menu':'Esconder menu'}"><span></span><span></span><span></span></button>
     <div class="hdr-accent"></div>
     <div class="hdr-title">${esc(secLabel)}</div>
     <button class="hdr-btn" data-action="refresh" ${S.loading?'disabled':''}>${S.loading?'…':'↻'}</button>
@@ -2989,6 +3018,66 @@ function renderDashboard(){
 
   // ---- Exportar ----
   // ---- Stock de motas usadas (admin) ----
+  function pedAutLista(){
+    const norma=(S.norma||[]).slice();
+    const rank=n=>n.vendida?0:(n.estado!=='Matriculada'?1:2);
+    return norma.sort((a,b)=>rank(a)-rank(b)||(a.ordem||0)-(b.ordem||0));
+  }
+  function pedAutRef(n){
+    const ch=(n.chassi||'').toString().trim();
+    if(ch)return'Chassi '+ch;
+    const en=(n.encomenda||'').toString().trim();
+    if(en)return'Encomenda '+en;
+    return'(sem chassis nem encomenda)';
+  }
+  function pedAutTexto(){
+    const sel=S.pedAutSel||{};
+    const esc2=pedAutLista().filter(n=>sel[String(n.id)]).sort((a,b)=>(a.ordem||0)-(b.ordem||0));
+    if(!esc2.length)return'';
+    const pl=esc2.length>1;
+    const linhas=esc2.map(n=>{
+      const mot=sel[String(n.id)]==='vendida'?'mota anterior vendida':'em falta para cumprir com os demonstradores mínimos';
+      return '• '+pedAutRef(n)+' — '+(n.modelo||'')+' — motivo: '+mot;
+    });
+    return 'Eng. Ruben,\n\nSolicito autorização para matricular '+(pl?'os seguintes demonstradores':'o seguinte demonstrador')+':\n\n'+linhas.join('\n');
+  }
+  function pedAutPainel(){
+    if(!S.pedAutOpen)return'';
+    const sel=S.pedAutSel||{};
+    const lista=pedAutLista();
+    const nSel=Object.keys(sel).length;
+    const cor={'Matriculada':'var(--green)','Encomendada':'#e8a30c','Em falta':'var(--red)'};
+    const linhas=lista.map(n=>{
+      const on=!!sel[String(n.id)];
+      const mot=sel[String(n.id)]||'';
+      const semRef=!((n.chassi||'').toString().trim()||(n.encomenda||'').toString().trim());
+      return`<div class="pa-row ${on?'on':''}">
+        <button class="pa-chk ${on?'on':''}" data-action="ped-aut-toggle" data-id="${n.id}">${on?'✓':''}</button>
+        <div class="pa-info" data-action="ped-aut-toggle" data-id="${n.id}">
+          <div class="pa-mod">${esc(n.modelo||'')}${n.vendida?'<span class="pa-tag vend">vendida</span>':''}${n.estado!=='Matriculada'?`<span class="pa-tag" style="background:${cor[n.estado]||'var(--text3)'}">${esc(n.estado||'')}</span>`:''}</div>
+          <div class="pa-ref ${semRef?'falta':''}">${esc(pedAutRef(n))}</div>
+        </div>
+        ${on?`<select class="norma-inp pa-mot" data-ped-motivo="${n.id}">
+          <option value="vendida" ${mot==='vendida'?'selected':''}>mota anterior vendida</option>
+          <option value="minimos" ${mot==='minimos'?'selected':''}>em falta p/ demos mínimos</option>
+        </select>`:'<span></span>'}
+      </div>`;
+    }).join('');
+    const txt=pedAutTexto();
+    return`<div class="gpp-card pa-card">
+      <div class="pa-head">
+        <b>Que demonstradores queres pedir para matricular?</b>
+        <button class="btn btn-dark btn-sm" data-action="ped-aut-fechar">Fechar ✕</button>
+      </div>
+      <div class="pa-sub">As <b>vendidas</b> e as <b>não matriculadas</b> aparecem primeiro — são as que costumam precisar de pedido.</div>
+      <div class="pa-list">${linhas}</div>
+      ${nSel?`<div class="pa-prev">${esc(txt).replace(/\n/g,'<br>')}</div>
+        <div class="pa-acts">
+          <button class="btn btn-orange" data-action="ped-aut-copiar">📋 Copiar texto (${nSel})</button>
+          <button class="btn btn-dark btn-sm" data-action="ped-aut-limpar">Limpar seleção</button>
+        </div>`:'<div class="pa-vazio">Escolhe pelo menos um demonstrador para gerar o texto.</div>'}
+    </div>`;
+  }
   function normaView(){
     const norma=(S.norma||[]).slice().sort((a,b)=>a.ordem-b.ordem);
     const total=norma.length||14;
@@ -3045,6 +3134,7 @@ function renderDashboard(){
           <div class="ndemo-grid">
             <div class="ndemo-f"><label>Estado</label><select class="norma-inp" data-norma-id="${n.id}" data-norma-f="estado" style="color:${cor[n.estado]};font-weight:700">${estados.map(e=>`<option value="${e}" ${n.estado===e?'selected':''}>${e}</option>`).join('')}</select></div>
             <div class="ndemo-f"><label>Atual (matrícula)</label><input class="norma-inp" data-norma-id="${n.id}" data-norma-f="matricula" value="${esc(n.matricula||'')}" placeholder="Ñ TEMOS"></div>
+            <div class="ndemo-f"><label>Nº chassis (VIN)</label><input class="norma-inp" data-norma-id="${n.id}" data-norma-f="chassi" value="${esc(n.chassi||'')}" placeholder="—"></div>
             <div class="ndemo-f"><label>Futura a associar (proposta / VIN)</label><input class="norma-inp" data-norma-id="${n.id}" data-norma-f="encomenda" value="${esc(n.encomenda||'')}" placeholder="Ex: Proposta Nº 4405 / VIN…"></div>
             <div class="ndemo-f"><label>Matriculada em</label><input class="norma-inp" type="date" data-norma-id="${n.id}" data-norma-f="data_matricula" value="${esc(n.data_matricula||'')}">${(q.txt&&n.estado==='Matriculada')?`<div class="norma-4m ${q.cls}">4 meses: ${q.txt}</div>`:''}</div>
             <div class="ndemo-f"><label>Km</label><input class="norma-inp stock-num" type="number" data-norma-id="${n.id}" data-norma-f="kms" value="${n.kms!=null?n.kms:''}" placeholder="—"></div>
@@ -3057,7 +3147,8 @@ function renderDashboard(){
       </div>`;
     };
     return`${cab}
-      <div class="norma-toolbar"><button class="btn btn-dark btn-sm" data-action="norma-pdf">⬇ PDF (1 página)</button></div>
+      <div class="norma-toolbar" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-orange btn-sm" data-action="ped-aut-abrir">📋 Pedido autorização demonstrador</button><button class="btn btn-dark btn-sm" data-action="norma-pdf">⬇ PDF (1 página)</button></div>
+      ${pedAutPainel()}
       <div class="ndemo-legend"><span></span><span>Modelo</span><span>Atual</span><span>Futura (associar)</span><span>Obs</span><span></span></div>
       <div class="gpp-card ndemo-list">${norma.map(item).join('')}</div>`;
   }
@@ -3197,7 +3288,7 @@ function renderDashboard(){
       </div>
       <div class="gpp-pend-desc" style="margin:2px 16px 10px">Contam para o bolo da empresa. <b>Não</b> contam como retail para nenhum vendedor — o vendedor indicado é só quem trabalhou o preço.</div>
       ${com.length===0?'<div class="gpp-empty">Ainda sem vendas a comerciante registadas.</div>':`
-      <div class="gpp-card" style="margin:0 16px 20px;overflow-x:auto"><table class="gpp-ltable">
+      <div class="gpp-card" style="margin:0 16px 20px;overflow-x:auto"><table class="gpp-ltable com-tbl">
         <thead><tr><th>Comerciante</th><th>Mês retail / fatura</th><th>Modelo</th><th>Matrícula</th><th>Tipo</th><th>Trabalhado por</th><th>Valor</th></tr></thead>
         <tbody>${com.map(r=>`<tr class="gpp-lrow" data-action="open-record-from-dash" data-id="${r.id}">
           <td style="font-weight:600">${esc(r.id_cliente||'—')}</td>
@@ -3255,7 +3346,7 @@ function renderDashboard(){
         <span style="color:var(--text3);font-size:12px;flex:1;min-width:200px">Calculado: entrada × taxa × meses. Escreve um valor à mão numa linha para o forçar (fica com borda laranja).</span>
       </div>
       ${arr.length===0?'<div class="gpp-empty">Sem usadas por vender em stock.</div>':`
-      <div class="gpp-card" style="margin:0 16px 8px;overflow-x:auto"><table class="gpp-ltable">
+      <div class="gpp-card" style="margin:0 16px 8px;overflow-x:auto"><table class="gpp-ltable dep-tbl">
         <thead><tr><th>Modelo</th><th>Matrícula</th><th>Recebida</th><th style="text-align:right">Em stock</th><th style="text-align:right">Entrada</th><th style="text-align:right">Depreciação</th><th style="text-align:right">Preparação</th><th style="text-align:right">Valor mínimo de venda</th></tr></thead>
         <tbody>${linhas}</tbody>
         <tfoot><tr style="background:var(--bg);font-weight:700">
@@ -3570,9 +3661,8 @@ function renderDashboard(){
   else body=tabelaResumo();
 
   return`
-  <div class="app-layout">
-  ${renderViewSelector()}
-  ${nav}
+  <div class="app-layout ${S.gppSideOff?'side-off':''}">
+  <div class="gpp-side">${renderViewSelector()}${nav}</div>
   <div class="main-panel" style="width:100%">
   ${header}
   <div class="content">${body}</div>
@@ -3633,6 +3723,7 @@ function bindEvents(){
   app.onchange=function(e){
     const el=e.target;
     if(el.dataset&&el.dataset.depId){const id=el.dataset.depId,v=el.value;const nm=Object.assign({},S.depManual||{});if(v===''||v==null){delete nm[id];}else{nm[id]=v;}S.depManual=nm;render();return;}
+    if(el.dataset&&el.dataset.pedMotivo){const sel=Object.assign({},S.pedAutSel||{});sel[String(el.dataset.pedMotivo)]=el.value;setState({pedAutSel:sel});return;}
     if(el.dataset&&el.dataset.depPrep){const id=el.dataset.depPrep,v=el.value;const nm=Object.assign({},S.depPrep||{});if(v===''||v==null){delete nm[id];}else{nm[id]=v;}S.depPrep=nm;render();return;}
     if(el.dataset&&el.dataset.obsGestor){saveObsGestor(el.dataset.obsGestor,el.value);return;}
     if(el.dataset&&el.dataset.vdF){S.vdForm=Object.assign({},S.vdForm,{[el.dataset.vdF]:el.value});if(el.dataset.vdF==='pvp'||el.dataset.vdF==='valor_entrada')render();return;}
@@ -3762,6 +3853,14 @@ function bindEvents(){
       case'stock-export-pdf':exportStockPDF();break;
       case'dep-limpar':setState({depManual:{}});break;
       case'export-xlsx':exportarExcelTudo();break;
+      case'gpp-toggle-side':{const v=!S.gppSideOff;try{localStorage.setItem('bc_side',v?'1':'0')}catch(e){}setState({gppSideOff:v});break;}
+      case'ped-aut-abrir':setState({pedAutOpen:!S.pedAutOpen});break;
+      case'ped-aut-fechar':setState({pedAutOpen:false});break;
+      case'ped-aut-limpar':setState({pedAutSel:{}});break;
+      case'ped-aut-toggle':{const id=String(el.dataset.id);const sel=Object.assign({},S.pedAutSel||{});
+        if(sel[id]){delete sel[id];}else{const n=(S.norma||[]).find(x=>String(x.id)===id);sel[id]=(n&&n.vendida)?'vendida':'minimos';}
+        setState({pedAutSel:sel});break;}
+      case'ped-aut-copiar':{const t=pedAutTexto();if(t)copiarTexto(t,el);break;}
       case'stock-anular-seguro':saveStockField(el.dataset.id,'seguro_anulado',true);break;
       case'stock-form-toggle-max':setState({stockFormMax:!S.stockFormMax});break;
       case'stock-cancel':setState({stockAdding:false});break;
