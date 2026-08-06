@@ -938,7 +938,7 @@ let S={
   token:null,records:[],selected:null,form:{},
   me:null,team:[],objetivos:[],objEquipa:[],eventos:[],inscricoes:[],ranking:[],transicoes:[],norma:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
-  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',vdAdding:false,vdForm:{},vdErr:'',depTaxa:0,depManual:{},depPrep:{},
+  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',vdAdding:false,vdForm:{},vdErr:'',depTaxa:0,depManual:{},depPrep:{},exportBusy:false,exportMsg:'',
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{INFO:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
@@ -2305,6 +2305,236 @@ function exportStockPDF(){
   w.document.open();w.document.write(html);w.document.close();w.focus();
   setTimeout(()=>{try{w.print();}catch(e){}},350);
 }
+// ===== Gerador XLSX multi-folha, sem dependencias externas =====
+function _xEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,'');}
+function _xCol(n){let s='';n=n+1;while(n>0){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=Math.floor((n-1)/26);}return s;}
+function _xNomeFolha(n,usados){let s=String(n||'Folha').replace(/[\[\]\*\/\\\?:]/g,'-').slice(0,31)||'Folha';let b=s,i=2;while(usados.indexOf(s)>=0){const suf='('+i+')';s=(b.slice(0,31-suf.length))+suf;i++;}usados.push(s);return s;}
+function _xCell(ref,v,ehCab){
+  if(v==null||v==='')return '';
+  if(typeof v==='number'&&isFinite(v))return `<c r="${ref}"${ehCab?' s="1"':''}><v>${v}</v></c>`;
+  return `<c r="${ref}"${ehCab?' s="1"':''} t="inlineStr"><is><t xml:space="preserve">${_xEsc(v)}</t></is></c>`;
+}
+function _xSheetXML(linhas){
+  let maxC=1;linhas.forEach(l=>{if(l.length>maxC)maxC=l.length;});
+  const rows=linhas.map((l,ri)=>{
+    const cells=l.map((v,ci)=>_xCell(_xCol(ci)+(ri+1),v,ri===0)).join('');
+    return `<row r="${ri+1}">${cells}</row>`;
+  }).join('');
+  const dim=`A1:${_xCol(maxC-1)}${Math.max(1,linhas.length)}`;
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`
+    +`<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">`
+    +`<dimension ref="${dim}"/>`
+    +`<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>`
+    +`<sheetFormatPr defaultRowHeight="15"/>`
+    +`<sheetData>${rows}</sheetData>`
+    +`</worksheet>`;
+}
+// --- CRC32 ---
+let _crcT=null;
+function _crcTab(){if(_crcT)return _crcT;const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}_crcT=t;return t;}
+function _crc32(buf){const t=_crcTab();let c=0xFFFFFFFF;for(let i=0;i<buf.length;i++)c=t[(c^buf[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function _utf8(s){return new TextEncoder().encode(s);}
+// --- ZIP (STORE) ---
+function _zip(ficheiros){
+  const enc=[],cd=[];let off=0;
+  const w16=(a,v)=>{a.push(v&0xFF,(v>>>8)&0xFF)},w32=(a,v)=>{a.push(v&0xFF,(v>>>8)&0xFF,(v>>>16)&0xFF,(v>>>24)&0xFF)};
+  ficheiros.forEach(f=>{
+    const nome=_utf8(f.nome),dados=f.dados,crc=_crc32(dados);
+    const lh=[];w32(lh,0x04034b50);w16(lh,20);w16(lh,0x0800);w16(lh,0);w16(lh,0);w16(lh,0);
+    w32(lh,crc);w32(lh,dados.length);w32(lh,dados.length);w16(lh,nome.length);w16(lh,0);
+    enc.push(new Uint8Array(lh),nome,dados);
+    const ce=[];w32(ce,0x02014b50);w16(ce,20);w16(ce,20);w16(ce,0x0800);w16(ce,0);w16(ce,0);w16(ce,0);
+    w32(ce,crc);w32(ce,dados.length);w32(ce,dados.length);w16(ce,nome.length);w16(ce,0);w16(ce,0);w16(ce,0);w16(ce,0);w32(ce,0);w32(ce,off);
+    cd.push(new Uint8Array(ce),nome);
+    off+=lh.length+nome.length+dados.length;
+  });
+  let cdLen=0;cd.forEach(p=>cdLen+=p.length);
+  const eo=[];w32(eo,0x06054b50);w16(eo,0);w16(eo,0);w16(eo,ficheiros.length);w16(eo,ficheiros.length);w32(eo,cdLen);w32(eo,off);w16(eo,0);
+  const partes=enc.concat(cd,[new Uint8Array(eo)]);
+  let tot=0;partes.forEach(p=>tot+=p.length);
+  const out=new Uint8Array(tot);let p=0;partes.forEach(x=>{out.set(x,p);p+=x.length;});
+  return out;
+}
+function xlsxGerar(folhas){
+  const usados=[];
+  const fs=folhas.map((f,i)=>({nome:_xNomeFolha(f.nome,usados),linhas:f.linhas||[],idx:i+1}));
+  const ct=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`
+    +`<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">`
+    +`<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>`
+    +`<Default Extension="xml" ContentType="application/xml"/>`
+    +`<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>`
+    +`<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>`
+    +fs.map(f=>`<Override PartName="/xl/worksheets/sheet${f.idx}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')
+    +`</Types>`;
+  const rels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`
+    +`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`
+    +`<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`;
+  const wb=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`
+    +`<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>`
+    +fs.map(f=>`<sheet name="${_xEsc(f.nome)}" sheetId="${f.idx}" r:id="rId${f.idx}"/>`).join('')
+    +`</sheets></workbook>`;
+  const wbRels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`
+    +`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`
+    +fs.map(f=>`<Relationship Id="rId${f.idx}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${f.idx}.xml"/>`).join('')
+    +`<Relationship Id="rId${fs.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>`
+    +`</Relationships>`;
+  const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`
+    +`<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">`
+    +`<fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font></fonts>`
+    +`<fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>`
+    +`<fill><patternFill patternType="solid"><fgColor rgb="FF1F2937"/><bgColor indexed="64"/></patternFill></fill></fills>`
+    +`<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>`
+    +`<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>`
+    +`<cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>`
+    +`<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/></cellXfs>`
+    +`<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>`
+    +`</styleSheet>`;
+  const ficheiros=[
+    {nome:'[Content_Types].xml',dados:_utf8(ct)},
+    {nome:'_rels/.rels',dados:_utf8(rels)},
+    {nome:'xl/workbook.xml',dados:_utf8(wb)},
+    {nome:'xl/_rels/workbook.xml.rels',dados:_utf8(wbRels)},
+    {nome:'xl/styles.xml',dados:_utf8(styles)},
+  ].concat(fs.map(f=>({nome:`xl/worksheets/sheet${f.idx}.xml`,dados:_utf8(_xSheetXML(f.linhas))})));
+  return _zip(ficheiros);
+}
+
+// ===== REGISTO DE FOLHAS DO EXPORT EXCEL =====
+// >>> AO ACRESCENTAR UMA TABELA/CAMPO NOVO NA PLATAFORMA, ACRESCENTA-O AQUI TAMBEM. <<<
+// Cada folha: {nome, path (endpoint REST), cols:[{c:coluna, l:etiqueta, f:formatador opcional}]}
+function EXPORT_FOLHAS(){
+  const nome=v=>vendName(v)||(v||'');
+  const sn=v=>v===true?'Sim':(v===false?'Não':'');
+  const dt=v=>v?String(v).slice(0,19).replace('T',' '):'';
+  const d=v=>v?String(v).slice(0,10):'';
+  return [
+    {nome:'Negócios',path:'/baviera_control?select=*&order=id.asc',cols:[
+      {c:'id',l:'ID'},{c:'status',l:'Status'},{c:'vendedor_id',l:'Vendedor',f:nome},
+      {c:'venda_direta',l:'Venda a comerciante',f:sn},
+      {c:'id_cliente',l:'Cliente'},{c:'nif',l:'NIF'},{c:'cc',l:'CC'},{c:'morada',l:'Morada'},
+      {c:'email',l:'Email'},{c:'contacto',l:'Contacto'},
+      {c:'resp',l:'Responsável'},{c:'local',l:'Local'},{c:'neg',l:'Data negócio',f:d},{c:'mes1',l:'Mês'},
+      {c:'type',l:'Tipo'},{c:'origin',l:'Origem'},{c:'profile',l:'Perfil'},{c:'biz',l:'Negócio'},{c:'fin',l:'Financiamento'},
+      {c:'model',l:'Modelo'},{c:'version',l:'Versão'},{c:'enc',l:'Encomenda'},{c:'chas',l:'Chassi'},{c:'mat',l:'Matrícula'},
+      {c:'gar',l:'Garantia'},{c:'gar_periodo',l:'Garantia período'},{c:'stock',l:'Stock'},{c:'stock_id',l:'Stock ID'},
+      {c:'pvp',l:'PVP'},{c:'valor_entrada',l:'Valor entrada'},
+      {c:'retoma',l:'Retoma',f:v=>v||''},{c:'retoma_mat',l:'Retoma matrícula'},
+      {c:'qor',l:'QOR'},{c:'xev',l:'XEV'},{c:'bev',l:'BEV'},{c:'m_flag',l:'M'},{c:'csc',l:'CSC'},{c:'cme',l:'CME'},
+      {c:'cme_confirmed',l:'CME confirmado',f:dt},
+      {c:'flag_seguro',l:'Seguro',f:sn},{c:'flag_ccgo',l:'CCGO',f:sn},{c:'flag_lifestyle',l:'Lifestyle',f:sn},{c:'flag_rgpd',l:'RGPD',f:sn},
+      {c:'col_198',l:'198'},{c:'dmat',l:'Data matrícula',f:d},{c:'col_298',l:'298 (retail)',f:d},{c:'app',l:'APP',f:d},
+      {c:'alert_date',l:'Alerta data',f:d},{c:'alert_days',l:'Alerta dias'},
+      {c:'motivo_perda',l:'Motivo perda'},{c:'lead_webapp',l:'Lead webapp'},
+      {c:'obs',l:'Observações'},{c:'obs_gestor',l:'Obs. chefe'},
+      {c:'status_updated_at',l:'Status atualizado',f:dt},
+      {c:'created_at',l:'Criado',f:dt},{c:'updated_at',l:'Atualizado',f:dt},{c:'updated_by',l:'Atualizado por',f:nome},
+    ]},
+    {nome:'Stock Usadas',path:'/stock_usadas?select=*&order=id.asc',cols:[
+      {c:'id',l:'ID'},{c:'categoria',l:'Categoria'},{c:'modelo',l:'Modelo'},{c:'matricula',l:'Matrícula'},
+      {c:'ano',l:'Ano'},{c:'kms',l:'Km'},{c:'data_rececao',l:'Recebida',f:d},
+      {c:'valor_entrada',l:'Valor entrada'},{c:'valor_min',l:'Valor mínimo'},{c:'valor_anunciado',l:'Anunciado'},{c:'valor_campanha',l:'Campanha'},
+      {c:'estado',l:'Estado'},{c:'negociado_por',l:'Negociado por',f:nome},
+      {c:'consignada',l:'Consignada',f:sn},{c:'maxterauto',l:'Maxterauto',f:sn},
+      {c:'tem_seguro',l:'Tem seguro',f:sn},{c:'seguro_anulado',l:'Seguro anulado',f:sn},
+      {c:'created_at',l:'Criado',f:dt},{c:'updated_at',l:'Atualizado',f:dt},{c:'updated_by',l:'Atualizado por',f:nome},
+    ]},
+    {nome:'Stock Norma',path:'/stock_norma?select=*&order=ordem.asc',cols:[
+      {c:'id',l:'ID'},{c:'ordem',l:'Ordem'},{c:'modelo',l:'Modelo'},{c:'coluna',l:'Coluna'},{c:'estado',l:'Estado'},
+      {c:'matricula',l:'Matrícula'},{c:'data_matricula',l:'Data matrícula',f:d},{c:'encomenda',l:'Encomenda'},
+      {c:'kms',l:'Km'},{c:'preco',l:'Preço'},{c:'tem_seguro',l:'Tem seguro',f:sn},{c:'vendida',l:'Vendida',f:sn},
+      {c:'obs',l:'Observações'},{c:'updated_at',l:'Atualizado',f:dt},
+    ]},
+    {nome:'Eventos',path:'/eventos?select=*&order=id.asc',cols:[
+      {c:'id',l:'ID'},{c:'nome',l:'Nome'},{c:'data',l:'Data',f:d},{c:'local',l:'Local'},
+      {c:'lotacao',l:'Lotação'},{c:'ativo',l:'Ativo',f:sn},{c:'created_at',l:'Criado',f:dt},
+    ]},
+    {nome:'Inscrições',path:'/inscricoes?select=*&order=id.asc',cols:[
+      {c:'id',l:'ID'},{c:'evento_id',l:'Evento',f:v=>{const e=(S.eventos||[]).find(x=>String(x.id)===String(v));return e?e.nome:(v||'')}},
+      {c:'cliente',l:'Cliente'},{c:'telefone',l:'Telefone'},{c:'acompanhantes',l:'Acompanhantes'},
+      {c:'estado',l:'Estado'},{c:'funil',l:'Funil'},{c:'vendedor_id',l:'Vendedor',f:nome},
+      {c:'obs',l:'Observações'},{c:'created_at',l:'Criado',f:dt},
+    ]},
+    {nome:'Histórico Status',path:'/status_historico?select=*&order=id.asc',cols:[
+      {c:'id',l:'ID'},{c:'negocio_id',l:'Negócio ID'},{c:'de',l:'De'},{c:'para',l:'Para'},
+      {c:'quem',l:'Quem',f:nome},{c:'quando',l:'Quando',f:dt},
+    ]},
+    {nome:'Log Status',path:'/status_log?select=*&order=id.asc',cols:[
+      {c:'id',l:'ID'},{c:'registo_id',l:'Registo ID'},{c:'status_antigo',l:'Status antigo'},{c:'status_novo',l:'Status novo'},
+      {c:'changed_at',l:'Quando',f:dt},{c:'changed_by',l:'Quem',f:nome},
+    ]},
+    {nome:'Objetivos Equipa',path:'/objetivos_equipa?select=*&order=mes.asc',cols:[
+      {c:'id',l:'ID'},{c:'mes',l:'Mês',f:d},{c:'tipo',l:'Tipo'},{c:'objetivo',l:'Objetivo'},{c:'updated_at',l:'Atualizado',f:dt},
+    ]},
+    {nome:'Objetivos Vendedor',path:'/objetivos?select=*&order=mes.asc',cols:[
+      {c:'id',l:'ID'},{c:'vendedor_id',l:'Vendedor',f:nome},{c:'mes',l:'Mês',f:d},
+      {c:'objetivo_unidades',l:'Objetivo unidades'},{c:'objetivo_bev',l:'Objetivo BEV'},{c:'created_at',l:'Criado',f:dt},
+    ]},
+    {nome:'NPS',path:'/nps?select=*&order=mes.asc',cols:[
+      {c:'id',l:'ID'},{c:'vendedor_id',l:'Vendedor',f:nome},{c:'mes',l:'Mês',f:d},
+      {c:'num_inqueritos',l:'Nº inquéritos'},{c:'nps',l:'NPS'},{c:'csi',l:'CSI'},
+      {c:'created_at',l:'Criado',f:dt},{c:'updated_at',l:'Atualizado',f:dt},{c:'updated_by',l:'Atualizado por',f:nome},
+    ]},
+    {nome:'Escala',path:'/escala?select=*&order=dia.asc',cols:[
+      {c:'id',l:'ID'},{c:'dia',l:'Dia',f:d},{c:'vendedor_id',l:'Vendedor',f:nome},{c:'estado',l:'Estado'},
+      {c:'created_at',l:'Criado',f:dt},{c:'updated_at',l:'Atualizado',f:dt},{c:'updated_by',l:'Atualizado por',f:nome},
+    ]},
+    {nome:'Equipa',path:'/profiles?select=*&order=nome.asc',cols:[
+      {c:'id',l:'ID'},{c:'nome',l:'Nome'},{c:'role',l:'Função'},{c:'linha',l:'Linha'},{c:'created_at',l:'Criado',f:dt},
+    ]},
+  ];
+}
+async function exportarExcelTudo(){
+  if(S.exportBusy)return;
+  setState({exportBusy:true,exportMsg:'A carregar dados…'});
+  const defs=EXPORT_FOLHAS();
+  try{ if(!(S.eventos||[]).length){try{await loadEventos()}catch(e){}} }catch(e){}
+  const folhas=[],resumo=[],erros=[];
+  for(let i=0;i<defs.length;i++){
+    const dfn=defs[i];
+    setState({exportBusy:true,exportMsg:`A carregar ${dfn.nome} (${i+1}/${defs.length})…`});
+    let dados=null,erro=null;
+    try{ dados=await supabaseApi('GET',dfn.path); }
+    catch(e){ erro=(e&&e.message)?String(e.message).slice(0,180):'erro'; }
+    if(erro){
+      erros.push(dfn.nome);
+      folhas.push({nome:dfn.nome,linhas:[['ERRO AO EXPORTAR'],[erro]]});
+      resumo.push([dfn.nome,'erro',erro]);
+      continue;
+    }
+    const arr=dados||[];
+    const linhas=[dfn.cols.map(c=>c.l)];
+    arr.forEach(o=>{
+      linhas.push(dfn.cols.map(c=>{
+        const v=o[c.c];
+        if(c.f)return c.f(v,o);
+        if(typeof v==='boolean')return v?'Sim':'Não';
+        if(v==null)return '';
+        if(typeof v==='object')return JSON.stringify(v);
+        return v;
+      }));
+    });
+    folhas.push({nome:dfn.nome,linhas:linhas});
+    resumo.push([dfn.nome,arr.length,'']);
+  }
+  const agora=new Date();
+  const indice=[['BAVIERA CONTROL — exportação completa'],['Data',agora.toLocaleString('pt-PT')],
+    ['Feita por',(S.me&&S.me.nome)||''],[''],['Folha','Registos','Nota']].concat(resumo);
+  folhas.unshift({nome:'Índice',linhas:indice});
+  setState({exportBusy:true,exportMsg:'A gerar Excel…'});
+  try{
+    const bytes=xlsxGerar(folhas);
+    const blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download='baviera_control_'+agora.toISOString().slice(0,10)+'.xlsx';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),3000);
+    setState({exportBusy:false,exportMsg:erros.length?('Exportado, mas sem acesso a: '+erros.join(', ')):''});
+  }catch(e){
+    setState({exportBusy:false,exportMsg:'Falhou a gerar o ficheiro: '+((e&&e.message)||e)});
+  }
+}
+
 async function exportarTudo(){
   const nome=v=>vendName(v)||'';
   const hoje=new Date().toISOString().slice(0,10);
@@ -3281,9 +3511,12 @@ function renderDashboard(){
       <div style="font-size:40px">⬇️</div>
       <div style="font-size:16px;font-weight:600;margin:8px 0 4px">Exportar todos os dados</div>
       <div style="font-size:13px;color:var(--text3);max-width:420px;text-align:center;line-height:1.5;margin-bottom:16px">
-        CSV com <b>todos os campos</b> de todos os registos, organizados por blocos (cliente, negócio, viatura, extras, datas, alertas, observações e metadados). Abre direto no Excel.
+        Um único ficheiro <b>Excel</b> com <b>tudo o que existe na plataforma</b> — negócios, stock de usadas, stock norma, eventos, inscrições, histórico e log de status, objetivos de equipa e individuais, NPS, escala e equipa — cada conjunto na sua <b>folha</b>, com todos os campos. Os dados são lidos <b>frescos da base de dados</b>, não do que está aberto no ecrã.
       </div>
-      <button class="btn btn-orange" data-action="export-csv" style="padding:12px 28px">⬇ CSV completo (${recs.length} registos)</button>
+      <button class="btn btn-orange" data-action="export-xlsx" ${S.exportBusy?'disabled':''} style="padding:12px 28px">${S.exportBusy?esc(S.exportMsg||'A preparar…'):'📊 Excel completo (todas as folhas)'}</button>
+      ${S.exportMsg&&!S.exportBusy?`<div style="font-size:12px;color:var(--orange);margin-top:8px;max-width:420px;text-align:center">${esc(S.exportMsg)}</div>`:''}
+      <div style="font-size:12px;color:var(--text3);max-width:420px;text-align:center;line-height:1.5;margin:14px 0 6px;border-top:1px solid var(--border);padding-top:14px">Ou em CSV, só os negócios:</div>
+      <button class="btn btn-dark btn-sm" data-action="export-csv">⬇ CSV completo (${recs.length} registos)</button>
       <div style="font-size:12px;color:var(--text3);max-width:420px;text-align:center;line-height:1.5;border-top:1px solid var(--border);padding-top:16px;margin-top:20px">
         O CSV completo inclui <b>NIF, CC, morada, email, contacto</b> e a observação do chefe. Para um ficheiro que possas partilhar sem expor dados pessoais, usa a versão limpa:
       </div>
@@ -3524,6 +3757,7 @@ function bindEvents(){
       case'stock-export-csv':exportStockCSV();break;
       case'stock-export-pdf':exportStockPDF();break;
       case'dep-limpar':setState({depManual:{}});break;
+      case'export-xlsx':exportarExcelTudo();break;
       case'stock-anular-seguro':saveStockField(el.dataset.id,'seguro_anulado',true);break;
       case'stock-form-toggle-max':setState({stockFormMax:!S.stockFormMax});break;
       case'stock-cancel':setState({stockAdding:false});break;
