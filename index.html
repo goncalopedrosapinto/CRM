@@ -966,7 +966,7 @@ let S={
   token:null,records:[],selected:null,form:{},
   me:null,team:[],objetivos:[],objEquipa:[],eventos:[],inscricoes:[],ranking:[],transicoes:[],norma:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
-  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',vdAdding:false,vdForm:{},vdErr:'',depTaxa:0,depManual:{},depPrep:{},exportBusy:false,exportMsg:'',gppSideOff:(()=>{try{return localStorage.getItem('bc_side')==='1'}catch(e){return false}})(),pedAutOpen:false,pedAutSel:{},
+  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',vdAdding:false,vdForm:{},vdErr:'',depTaxa:(()=>{try{return parseFloat(localStorage.getItem('bc_dep_taxa'))||0}catch(e){return 0}})(),exportBusy:false,exportMsg:'',gppSideOff:(()=>{try{return localStorage.getItem('bc_side')==='1'}catch(e){return false}})(),pedAutOpen:false,pedAutSel:{},
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{INFO:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
@@ -2486,7 +2486,7 @@ function EXPORT_FOLHAS(){
       {c:'id',l:'ID'},{c:'categoria',l:'Categoria'},{c:'modelo',l:'Modelo'},{c:'matricula',l:'Matrícula'},
       {c:'ano',l:'Ano'},{c:'kms',l:'Km'},{c:'data_rececao',l:'Recebida',f:d},
       {c:'data_rececao',l:'Dias em stock',f:v=>{const n=diasEmStock(v);return n==null?'':n;}},
-      {c:'valor_entrada',l:'Valor entrada'},{c:'valor_min',l:'Valor mínimo'},{c:'valor_anunciado',l:'Anunciado'},{c:'valor_campanha',l:'Campanha'},
+      {c:'valor_entrada',l:'Valor entrada'},{c:'valor_min',l:'Valor mínimo'},{c:'valor_anunciado',l:'Anunciado'},{c:'valor_campanha',l:'Campanha'},{c:'dep_manual',l:'Depreciação s/IVA'},{c:'dep_prep',l:'Preparação'},
       {c:'estado',l:'Estado'},{c:'negociado_por',l:'Negociado por',f:nome},
       {c:'consignada',l:'Consignada',f:sn},{c:'maxterauto',l:'Maxterauto',f:sn},
       {c:'tem_seguro',l:'Tem seguro',f:sn},{c:'seguro_anulado',l:'Seguro anulado',f:sn},
@@ -3307,28 +3307,29 @@ function renderDashboard(){
     const byRec=(a,b)=>{const x=a.data_rececao||'9999-12-31';const y=b.data_rececao||'9999-12-31';return x<y?-1:x>y?1:0;};
     const arr=(S.stock||[]).filter(m=>(m.categoria||'usada')==='usada'&&m.estado!=='Vendida').slice().sort(byRec);
     const taxa=Number(S.depTaxa)||0;
-    const man=S.depManual||{};
     let tEnt=0,tDep=0,tPrep=0,tApos=0,nEnt=0;
     const linhas=arr.map(m=>{
       const entrada=(m.valor_entrada!=null&&m.valor_entrada!=='')?Number(m.valor_entrada):null;
       const meses=mesesEmStock(m.data_rececao);
-      const ov=man[m.id];
+      const ov=m.dep_manual;
       const ehManual=(ov!=null&&ov!=='');
       let dep;
       if(ehManual)dep=Number(ov)||0;
       else if(entrada!=null&&meses!=null)dep=entrada*taxa/100*meses;
       else dep=0;
-      const prep=Number((S.depPrep||{})[m.id])||0;
-      const apos=entrada!=null?Math.max(0,entrada-dep+prep):null;
-      if(entrada!=null){tEnt+=entrada;tDep+=dep;tPrep+=prep;tApos+=apos;nEnt++;}
-      const campoVal=ehManual?String(ov):((entrada!=null&&meses!=null)?String(Math.round(dep)):'');
+      const prep=Number(m.dep_prep)||0;
+      const IVA=1.23;
+      const depIva=dep*IVA;
+      const apos=entrada!=null?Math.max(0,entrada-depIva+prep):null;
+      if(entrada!=null){tEnt+=entrada;tDep+=depIva;tPrep+=prep;tApos+=apos;nEnt++;}
+      const campoVal=ehManual?String(Number(ov)):((entrada!=null&&meses!=null)?String(Math.round(dep)):'');
       return `<tr class="gpp-lrow">
         <td style="font-weight:600">${esc(m.modelo||'—')}</td>
         <td>${esc(m.matricula||'—')}</td>
         <td>${m.data_rececao?esc(String(m.data_rececao).slice(0,10)):'<span style="color:var(--red)">sem data</span>'}</td>
         <td style="text-align:right">${meses!=null?(meses+(meses===1?' mês':' meses')):'—'}</td>
         <td style="text-align:right">${entrada!=null?fmtE(entrada):'—'}</td>
-        <td style="text-align:right"><div class="stock-eurwrap"><input class="stock-inp stock-num" data-dep-id="${m.id}" type="number" value="${campoVal}" placeholder="0" style="${ehManual?'border-color:var(--orange)':''}"><span class="stock-eur2">€</span></div></td>
+        <td style="text-align:right"><div class="stock-eurwrap"><input class="stock-inp stock-num" data-dep-id="${m.id}" type="number" value="${campoVal}" placeholder="0" style="${ehManual?'border-color:var(--orange)':''}"><span class="stock-eur2">€</span></div>${dep?`<div style="font-size:10px;color:var(--text3);margin-top:2px;white-space:nowrap">c/IVA ${fmtE(depIva)}</div>`:''}</td>
         <td style="text-align:right"><div class="stock-eurwrap"><input class="stock-inp stock-num" data-dep-prep="${m.id}" type="number" value="${prep?String(prep):''}" placeholder="0"><span class="stock-eur2">€</span></div></td>
         <td style="text-align:right;font-weight:700;color:${apos!=null?'var(--green)':'var(--text3)'}">${apos!=null?fmtE(apos):'—'}</td>
       </tr>`;
@@ -3342,12 +3343,11 @@ function renderDashboard(){
           <span class="stock-eurwrap"><input id="dep-taxa-inp" class="stock-inp stock-num" type="number" step="0.5" min="0" value="${(S.depTaxa!=null&&S.depTaxa!==0)?S.depTaxa:''}" placeholder="0" style="max-width:70px"><span class="stock-eur2">%</span></span>
           <span style="color:var(--text3);font-weight:400;font-size:12px">por mês em stock</span>
         </label>
-        <button class="btn btn-dark btn-sm" data-action="dep-limpar">Limpar ajustes manuais</button>
-        <span style="color:var(--text3);font-size:12px;flex:1;min-width:200px">Calculado: entrada × taxa × meses. Escreve um valor à mão numa linha para o forçar (fica com borda laranja).</span>
+        <span style="color:var(--text3);font-size:12px;flex:1;min-width:200px">Calculado: entrada × taxa × meses. Escreve um valor à mão numa linha para o forçar (fica com borda laranja). Para voltar ao automático, apaga o valor dessa linha. <b>Tudo o que escreveres fica gravado.</b></span>
       </div>
       ${arr.length===0?'<div class="gpp-empty">Sem usadas por vender em stock.</div>':`
       <div class="gpp-card" style="margin:0 16px 8px;overflow-x:auto"><table class="gpp-ltable dep-tbl">
-        <thead><tr><th>Modelo</th><th>Matrícula</th><th>Recebida</th><th style="text-align:right">Em stock</th><th style="text-align:right">Entrada</th><th style="text-align:right">Depreciação</th><th style="text-align:right">Preparação</th><th style="text-align:right">Valor mínimo de venda</th></tr></thead>
+        <thead><tr><th>Modelo</th><th>Matrícula</th><th>Recebida</th><th style="text-align:right">Em stock</th><th style="text-align:right">Entrada</th><th style="text-align:right">Depreciação (s/IVA)</th><th style="text-align:right">Preparação</th><th style="text-align:right">Valor mínimo de venda</th></tr></thead>
         <tbody>${linhas}</tbody>
         <tfoot><tr style="background:var(--bg);font-weight:700">
           <td colspan="4">Total (${nEnt} com entrada)</td>
@@ -3357,7 +3357,7 @@ function renderDashboard(){
           <td style="text-align:right">${fmtE(tApos)}</td>
         </tr></tfoot>
       </table></div>`}
-      <div class="gpp-pend-desc" style="margin:0 16px 16px">Só motas por vender. <b>Valor mínimo de venda = entrada − depreciação + preparação.</b> A data <b>Recebida</b> tem de estar preenchida para o cálculo automático da depreciação — as que não têm aparecem a vermelho. O botão "Limpar ajustes" só mexe na depreciação; a preparação mantém-se.</div>`;
+      <div class="gpp-pend-desc" style="margin:0 16px 16px">Só motas por vender. <b>Valor mínimo de venda = entrada − depreciação (c/IVA) + preparação.</b> A depreciação é inserida <b>sem IVA</b> (como te enviam) e a app multiplica por <b>1,23</b> — vês o valor c/IVA por baixo de cada campo. A data <b>Recebida</b> tem de estar preenchida para o cálculo automático da depreciação — as que não têm aparecem a vermelho. O botão "Limpar ajustes" só mexe na depreciação; a preparação mantém-se.</div>`;
   }
 
   function retailView(){
@@ -3692,6 +3692,7 @@ function bindEvents(){
     }
     if(el.id==='dep-taxa-inp'){
       S.depTaxa=el.value===''?0:(parseFloat(el.value)||0);
+      try{localStorage.setItem('bc_dep_taxa',String(S.depTaxa))}catch(e){}
       render();
       const inp=document.getElementById('dep-taxa-inp');
       if(inp){inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length);}
@@ -3719,9 +3720,9 @@ function bindEvents(){
   };
   app.onchange=function(e){
     const el=e.target;
-    if(el.dataset&&el.dataset.depId){const id=el.dataset.depId,v=el.value;const nm=Object.assign({},S.depManual||{});if(v===''||v==null){delete nm[id];}else{nm[id]=v;}S.depManual=nm;render();return;}
+    if(el.dataset&&el.dataset.depId){const id=el.dataset.depId,v=el.value;saveStockField(id,'dep_manual',(v===''||v==null)?null:Number(v));return;}
     if(el.dataset&&el.dataset.pedMotivo){const sel=Object.assign({},S.pedAutSel||{});sel[String(el.dataset.pedMotivo)]=el.value;setState({pedAutSel:sel});return;}
-    if(el.dataset&&el.dataset.depPrep){const id=el.dataset.depPrep,v=el.value;const nm=Object.assign({},S.depPrep||{});if(v===''||v==null){delete nm[id];}else{nm[id]=v;}S.depPrep=nm;render();return;}
+    if(el.dataset&&el.dataset.depPrep){const id=el.dataset.depPrep,v=el.value;saveStockField(id,'dep_prep',(v===''||v==null)?null:Number(v));return;}
     if(el.dataset&&el.dataset.obsGestor){saveObsGestor(el.dataset.obsGestor,el.value);return;}
     if(el.dataset&&el.dataset.vdF){S.vdForm=Object.assign({},S.vdForm,{[el.dataset.vdF]:el.value});if(el.dataset.vdF==='pvp'||el.dataset.vdF==='valor_entrada')render();return;}
     if(el.classList&&el.classList.contains('stock-kms-inp')){saveKmsVend(el.dataset.kmsTipo,el.dataset.kmsId,el.value);return;}
@@ -3848,7 +3849,6 @@ function bindEvents(){
       case'stock-toggle-consig':{const m=S.stock.find(x=>String(x.id)===String(el.dataset.id));if(m)saveStockField(el.dataset.id,'consignada',!m.consignada);break;}
       case'stock-export-csv':exportStockCSV();break;
       case'stock-export-pdf':exportStockPDF();break;
-      case'dep-limpar':setState({depManual:{}});break;
       case'export-xlsx':exportarExcelTudo();break;
       case'gpp-toggle-side':{const v=!S.gppSideOff;try{localStorage.setItem('bc_side',v?'1':'0')}catch(e){}setState({gppSideOff:v});break;}
       case'ped-aut-abrir':setState({pedAutOpen:!S.pedAutOpen});break;
