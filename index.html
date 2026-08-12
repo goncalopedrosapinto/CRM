@@ -878,7 +878,7 @@ html,body{overflow-x:hidden;max-width:100vw}
 .stock-tbl th{white-space:nowrap}
 .stock-tbl{min-width:1720px}
 .com-tbl{min-width:820px}
-.dep-tbl{min-width:860px}
+.dep-tbl{min-width:1080px}
 .stock-tbl td{padding:8px 10px}
 .stock-tbl input.stock-inp,.stock-tbl select.stock-inp{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--surface);color:var(--text)}
 .stock-modelo-inp{min-width:130px;font-weight:600}
@@ -2486,7 +2486,7 @@ function EXPORT_FOLHAS(){
       {c:'id',l:'ID'},{c:'categoria',l:'Categoria'},{c:'modelo',l:'Modelo'},{c:'matricula',l:'Matrícula'},
       {c:'ano',l:'Ano'},{c:'kms',l:'Km'},{c:'data_rececao',l:'Recebida',f:d},
       {c:'data_rececao',l:'Dias em stock',f:v=>{const n=diasEmStock(v);return n==null?'':n;}},
-      {c:'valor_entrada',l:'Valor entrada'},{c:'valor_min',l:'Valor mínimo'},{c:'valor_anunciado',l:'Anunciado'},{c:'valor_campanha',l:'Campanha'},{c:'dep_manual',l:'Depreciação s/IVA'},{c:'dep_prep',l:'Preparação'},
+      {c:'valor_entrada',l:'Valor entrada'},{c:'valor_min',l:'Valor mínimo'},{c:'valor_anunciado',l:'Anunciado'},{c:'valor_campanha',l:'Campanha'},{c:'dep_manual',l:'Depreciação'},{c:'dep_prep',l:'Preparação'},{c:'venda_ficticia',l:'Venda fictícia'},
       {c:'estado',l:'Estado'},{c:'negociado_por',l:'Negociado por',f:nome},
       {c:'consignada',l:'Consignada',f:sn},{c:'maxterauto',l:'Maxterauto',f:sn},
       {c:'tem_seguro',l:'Tem seguro',f:sn},{c:'seguro_anulado',l:'Seguro anulado',f:sn},
@@ -2698,6 +2698,7 @@ function renderDashboard(){
     ['depreciacao','📉','Depreciação'],
     ['carteira','📦','Carteira'],
     ['funil','🔻','Funil'],
+    ['fechados','🏁','Negócios Fechados'],
     ['perdidos','❌','Perdidos'],
     ['pendentes','⚠️','Pendentes'],
     ['demos','⭐','Demos'],
@@ -2709,7 +2710,7 @@ function renderDashboard(){
   ];
   const NAV_GRUPOS=[
     ['Diário',['home','pendentes','perdidos']],
-    ['Negócio',['retail','comercio','carteira','funil']],
+    ['Negócio',['retail','comercio','carteira','funil','fechados']],
     ['Recursos',['stock','depreciacao','demos','evento','escala']],
     ['Ferramentas',['comissoes','exportar']]
   ];
@@ -2938,6 +2939,53 @@ function renderDashboard(){
       <div class="gpp-tot-head">${status} · ${esc(mesSel)} · <b>${arr.length}</b> mota${arr.length!==1?'s':''}</div>
       ${bloco('Novas (MN+MD)',novas,'var(--blue)')}
       ${bloco('Usadas (MU)',usadas,'var(--amber)')}`;
+  }
+
+  function fechadosView(){
+    const fmtE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:0})+' €';
+    const ehFechado=r=>(r.status==='Retail'||r.status==='Carteira');
+    const fechados=recs.filter(r=>ehFechado(r)&&negYM(r));
+    const mesesF=[...new Set(fechados.map(negYM))].filter(Boolean).sort();
+    const mAtual=curYM();
+    const mSel=S.dashMes||(mesesF.includes(mAtual)?mAtual:(mesesF[mesesF.length-1]||mAtual));
+    const doMes=fechados.filter(r=>negYM(r)===mSel).slice().sort((a,b)=>String(b.neg||'').localeCompare(String(a.neg||'')));
+    const nRet=doMes.filter(r=>r.status==='Retail').length;
+    const nCar=doMes.filter(r=>r.status==='Carteira').length;
+    const barra=`<div class="gpp-mes-bar"><span class="gpp-mes-lbl">Mês</span>
+      <select class="gpp-mes-sel" data-action="dash-mes-sel">
+        ${mesesF.length===0?`<option>${esc(mAtual)}</option>`:mesesF.slice().reverse().map(m=>`<option value="${m}" ${mSel===m?'selected':''}>${esc(m)}</option>`).join('')}
+      </select></div>`;
+    // resumo por vendedor (comercio de fora)
+    const vend=S.team.filter(p=>p.role==='vendedor');
+    const linhaV=p=>{
+      const meus=doMes.filter(r=>r.vendedor_id===p.id&&!r.venda_direta);
+      if(!meus.length)return'';
+      const r=meus.filter(x=>x.status==='Retail').length, c=meus.filter(x=>x.status==='Carteira').length;
+      return`<tr><td style="font-weight:600">${esc(p.nome||'?')}</td><td style="text-align:right"><b>${meus.length}</b></td><td style="text-align:right">${r}</td><td style="text-align:right">${c}</td></tr>`;
+    };
+    const linhasV=vend.map(linhaV).join('');
+    const com=doMes.filter(r=>r.venda_direta);
+    const linhaCom=com.length?`<tr style="background:var(--amber-bg)"><td style="font-weight:600">🤝 Comércio (empresa)</td><td style="text-align:right"><b>${com.length}</b></td><td style="text-align:right">${com.filter(x=>x.status==='Retail').length}</td><td style="text-align:right">${com.filter(x=>x.status==='Carteira').length}</td></tr>`:'';
+    // lista completa
+    const badge=s=>s==='Retail'?'<span class="gpp-tipo-badge" style="background:var(--green);color:#fff">Retail</span>':'<span class="gpp-tipo-badge" style="background:var(--blue);color:#fff">Carteira</span>';
+    const linha=r=>`<tr class="gpp-lrow2">
+      <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}">${r.neg?esc(String(r.neg).slice(0,10)):'—'}</td>
+      <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}">${esc(r.id_cliente||'—')}${r.venda_direta?'<span class="vd-badge">🤝</span>':''}</td>
+      <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}">${esc(r.model||'')} ${esc(r.version||'')}</td>
+      <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}"><span class="gpp-tipo-badge">${esc(r.type||'?')}</span></td>
+      <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}">${badge(r.status)}</td>
+      <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}">${esc(vendName(r.vendedor_id)||'—')}</td>
+      <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}" style="text-align:right">${r.pvp!=null?fmtE(r.pvp):'—'}</td></tr>`;
+    return`${barra}
+      <div class="gpp-tot-head">Negócios fechados · ${esc(mSel)} · <b>${doMes.length}</b> <span style="font-weight:400;color:var(--text3);font-size:13px">(${nRet} Retail · ${nCar} Carteira)</span></div>
+      <div class="gpp-pend-desc" style="margin:0 16px 10px">Conta os negócios em <b>Retail</b> ou <b>Carteira</b> pela <b>data do negócio</b> (fecho). As vendas a comerciante (🤝) contam para a empresa, não para o vendedor.</div>
+      ${doMes.length===0?'<div class="gpp-empty">Sem negócios fechados neste mês.</div>':`
+      ${(linhasV||linhaCom)?`<div class="gpp-card" style="margin:0 16px 14px;overflow-x:auto"><table class="gpp-ltable">
+        <thead><tr><th>Vendedor</th><th style="text-align:right">Fechados</th><th style="text-align:right">Retail</th><th style="text-align:right">Carteira</th></tr></thead>
+        <tbody>${linhasV}${linhaCom}</tbody></table></div>`:''}
+      <div class="gpp-card" style="margin:0 16px 20px;overflow-x:auto"><table class="gpp-ltable">
+        <thead><tr><th>Data</th><th>Cliente</th><th>Modelo</th><th>Tipo</th><th>Estado</th><th>Vendedor</th><th style="text-align:right">PVP</th></tr></thead>
+        <tbody>${doMes.map(linha).join('')}</tbody></table></div>`}`;
   }
 
   // ---- Funil (todos os vendedores) ----
@@ -3307,7 +3355,7 @@ function renderDashboard(){
     const byRec=(a,b)=>{const x=a.data_rececao||'9999-12-31';const y=b.data_rececao||'9999-12-31';return x<y?-1:x>y?1:0;};
     const arr=(S.stock||[]).filter(m=>(m.categoria||'usada')==='usada'&&m.estado!=='Vendida').slice().sort(byRec);
     const taxa=Number(S.depTaxa)||0;
-    let tEnt=0,tDep=0,tPrep=0,tApos=0,nEnt=0;
+    let tEnt=0,tDep=0,tPrep=0,tApos=0,tVenda=0,tMargem=0,nEnt=0;
     const linhas=arr.map(m=>{
       const entrada=(m.valor_entrada!=null&&m.valor_entrada!=='')?Number(m.valor_entrada):null;
       const meses=mesesEmStock(m.data_rececao);
@@ -3318,10 +3366,11 @@ function renderDashboard(){
       else if(entrada!=null&&meses!=null)dep=entrada*taxa/100*meses;
       else dep=0;
       const prep=Number(m.dep_prep)||0;
-      const IVA=1.23;
-      const depIva=dep*IVA;
-      const apos=entrada!=null?Math.max(0,entrada-depIva+prep):null;
-      if(entrada!=null){tEnt+=entrada;tDep+=depIva;tPrep+=prep;tApos+=apos;nEnt++;}
+      const apos=entrada!=null?Math.max(0,entrada-dep+prep):null;
+      const vf=(m.venda_ficticia!=null&&m.venda_ficticia!=='')?Number(m.venda_ficticia):null;
+      const margem=(vf!=null&&apos!=null)?(vf-apos):null;
+      if(entrada!=null){tEnt+=entrada;tDep+=dep;tPrep+=prep;tApos+=apos;nEnt++;}
+      if(margem!=null){tVenda+=vf;tMargem+=margem;}
       const campoVal=ehManual?String(Number(ov)):((entrada!=null&&meses!=null)?String(Math.round(dep)):'');
       return `<tr class="gpp-lrow">
         <td style="font-weight:600">${esc(m.modelo||'—')}</td>
@@ -3329,9 +3378,11 @@ function renderDashboard(){
         <td>${m.data_rececao?esc(String(m.data_rececao).slice(0,10)):'<span style="color:var(--red)">sem data</span>'}</td>
         <td style="text-align:right">${meses!=null?(meses+(meses===1?' mês':' meses')):'—'}</td>
         <td style="text-align:right">${entrada!=null?fmtE(entrada):'—'}</td>
-        <td style="text-align:right"><div class="stock-eurwrap"><input class="stock-inp stock-num" data-dep-id="${m.id}" type="number" value="${campoVal}" placeholder="0" style="${ehManual?'border-color:var(--orange)':''}"><span class="stock-eur2">€</span></div>${dep?`<div style="font-size:10px;color:var(--text3);margin-top:2px;white-space:nowrap">c/IVA ${fmtE(depIva)}</div>`:''}</td>
+        <td style="text-align:right"><div class="stock-eurwrap"><input class="stock-inp stock-num" data-dep-id="${m.id}" type="number" value="${campoVal}" placeholder="0" style="${ehManual?'border-color:var(--orange)':''}"><span class="stock-eur2">€</span></div></td>
         <td style="text-align:right"><div class="stock-eurwrap"><input class="stock-inp stock-num" data-dep-prep="${m.id}" type="number" value="${prep?String(prep):''}" placeholder="0"><span class="stock-eur2">€</span></div></td>
         <td style="text-align:right;font-weight:700;color:${apos!=null?'var(--green)':'var(--text3)'}">${apos!=null?fmtE(apos):'—'}</td>
+        <td style="text-align:right"><div class="stock-eurwrap"><input class="stock-inp stock-num" data-dep-venda="${m.id}" type="number" value="${vf!=null?String(vf):''}" placeholder="0"><span class="stock-eur2">€</span></div></td>
+        <td style="text-align:right;font-weight:800;color:${margem==null?'var(--text3)':(margem>=0?'var(--green)':'var(--red)')}">${margem!=null?fmtE(margem):'—'}</td>
       </tr>`;
     }).join('');
     return `
@@ -3347,7 +3398,7 @@ function renderDashboard(){
       </div>
       ${arr.length===0?'<div class="gpp-empty">Sem usadas por vender em stock.</div>':`
       <div class="gpp-card" style="margin:0 16px 8px;overflow-x:auto"><table class="gpp-ltable dep-tbl">
-        <thead><tr><th>Modelo</th><th>Matrícula</th><th>Recebida</th><th style="text-align:right">Em stock</th><th style="text-align:right">Entrada</th><th style="text-align:right">Depreciação (s/IVA)</th><th style="text-align:right">Preparação</th><th style="text-align:right">Valor mínimo de venda</th></tr></thead>
+        <thead><tr><th>Modelo</th><th>Matrícula</th><th>Recebida</th><th style="text-align:right">Em stock</th><th style="text-align:right">Entrada</th><th style="text-align:right">Depreciação</th><th style="text-align:right">Preparação</th><th style="text-align:right">Valor mínimo de venda</th><th style="text-align:right">Venda fictícia</th><th style="text-align:right">Margem</th></tr></thead>
         <tbody>${linhas}</tbody>
         <tfoot><tr style="background:var(--bg);font-weight:700">
           <td colspan="4">Total (${nEnt} com entrada)</td>
@@ -3355,9 +3406,11 @@ function renderDashboard(){
           <td style="text-align:right">${fmtE(tDep)}</td>
           <td style="text-align:right">${fmtE(tPrep)}</td>
           <td style="text-align:right">${fmtE(tApos)}</td>
+          <td style="text-align:right">${tVenda?fmtE(tVenda):'—'}</td>
+          <td style="text-align:right;color:${tMargem>=0?'var(--green)':'var(--red)'}">${tMargem?fmtE(tMargem):'—'}</td>
         </tr></tfoot>
       </table></div>`}
-      <div class="gpp-pend-desc" style="margin:0 16px 16px">Só motas por vender. <b>Valor mínimo de venda = entrada − depreciação (c/IVA) + preparação.</b> A depreciação é inserida <b>sem IVA</b> (como te enviam) e a app multiplica por <b>1,23</b> — vês o valor c/IVA por baixo de cada campo. A data <b>Recebida</b> tem de estar preenchida para o cálculo automático da depreciação — as que não têm aparecem a vermelho. O botão "Limpar ajustes" só mexe na depreciação; a preparação mantém-se.</div>`;
+      <div class="gpp-pend-desc" style="margin:0 16px 16px">Só motas por vender. <b>Valor mínimo de venda = entrada − depreciação + preparação.</b> Escreve um <b>valor fictício de venda</b> e a <b>margem</b> = venda fictícia − valor mínimo de venda (verde = lucro, vermelho = prejuízo). A data <b>Recebida</b> tem de estar preenchida para o cálculo automático da depreciação. Tudo o que escreveres fica gravado.</div>`;
   }
 
   function retailView(){
@@ -3644,6 +3697,7 @@ function renderDashboard(){
   }
   else if(sec==='home')body=mesBar+(recs.filter(r=>r.status==='Retail'&&!r.col_298).length?`${(()=>{const semData=recs.filter(r=>r.status==='Retail'&&!r.col_298);return`<div class="gpp-alerta ${S.dashAlertOpen==='sem298'?'open':''}"><div class="gpp-alerta-head" data-action="dash-alert-toggle" data-id="sem298"><span>⚠️</span><span><b>${semData.length}</b> mota${semData.length>1?'s':''} em Retail sem data 298 — não contam nos totais</span><span class="gpp-alerta-arrow">${S.dashAlertOpen==='sem298'?'▾':'▸'}</span></div>${S.dashAlertOpen==='sem298'?`<div class="gpp-alerta-lista">${semData.map(r=>`<div class="gpp-alerta-item" data-action="open-record-from-dash" data-id="${r.id}"><b>${esc(r.id_cliente||'(sem cliente)')}</b><span>${esc(r.model||'')} ${esc(r.version||'')}</span><span class="gpp-alerta-tipo">${esc(r.type||'?')}</span><span style="color:var(--text3)">${esc(vendName(r.vendedor_id)||'')}</span></div>`).join('')}</div>`:''}</div>`})()}`:'')+tabelaResumo()+homeAcoes();
   else if(sec==='funil')body=funilView();
+  else if(sec==='fechados')body=fechadosView();
   else if(sec==='perdidos')body=perdidosView();
   else if(sec==='carteira')body=carteiraChart()+listaEstado('Carteira',r=>r.mes1);
   else if(sec==='retail')body=retailView();
@@ -3723,6 +3777,7 @@ function bindEvents(){
     if(el.dataset&&el.dataset.depId){const id=el.dataset.depId,v=el.value;saveStockField(id,'dep_manual',(v===''||v==null)?null:Number(v));return;}
     if(el.dataset&&el.dataset.pedMotivo){const sel=Object.assign({},S.pedAutSel||{});sel[String(el.dataset.pedMotivo)]=el.value;setState({pedAutSel:sel});return;}
     if(el.dataset&&el.dataset.depPrep){const id=el.dataset.depPrep,v=el.value;saveStockField(id,'dep_prep',(v===''||v==null)?null:Number(v));return;}
+    if(el.dataset&&el.dataset.depVenda){const id=el.dataset.depVenda,v=el.value;saveStockField(id,'venda_ficticia',(v===''||v==null)?null:Number(v));return;}
     if(el.dataset&&el.dataset.obsGestor){saveObsGestor(el.dataset.obsGestor,el.value);return;}
     if(el.dataset&&el.dataset.vdF){S.vdForm=Object.assign({},S.vdForm,{[el.dataset.vdF]:el.value});if(el.dataset.vdF==='pvp'||el.dataset.vdF==='valor_entrada')render();return;}
     if(el.classList&&el.classList.contains('stock-kms-inp')){saveKmsVend(el.dataset.kmsTipo,el.dataset.kmsId,el.value);return;}
