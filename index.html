@@ -3350,7 +3350,7 @@ function renderDashboard(){
       </table></div>`}`;
   }
   function depreciacaoView(){
-    const fmtE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:0})+' €';
+    const fmtE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
     const mesesEmStock=d=>{if(!d)return null;const dt=new Date(d);if(isNaN(dt.getTime()))return null;const now=new Date();let m=(now.getFullYear()-dt.getFullYear())*12+(now.getMonth()-dt.getMonth());if(now.getDate()<dt.getDate())m-=1;return Math.max(0,m);};
     const byRec=(a,b)=>{const x=a.data_rececao||'9999-12-31';const y=b.data_rececao||'9999-12-31';return x<y?-1:x>y?1:0;};
     const arr=(S.stock||[]).filter(m=>(m.categoria||'usada')==='usada'&&m.estado!=='Vendida').slice().sort(byRec);
