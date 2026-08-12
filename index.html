@@ -3874,6 +3874,7 @@ function bindEvents(){
       case'norma-vendida':{const n=(S.norma||[]).find(x=>String(x.id)===String(el.dataset.id));if(n)saveNormaCampo(el.dataset.id,'vendida',!n.vendida);break;}
       case'norma-toggle-seguro':{const n=(S.norma||[]).find(x=>String(x.id)===String(el.dataset.id));if(n)saveNormaCampo(el.dataset.id,'tem_seguro',!n.tem_seguro);break;}
       case'norma-subst-fechar':setState({normaSubst:null});break;
+      case'evento-add-open':setState({eventoAdding:true,eventoForm:{},eventoErr:''});break;
       case'evento-add-cancel':setState({eventoAdding:false,eventoForm:{},eventoErr:''});break;
       case'evento-save-new':saveEventoNovo();break;
       case'evento-ativar':ativarEvento(parseInt(el.dataset.id));break;
