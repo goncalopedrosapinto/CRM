@@ -588,6 +588,9 @@ html,body{overflow-x:hidden;max-width:100vw}
 .pa-acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
 .pa-vazio{margin-top:10px;font-size:12px;color:var(--text3)}
 @media(max-width:700px){.pa-row{grid-template-columns:26px 1fr;row-gap:6px}.pa-mot{grid-column:2;max-width:100%;width:100%}}
+.ev-vend-picker{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.ev-pick{padding:8px 14px;border-radius:20px;border:1.5px solid var(--border2);background:var(--surface);font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);font-family:inherit}
+.ev-pick.on{background:var(--orange);border-color:var(--orange);color:#fff}
 .ndemo-legend{display:grid;grid-template-columns:16px minmax(110px,1.5fr) 1fr 1.3fr 1.2fr 46px 18px;gap:10px;padding:8px 14px 4px;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);font-weight:700}
 .ndemo-list{padding:0;overflow:hidden}
 .ndemo{border-bottom:1px solid var(--border)}
@@ -1198,6 +1201,7 @@ async function saveNormaCampo(id,campo,valor){try{const b={};b[campo]=valor;b.up
 async function loadInscricoes(){try{const d=await supabaseApi('GET','/inscricoes?select=*&order=created_at.asc');S.inscricoes=d||[]}catch(e){S.inscricoes=[]}}
 async function loadRanking(evId){if(!evId){S.ranking=[];return}try{const d=await supabaseApi('POST','/rpc/inscricoes_ranking',{p_evento:evId});S.ranking=d||[]}catch(e){S.ranking=[]}}
 function eventoAtivo(){return (S.eventos||[]).find(e=>e.ativo)||null}
+function eventosAtivos(){return (S.eventos||[]).filter(e=>e.ativo)}
 function eventoAtual(){const sel=S.eventoSel!=null?(S.eventos||[]).find(e=>e.id===S.eventoSel):null;return sel||eventoAtivo()||((S.eventos||[])[0])||null}
 async function recarregarEvento(){const ev=eventoAtual();await Promise.all([loadEventos(),loadInscricoes()]);const ev2=eventoAtual();await loadRanking(ev2?ev2.id:(ev?ev.id:null))}
 async function saveInscricaoNova(){
@@ -1227,7 +1231,7 @@ async function saveEventoNovo(){
   catch(e){setState({loading:false,eventoErr:'Erro ao criar evento: '+e.message});}
 }
 async function saveEventoCampo(id,campo,valor){try{const b={};b[campo]=valor;await supabaseApi('PATCH',`/eventos?id=eq.${id}`,b);await recarregarEvento();render();}catch(e){setState({eventoErr:'Erro: '+e.message})}}
-async function ativarEvento(id){setState({loading:true,eventoErr:''});try{await supabaseApi('PATCH','/eventos?ativo=eq.true',{ativo:false});await supabaseApi('PATCH',`/eventos?id=eq.${id}`,{ativo:true});S.eventoSel=id;await recarregarEvento();setState({loading:false});}catch(e){setState({loading:false,eventoErr:'Erro ao ativar: '+e.message});}}
+async function toggleEventoAtivo(id){const ev=(S.eventos||[]).find(e=>e.id===id);if(!ev)return;setState({loading:true,eventoErr:''});try{await supabaseApi('PATCH',`/eventos?id=eq.${id}`,{ativo:!ev.ativo});S.eventoSel=id;await recarregarEvento();setState({loading:false});}catch(e){setState({loading:false,eventoErr:'Erro: '+e.message});}}
 async function delEvento(id){const n=(S.inscricoes||[]).filter(i=>i.evento_id===id).length;if(n>0){setState({eventoErr:`Não podes apagar: este evento tem ${n} inscrição(ões). Apaga-as primeiro.`});return;}try{await supabaseApi('DELETE',`/eventos?id=eq.${id}`);S.eventoSel=null;await recarregarEvento();render();}catch(e){setState({eventoErr:'Erro ao apagar: '+e.message})}}
 function exportInscricoes(){
   const ev=eventoAtual();if(!ev)return;
@@ -1591,7 +1595,9 @@ function eventoCabecalhoHtml(ev){
   </div>`;
 }
 function renderEventoVend(){
-  const ev=eventoAtual();
+  const ativos=eventosAtivos();
+  const ev=ativos.find(e=>e.id===S.eventoSel)||ativos[0]||null;
+  const picker=ativos.length>1?`<div class="ev-vend-picker">${ativos.map(e=>`<button class="ev-pick ${ev&&e.id===ev.id?'on':''}" data-action="evento-sel-vend" data-id="${e.id}">${esc(e.nome)}</button>`).join('')}</div>`:'';
   const estados=['Confirmado','Lista de espera','Não veio','Cancelado'];
   const estadoCor={'Confirmado':'var(--green)','Lista de espera':'#e8a30c','Não veio':'var(--text3)','Cancelado':'var(--red)'};
   const minhas=ev?(S.inscricoes||[]).filter(i=>i.evento_id===ev.id):[];
@@ -1615,7 +1621,7 @@ function renderEventoVend(){
   let body;
   if(!ev){body='<div class="ev-empty" style="margin-top:24px">Não há nenhum evento ativo de momento.</div>';}
   else{
-    body=`${eventoCabecalhoHtml(ev)}
+    body=`${picker}${eventoCabecalhoHtml(ev)}
       ${!S.inscAdding?`<button class="btn btn-orange" style="width:100%;margin:12px 0" data-action="insc-add-open">＋ Inscrever cliente</button>`:''}
       ${form}
       <div class="ev-sec-h">🏆 Ranking da equipa</div>
@@ -1725,7 +1731,7 @@ function renderList(){
       <div style="border-top:1px solid rgba(255,255,255,.08);margin:8px 0"></div>
       <div class="sidebar-item" data-action="go-stock-vend">🏍️&nbsp;&nbsp;Stock Usadas / Demos</div>
       <div class="sidebar-item" data-action="go-escala">📅&nbsp;&nbsp;Escala</div>
-      ${(()=>{const evA=eventoAtivo();if(!evA)return'';const n=(S.inscricoes||[]).filter(i=>i.evento_id===evA.id).length;return`<div class="sidebar-item sidebar-evento" data-action="go-evento"><span>🎟️&nbsp;&nbsp;${esc(evA.nome)}</span><span class="scount" style="background:var(--orange);color:#fff">${n}</span></div>`;})()}`:''}
+      ${(()=>{const ativos=eventosAtivos();if(!ativos.length)return'';return ativos.map(evA=>{const n=(S.inscricoes||[]).filter(i=>i.evento_id===evA.id).length;return`<div class="sidebar-item sidebar-evento" data-action="go-evento" data-id="${evA.id}"><span>🎟️&nbsp;&nbsp;${esc(evA.nome)}</span><span class="scount" style="background:var(--orange);color:#fff">${n}</span></div>`;}).join('');})()}`:''}
       ${alertsHtml}
     </div>
     <div class="sidebar-close" data-action="toggle-sidebar">Fechar ✕</div>
@@ -3620,7 +3626,7 @@ function renderDashboard(){
     if(busca)lista=lista.filter(i=>((i.cliente||'')+' '+(i.telefone||'')).toLowerCase().includes(busca));
     if(vf)lista=lista.filter(i=>i.vendedor_id===vf);
     const gestao=`<div class="ev-gestao">
-      ${ev.ativo?'<span class="ev-badge-ativo">✓ Evento ativo</span>':`<button class="btn btn-orange btn-sm" data-action="evento-ativar" data-id="${ev.id}">Tornar ativo</button>`}
+      ${ev.ativo?`<button class="btn btn-dark btn-sm" data-action="evento-toggle" data-id="${ev.id}">✓ Ativo — clica para desativar</button>`:`<button class="btn btn-orange btn-sm" data-action="evento-toggle" data-id="${ev.id}">Tornar ativo</button>`}
       <label class="ev-lot-edit">Lotação <input class="field-input" type="number" min="0" value="${ev.lotacao!=null?ev.lotacao:''}" placeholder="—" data-action="evento-lotacao" data-id="${ev.id}" style="width:90px"></label>
       <button class="btn btn-danger btn-sm" data-action="evento-del" data-id="${ev.id}">Apagar evento</button>
     </div>`;
@@ -3860,8 +3866,9 @@ function bindEvents(){
       case'export-comissoes':exportComissoes();break;
       case'go-escala':{setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false})).catch(e=>setState({error:e.message,loading:false,screen:'escala'}));break}
       case'go-stock-vend':{setState({loading:true});Promise.all([loadStockPublico(),loadNormaPublico()]).then(()=>setState({screen:'stockvend',loading:false}));break}
-      case'go-evento':{setState({loading:true});const ev=eventoAtual();S.eventoSel=ev?ev.id:null;recarregarEvento().then(()=>setState({screen:'evento',loading:false,inscAdding:false}));break}
+      case'go-evento':{setState({loading:true});const id=el.dataset.id?parseInt(el.dataset.id):null;const ev=id?(S.eventos||[]).find(e=>e.id===id):eventoAtual();S.eventoSel=ev?ev.id:null;recarregarEvento().then(()=>setState({screen:'evento',loading:false,inscAdding:false}));break}
       case'evento-voltar':setState({screen:isAdmin()?'dashboard':'list'});break;
+      case'evento-sel-vend':{const id=parseInt(el.dataset.id);S.eventoSel=id;loadRanking(id).then(()=>render());break;}
       case'insc-add-open':setState({inscAdding:true,inscForm:{estado:'Confirmado',acompanhantes:0},eventoErr:''});break;
       case'insc-add-cancel':setState({inscAdding:false,inscForm:{},eventoErr:''});break;
       case'insc-save-new':saveInscricaoNova();break;
@@ -3877,7 +3884,7 @@ function bindEvents(){
       case'evento-add-open':setState({eventoAdding:true,eventoForm:{},eventoErr:''});break;
       case'evento-add-cancel':setState({eventoAdding:false,eventoForm:{},eventoErr:''});break;
       case'evento-save-new':saveEventoNovo();break;
-      case'evento-ativar':ativarEvento(parseInt(el.dataset.id));break;
+      case'evento-toggle':toggleEventoAtivo(parseInt(el.dataset.id));break;
       case'evento-del':delEvento(parseInt(el.dataset.id));break;
       case'export-inscricoes':exportInscricoes();break;
       case'back-from-stock':setState({screen:'list'});break;
