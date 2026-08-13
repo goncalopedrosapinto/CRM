@@ -588,6 +588,14 @@ html,body{overflow-x:hidden;max-width:100vw}
 .pa-acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
 .pa-vazio{margin-top:10px;font-size:12px;color:var(--text3)}
 @media(max-width:700px){.pa-row{grid-template-columns:26px 1fr;row-gap:6px}.pa-mot{grid-column:2;max-width:100%;width:100%}}
+.ev-motas-mgr{margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.ev-motas-h{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px}
+.ev-motas-list{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.ev-mota-chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:4px 6px 4px 10px;font-size:12px;font-weight:600}
+.ev-mota-chip button{border:none;background:var(--border);color:var(--text2);border-radius:50%;width:18px;height:18px;cursor:pointer;font-size:11px;line-height:1;font-family:inherit}
+.ev-mota-chip button:hover{background:var(--red);color:#fff}
+.ev-motas-vazio{font-size:12px;color:var(--text3)}
+.ev-motas-add{display:flex;gap:8px;flex-wrap:wrap}
 .ev-vend-picker{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
 .ev-pick{padding:8px 14px;border-radius:20px;border:1.5px solid var(--border2);background:var(--surface);font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);font-family:inherit}
 .ev-pick.on{background:var(--orange);border-color:var(--orange);color:#fff}
@@ -1194,6 +1202,10 @@ function objEquipaMesData(mesYM){return (mesYM||'').replace('/','-')+'-01';} // 
 function objEquipaGet(mesYM,tipo){const md=objEquipaMesData(mesYM);return (S.objEquipa||[]).find(o=>o.mes===md&&(o.tipo||'novas')===(tipo||'novas'));}
 async function saveObjEquipa(mesYM,val,tipo){tipo=tipo||'novas';const md=objEquipaMesData(mesYM);const ex=objEquipaGet(mesYM,tipo);const v=Math.max(0,parseInt(val,10)||0);if(ex){await supabaseApi('PATCH',`/objetivos_equipa?id=eq.${ex.id}`,{objetivo:v,updated_at:new Date().toISOString()})}else{await supabaseApi('POST','/objetivos_equipa',{mes:md,tipo:tipo,objetivo:v})}await loadObjEquipa()}
 async function loadNps(){try{const d=await supabaseApi('GET',`/nps?mes=eq.${curMes()}&select=*`);S.nps=d||[]}catch(e){S.nps=[]}}
+async function eventoSetMotas(id,motas){setState({loading:true,eventoErr:''});try{await supabaseApi('PATCH',`/eventos?id=eq.${id}`,{motas});await recarregarEvento();setState({loading:false});}catch(e){setState({loading:false,eventoErr:'Erro nas motas: '+e.message});}}
+async function eventoMotaAdd(id){const ev=(S.eventos||[]).find(e=>e.id===id);if(!ev)return;const inp=document.getElementById('ev-mota-nova');const v=(inp&&inp.value||'').trim();if(!v){setState({eventoErr:'Escreve o nome da mota.'});return;}const motas=[...(Array.isArray(ev.motas)?ev.motas:[]),v];await eventoSetMotas(id,motas);}
+async function eventoMotaDel(id,idx){const ev=(S.eventos||[]).find(e=>e.id===id);if(!ev)return;const motas=(Array.isArray(ev.motas)?ev.motas:[]).slice();motas.splice(idx,1);await eventoSetMotas(id,motas);}
+function motasDisponiveis(ev){const motas=ev&&Array.isArray(ev.motas)?ev.motas:[];const tomadas=(S.inscricoes||[]).filter(i=>i.evento_id===ev.id&&i.estado!=='Cancelado'&&i.mota).map(i=>i.mota);const usadas={};tomadas.forEach(m=>{usadas[m]=(usadas[m]||0)+1});return motas.filter(m=>{if(usadas[m]>0){usadas[m]--;return false;}return true;});}
 async function loadEventos(){try{const d=await supabaseApi('GET','/eventos?select=*&order=created_at.desc');S.eventos=d||[]}catch(e){S.eventos=[]}}
 async function loadTransicoes(){try{const d=await supabaseApi('GET','/status_historico?select=*&order=quando.asc');S.transicoes=d||[]}catch(e){S.transicoes=[]}}
 async function loadNorma(){try{const d=await supabaseApi('GET','/stock_norma?select=*&order=ordem.asc');S.norma=d||[]}catch(e){S.norma=[]}}
@@ -1208,7 +1220,10 @@ async function saveInscricaoNova(){
   const ev=eventoAtual();if(!ev)return;
   const cliente=(document.getElementById('insc-cliente')?.value||'').trim();
   if(!cliente){setState({eventoErr:'Indica o nome do cliente.'});return;}
-  const body={evento_id:ev.id,cliente,
+  const motasEv=Array.isArray(ev.motas)?ev.motas:[];
+  const mota=document.getElementById('insc-mota')?document.getElementById('insc-mota').value:'';
+  if(motasEv.length&&!mota){setState({eventoErr:'Escolhe a mota (vaga) para este cliente.'});return;}
+  const body={evento_id:ev.id,cliente,mota:mota||null,
     telefone:(document.getElementById('insc-telefone')?.value||'').trim()||null,
     acompanhantes:parseInt(document.getElementById('insc-acompanhantes')?.value)||0,
     estado:document.getElementById('insc-estado')?.value||'Confirmado',
@@ -1581,8 +1596,13 @@ function eventoCabecalhoHtml(ev){
   const rk=S.ranking||[];
   const totalInsc=rk.reduce((a,r)=>a+Number(r.total||0),0);
   const totalPessoas=rk.reduce((a,r)=>a+Number(r.total||0)+Number(r.acompanhantes||0),0);
-  const lot=ev.lotacao||0;
-  const pct=lot>0?Math.round((totalPessoas/lot)*100):null;
+  const motas=Array.isArray(ev.motas)?ev.motas:[];
+  const usaMotas=motas.length>0;
+  const inscEv=(S.inscricoes||[]).filter(i=>i.evento_id===ev.id&&i.estado!=='Cancelado');
+  const ocup=usaMotas?inscEv.filter(i=>i.mota).length:0;
+  const lot=usaMotas?motas.length:(ev.lotacao||0);
+  const base=usaMotas?ocup:totalPessoas;
+  const pct=lot>0?Math.round((base/lot)*100):null;
   const barCls=pct==null?'':(pct>=100?'full':(pct>=80?'warn':'ok'));
   return`<div class="ev-head-card">
     <div class="ev-head-top">
@@ -1590,7 +1610,7 @@ function eventoCabecalhoHtml(ev){
       <div class="ev-head-meta">${ev.data?fmtDate(ev.data):''}${ev.local?` · ${esc(ev.local)}`:''}</div></div>
       <div class="ev-head-num"><div class="ev-head-num-b">${totalInsc}</div><div class="ev-head-num-l">inscritos</div></div>
     </div>
-    ${lot>0?`<div class="ev-lot"><div class="ev-lot-txt"><span>${totalPessoas} pessoas (c/ acompanhantes)</span><span>lotação ${lot} · ${pct}%</span></div>
+    ${lot>0?`<div class="ev-lot"><div class="ev-lot-txt"><span>${usaMotas?`${ocup} de ${lot} motas ocupadas`:`${totalPessoas} pessoas (c/ acompanhantes)`}</span><span>${usaMotas?`vagas ${lot} · ${pct}%`:`lotação ${lot} · ${pct}%`}</span></div>
       <div class="ev-lot-bar"><div class="ev-lot-fill ${barCls}" style="width:${Math.min(100,pct)}%"></div></div></div>`:''}
   </div>`;
 }
@@ -1609,6 +1629,7 @@ function renderEventoVend(){
         <label>Cliente<input id="insc-cliente" class="field-input" placeholder="Nome do cliente"></label>
         <label>Telefone<input id="insc-telefone" class="field-input" placeholder="—" inputmode="tel"></label>
         <label>Acompanhantes<input id="insc-acompanhantes" class="field-input" type="number" min="0" value="0"></label>
+        ${(()=>{const md=ev?motasDisponiveis(ev):[];const tem=ev&&Array.isArray(ev.motas)&&ev.motas.length;return tem?`<label>Mota (vaga)<select id="insc-mota" class="field-input"><option value="">— escolher mota —</option>${md.map(m=>`<option>${esc(m)}</option>`).join('')}</select></label>`:'';})()}
         <label>Estado<select id="insc-estado" class="field-input">${estados.map(e=>`<option ${e==='Confirmado'?'selected':''}>${e}</option>`).join('')}</select></label>
         <label>Funil<select id="insc-funil" class="field-input"><option value="">—</option>${['Frio','Morno','Quente'].map(f=>`<option>${f}</option>`).join('')}</select></label>
         <label style="grid-column:1/-1">Observações<input id="insc-obs" class="field-input" placeholder="—"></label>
@@ -1633,7 +1654,7 @@ function renderEventoVend(){
         <div class="ev-item">
           <div class="ev-item-main">
             <div class="ev-item-nome">${esc(i.cliente)} ${eventoFunilPill(i.funil)}</div>
-            <div class="ev-item-sub">${i.telefone?esc(i.telefone):'sem telefone'}${i.acompanhantes>0?` · +${i.acompanhantes} acomp.`:''}${i.obs?` · ${esc(i.obs)}`:''}</div>
+            <div class="ev-item-sub">${i.mota?`🏍️ <b>${esc(i.mota)}</b> · `:''}${i.telefone?esc(i.telefone):'sem telefone'}${i.acompanhantes>0?` · +${i.acompanhantes} acomp.`:''}${i.obs?` · ${esc(i.obs)}`:''}</div>
           </div>
           <select class="insc-inp" data-insc-id="${i.id}" data-insc-f="estado" style="color:${estadoCor[i.estado]||'var(--text)'};font-weight:700">${estados.map(e=>`<option value="${e}" ${i.estado===e?'selected':''}>${e}</option>`).join('')}</select>
           <button class="stock-del" data-action="insc-del" data-id="${i.id}" title="Apagar">🗑</button>
@@ -2506,13 +2527,13 @@ function EXPORT_FOLHAS(){
     ]},
     {nome:'Eventos',path:'/eventos?select=*&order=id.asc',cols:[
       {c:'id',l:'ID'},{c:'nome',l:'Nome'},{c:'data',l:'Data',f:d},{c:'local',l:'Local'},
-      {c:'lotacao',l:'Lotação'},{c:'ativo',l:'Ativo',f:sn},{c:'created_at',l:'Criado',f:dt},
+      {c:'lotacao',l:'Lotação'},{c:'motas',l:'Motas (vagas)',f:v=>Array.isArray(v)?v.join(' | '):''},{c:'ativo',l:'Ativo',f:sn},{c:'created_at',l:'Criado',f:dt},
     ]},
     {nome:'Inscrições',path:'/inscricoes?select=*&order=id.asc',cols:[
       {c:'id',l:'ID'},{c:'evento_id',l:'Evento',f:v=>{const e=(S.eventos||[]).find(x=>String(x.id)===String(v));return e?e.nome:(v||'')}},
       {c:'cliente',l:'Cliente'},{c:'telefone',l:'Telefone'},{c:'acompanhantes',l:'Acompanhantes'},
       {c:'estado',l:'Estado'},{c:'funil',l:'Funil'},{c:'vendedor_id',l:'Vendedor',f:nome},
-      {c:'obs',l:'Observações'},{c:'created_at',l:'Criado',f:dt},
+      {c:'mota',l:'Mota'},{c:'obs',l:'Observações'},{c:'created_at',l:'Criado',f:dt},
     ]},
     {nome:'Histórico Status',path:'/status_historico?select=*&order=id.asc',cols:[
       {c:'id',l:'ID'},{c:'negocio_id',l:'Negócio ID'},{c:'de',l:'De'},{c:'para',l:'Para'},
@@ -3627,8 +3648,13 @@ function renderDashboard(){
     if(vf)lista=lista.filter(i=>i.vendedor_id===vf);
     const gestao=`<div class="ev-gestao">
       ${ev.ativo?`<button class="btn btn-dark btn-sm" data-action="evento-toggle" data-id="${ev.id}">✓ Ativo — clica para desativar</button>`:`<button class="btn btn-orange btn-sm" data-action="evento-toggle" data-id="${ev.id}">Tornar ativo</button>`}
-      <label class="ev-lot-edit">Lotação <input class="field-input" type="number" min="0" value="${ev.lotacao!=null?ev.lotacao:''}" placeholder="—" data-action="evento-lotacao" data-id="${ev.id}" style="width:90px"></label>
+      ${(()=>{const mts=Array.isArray(ev.motas)?ev.motas:[];return mts.length?'':`<label class="ev-lot-edit">Lotação <input class="field-input" type="number" min="0" value="${ev.lotacao!=null?ev.lotacao:''}" placeholder="—" data-action="evento-lotacao" data-id="${ev.id}" style="width:90px"></label>`;})()}
       <button class="btn btn-danger btn-sm" data-action="evento-del" data-id="${ev.id}">Apagar evento</button>
+    </div>
+    <div class="ev-motas-mgr">
+      <div class="ev-motas-h">🏍️ Motas / vagas · <b>${(Array.isArray(ev.motas)?ev.motas:[]).length}</b></div>
+      <div class="ev-motas-list">${(Array.isArray(ev.motas)?ev.motas:[]).map((m,idx)=>`<span class="ev-mota-chip">${esc(m)}<button data-action="evento-mota-del" data-id="${ev.id}" data-idx="${idx}" title="Remover">✕</button></span>`).join('')||'<span class="ev-motas-vazio">Sem motas. Cada mota que adicionares é uma vaga.</span>'}</div>
+      <div class="ev-motas-add"><input id="ev-mota-nova" class="field-input" placeholder="Ex: R 1300 GS · CH33PA" style="flex:1;min-width:150px"><button class="btn btn-dark btn-sm" data-action="evento-mota-add" data-id="${ev.id}">＋ Adicionar mota</button></div>
     </div>`;
     return`<div class="ev-wrap">
       <div class="gpp-card">${seletor}${formNovo}${gestao}</div>
@@ -3650,7 +3676,7 @@ function renderDashboard(){
         <div class="ev-item">
           <div class="ev-item-main">
             <div class="ev-item-nome">${esc(i.cliente)} ${eventoFunilPill(i.funil)}<span class="ev-item-vend">· ${esc((vendName(i.vendedor_id)||'?').split(' ')[0])}</span></div>
-            <div class="ev-item-sub">${i.telefone?esc(i.telefone):'sem telefone'}${i.acompanhantes>0?` · +${i.acompanhantes} acomp.`:''}${i.obs?` · ${esc(i.obs)}`:''}</div>
+            <div class="ev-item-sub">${i.mota?`🏍️ <b>${esc(i.mota)}</b> · `:''}${i.telefone?esc(i.telefone):'sem telefone'}${i.acompanhantes>0?` · +${i.acompanhantes} acomp.`:''}${i.obs?` · ${esc(i.obs)}`:''}</div>
           </div>
           <span class="ev-estado-pill" style="color:${estadoCor[i.estado]||'var(--text)'}">${esc(i.estado||'')}</span>
         </div>`).join('')}</div>`}
@@ -3885,6 +3911,8 @@ function bindEvents(){
       case'evento-add-cancel':setState({eventoAdding:false,eventoForm:{},eventoErr:''});break;
       case'evento-save-new':saveEventoNovo();break;
       case'evento-toggle':toggleEventoAtivo(parseInt(el.dataset.id));break;
+      case'evento-mota-add':eventoMotaAdd(parseInt(el.dataset.id));break;
+      case'evento-mota-del':eventoMotaDel(parseInt(el.dataset.id),parseInt(el.dataset.idx));break;
       case'evento-del':delEvento(parseInt(el.dataset.id));break;
       case'export-inscricoes':exportInscricoes();break;
       case'back-from-stock':setState({screen:'list'});break;
