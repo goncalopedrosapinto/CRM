@@ -588,6 +588,8 @@ html,body{overflow-x:hidden;max-width:100vw}
 .pa-acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
 .pa-vazio{margin-top:10px;font-size:12px;color:var(--text3)}
 @media(max-width:700px){.pa-row{grid-template-columns:26px 1fr;row-gap:6px}.pa-mot{grid-column:2;max-width:100%;width:100%}}
+.insc-mota-hint{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 6px}
+.insc-mota-chip{font-size:11px;font-weight:600;background:var(--amber-bg);color:#92600a;border:1px solid var(--amber);border-radius:12px;padding:2px 8px}
 .ev-motas-mgr{margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
 .ev-motas-h{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px}
 .ev-motas-list{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
@@ -1205,7 +1207,7 @@ async function loadNps(){try{const d=await supabaseApi('GET',`/nps?mes=eq.${curM
 async function eventoSetMotas(id,motas){setState({loading:true,eventoErr:''});try{await supabaseApi('PATCH',`/eventos?id=eq.${id}`,{motas});await recarregarEvento();setState({loading:false});}catch(e){setState({loading:false,eventoErr:'Erro nas motas: '+e.message});}}
 async function eventoMotaAdd(id){const ev=(S.eventos||[]).find(e=>e.id===id);if(!ev)return;const inp=document.getElementById('ev-mota-nova');const v=(inp&&inp.value||'').trim();if(!v){setState({eventoErr:'Escreve o nome da mota.'});return;}const motas=[...(Array.isArray(ev.motas)?ev.motas:[]),v];await eventoSetMotas(id,motas);}
 async function eventoMotaDel(id,idx){const ev=(S.eventos||[]).find(e=>e.id===id);if(!ev)return;const motas=(Array.isArray(ev.motas)?ev.motas:[]).slice();motas.splice(idx,1);await eventoSetMotas(id,motas);}
-function motasDisponiveis(ev){const motas=ev&&Array.isArray(ev.motas)?ev.motas:[];const tomadas=(S.inscricoes||[]).filter(i=>i.evento_id===ev.id&&i.estado!=='Cancelado'&&i.mota).map(i=>i.mota);const usadas={};tomadas.forEach(m=>{usadas[m]=(usadas[m]||0)+1});return motas.filter(m=>{if(usadas[m]>0){usadas[m]--;return false;}return true;});}
+function motasContagem(ev){const motas=ev&&Array.isArray(ev.motas)?ev.motas:[];const nomes=[...new Set(motas)];const insc=(S.inscricoes||[]).filter(i=>i.evento_id===ev.id&&i.estado!=='Cancelado'&&i.mota);return nomes.map(m=>({nome:m,vezes:insc.filter(i=>i.mota===m).length}));}
 async function loadEventos(){try{const d=await supabaseApi('GET','/eventos?select=*&order=created_at.desc');S.eventos=d||[]}catch(e){S.eventos=[]}}
 async function loadTransicoes(){try{const d=await supabaseApi('GET','/status_historico?select=*&order=quando.asc');S.transicoes=d||[]}catch(e){S.transicoes=[]}}
 async function loadNorma(){try{const d=await supabaseApi('GET','/stock_norma?select=*&order=ordem.asc');S.norma=d||[]}catch(e){S.norma=[]}}
@@ -1599,9 +1601,9 @@ function eventoCabecalhoHtml(ev){
   const motas=Array.isArray(ev.motas)?ev.motas:[];
   const usaMotas=motas.length>0;
   const inscEv=(S.inscricoes||[]).filter(i=>i.evento_id===ev.id&&i.estado!=='Cancelado');
-  const ocup=usaMotas?inscEv.filter(i=>i.mota).length:0;
+  const motasUsadas=usaMotas?[...new Set(inscEv.filter(i=>i.mota).map(i=>i.mota))].length:0;
   const lot=usaMotas?motas.length:(ev.lotacao||0);
-  const base=usaMotas?ocup:totalPessoas;
+  const base=usaMotas?motasUsadas:totalPessoas;
   const pct=lot>0?Math.round((base/lot)*100):null;
   const barCls=pct==null?'':(pct>=100?'full':(pct>=80?'warn':'ok'));
   return`<div class="ev-head-card">
@@ -1610,7 +1612,7 @@ function eventoCabecalhoHtml(ev){
       <div class="ev-head-meta">${ev.data?fmtDate(ev.data):''}${ev.local?` · ${esc(ev.local)}`:''}</div></div>
       <div class="ev-head-num"><div class="ev-head-num-b">${totalInsc}</div><div class="ev-head-num-l">inscritos</div></div>
     </div>
-    ${lot>0?`<div class="ev-lot"><div class="ev-lot-txt"><span>${usaMotas?`${ocup} de ${lot} motas ocupadas`:`${totalPessoas} pessoas (c/ acompanhantes)`}</span><span>${usaMotas?`vagas ${lot} · ${pct}%`:`lotação ${lot} · ${pct}%`}</span></div>
+    ${lot>0?`<div class="ev-lot"><div class="ev-lot-txt"><span>${usaMotas?`${totalInsc} inscrições · ${motasUsadas}/${lot} motas em uso`:`${totalPessoas} pessoas (c/ acompanhantes)`}</span><span>${usaMotas?`${pct}%`:`lotação ${lot} · ${pct}%`}</span></div>
       <div class="ev-lot-bar"><div class="ev-lot-fill ${barCls}" style="width:${Math.min(100,pct)}%"></div></div></div>`:''}
   </div>`;
 }
@@ -1629,7 +1631,7 @@ function renderEventoVend(){
         <label>Cliente<input id="insc-cliente" class="field-input" placeholder="Nome do cliente"></label>
         <label>Telefone<input id="insc-telefone" class="field-input" placeholder="—" inputmode="tel"></label>
         <label>Acompanhantes<input id="insc-acompanhantes" class="field-input" type="number" min="0" value="0"></label>
-        ${(()=>{const md=ev?motasDisponiveis(ev):[];const tem=ev&&Array.isArray(ev.motas)&&ev.motas.length;return tem?`<label>Mota (vaga)<select id="insc-mota" class="field-input"><option value="">— escolher mota —</option>${md.map(m=>`<option>${esc(m)}</option>`).join('')}</select></label>`:'';})()}
+        ${(()=>{const tem=ev&&Array.isArray(ev.motas)&&ev.motas.length;if(!tem)return'';const cont=motasContagem(ev);const ja=cont.filter(c=>c.vezes>0);return`<label style="grid-column:1/-1">Mota${ja.length?`<div class="insc-mota-hint">${ja.map(c=>`<span class="insc-mota-chip">${esc(c.nome)} <b>×${c.vezes}</b></span>`).join('')}</div>`:''}<select id="insc-mota" class="field-input"><option value="">— escolher mota —</option>${cont.map(c=>`<option value="${esc(c.nome)}">${esc(c.nome)}${c.vezes>0?` · já escolhida ${c.vezes}×`:''}</option>`).join('')}</select></label>`;})()}
         <label>Estado<select id="insc-estado" class="field-input">${estados.map(e=>`<option ${e==='Confirmado'?'selected':''}>${e}</option>`).join('')}</select></label>
         <label>Funil<select id="insc-funil" class="field-input"><option value="">—</option>${['Frio','Morno','Quente'].map(f=>`<option>${f}</option>`).join('')}</select></label>
         <label style="grid-column:1/-1">Observações<input id="insc-obs" class="field-input" placeholder="—"></label>
