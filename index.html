@@ -588,6 +588,15 @@ html,body{overflow-x:hidden;max-width:100vw}
 .pa-acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
 .pa-vazio{margin-top:10px;font-size:12px;color:var(--text3)}
 @media(max-width:700px){.pa-row{grid-template-columns:26px 1fr;row-gap:6px}.pa-mot{grid-column:2;max-width:100%;width:100%}}
+.mg-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:0 16px 12px}
+.mg-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.mg-k{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);font-weight:700}
+.mg-v{font-size:17px;font-weight:800;margin-top:2px}
+.mg-aviso{margin:0 16px 12px;padding:9px 12px;background:var(--amber-bg);border:1px solid var(--amber);border-radius:8px;font-size:12px;color:#92600a}
+.mg-falta{font-size:11px;font-weight:600;color:var(--amber)}
+.mg-via{color:var(--amber);font-weight:800;margin-left:3px;cursor:help}
+.mg-tbl{min-width:1100px}
+.mg-sug{margin-top:6px;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .insc-mota-hint{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 6px}
 .insc-mota-chip{font-size:11px;font-weight:600;background:var(--amber-bg);color:#92600a;border:1px solid var(--amber);border-radius:12px;padding:2px 8px}
 .ev-motas-mgr{margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
@@ -1308,6 +1317,9 @@ async function saveRecord(){
     setState({error:'Indica o motivo da perda antes de guardar. Sem motivo, não é possível perceber onde estamos a perder negócio.',loading:false,openGroups:Object.assign({},S.openGroups,{INFO:true})});
     return;
   }
+  if((S.form.type==='MU'||S.form.type==='MD')&&!S.form.stock_id&&(S.form.status==='Retail'||S.form.status==='Carteira')){
+    if(!confirm('Esta venda de usada/demo não tem a Mota do Stock associada.\n\nSem isso não consegues ver a margem real nem o stock fica marcado como vendido.\n\nGravar mesmo assim?'))return;
+  }
   setState({loading:true,error:''});try{const b={...S.form};['neg','dmat','col_298','alert_date'].forEach(k=>{if(!b[k])b[k]=null});['qor','xev','bev','m_flag','csc','cme'].forEach(k=>{b[k]=b[k]?parseInt(b[k]):null});b.pvp=b.pvp?parseFloat(b.pvp):null;b.stock_id=b.stock_id?parseInt(b.stock_id):null;if(!isAdmin())delete b.obs_gestor;delete b.id;delete b.created_at;delete b.updated_at;delete b.updated_by;if(!S.selected&&isAdmin())b.vendedor_id=S.viewVendedor||S.me.id;if(S.selected){if(b.status!==S.selected.status)b.status_updated_at=new Date().toISOString();delete b.status_updated_at_keep;await supabaseApi('PATCH',`/baviera_control?id=eq.${S.selected.id}`,b)}else{b.status_updated_at=new Date().toISOString();await supabaseApi('POST','/baviera_control',b)}await syncStockComNegocio(b.stock_id,b.status);await loadRecords();setState({screen:'list',selected:null,loading:false})}catch(e){setState({error:'Erro ao guardar: '+e.message,loading:false})}}
 async function syncStockComNegocio(stockId,status){
   // Estado da mota acompanha o negocio: funil=A negociar; carteira/retail=Vendida; perdido=Disponivel
@@ -1913,8 +1925,11 @@ function renderStockPick(){
   const catAlvo=S.form.type==='MD'?'demo':'usada';
   const cur=S.form.stock_id?String(S.form.stock_id):'';
   const opcoes=S.stock.filter(m=>(m.categoria||'usada')===catAlvo&&(m.estado==='Disponível'||m.estado==='A negociar'||String(m.id)===cur));
+  const _nz=v=>String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  const sug=(!cur&&S.form.mat&&_nz(S.form.mat))?opcoes.find(m=>_nz(m.matricula)&&_nz(m.matricula)===_nz(S.form.mat)):null;
+  const dica=sug?`<div class="mg-sug">💡 A matrícula bate com <b>${esc(sug.modelo||'')}</b> — <button class="btn btn-dark btn-sm" data-action="stockpick-sug" data-id="${sug.id}">Associar esta mota</button></div>`:'';
   if(opcoes.length===0)return '<div style="font-size:13px;color:var(--text3);padding:8px 0">Sem '+(catAlvo==='demo'?'demos':'usadas')+' em stock.</div>';
-  return `<select class="field-input" data-field="stock_id"><option value="">— nenhuma —</option>${opcoes.map(m=>`<option value="${m.id}" ${cur===String(m.id)?'selected':''}>${esc(m.modelo||'?')}${m.matricula?' · '+esc(m.matricula):''}${m.estado==='A negociar'?' (a negociar)':''}</option>`).join('')}</select>`;
+  return `<select class="field-input" data-field="stock_id"><option value="">— nenhuma —</option>${opcoes.map(m=>`<option value="${m.id}" ${cur===String(m.id)?'selected':''}>${esc(m.modelo||'?')}${m.matricula?' · '+esc(m.matricula):''}${m.estado==='A negociar'?' (a negociar)':''}</option>`).join('')}</select>${dica}`;
 }
 function renderVendedorSelect(k){
   // Lista de nomes: admin escolhe entre a equipa; vendedor tem só o seu nome.
@@ -2728,6 +2743,7 @@ function renderDashboard(){
     ['carteira','📦','Carteira'],
     ['funil','🔻','Funil'],
     ['fechados','🏁','Negócios Fechados'],
+    ['margem','💶','Margem Usadas'],
     ['perdidos','❌','Perdidos'],
     ['pendentes','⚠️','Pendentes'],
     ['demos','⭐','Demos'],
@@ -2740,7 +2756,7 @@ function renderDashboard(){
   const NAV_GRUPOS=[
     ['Diário',['home','pendentes','perdidos']],
     ['Negócio',['retail','comercio','carteira','funil','fechados']],
-    ['Recursos',['stock','depreciacao','demos','evento','escala']],
+    ['Recursos',['stock','depreciacao','margem','demos','evento','escala']],
     ['Ferramentas',['comissoes','exportar']]
   ];
   const secLabel=(TOPICOS.find(t=>t[0]===sec)||[,,'Home'])[2];
@@ -3017,6 +3033,65 @@ function renderDashboard(){
         <tbody>${doMes.map(linha).join('')}</tbody></table></div>`}`;
   }
 
+  function margemView(){
+    const fmtE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+    const norm=v=>String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+    const stock=S.stock||[];
+    const vendas=recs.filter(r=>r.type==='MU'&&(r.status==='Retail'||r.status==='Carteira')&&negYM(r));
+    const meses=[...new Set(vendas.map(negYM))].filter(Boolean).sort();
+    const mAtual=curYM();
+    const mSel=S.dashMes||(meses.includes(mAtual)?mAtual:(meses[meses.length-1]||mAtual));
+    const doMes=vendas.filter(r=>negYM(r)===mSel).sort((a,b)=>String(b.neg||'').localeCompare(String(a.neg||'')));
+    const acha=r=>{
+      if(r.stock_id){const m=stock.find(x=>String(x.id)===String(r.stock_id));if(m)return{m,via:'ligada'};}
+      if(r.mat){const m=stock.find(x=>norm(x.matricula)&&norm(x.matricula)===norm(r.mat));if(m)return{m,via:'matrícula'};}
+      return{m:null,via:null};
+    };
+    let tVenda=0,tCusto=0,tMargem=0,nOk=0,nSem=0;
+    const linhas=doMes.map(r=>{
+      const {m,via}=acha(r);
+      const venda=r.pvp!=null?Number(r.pvp):null;
+      const ent=m&&m.valor_entrada!=null?Number(m.valor_entrada):null;
+      const dep=m&&m.dep_manual!=null?Number(m.dep_manual):0;
+      const prep=m&&m.dep_prep!=null?Number(m.dep_prep):0;
+      const custo=ent!=null?(ent-dep+prep):null;
+      const marg=(venda!=null&&custo!=null)?(venda-custo):null;
+      const dias=(m&&m.data_rececao&&r.neg)?Math.max(0,Math.round((new Date(String(r.neg).slice(0,10))-new Date(String(m.data_rececao).slice(0,10)))/86400000)):null;
+      if(marg!=null){tVenda+=venda;tCusto+=custo;tMargem+=marg;nOk++;}else{nSem++;}
+      const falta=!m?'sem mota associada':(ent==null?'sem valor de entrada':(venda==null?'sem PVP':''));
+      return`<tr class="gpp-lrow2">
+        <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}">${r.neg?esc(String(r.neg).slice(0,10)):'—'}</td>
+        <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}">${esc(r.id_cliente||'—')}${r.venda_direta?'<span class="vd-badge">🤝</span>':''}</td>
+        <td>${esc((m&&m.modelo)||r.model||'—')}</td>
+        <td>${esc(r.mat||(m&&m.matricula)||'—')}${via==='matrícula'?'<span class="mg-via" title="Ligada por matrícula, não pelo campo Mota do Stock">~</span>':''}</td>
+        <td style="text-align:right">${dias!=null?dias:'—'}</td>
+        <td style="text-align:right">${ent!=null?fmtE(ent):'—'}</td>
+        <td style="text-align:right">${m&&dep?fmtE(dep):'—'}</td>
+        <td style="text-align:right">${m&&prep?fmtE(prep):'—'}</td>
+        <td style="text-align:right;font-weight:600">${custo!=null?fmtE(custo):'—'}</td>
+        <td style="text-align:right;font-weight:600">${venda!=null?fmtE(venda):'—'}</td>
+        <td style="text-align:right;font-weight:800;color:${marg==null?'var(--text3)':(marg>=0?'var(--green)':'var(--red)')}">${marg!=null?fmtE(marg):`<span class="mg-falta">${falta}</span>`}</td>
+      </tr>`;
+    }).join('');
+    const pctM=tVenda?Math.round(1000*tMargem/tVenda)/10:null;
+    return`<div class="gpp-mes-bar"><span class="gpp-mes-lbl">Mês</span>
+      <select class="gpp-mes-sel" data-action="dash-mes-sel">
+        ${meses.length===0?`<option>${esc(mAtual)}</option>`:meses.slice().reverse().map(m=>`<option value="${m}" ${mSel===m?'selected':''}>${esc(m)}</option>`).join('')}
+      </select></div>
+      <div class="gpp-tot-head">Margem realizada · usadas · ${esc(mSel)} · <b>${doMes.length}</b> venda${doMes.length!==1?'s':''}</div>
+      ${doMes.length===0?'<div class="gpp-empty">Sem vendas de usadas neste mês.</div>':`
+      <div class="mg-cards">
+        <div class="mg-card"><div class="mg-k">Vendas (${nOk})</div><div class="mg-v">${fmtE(tVenda)}</div></div>
+        <div class="mg-card"><div class="mg-k">Custo</div><div class="mg-v">${fmtE(tCusto)}</div></div>
+        <div class="mg-card"><div class="mg-k">Margem</div><div class="mg-v" style="color:${tMargem>=0?'var(--green)':'var(--red)'}">${fmtE(tMargem)}</div></div>
+        <div class="mg-card"><div class="mg-k">Margem %</div><div class="mg-v">${pctM!=null?pctM+' %':'—'}</div></div>
+      </div>
+      ${nSem?`<div class="mg-aviso">⚠️ <b>${nSem}</b> venda${nSem!==1?'s':''} sem margem calculável — falta associar a mota do stock ou o valor de entrada. Os totais acima <b>não</b> as incluem.</div>`:''}
+      <div class="gpp-card" style="margin:0 16px 20px;overflow-x:auto"><table class="gpp-ltable mg-tbl">
+        <thead><tr><th>Data</th><th>Cliente</th><th>Modelo</th><th>Matrícula</th><th style="text-align:right">Dias stock</th><th style="text-align:right">Entrada</th><th style="text-align:right">Deprec.</th><th style="text-align:right">Prep.</th><th style="text-align:right">Custo</th><th style="text-align:right">Venda</th><th style="text-align:right">Margem</th></tr></thead>
+        <tbody>${linhas}</tbody></table></div>`}
+      <div class="gpp-pend-desc" style="margin:0 16px 16px">Custo = entrada − depreciação + preparação. Margem = venda (PVP) − custo. <b>Dias stock</b> = da receção até à data do negócio. Não inclui IVA, comissões nem encargos de financiamento.</div>`;
+  }
   // ---- Funil (todos os vendedores) ----
   function funilView(){
     const FUN=['Quente','Morno','Frio'];
@@ -3733,6 +3808,7 @@ function renderDashboard(){
   else if(sec==='home')body=mesBar+(recs.filter(r=>r.status==='Retail'&&!r.col_298).length?`${(()=>{const semData=recs.filter(r=>r.status==='Retail'&&!r.col_298);return`<div class="gpp-alerta ${S.dashAlertOpen==='sem298'?'open':''}"><div class="gpp-alerta-head" data-action="dash-alert-toggle" data-id="sem298"><span>⚠️</span><span><b>${semData.length}</b> mota${semData.length>1?'s':''} em Retail sem data 298 — não contam nos totais</span><span class="gpp-alerta-arrow">${S.dashAlertOpen==='sem298'?'▾':'▸'}</span></div>${S.dashAlertOpen==='sem298'?`<div class="gpp-alerta-lista">${semData.map(r=>`<div class="gpp-alerta-item" data-action="open-record-from-dash" data-id="${r.id}"><b>${esc(r.id_cliente||'(sem cliente)')}</b><span>${esc(r.model||'')} ${esc(r.version||'')}</span><span class="gpp-alerta-tipo">${esc(r.type||'?')}</span><span style="color:var(--text3)">${esc(vendName(r.vendedor_id)||'')}</span></div>`).join('')}</div>`:''}</div>`})()}`:'')+tabelaResumo()+homeAcoes();
   else if(sec==='funil')body=funilView();
   else if(sec==='fechados')body=fechadosView();
+  else if(sec==='margem')body=margemView();
   else if(sec==='perdidos')body=perdidosView();
   else if(sec==='carteira')body=carteiraChart()+listaEstado('Carteira',r=>r.mes1);
   else if(sec==='retail')body=retailView();
@@ -3913,6 +3989,7 @@ function bindEvents(){
       case'evento-add-cancel':setState({eventoAdding:false,eventoForm:{},eventoErr:''});break;
       case'evento-save-new':saveEventoNovo();break;
       case'evento-toggle':toggleEventoAtivo(parseInt(el.dataset.id));break;
+      case'stockpick-sug':{S.form.stock_id=parseInt(el.dataset.id);render();break;}
       case'evento-mota-add':eventoMotaAdd(parseInt(el.dataset.id));break;
       case'evento-mota-del':eventoMotaDel(parseInt(el.dataset.id),parseInt(el.dataset.idx));break;
       case'evento-del':delEvento(parseInt(el.dataset.id));break;
@@ -3934,7 +4011,7 @@ function bindEvents(){
       case'retail-ord':{const o=el.dataset.o;if(S.retailOrd===o)setState({retailDir:S.retailDir==='asc'?'desc':'asc'});else setState({retailOrd:o,retailDir:'asc'});break;}
       case'gpp-mais':setState({gppMais:!S.gppMais});break;
       case'gpp-mais-close':setState({gppMais:false});break;
-      case'gpp-sec':{const s=el.dataset.s;S.gppBusca='';S.gppMais=false;if(s==='escala'){setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}else if(s==='stock'||s==='depreciacao'){setState({gppSec:s,dashAlertOpen:null});if(!S.stockLoaded)loadStock().then(()=>render());}else if(s==='evento'){setState({gppSec:s,dashAlertOpen:null,eventoErr:''});const ev=eventoAtual();if(ev){S.eventoSel=ev.id;loadRanking(ev.id).then(()=>render());}}else if(s==='funil'){setState({gppSec:s,dashAlertOpen:null});loadTransicoes().then(()=>render());}else{setState({gppSec:s,dashAlertOpen:null});}break}
+      case'gpp-sec':{const s=el.dataset.s;S.gppBusca='';S.gppMais=false;if(s==='escala'){setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}else if(s==='stock'||s==='depreciacao'||s==='margem'){setState({gppSec:s,dashAlertOpen:null});if(!S.stockLoaded)loadStock().then(()=>render());}else if(s==='evento'){setState({gppSec:s,dashAlertOpen:null,eventoErr:''});const ev=eventoAtual();if(ev){S.eventoSel=ev.id;loadRanking(ev.id).then(()=>render());}}else if(s==='funil'){setState({gppSec:s,dashAlertOpen:null});loadTransicoes().then(()=>render());}else{setState({gppSec:s,dashAlertOpen:null});}break}
       case'stock-cat':setState({stockCat:el.dataset.c,stockAdding:false});break;
       case'stock-vend-toggle':setState({stockVendOpen:!S.stockVendOpen});break;
       case'stock-add':setState({stockAdding:true,stockFormMax:false});break;
