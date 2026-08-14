@@ -595,7 +595,7 @@ html,body{overflow-x:hidden;max-width:100vw}
 .mg-aviso{margin:0 16px 12px;padding:9px 12px;background:var(--amber-bg);border:1px solid var(--amber);border-radius:8px;font-size:12px;color:#92600a}
 .mg-falta{font-size:11px;font-weight:600;color:var(--amber)}
 .mg-via{color:var(--amber);font-weight:800;margin-left:3px;cursor:help}
-.mg-tbl{min-width:1100px}
+.mg-tbl{min-width:1320px}
 .mg-sug{margin-top:6px;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .insc-mota-hint{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 6px}
 .insc-mota-chip{font-size:11px;font-weight:600;background:var(--amber-bg);color:#92600a;border:1px solid var(--amber);border-radius:12px;padding:2px 8px}
@@ -1165,6 +1165,14 @@ async function loadStock(){
     const d=await supabaseApi('GET','/stock_usadas?select=*&order=created_at.desc');
     S.stock=d||[];S.stockLoaded=true;
   }catch(e){S.stock=[];S.stockLoaded=true;}
+}
+async function saveRecordField(id,campo,valor){
+  try{
+    const patch={};patch[campo]=valor;
+    await supabaseApi('PATCH',`/baviera_control?id=eq.${id}`,patch);
+    const r=S.records.find(x=>String(x.id)===String(id));if(r)r[campo]=valor;
+    render();
+  }catch(e){alert('Erro ao gravar: '+e.message);}
 }
 async function saveStockField(id,campo,valor){
   try{
@@ -3047,7 +3055,8 @@ function renderDashboard(){
       if(r.mat){const m=stock.find(x=>norm(x.matricula)&&norm(x.matricula)===norm(r.mat));if(m)return{m,via:'matrícula'};}
       return{m:null,via:null};
     };
-    let tVenda=0,tCusto=0,tMargem=0,nOk=0,nSem=0;
+    const COMISSAO_USADA=125;
+    let tVenda=0,tCusto=0,tCom=0,tMargem=0,nOk=0,nSem=0;
     const linhas=doMes.map(r=>{
       const {m,via}=acha(r);
       const venda=r.pvp!=null?Number(r.pvp):null;
@@ -3055,9 +3064,10 @@ function renderDashboard(){
       const dep=m&&m.dep_manual!=null?Number(m.dep_manual):0;
       const prep=m&&m.dep_prep!=null?Number(m.dep_prep):0;
       const custo=ent!=null?(ent-dep+prep):null;
-      const marg=(venda!=null&&custo!=null)?(venda-custo):null;
+      const com=r.venda_direta?0:COMISSAO_USADA;
+      const marg=(venda!=null&&custo!=null)?(venda-custo-com):null;
       const dias=(m&&m.data_rececao&&r.neg)?Math.max(0,Math.round((new Date(String(r.neg).slice(0,10))-new Date(String(m.data_rececao).slice(0,10)))/86400000)):null;
-      if(marg!=null){tVenda+=venda;tCusto+=custo;tMargem+=marg;nOk++;}else{nSem++;}
+      if(marg!=null){tVenda+=venda;tCusto+=custo;tCom+=com;tMargem+=marg;nOk++;}else{nSem++;}
       const falta=!m?'sem mota associada':(ent==null?'sem valor de entrada':(venda==null?'sem PVP':''));
       return`<tr class="gpp-lrow2">
         <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}">${r.neg?esc(String(r.neg).slice(0,10)):'—'}</td>
@@ -3065,11 +3075,12 @@ function renderDashboard(){
         <td>${esc((m&&m.modelo)||r.model||'—')}</td>
         <td>${esc(r.mat||(m&&m.matricula)||'—')}${via==='matrícula'?'<span class="mg-via" title="Ligada por matrícula, não pelo campo Mota do Stock">~</span>':''}</td>
         <td style="text-align:right">${dias!=null?dias:'—'}</td>
-        <td style="text-align:right">${ent!=null?fmtE(ent):'—'}</td>
-        <td style="text-align:right">${m&&dep?fmtE(dep):'—'}</td>
-        <td style="text-align:right">${m&&prep?fmtE(prep):'—'}</td>
+        <td style="text-align:right">${m?`<div class="stock-eurwrap"><input class="stock-inp stock-num" data-mg-stock="${m.id}" data-mg-f="valor_entrada" type="number" step="0.01" value="${ent!=null?ent:''}" placeholder="0"><span class="stock-eur2">€</span></div>`:'<span class="mg-falta">—</span>'}</td>
+        <td style="text-align:right">${m?`<div class="stock-eurwrap"><input class="stock-inp stock-num" data-mg-stock="${m.id}" data-mg-f="dep_manual" type="number" step="0.01" value="${m.dep_manual!=null?m.dep_manual:''}" placeholder="0"><span class="stock-eur2">€</span></div>`:'<span class="mg-falta">—</span>'}</td>
+        <td style="text-align:right">${m?`<div class="stock-eurwrap"><input class="stock-inp stock-num" data-mg-stock="${m.id}" data-mg-f="dep_prep" type="number" step="0.01" value="${m.dep_prep!=null?m.dep_prep:''}" placeholder="0"><span class="stock-eur2">€</span></div>`:'<span class="mg-falta">—</span>'}</td>
         <td style="text-align:right;font-weight:600">${custo!=null?fmtE(custo):'—'}</td>
-        <td style="text-align:right;font-weight:600">${venda!=null?fmtE(venda):'—'}</td>
+        <td style="text-align:right"><div class="stock-eurwrap"><input class="stock-inp stock-num" data-mg-rec="${r.id}" data-mg-f="pvp" type="number" step="0.01" value="${venda!=null?venda:''}" placeholder="0"><span class="stock-eur2">€</span></div></td>
+        <td style="text-align:right;color:${com?'var(--text2)':'var(--text3)'}">${com?'−'+fmtE(com):'<span title="Venda a comerciante: não gera comissão">—</span>'}</td>
         <td style="text-align:right;font-weight:800;color:${marg==null?'var(--text3)':(marg>=0?'var(--green)':'var(--red)')}">${marg!=null?fmtE(marg):`<span class="mg-falta">${falta}</span>`}</td>
       </tr>`;
     }).join('');
@@ -3083,14 +3094,15 @@ function renderDashboard(){
       <div class="mg-cards">
         <div class="mg-card"><div class="mg-k">Vendas (${nOk})</div><div class="mg-v">${fmtE(tVenda)}</div></div>
         <div class="mg-card"><div class="mg-k">Custo</div><div class="mg-v">${fmtE(tCusto)}</div></div>
-        <div class="mg-card"><div class="mg-k">Margem</div><div class="mg-v" style="color:${tMargem>=0?'var(--green)':'var(--red)'}">${fmtE(tMargem)}</div></div>
+        <div class="mg-card"><div class="mg-k">Comissões</div><div class="mg-v" style="color:var(--text2)">−${fmtE(tCom)}</div></div>
+        <div class="mg-card"><div class="mg-k">Margem líquida</div><div class="mg-v" style="color:${tMargem>=0?'var(--green)':'var(--red)'}">${fmtE(tMargem)}</div></div>
         <div class="mg-card"><div class="mg-k">Margem %</div><div class="mg-v">${pctM!=null?pctM+' %':'—'}</div></div>
       </div>
       ${nSem?`<div class="mg-aviso">⚠️ <b>${nSem}</b> venda${nSem!==1?'s':''} sem margem calculável — falta associar a mota do stock ou o valor de entrada. Os totais acima <b>não</b> as incluem.</div>`:''}
       <div class="gpp-card" style="margin:0 16px 20px;overflow-x:auto"><table class="gpp-ltable mg-tbl">
-        <thead><tr><th>Data</th><th>Cliente</th><th>Modelo</th><th>Matrícula</th><th style="text-align:right">Dias stock</th><th style="text-align:right">Entrada</th><th style="text-align:right">Deprec.</th><th style="text-align:right">Prep.</th><th style="text-align:right">Custo</th><th style="text-align:right">Venda</th><th style="text-align:right">Margem</th></tr></thead>
+        <thead><tr><th>Data</th><th>Cliente</th><th>Modelo</th><th>Matrícula</th><th style="text-align:right">Dias stock</th><th style="text-align:right">Entrada</th><th style="text-align:right">Deprec.</th><th style="text-align:right">Prep.</th><th style="text-align:right">Custo</th><th style="text-align:right">Venda (PVP)</th><th style="text-align:right">Comissão</th><th style="text-align:right">Margem líq.</th></tr></thead>
         <tbody>${linhas}</tbody></table></div>`}
-      <div class="gpp-pend-desc" style="margin:0 16px 16px">Custo = entrada − depreciação + preparação. Margem = venda (PVP) − custo. <b>Dias stock</b> = da receção até à data do negócio. Não inclui IVA, comissões nem encargos de financiamento.</div>`;
+      <div class="gpp-pend-desc" style="margin:0 16px 16px">Custo = entrada − depreciação + preparação. <b>Margem líquida = venda (PVP) − custo − comissão (125 € por venda).</b> Vendas a comerciante (🤝) não geram comissão. Podes <b>editar</b> a entrada, depreciação, preparação e PVP diretamente na tabela — grava logo. Não inclui IVA nem encargos de financiamento.</div>`;
   }
   // ---- Funil (todos os vendedores) ----
   function funilView(){
@@ -3888,6 +3900,8 @@ function bindEvents(){
     if(el.dataset&&el.dataset.depId){const id=el.dataset.depId,v=el.value;saveStockField(id,'dep_manual',(v===''||v==null)?null:Number(v));return;}
     if(el.dataset&&el.dataset.pedMotivo){const sel=Object.assign({},S.pedAutSel||{});sel[String(el.dataset.pedMotivo)]=el.value;setState({pedAutSel:sel});return;}
     if(el.dataset&&el.dataset.depPrep){const id=el.dataset.depPrep,v=el.value;saveStockField(id,'dep_prep',(v===''||v==null)?null:Number(v));return;}
+    if(el.dataset&&el.dataset.mgStock){const v=el.value;saveStockField(el.dataset.mgStock,el.dataset.mgF,(v===''||v==null)?null:Number(v));return;}
+    if(el.dataset&&el.dataset.mgRec){const v=el.value;saveRecordField(el.dataset.mgRec,el.dataset.mgF,(v===''||v==null)?null:Number(v));return;}
     if(el.dataset&&el.dataset.depVenda){const id=el.dataset.depVenda,v=el.value;saveStockField(id,'venda_ficticia',(v===''||v==null)?null:Number(v));return;}
     if(el.dataset&&el.dataset.obsGestor){saveObsGestor(el.dataset.obsGestor,el.value);return;}
     if(el.dataset&&el.dataset.vdF){S.vdForm=Object.assign({},S.vdForm,{[el.dataset.vdF]:el.value});if(el.dataset.vdF==='pvp'||el.dataset.vdF==='valor_entrada')render();return;}
