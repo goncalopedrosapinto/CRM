@@ -629,6 +629,8 @@ html,body{overflow-x:hidden;max-width:100vw}
 .ev-mota-chip button:hover{background:var(--red);color:#fff}
 .ev-motas-vazio{font-size:12px;color:var(--text3)}
 .ev-motas-add{display:flex;gap:8px;flex-wrap:wrap}
+.ev-item-meu{border-color:var(--orange)!important;background:var(--orange-bg)}
+.ev-lista-hint{font-size:11px;color:var(--text3);margin:0 0 8px;line-height:1.4}
 .ev-vend-picker{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
 .ev-pick{padding:8px 14px;border-radius:20px;border:1.5px solid var(--border2);background:var(--surface);font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);font-family:inherit}
 .ev-pick.on{background:var(--orange);border-color:var(--orange);color:#fff}
@@ -1254,17 +1256,19 @@ async function loadNps(){try{const d=await supabaseApi('GET',`/nps?mes=eq.${curM
 async function eventoSetMotas(id,motas){setState({loading:true,eventoErr:''});try{await supabaseApi('PATCH',`/eventos?id=eq.${id}`,{motas});await recarregarEvento();setState({loading:false});}catch(e){setState({loading:false,eventoErr:'Erro nas motas: '+e.message});}}
 async function eventoMotaAdd(id){const ev=(S.eventos||[]).find(e=>e.id===id);if(!ev)return;const inp=document.getElementById('ev-mota-nova');const v=(inp&&inp.value||'').trim();if(!v){setState({eventoErr:'Escreve o nome da mota.'});return;}const motas=[...(Array.isArray(ev.motas)?ev.motas:[]),v];await eventoSetMotas(id,motas);}
 async function eventoMotaDel(id,idx){const ev=(S.eventos||[]).find(e=>e.id===id);if(!ev)return;const motas=(Array.isArray(ev.motas)?ev.motas:[]).slice();motas.splice(idx,1);await eventoSetMotas(id,motas);}
-function motasContagem(ev){const motas=ev&&Array.isArray(ev.motas)?ev.motas:[];const nomes=[...new Set(motas)];const insc=(S.inscricoes||[]).filter(i=>i.evento_id===ev.id&&i.estado!=='Cancelado'&&i.mota);return nomes.map(m=>({nome:m,vezes:insc.filter(i=>i.mota===m).length}));}
+function motasContagem(ev){const motas=ev&&Array.isArray(ev.motas)?ev.motas:[];const nomes=[...new Set(motas)];const insc=inscEquipa().filter(i=>i.evento_id===ev.id&&i.estado!=='Cancelado'&&i.mota);return nomes.map(m=>({nome:m,vezes:insc.filter(i=>i.mota===m).length}));}
 async function loadEventos(){try{const d=await supabaseApi('GET','/eventos?select=*&order=created_at.desc');S.eventos=d||[]}catch(e){S.eventos=[]}}
 async function loadTransicoes(){try{const d=await supabaseApi('GET','/status_historico?select=*&order=quando.asc');S.transicoes=d||[]}catch(e){S.transicoes=[]}}
 async function loadNorma(){try{const d=await supabaseApi('GET','/stock_norma?select=*&order=ordem.asc');S.norma=d||[]}catch(e){S.norma=[]}}
 async function saveNormaCampo(id,campo,valor){try{const b={};b[campo]=valor;b.updated_at=new Date().toISOString();await supabaseApi('PATCH',`/stock_norma?id=eq.${id}`,b);await loadNorma();render();}catch(e){console.error('norma',e)}}
 async function loadInscricoes(){try{const d=await supabaseApi('GET','/inscricoes?select=*&order=created_at.asc');S.inscricoes=d||[]}catch(e){S.inscricoes=[]}}
+async function loadInscricoesAll(){try{const d=await supabaseApi('GET','/inscricoes_publico?select=*&order=created_at.asc');S.inscricoesAll=d||[]}catch(e){S.inscricoesAll=[]}}
+function inscEquipa(){return isAdmin()?(S.inscricoes||[]):(S.inscricoesAll||[]);}
 async function loadRanking(evId){if(!evId){S.ranking=[];return}try{const d=await supabaseApi('POST','/rpc/inscricoes_ranking',{p_evento:evId});S.ranking=d||[]}catch(e){S.ranking=[]}}
 function eventoAtivo(){return (S.eventos||[]).find(e=>e.ativo)||null}
 function eventosAtivos(){return (S.eventos||[]).filter(e=>e.ativo)}
 function eventoAtual(){const sel=S.eventoSel!=null?(S.eventos||[]).find(e=>e.id===S.eventoSel):null;return sel||eventoAtivo()||((S.eventos||[])[0])||null}
-async function recarregarEvento(){const ev=eventoAtual();await Promise.all([loadEventos(),loadInscricoes()]);const ev2=eventoAtual();await loadRanking(ev2?ev2.id:(ev?ev.id:null))}
+async function recarregarEvento(){const ev=eventoAtual();await Promise.all([loadEventos(),loadInscricoes(),loadInscricoesAll()]);const ev2=eventoAtual();await loadRanking(ev2?ev2.id:(ev?ev.id:null))}
 async function saveInscricaoNova(){
   const ev=eventoAtual();if(!ev)return;
   const cliente=(document.getElementById('insc-cliente')?.value||'').trim();
@@ -1650,7 +1654,7 @@ function eventoCabecalhoHtml(ev){
   const totalPessoas=rk.reduce((a,r)=>a+Number(r.total||0)+Number(r.acompanhantes||0),0);
   const motas=Array.isArray(ev.motas)?ev.motas:[];
   const usaMotas=motas.length>0;
-  const inscEv=(S.inscricoes||[]).filter(i=>i.evento_id===ev.id&&i.estado!=='Cancelado');
+  const inscEv=inscEquipa().filter(i=>i.evento_id===ev.id&&i.estado!=='Cancelado');
   const motasUsadas=usaMotas?[...new Set(inscEv.filter(i=>i.mota).map(i=>i.mota))].length:0;
   const lot=usaMotas?motas.length:(ev.lotacao||0);
   const base=usaMotas?motasUsadas:totalPessoas;
@@ -1699,6 +1703,7 @@ function renderEventoVend(){
       ${form}
       <div class="ev-sec-h">🏆 Ranking da equipa</div>
       ${eventoRankingHtml()}
+      ${(()=>{const todas=ev?inscEquipa().filter(i=>i.evento_id===ev.id):[];if(!todas.length)return'';const meu=(S.me&&S.me.id);return`<div class="ev-sec-h">👥 Todas as inscrições da equipa · ${todas.length}</div><div class="ev-lista-hint">Vês o cliente e a mota de todos, para escolheres/recomendares sabendo o que já foi pedido. O telefone e as notas de cada um ficam privados.</div><div class="ev-list">${todas.map(i=>`<div class="ev-item ${i.vendedor_id===meu?'ev-item-meu':''}"><div class="ev-item-main"><div class="ev-item-nome">${esc(i.cliente)} ${eventoFunilPill(i.funil)}</div><div class="ev-item-sub">${i.mota?`🏍️ <b>${esc(i.mota)}</b> · `:''}👤 ${esc(vendName(i.vendedor_id)||'—')}${i.vendedor_id===meu?' (tu)':''}${i.acompanhantes>0?` · +${i.acompanhantes} acomp.`:''}</div></div><div style="font-size:12px;font-weight:700;color:${({'Confirmado':'var(--green)','Lista de espera':'#e8a30c','Não veio':'var(--text3)','Cancelado':'var(--red)'})[i.estado]||'var(--text)'}">${esc(i.estado||'')}</div></div>`).join('')}</div>`;})()}
       <div class="ev-sec-h">As minhas inscrições · ${minhas.length}</div>
       ${S.eventoErr&&!S.inscAdding?`<div class="error" style="margin-bottom:10px">${esc(S.eventoErr)}</div>`:''}
       ${minhas.length===0?'<div class="ev-empty">Ainda não inscreveste ninguém.</div>':`
@@ -4253,7 +4258,7 @@ function bindEvents(){
 
 function collectFormData(){document.querySelectorAll('input[data-field],select[data-field],textarea[data-field]').forEach(el=>{const k=el.dataset.field;let v=el.value;if(el.dataset.fmt==='month'&&v)v=v.replace('-','/');S.form[k]=v})}
 
-function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes(),loadTransicoes(),loadNorma()]):Promise.all([loadTeam(),loadEventos(),loadInscricoes()]);return extra}).then(function(){return loadRecords()}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:isAdmin()?'dashboard':'list',loading:false})})}
+function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes(),loadTransicoes(),loadNorma()]):Promise.all([loadTeam(),loadEventos(),loadInscricoes(),loadInscricoesAll()]);return extra}).then(function(){return loadRecords()}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:isAdmin()?'dashboard':'list',loading:false})})}
 (function(){
   S.screen='loading';render();
   refreshSession().then(function(token){
