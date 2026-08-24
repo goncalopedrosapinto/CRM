@@ -588,6 +588,19 @@ html,body{overflow-x:hidden;max-width:100vw}
 .pa-acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
 .pa-vazio{margin-top:10px;font-size:12px;color:var(--text3)}
 @media(max-width:700px){.pa-row{grid-template-columns:26px 1fr;row-gap:6px}.pa-mot{grid-column:2;max-width:100%;width:100%}}
+.cm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin:0 16px 12px}
+.cm-vend{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.cm-vend-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:8px}
+.cm-vend-nome{font-weight:800;font-size:14px}
+.cm-vend-sub{font-weight:800;font-size:16px;color:var(--green)}
+.cm-tbl{width:100%;border-collapse:collapse;margin-bottom:8px}
+.cm-tbl td{padding:4px 0;font-size:13px;border-bottom:1px solid var(--border)}
+.cm-desc{color:var(--text2)}
+.cm-val{text-align:right;font-weight:600;white-space:nowrap;padding-left:10px!important}
+.cm-x{text-align:right;width:26px}
+.cm-vazio{font-size:12px;color:var(--text3);padding:4px 0 8px}
+.cm-add{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.cm-total-geral{margin:0 16px 18px;padding:12px 16px;background:var(--green-bg);border:1px solid var(--green);border-radius:8px;font-size:15px;text-align:right}
 .pr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:0 16px 12px}
 .pr-bloco{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
 .pr-h{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
@@ -1012,7 +1025,7 @@ let S={
   token:null,records:[],selected:null,form:{},
   me:null,team:[],objetivos:[],objEquipa:[],eventos:[],inscricoes:[],ranking:[],transicoes:[],norma:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
-  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',vdAdding:false,vdForm:{},vdErr:'',depTaxa:(()=>{try{return parseFloat(localStorage.getItem('bc_dep_taxa'))||0}catch(e){return 0}})(),premiosCfg:[],exportBusy:false,exportMsg:'',gppSideOff:(()=>{try{return localStorage.getItem('bc_side')==='1'}catch(e){return false}})(),pedAutOpen:false,pedAutSel:{},
+  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',vdAdding:false,vdForm:{},vdErr:'',depTaxa:(()=>{try{return parseFloat(localStorage.getItem('bc_dep_taxa'))||0}catch(e){return 0}})(),premiosCfg:[],comissoes:[],exportBusy:false,exportMsg:'',gppSideOff:(()=>{try{return localStorage.getItem('bc_side')==='1'}catch(e){return false}})(),pedAutOpen:false,pedAutSel:{},
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{INFO:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
@@ -1244,6 +1257,15 @@ async function loadObjEquipa(){try{const d=await supabaseApi('GET',`/objetivos_e
 function objEquipaMesData(mesYM){return (mesYM||'').replace('/','-')+'-01';} // 'YYYY/MM' -> 'YYYY-MM-01'
 function objEquipaGet(mesYM,tipo){const md=objEquipaMesData(mesYM);return (S.objEquipa||[]).find(o=>o.mes===md&&(o.tipo||'novas')===(tipo||'novas'));}
 async function saveObjEquipa(mesYM,val,tipo){tipo=tipo||'novas';const md=objEquipaMesData(mesYM);const ex=objEquipaGet(mesYM,tipo);const v=Math.max(0,parseInt(val,10)||0);if(ex){await supabaseApi('PATCH',`/objetivos_equipa?id=eq.${ex.id}`,{objetivo:v,updated_at:new Date().toISOString()})}else{await supabaseApi('POST','/objetivos_equipa',{mes:md,tipo:tipo,objetivo:v})}await loadObjEquipa()}
+async function loadComissoes(){try{const d=await supabaseApi('GET','/comissoes?select=*&order=id.asc');S.comissoes=d||[]}catch(e){S.comissoes=[]}}
+async function comissaoAdd(vid,mes){
+  const d=document.getElementById('cm-desc-'+vid),v=document.getElementById('cm-val-'+vid);
+  const val=v&&v.value!==''?parseFloat(v.value):null;const desc=(d&&d.value||'').trim();
+  if(val==null&&!desc){return;}
+  if(val==null){alert('Indica o valor (€) da linha.');return;}
+  try{await supabaseApi('POST','/comissoes',{vendedor_id:vid,mes:mes,descricao:desc||null,valor:val});await loadComissoes();render();}catch(e){alert('Erro: '+e.message);}
+}
+async function comissaoDel(id){try{await supabaseApi('DELETE','/comissoes?id=eq.'+id);await loadComissoes();render();}catch(e){alert('Erro: '+e.message);}}
 async function loadPremiosCfg(){try{const d=await supabaseApi('GET','/premios_config?select=*&order=escopo.asc,pct_min.asc');S.premiosCfg=d||[]}catch(e){S.premiosCfg=[]}}
 async function premioAdd(escopo){
   const p=document.getElementById('pr-pct-'+escopo),v=document.getElementById('pr-val-'+escopo),n=document.getElementById('pr-nota-'+escopo);
@@ -2324,69 +2346,22 @@ function exportEscala(){
   URL.revokeObjectURL(url);
 }
 function exportComissoes(){
-  const mesSel=S.dashMes||curYM();
-  const base=S.records.filter(r=>r.status==='Retail'&&retailYM(r)===mesSel);
-  const esc2=v=>{v=(v==null?'':String(v));return /[",\n;]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
-  const nl='\r\n';const rows=[];
-  rows.push(`Resumo de Comissoes - ${mesSel}`);
-  rows.push('');
-  rows.push(['Vendedor','Cliente','Modelo','Versao','Matricula','Tipo','Data298','SeguroNosso','CCGo','Lifestyle','Retoma','Financiamento','Fint'].map(esc2).join(';'));
-  const vends=S.team.filter(p=>p.role==='vendedor');
-  vends.forEach(p=>{
-    const meus=base.filter(r=>r.vendedor_id===p.id&&!r.venda_direta);
-    meus.forEach(r=>{
-      rows.push([
-        p.nome||'', r.id_cliente||'', r.model||'', r.version||'', r.mat||'', r.type||'',
-        r.col_298?String(r.col_298).slice(0,10):'',
-        r.flag_seguro?'Sim':'Nao', r.flag_ccgo?'Sim':'Nao', r.flag_lifestyle?'Sim':'Nao',
-        r.retoma==='Sim'?'Sim':'Nao', r.fin||'', r.fin==='Fint'?'Sim':'Nao'
-      ].map(esc2).join(';'));
-    });
-    // Subtotal do vendedor
-    if(meus.length){
-      rows.push([
-        'TOTAL '+(p.nome||''), meus.length+' retails','','','','','',
-        meus.filter(r=>r.flag_seguro).length,
-        meus.filter(r=>r.flag_ccgo).length,
-        meus.filter(r=>r.flag_lifestyle).length,
-        meus.filter(r=>r.retoma==='Sim').length,
-        '',
-        meus.filter(r=>r.fin==='Fint').length
-      ].map(esc2).join(';'));
-      rows.push('');
-    }
+  const mes=S.dashMes||curYM();
+  const ls=(S.comissoes||[]).filter(c=>c.mes===mes).slice().sort((a,b)=>a.vendedor_id.localeCompare(b.vendedor_id)||a.id-b.id);
+  const esc2=v=>{v=(v==null?'':String(v));return /[;\n"]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const rows=[['Vendedor','Descricao','Valor','Mes'].join(';')];
+  const vend=S.team.filter(p=>p.role==='vendedor');
+  vend.forEach(p=>{
+    const meus=ls.filter(c=>c.vendedor_id===p.id);
+    meus.forEach(c=>rows.push([p.nome||'',c.descricao||'',(c.valor!=null?String(c.valor).replace('.',','):''),mes].map(esc2).join(';')));
+    if(meus.length)rows.push([p.nome+' — SUBTOTAL',String(meus.reduce((a,c)=>a+(Number(c.valor)||0),0)).replace('.',','),'',''].map(esc2).join(';'));
   });
-  // Comercio (venda a comerciante): conta para a empresa, nao para vendedor
-  const comExp=base.filter(r=>r.venda_direta);
-  if(comExp.length){
-    rows.push(['COMERCIO (empresa - nao conta p/ vendedor)','','','','','','','','','','','',''].map(esc2).join(';'));
-    comExp.forEach(r=>{
-      rows.push([
-        'Comercio ('+(vendName(r.vendedor_id)||'')+')', r.id_cliente||'', r.model||'', r.version||'', r.mat||'', r.type||'',
-        r.col_298?String(r.col_298).slice(0,10):'',
-        r.flag_seguro?'Sim':'Nao', r.flag_ccgo?'Sim':'Nao', r.flag_lifestyle?'Sim':'Nao',
-        r.retoma==='Sim'?'Sim':'Nao', r.fin||'', r.fin==='Fint'?'Sim':'Nao'
-      ].map(esc2).join(';'));
-    });
-    rows.push(['TOTAL COMERCIO', comExp.length+' retails','','','','','','','','','','',''].map(esc2).join(';'));
-    rows.push('');
-  }
-  // Total equipa (inclui comercio = bolo da empresa)
-  rows.push(['TOTAL EQUIPA', base.length+' retails','','','','','',
-    base.filter(r=>r.flag_seguro).length,
-    base.filter(r=>r.flag_ccgo).length,
-    base.filter(r=>r.flag_lifestyle).length,
-    base.filter(r=>r.retoma==='Sim').length,
-    '',
-    base.filter(r=>r.fin==='Fint').length
-  ].map(esc2).join(';'));
-
-  const blob=new Blob(['\ufeff'+rows.join(nl)],{type:'text/csv;charset=utf-8'});
+  const tot=ls.reduce((a,c)=>a+(Number(c.valor)||0),0);
+  rows.push(['TOTAL EQUIPA',String(tot).replace('.',','),'',''].map(esc2).join(';'));
+  const blob=new Blob(['\ufeff'+rows.join('\n')],{type:'text/csv;charset=utf-8'});
   const url=URL.createObjectURL(blob);const a=document.createElement('a');
-  a.href=url;a.download=`comissoes_${mesSel.replace('/','-')}.csv`;a.click();
-  URL.revokeObjectURL(url);
+  a.href=url;a.download='comissoes_'+mes.replace('/','-')+'.csv';document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(url),2000);
 }
-// ---- Cópia de segurança: um CSV por conjunto de dados ----
 function csvDescarregar(nome,linhas){
   if(!linhas||!linhas.length)return;
   const esc2=v=>{v=(v==null?'':String(v));return /[",\n;]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
@@ -3694,96 +3669,36 @@ function renderDashboard(){
 
   // ---- Resumo Comissões: retails do mês (298) com extras/retoma/Fint ----
   function comissoesView(){
-    const base=recs.filter(r=>r.status==='Retail'&&retailYM(r)===mesSel);
-    const ITENS=[
-      ['flag_seguro','Seguro Nosso',r=>!!r.flag_seguro],
-      ['flag_ccgo','CC Go',r=>!!r.flag_ccgo],
-      ['flag_lifestyle','Lifestyle',r=>!!r.flag_lifestyle],
-      ['retoma','Retoma',r=>r.retoma==='Sim'],
-      ['fin','Fint',r=>r.fin==='Fint'],
-    ];
-    const linhaVend=p=>{
-      const meus=base.filter(r=>r.vendedor_id===p.id&&!r.venda_direta);
-      const cel=(fn)=>{
-        if(!meus.length)return'<td class="com-cel">—</td>';
-        const n=meus.filter(fn).length;
-        const pct=Math.round(100*n/meus.length);
-        return`<td class="com-cel"><b>${n}</b><span class="com-pct">${pct}%</span></td>`;
-      };
-      return`<tr>
-        <td class="com-nome">${esc(p.nome||'?')}</td>
-        <td class="com-cel com-base">${meus.length}</td>
-        ${ITENS.map(([,,fn])=>cel(fn)).join('')}
-      </tr>`;
-    };
-    const linhaTotal=()=>{
-      const cel=(fn)=>{
-        if(!base.length)return'<td class="com-cel">—</td>';
-        const n=base.filter(fn).length;
-        return`<td class="com-cel"><b>${n}</b><span class="com-pct">${Math.round(100*n/base.length)}%</span></td>`;
-      };
-      return`<tr class="com-totrow">
-        <td class="com-nome">Equipa</td>
-        <td class="com-cel com-base">${base.length}</td>
-        ${ITENS.map(([,,fn])=>cel(fn)).join('')}
-      </tr>`;
+    const fmtE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+    const linhasDe=(vid)=>(S.comissoes||[]).filter(c=>c.vendedor_id===vid&&c.mes===mesSel).sort((a,b)=>a.id-b.id);
+    const subDe=(vid)=>linhasDe(vid).reduce((a,c)=>a+(Number(c.valor)||0),0);
+    const vendedores=team.filter(p=>p.role==='vendedor');
+    const totalGeral=vendedores.reduce((a,p)=>a+subDe(p.id),0);
+    const bloco=p=>{
+      const ls=linhasDe(p.id);const sub=subDe(p.id);
+      return`<div class="cm-vend">
+        <div class="cm-vend-h"><span class="cm-vend-nome">${esc(p.nome||'?')}</span><span class="cm-vend-sub">${fmtE(sub)}</span></div>
+        ${ls.length?`<table class="cm-tbl"><tbody>${ls.map(c=>`<tr>
+          <td class="cm-desc">${esc(c.descricao||'—')}</td>
+          <td class="cm-val">${fmtE(c.valor)}</td>
+          <td class="cm-x"><button class="pr-del" data-action="comissao-del" data-id="${c.id}" title="Remover">✕</button></td>
+        </tr>`).join('')}</tbody></table>`:'<div class="cm-vazio">Sem linhas neste mês.</div>'}
+        <div class="cm-add">
+          <input class="field-input" id="cm-desc-${p.id}" placeholder="Descrição (ex: Automatrícula F900 R)" style="flex:1;min-width:140px">
+          <input class="field-input cm-val-inp" id="cm-val-${p.id}" type="number" step="0.01" placeholder="€" style="width:100px">
+          <button class="btn btn-dark btn-sm" data-action="comissao-add" data-vid="${p.id}" data-mes="${esc(mesSel)}">＋ Adicionar</button>
+        </div>
+      </div>`;
     };
     return`${mesBar}
       <div class="gpp-tot-head" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-        <span>Resumo Comissões · ${esc(mesSel)} · <b>${base.length}</b> retail${base.length!==1?'s':''} entregue${base.length!==1?'s':''}</span>
-        ${base.length?`<button class="btn btn-orange btn-sm" data-action="export-comissoes">⬇ CSV por vendedor</button>`:''}
+        <span>Resumo Comissões · ${esc(mesSel)} · <b>${fmtE(totalGeral)}</b></span>
+        ${totalGeral?`<button class="btn btn-orange btn-sm" data-action="export-comissoes">⬇ CSV</button>`:''}
       </div>
-      ${base.length===0?'<div class="gpp-empty">Sem retails entregues neste mês.</div>':`
-      <div class="gpp-card" style="margin:0 16px;overflow-x:auto">
-        <table class="gpp-ltable com-table">
-          <thead><tr>
-            <th>Vendedor</th><th>Retails</th>
-            ${ITENS.map(([,l])=>`<th>${esc(l)}</th>`).join('')}
-          </tr></thead>
-          <tbody>
-            ${team.filter(p=>p.role==='vendedor').map(linhaVend).join('')}
-            ${(()=>{const com=base.filter(r=>r.venda_direta);if(!com.length)return'';const cel=fn=>`<td class="com-cel"><b>${com.filter(fn).length}</b></td>`;return`<tr style="background:var(--amber-bg)"><td class="com-nome">🤝 Comércio (empresa)</td><td class="com-cel com-base">${com.length}</td>${ITENS.map(([,,fn])=>cel(fn)).join('')}</tr>`;})()}
-            ${linhaTotal()}
-          </tbody>
-        </table>
-      </div>
-      <div class="gpp-pend-desc" style="margin-top:10px">Conta os retails com data <b>298</b> dentro do mês selecionado. A percentagem é sobre os retails do próprio vendedor. As <b>vendas a comerciante (🤝)</b> contam para o total da empresa mas <b>não</b> para nenhum vendedor.</div>
-      ${team.filter(p=>p.role==='vendedor').map(p=>{
-        const meus=base.filter(r=>r.vendedor_id===p.id&&!r.venda_direta);
-        if(!meus.length)return`<div class="gpp-sub-h" style="border-left:3px solid var(--border2)">${esc(p.nome||'?')} · <b>0</b></div><div class="gpp-empty">Sem retails entregues neste mês.</div>`;
-        const tot=fn=>meus.filter(fn).length;
-        return`<div class="gpp-sub-h" style="border-left:3px solid var(--orange)">${esc(p.nome||'?')} · <b>${meus.length}</b> retail${meus.length!==1?'s':''}</div>
-        <div class="gpp-card" style="margin:0 16px;overflow-x:auto">
-          <table class="gpp-ltable com-det">
-            <thead><tr>
-              <th>Cliente</th><th>Modelo</th><th>Matrícula</th><th>Tipo</th><th>Data 298</th>
-              ${ITENS.map(([,l])=>`<th>${esc(l)}</th>`).join('')}
-            </tr></thead>
-            <tbody>
-              ${meus.map(r=>`<tr class="gpp-lrow" data-action="open-record-from-dash" data-id="${r.id}">
-                <td style="font-weight:600">${esc(r.id_cliente||'—')}</td>
-                <td>${esc(r.model||'')} ${esc(r.version||'')}</td>
-                <td>${esc(r.mat||'—')}</td>
-                <td><span class="gpp-tipo-badge">${esc(r.type||'?')}</span></td>
-                <td style="color:var(--text3)">${r.col_298?esc(String(r.col_298).slice(0,10)):'—'}</td>
-                ${ITENS.map(([,,fn])=>`<td class="com-cel">${fn(r)?'<span class="com-sim">✓</span>':'<span class="com-nao">—</span>'}</td>`).join('')}
-              </tr>`).join('')}
-              <tr class="com-subtot">
-                <td colspan="5">Total ${esc((p.nome||'').split(' ')[0])}</td>
-                ${ITENS.map(([,,fn])=>`<td class="com-cel"><b>${tot(fn)}</b></td>`).join('')}
-              </tr>
-            </tbody>
-          </table>
-        </div>`;
-      }).join('')}
-      ${(()=>{const com=base.filter(r=>r.venda_direta);if(!com.length)return'';return`<div class="gpp-sub-h" style="border-left:3px solid var(--amber)">🤝 Comércio (empresa) · <b>${com.length}</b> — não conta para vendedor</div>
-        <div class="gpp-card" style="margin:0 16px;overflow-x:auto"><table class="gpp-ltable com-det">
-          <thead><tr><th>Comerciante</th><th>Modelo</th><th>Matrícula</th><th>Data 298</th><th>Trabalhado por</th></tr></thead>
-          <tbody>${com.map(r=>`<tr class="gpp-lrow" data-action="open-record-from-dash" data-id="${r.id}"><td style="font-weight:600">${esc(r.id_cliente||'—')}</td><td>${esc(r.model||'')} ${esc(r.version||'')}</td><td>${esc(r.mat||'—')}</td><td style="color:var(--text3)">${r.col_298?esc(String(r.col_298).slice(0,10)):'—'}</td><td style="color:var(--text3)">${esc(vendName(r.vendedor_id)||'—')}</td></tr>`).join('')}</tbody>
-        </table></div>`;})()}
-      <div style="height:20px"></div>`}`;
+      <div class="gpp-pend-desc" style="margin:0 16px 12px">Escreve as linhas de comissão de cada vendedor ao longo do mês (descrição + valor). O subtotal de cada um e o total da equipa atualizam sozinhos. Tudo fica gravado.</div>
+      <div class="cm-grid">${vendedores.map(bloco).join('')}</div>
+      <div class="cm-total-geral">Total da equipa · ${esc(mesSel)}: <b>${fmtE(totalGeral)}</b></div>`;
   }
-
   function perdidosView(){
     const perdidos=recs.filter(r=>r.status==='Perdido').slice().sort((a,b)=>new Date(b.status_updated_at||0)-new Date(a.status_updated_at||0));
     const fmtE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:0})+' €';
@@ -4115,6 +4030,8 @@ function bindEvents(){
       case'evento-add-cancel':setState({eventoAdding:false,eventoForm:{},eventoErr:''});break;
       case'evento-save-new':saveEventoNovo();break;
       case'evento-toggle':toggleEventoAtivo(parseInt(el.dataset.id));break;
+      case'comissao-add':comissaoAdd(el.dataset.vid,el.dataset.mes);break;
+      case'comissao-del':comissaoDel(el.dataset.id);break;
       case'premio-add':premioAdd(el.dataset.escopo);break;
       case'premio-del':premioDel(el.dataset.id);break;
       case'stockpick-sug':{S.form.stock_id=parseInt(el.dataset.id);render();break;}
@@ -4140,7 +4057,8 @@ function bindEvents(){
       case'gpp-mais':setState({gppMais:!S.gppMais});break;
       case'gpp-mais-close':setState({gppMais:false});break;
       case'gpp-sec':{const s=el.dataset.s;S.gppBusca='';S.gppMais=false;if(s==='escala'){setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}else if(s==='stock'||s==='depreciacao'||s==='margem'){setState({gppSec:s,dashAlertOpen:null});if(!S.stockLoaded)loadStock().then(()=>render());}
-      else if(s==='premios'){setState({gppSec:s,dashAlertOpen:null});if(!(S.premiosCfg||[]).length)loadPremiosCfg().then(()=>render());}else if(s==='evento'){setState({gppSec:s,dashAlertOpen:null,eventoErr:''});const ev=eventoAtual();if(ev){S.eventoSel=ev.id;loadRanking(ev.id).then(()=>render());}}else if(s==='funil'){setState({gppSec:s,dashAlertOpen:null});loadTransicoes().then(()=>render());}else{setState({gppSec:s,dashAlertOpen:null});}break}
+      else if(s==='premios'){setState({gppSec:s,dashAlertOpen:null});if(!(S.premiosCfg||[]).length)loadPremiosCfg().then(()=>render());}
+      else if(s==='comissoes'){setState({gppSec:s,dashAlertOpen:null});loadComissoes().then(()=>render());}else if(s==='evento'){setState({gppSec:s,dashAlertOpen:null,eventoErr:''});const ev=eventoAtual();if(ev){S.eventoSel=ev.id;loadRanking(ev.id).then(()=>render());}}else if(s==='funil'){setState({gppSec:s,dashAlertOpen:null});loadTransicoes().then(()=>render());}else{setState({gppSec:s,dashAlertOpen:null});}break}
       case'stock-cat':setState({stockCat:el.dataset.c,stockAdding:false});break;
       case'stock-vend-toggle':setState({stockVendOpen:!S.stockVendOpen});break;
       case'stock-add':setState({stockAdding:true,stockFormMax:false});break;
