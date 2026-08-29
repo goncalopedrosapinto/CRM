@@ -588,6 +588,7 @@ html,body{overflow-x:hidden;max-width:100vw}
 .pa-acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
 .pa-vazio{margin-top:10px;font-size:12px;color:var(--text3)}
 @media(max-width:700px){.pa-row{grid-template-columns:26px 1fr;row-gap:6px}.pa-mot{grid-column:2;max-width:100%;width:100%}}
+.am-chk{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text2);margin-top:10px;cursor:pointer}
 .cm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin:0 16px 12px}
 .cm-vend{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
 .cm-vend-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:8px}
@@ -610,6 +611,7 @@ html,body{overflow-x:hidden;max-width:100vw}
 .pr-frac{font-size:13px;color:var(--text2)}
 .pr-bar{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden}
 .pr-fill{height:100%;border-radius:4px;transition:width .4s}
+.pr-auto{font-size:11px;color:var(--amber);font-weight:600;margin-top:3px;line-height:1.4}
 .pr-premio{margin-top:10px;font-size:13px;color:var(--text2)}
 .pr-tier{font-size:11px;color:var(--text3)}
 .pr-falta{font-size:12px;color:var(--amber);font-weight:600}
@@ -1025,7 +1027,7 @@ let S={
   token:null,records:[],selected:null,form:{},
   me:null,team:[],objetivos:[],objEquipa:[],eventos:[],inscricoes:[],ranking:[],transicoes:[],norma:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
-  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',vdAdding:false,vdForm:{},vdErr:'',depTaxa:(()=>{try{return parseFloat(localStorage.getItem('bc_dep_taxa'))||0}catch(e){return 0}})(),premiosCfg:[],comissoes:[],exportBusy:false,exportMsg:'',gppSideOff:(()=>{try{return localStorage.getItem('bc_side')==='1'}catch(e){return false}})(),pedAutOpen:false,pedAutSel:{},
+  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',vdAdding:false,vdForm:{},vdErr:'',amAdding:false,amForm:{},amErr:'',depTaxa:(()=>{try{return parseFloat(localStorage.getItem('bc_dep_taxa'))||0}catch(e){return 0}})(),premiosCfg:[],comissoes:[],exportBusy:false,exportMsg:'',gppSideOff:(()=>{try{return localStorage.getItem('bc_side')==='1'}catch(e){return false}})(),pedAutOpen:false,pedAutSel:{},
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{INFO:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
@@ -1337,14 +1339,48 @@ function npsOf(vid){return S.nps.find(n=>n.vendedor_id===vid)||null}
 function recsInContext(){
   // Vendas a comerciante (venda_direta) contam para o BOLO da empresa, nunca para o vendedor.
   // Ficam fora de qualquer vista pessoal; so aparecem na vista de empresa (admin sem vendedor escolhido).
-  if(isAdmin())return S.viewVendedor?S.records.filter(r=>r.vendedor_id===S.viewVendedor&&!r.venda_direta):S.records;
-  return (S.records||[]).filter(r=>!r.venda_direta);
+  if(isAdmin())return S.viewVendedor?S.records.filter(r=>r.vendedor_id===S.viewVendedor&&!r.venda_direta&&!r.automatricula):S.records;
+  return (S.records||[]).filter(r=>!r.venda_direta&&!r.automatricula);
 }
 function recsOf(vid){return S.records.filter(r=>r.vendedor_id===vid)}
 function statsFor(recs){const ym=curYM();const fech=recs.filter(r=>(r.status==='Retail'||r.status==='Carteira')&&negYM(r)===ym);const funil=recs.filter(r=>FUNIL.includes(r.status));const bev=fech.filter(r=>r.bev).length;const fechTotal=recs.filter(r=>r.status==='Retail'||r.status==='Carteira').length;const perdidos=recs.filter(r=>r.status==='Perdido').length;return{fechados:fech.length,funil:funil.length,bev,fechTotal,perdidos,alerts:calcAlerts(recs)}}
 function lastUpdateDays(recs){let m=0;recs.forEach(r=>{const t=new Date(r.updated_at||r.status_updated_at||r.created_at||0).getTime();if(t>m)m=t});if(!m)return null;return Math.floor((Date.now()-m)/86400000)}
 function lastUpdateDaysR(r){const t=new Date(r.updated_at||r.status_updated_at||r.created_at||0).getTime();if(!t)return 999;return Math.floor((Date.now()-t)/86400000)}
 async function loadRecords(){setState({loading:true,error:''});try{const d=await supabaseApi('GET','/baviera_control?select=*&order=neg.desc.nullslast');setState({records:d,loading:false})}catch(e){setState({error:'Erro: '+e.message,loading:false})}}
+async function saveAutomatricula(){
+  const f=S.amForm||{};
+  if(!f.model||!f.model.trim()){setState({amErr:'Indica o modelo.'});return;}
+  const compra=(f.valor_entrada===''||f.valor_entrada==null)?null:parseFloat(f.valor_entrada);
+  if(compra==null){setState({amErr:'Indica quanto pagaste à BMW (valor de compra).'});return;}
+  const hoje=new Date().toISOString().slice(0,10);
+  const d298=(f.col_298&&String(f.col_298).trim())?String(f.col_298).trim():hoje;
+  const body={
+    vendedor_id:(S.me&&S.me.id)||null,
+    type:(f.tipo==='MD'?'MD':'MN'),
+    status:'Retail',
+    id_cliente:(f.id_cliente&&f.id_cliente.trim())||'Automatrícula — Baviera',
+    model:f.model.trim(),
+    mat:f.mat?f.mat.trim():null,
+    chas:f.chas?f.chas.trim():null,
+    pvp:compra,
+    valor_entrada:compra,
+    automatricula:true,
+    origin:'BMW Portugal',
+    neg:hoje,
+    col_298:d298,
+    obs_gestor:'Automatriculação — compra a BMW Portugal.'
+  };
+  setState({loading:true,amErr:''});
+  try{
+    await supabaseApi('POST','/baviera_control',body);
+    if(f.criar_stock!==false){
+      try{await supabaseApi('POST','/stock_usadas',{modelo:f.model.trim(),matricula:f.mat?f.mat.trim():null,categoria:'usada',estado:'Disponível',valor_entrada:compra,data_rececao:d298});}catch(e){}
+    }
+    await loadRecords();
+    if(S.stockLoaded){try{await loadStock();}catch(e){}}
+    setState({loading:false,amAdding:false,amForm:{},amErr:''});
+  }catch(e){setState({loading:false,amErr:'Erro: '+e.message});}
+}
 async function saveVendaDireta(){
   const f=S.vdForm||{};
   if(!f.vendedor_id){setState({vdErr:'Escolhe o vendedor que retomou a mota.'});return;}
@@ -2525,7 +2561,7 @@ function EXPORT_FOLHAS(){
   return [
     {nome:'Negócios',path:'/baviera_control?select=*&order=id.asc',cols:[
       {c:'id',l:'ID'},{c:'status',l:'Status'},{c:'vendedor_id',l:'Vendedor',f:nome},
-      {c:'venda_direta',l:'Venda a comerciante',f:sn},
+      {c:'venda_direta',l:'Venda a comerciante',f:sn},{c:'automatricula',l:'Automatriculação',f:sn},
       {c:'id_cliente',l:'Cliente'},{c:'nif',l:'NIF'},{c:'cc',l:'CC'},{c:'morada',l:'Morada'},
       {c:'email',l:'Email'},{c:'contacto',l:'Contacto'},
       {c:'resp',l:'Responsável'},{c:'local',l:'Local'},{c:'neg',l:'Data negócio',f:d},{c:'mes1',l:'Mês'},
@@ -3131,24 +3167,25 @@ function renderDashboard(){
     const esc_=e=>cfg.filter(c=>c.escopo===e).slice().sort((a,b)=>Number(a.pct_min)-Number(b.pct_min));
     // realizado: retail de novas por data 298 (mesma regra dos objetivos)
     const realNovas=ym=>recs.filter(r=>r.status==='Retail'&&isNovas(r)&&retailYM(r)===ym).length;
+    const autoNovas=ym=>recs.filter(r=>r.status==='Retail'&&isNovas(r)&&r.automatricula&&retailYM(r)===ym).length;
     const realUsadas=ym=>recs.filter(r=>r.status==='Retail'&&r.type==='MU'&&retailYM(r)===ym).length;
     const objNovas=ym=>{const o=objEquipaGet(ym,'novas');return o?Number(o.objetivo)||0:0;};
     const premioDe=(escopo,pct)=>{const t=esc_(escopo).filter(c=>pct>=Number(c.pct_min));return t.length?t[t.length-1]:null;};
     // mensal
-    const oM=objNovas(mSel),rM=realNovas(mSel);
+    const oM=objNovas(mSel),rM=realNovas(mSel),aM=autoNovas(mSel);
     const pM=oM>0?Math.round(1000*rM/oM)/10:null;
     const prM=pM!=null?premioDe('mensal',pM):null;
     // trimestral
-    const oT=mesesTri.reduce((a,m)=>a+objNovas(m),0), rT=mesesTri.reduce((a,m)=>a+realNovas(m),0);
+    const oT=mesesTri.reduce((a,m)=>a+objNovas(m),0), rT=mesesTri.reduce((a,m)=>a+realNovas(m),0), aT=mesesTri.reduce((a,m)=>a+autoNovas(m),0);
     const pT=oT>0?Math.round(1000*rT/oT)/10:null;
     const prT=pT!=null?premioDe('trimestral',pT):null;
     const cor=p=>p==null?'var(--text3)':(p>=100?'var(--green)':(p>=90?'var(--amber)':'var(--red)'));
-    const bloco=(tit,sub,obj,real,pct,pr,escopo)=>`
+    const bloco=(tit,sub,obj,real,pct,pr,escopo,auto)=>`
       <div class="pr-bloco">
         <div class="pr-h">${tit}<span class="pr-sub">${sub}</span></div>
         <div class="pr-main">
           <div class="pr-pct" style="color:${cor(pct)}">${pct!=null?pct+'%':'—'}</div>
-          <div class="pr-frac">${real} de ${obj||'—'} novas</div>
+          <div class="pr-frac">${real} de ${obj||'—'} novas${auto?`<div class="pr-auto">${real-auto} vendidas + <b>${auto}</b> automatriculada${auto!==1?'s':''} · sem elas: <b>${obj>0?Math.round(1000*(real-auto)/obj)/10:0}%</b></div>`:''}</div>
         </div>
         <div class="pr-bar"><div class="pr-fill" style="width:${Math.min(100,pct||0)}%;background:${cor(pct)}"></div></div>
         <div class="pr-premio">${obj===0?'<span class="pr-falta">Objetivo não lançado para este período</span>':(esc_(escopo).length===0?'<span class="pr-falta">Sem escalões definidos — configura abaixo</span>':(pr?`Prémio: <b>${fmtE(pr.valor)}</b> <span class="pr-tier">(escalão ${pr.pct_min}%)</span>`:'<span class="pr-falta">Abaixo do primeiro escalão</span>'))}</div>
@@ -3174,8 +3211,8 @@ function renderDashboard(){
       <select class="gpp-mes-sel" data-action="dash-mes-sel">${meses.slice().reverse().map(m=>`<option value="${m}" ${mSel===m?'selected':''}>${esc(m)}</option>`).join('')}</select></div>
       <div class="gpp-tot-head">Os meus prémios · ${esc(mSel)}</div>
       <div class="pr-grid">
-        ${bloco('Prémio mensal',esc(mSel),oM,rM,pM,prM,'mensal')}
-        ${bloco('Prémio trimestral','T'+(tri+1)+' '+aa+' · '+mesesTri.map(m=>m.slice(5)).join('+'),oT,rT,pT,prT,'trimestral')}
+        ${bloco('Prémio mensal',esc(mSel),oM,rM,pM,prM,'mensal',aM)}
+        ${bloco('Prémio trimestral','T'+(tri+1)+' '+aa+' · '+mesesTri.map(m=>m.slice(5)).join('+'),oT,rT,pT,prT,'trimestral',aT)}
       </div>
       ${(prM||prT)?`<div class="pr-total">Total estimado do período: <b>${fmtE((prM?Number(prM.valor):0)+(prT?Number(prT.valor):0))}</b> <span style="font-weight:400;color:var(--text3)">(mensal + trimestral)</span></div>`:''}
       <div class="pr-ctx">
@@ -3528,12 +3565,34 @@ function renderDashboard(){
         </div>
       </div>`:`<div style="margin:0 16px 14px"><button class="btn btn-dark btn-sm" data-action="vd-add">🤝 Registar venda direta a comerciante</button></div>`;
   }
+  function amBlocoHTML(){
+    const f=S.amForm||{};
+    return S.amAdding?`
+      <div class="gpp-card vd-form" style="margin:0 16px 14px">
+        <div class="vd-form-t">🏷️ Automatriculação (compra à BMW Portugal)</div>
+        <div class="vd-form-sub">Conta como <b>retail da empresa</b> e abate ao objetivo. <b>Não conta para nenhum vendedor.</b> A mota entra no teu stock de usadas com o valor que pagaste.</div>
+        ${S.amErr?`<div class="error" style="margin-bottom:10px">${esc(S.amErr)}</div>`:''}
+        <div class="vd-grid">
+          <div class="vd-f"><label>Modelo *</label><input class="norma-inp" data-am-f="model" value="${esc(f.model||'')}" placeholder="Ex: R 1300 GS"></div>
+          <div class="vd-f"><label>Tipo</label><select class="norma-inp" data-am-f="tipo"><option value="MN" ${f.tipo!=='MD'?'selected':''}>MN — nova</option><option value="MD" ${f.tipo==='MD'?'selected':''}>MD — demo</option></select></div>
+          <div class="vd-f"><label>Matrícula</label><input class="norma-inp" data-am-f="mat" value="${esc(f.mat||'')}" placeholder="Ex: AA-00-AA"></div>
+          <div class="vd-f"><label>Nº chassis</label><input class="norma-inp" data-am-f="chas" value="${esc(f.chas||'')}" placeholder="—"></div>
+          <div class="vd-f"><label>Mês de retail (data 298) *</label><input class="norma-inp" type="date" data-am-f="col_298" value="${esc(f.col_298||new Date().toISOString().slice(0,10))}"></div>
+          <div class="vd-f"><label>Valor de compra à BMW *</label><div class="stock-eurwrap"><input class="norma-inp stock-num" data-am-f="valor_entrada" type="number" step="0.01" value="${f.valor_entrada!=null?esc(f.valor_entrada):''}" placeholder="0"><span class="stock-eur2">€</span></div></div>
+        </div>
+        <label class="am-chk"><input type="checkbox" data-am-f="criar_stock" ${f.criar_stock!==false?'checked':''}> Criar também a mota no <b>Stock Usadas</b> (recomendado)</label>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn btn-orange btn-sm" data-action="am-save" ${S.loading?'disabled':''}>${S.loading?'A gravar…':'Registar automatriculação'}</button>
+          <button class="btn btn-dark btn-sm" data-action="am-cancel">Cancelar</button>
+        </div>
+      </div>`:`<div style="margin:0 16px 14px"><button class="btn btn-dark btn-sm" data-action="am-add">🏷️ Registar automatriculação (compra à BMW)</button></div>`;
+  }
   function comercioView(){
     const fmtE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:0})+' €';
     const fmtMes=d=>{if(!d)return'—';const parts=String(d).slice(0,7).split('-');if(parts.length<2)return String(d).slice(0,10);const mi=(+parts[1])-1;return (MONTH_NAMES[mi]||parts[1])+' '+parts[0];};
     const com=(recs||[]).filter(r=>r.venda_direta).slice().sort((a,b)=>String(b.col_298||'').localeCompare(String(a.col_298||'')));
     const totalVal=com.reduce((a,r)=>a+(parseFloat(r.pvp)||0),0);
-    return`${vdBlocoHTML()}
+    return`${vdBlocoHTML()}${amBlocoHTML()}
       <div class="gpp-tot-head" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
         <span>🤝 Vendas a comerciante · <b>${com.length}</b> mota${com.length!==1?'s':''}${totalVal?` · ${fmtE(totalVal)}`:''}</span>
       </div>
@@ -3931,6 +3990,7 @@ function bindEvents(){
     if(el.dataset&&el.dataset.mgRec){const v=el.value;saveRecordField(el.dataset.mgRec,el.dataset.mgF,(v===''||v==null)?null:Number(v));return;}
     if(el.dataset&&el.dataset.depVenda){const id=el.dataset.depVenda,v=el.value;saveStockField(id,'venda_ficticia',(v===''||v==null)?null:Number(v));return;}
     if(el.dataset&&el.dataset.obsGestor){saveObsGestor(el.dataset.obsGestor,el.value);return;}
+    if(el.dataset&&el.dataset.amF){const k=el.dataset.amF;const v=(el.type==='checkbox')?el.checked:el.value;S.amForm=Object.assign({},S.amForm||{},{[k]:v});render();return;}
     if(el.dataset&&el.dataset.vdF){S.vdForm=Object.assign({},S.vdForm,{[el.dataset.vdF]:el.value});if(el.dataset.vdF==='pvp'||el.dataset.vdF==='valor_entrada')render();return;}
     if(el.classList&&el.classList.contains('stock-kms-inp')){saveKmsVend(el.dataset.kmsTipo,el.dataset.kmsId,el.value);return;}
     if(el.classList&&el.classList.contains('stock-vend-estado')){
@@ -4030,6 +4090,9 @@ function bindEvents(){
       case'evento-add-cancel':setState({eventoAdding:false,eventoForm:{},eventoErr:''});break;
       case'evento-save-new':saveEventoNovo();break;
       case'evento-toggle':toggleEventoAtivo(parseInt(el.dataset.id));break;
+      case'am-add':setState({amAdding:true,amForm:{},amErr:''});break;
+      case'am-cancel':setState({amAdding:false,amForm:{},amErr:''});break;
+      case'am-save':saveAutomatricula();break;
       case'comissao-add':comissaoAdd(el.dataset.vid,el.dataset.mes);break;
       case'comissao-del':comissaoDel(el.dataset.id);break;
       case'premio-add':premioAdd(el.dataset.escopo);break;
