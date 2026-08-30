@@ -3592,7 +3592,7 @@ function renderDashboard(){
     const fmtMes=d=>{if(!d)return'—';const parts=String(d).slice(0,7).split('-');if(parts.length<2)return String(d).slice(0,10);const mi=(+parts[1])-1;return (MONTH_NAMES[mi]||parts[1])+' '+parts[0];};
     const com=(recs||[]).filter(r=>r.venda_direta).slice().sort((a,b)=>String(b.col_298||'').localeCompare(String(a.col_298||'')));
     const totalVal=com.reduce((a,r)=>a+(parseFloat(r.pvp)||0),0);
-    return`${vdBlocoHTML()}${amBlocoHTML()}
+    return`${vdBlocoHTML()}
       <div class="gpp-tot-head" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
         <span>🤝 Vendas a comerciante · <b>${com.length}</b> mota${com.length!==1?'s':''}${totalVal?` · ${fmtE(totalVal)}`:''}</span>
       </div>
@@ -3682,6 +3682,7 @@ function renderDashboard(){
         <button class="retail-tab active" data-action="retail-modo" data-m="mes">Por mês</button>
         <button class="retail-tab" data-action="retail-modo" data-m="sempre">De sempre</button>
       </div>
+      ${amBlocoHTML()}
       ${listaEstado('Retail',retailYM)}`;
     // MODO DE SEMPRE
     let arr=recs.filter(r=>r.status==='Retail');
