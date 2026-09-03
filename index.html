@@ -1004,7 +1004,7 @@ const TYPES=['MN','MD','MU'],ORIGINS=['','Cliente','Recom.','Stand','Evento','Le
 const FIELD_GROUPS=[
   {g:'INFO',fields:[{k:'status',l:'Status',t:'select',o:STATUSES},{k:'motivo_perda',l:'Motivo da Perda',t:'select',o:MOTIVOS_PERDA,show:'perdido'},{k:'alert_date',l:'Alertar no dia (sugerido — podes mudar)',t:'date',show:'funil'}]},
   {g:'Identificação',fields:[{k:'id_cliente',l:'Cliente',t:'text'},{k:'local',l:'Código Postal',t:'text'},{k:'nif',l:'NIF',t:'text'},{k:'morada',l:'Morada',t:'text'},{k:'cc',l:'CC',t:'text'},{k:'email',l:'Email',t:'text'},{k:'contacto',l:'Contacto',t:'text'}]},
-  {g:'Negócio',fields:[{k:'neg',l:'Data Negócio',t:'date'},{k:'mes1',l:'Mês Referência',t:'month'},{k:'type',l:'Tipo',t:'select',o:TYPES},{k:'pvp',l:'PVP (€)',t:'number'},{k:'origin',l:'Origem',t:'select',o:ORIGINS},{k:'lead_webapp',l:'Nº Lead (WebApp)',t:'text',show:'lead'},{k:'profile',l:'Perfil',t:'select',o:PROFILES},{k:'retoma',l:'Retoma?',t:'select',o:['Não','Sim']},{k:'retoma_mat',l:'Matrícula da Retoma',t:'text',show:'retoma'},{k:'biz',l:'Bizagi',t:'text'},{k:'fin',l:'Financiamento',t:'select',o:FINS}]},
+  {g:'Negócio',fields:[{k:'neg',l:'Data Negócio',t:'date'},{k:'mes1',l:'Mês Referência',t:'month'},{k:'type',l:'Tipo',t:'select',o:TYPES},{k:'pvp',l:'PVP (€)',t:'number'},{k:'origin',l:'Origem',t:'select',o:ORIGINS},{k:'lead_webapp',l:'Nº Lead (WebApp)',t:'text',show:'lead'},{k:'profile',l:'Perfil',t:'select',o:PROFILES},{k:'retoma',l:'Retoma?',t:'select',o:['Não','Sim']},{k:'retoma_modelo',l:'Modelo da Retoma',t:'text',show:'retoma'},{k:'retoma_mat',l:'Matrícula da Retoma',t:'text',show:'retoma'},{k:'biz',l:'Bizagi',t:'text'},{k:'fin',l:'Financiamento',t:'select',o:FINS}]},
   {g:'Viatura',fields:[{k:'stock_id',l:'Mota do Stock (modelo · matrícula)',t:'stockpick',show:'stockpick'},{k:'model',l:'Modelo',t:'text'},{k:'version',l:'Versão',t:'text'},{k:'stock',l:'Em Stock?',t:'select',o:['Não','Sim']},{k:'enc',l:'Encomenda',t:'text'},{k:'chas',l:'Chassis',t:'text'},{k:'mat',l:'Matrícula',t:'text'},{k:'gar',l:'Garantia?',t:'select',o:['Não','Sim']},{k:'gar_periodo',l:'Período de Garantia',t:'select',o:GAR_PERIODOS,show:'garantia'}]},
   {g:'Extras',fields:[{k:'flag_ccgo',l:'CC Go',t:'toggle'},{k:'flag_rgpd',l:'RGPD',t:'toggle'},{k:'flag_seguro',l:'Seguro Nosso',t:'toggle'},{k:'flag_lifestyle',l:'Lifestyle',t:'toggle'}]},
   {g:'Datas',fields:[{k:'col_198',l:'198',t:'text'},{k:'dmat',l:'Data Matrícula',t:'date'},{k:'col_298',l:'298',t:'date'}]},
@@ -1946,7 +1946,7 @@ function renderList(){
 function origemVeiculo(r){if(!r)return'—';if(r.type==='MU')return'Usada';if(r.type==='MD')return'DEMO';if(r.stock==='Sim')return'Stock';if(r.enc)return'Encomenda';return'—';}
 function textoMatricula(r){r=r||{};return['*Pedido de matrícula*','NIF: '+(r.nif||'—'),'CC: '+(r.cc||'—'),'Nome: '+(r.id_cliente||'—'),'Chassis/VIN: '+(r.chas||'—'),'Nº Bizagi: '+(r.biz||'—')].join('\n');}
 function tipoLabel(t){return{MN:'MN - Mota Nova',MD:'MD - Mota Demo',MU:'MU - Mota Usada'}[t]||(t||'—');}
-function textoVenda(r){r=r||{};const modelo=[r.model,r.version].filter(Boolean).join(' ')||'—';const ret=r.retoma==='Sim'?('Retoma'+(r.retoma_mat?' ('+r.retoma_mat+')':'')):'Sem Retoma';return['*Comunicação de venda*','Modelo: '+modelo,'Tipo: '+tipoLabel(r.type),ret,'Pagamento: '+(r.fin||'—'),'Nome: '+(r.id_cliente||'—')].join('\n');}
+function textoVenda(r){r=r||{};const modelo=[r.model,r.version].filter(Boolean).join(' ')||'—';const ret=r.retoma==='Sim'?('Retoma'+(r.retoma_modelo?' '+r.retoma_modelo:'')+(r.retoma_mat?' ('+r.retoma_mat+')':'')):'Sem Retoma';return['*Comunicação de venda*','Modelo: '+modelo,'Tipo: '+tipoLabel(r.type),ret,'Pagamento: '+(r.fin||'—'),'Nome: '+(r.id_cliente||'—')].join('\n');}
   function pedAutLista(){
     const norma=(S.norma||[]).slice();
     const rank=n=>n.vendida?0:(n.estado!=='Matriculada'?1:2);
@@ -2569,7 +2569,7 @@ function EXPORT_FOLHAS(){
       {c:'model',l:'Modelo'},{c:'version',l:'Versão'},{c:'enc',l:'Encomenda'},{c:'chas',l:'Chassi'},{c:'mat',l:'Matrícula'},
       {c:'gar',l:'Garantia'},{c:'gar_periodo',l:'Garantia período'},{c:'stock',l:'Stock'},{c:'stock_id',l:'Stock ID'},
       {c:'pvp',l:'PVP'},{c:'valor_entrada',l:'Valor entrada'},
-      {c:'retoma',l:'Retoma',f:v=>v||''},{c:'retoma_mat',l:'Retoma matrícula'},
+      {c:'retoma',l:'Retoma',f:v=>v||''},{c:'retoma_modelo',l:'Retoma modelo'},{c:'retoma_mat',l:'Retoma matrícula'},
       {c:'qor',l:'QOR'},{c:'xev',l:'XEV'},{c:'bev',l:'BEV'},{c:'m_flag',l:'M'},{c:'csc',l:'CSC'},{c:'cme',l:'CME'},
       {c:'cme_confirmed',l:'CME confirmado',f:dt},
       {c:'flag_seguro',l:'Seguro',f:sn},{c:'flag_ccgo',l:'CCGO',f:sn},{c:'flag_lifestyle',l:'Lifestyle',f:sn},{c:'flag_rgpd',l:'RGPD',f:sn},
@@ -2758,7 +2758,7 @@ function exportCSV(incluirPessoais){
   const DEF=[
     {c:'id',l:'ID'},{c:'status',l:'Status'},{c:'vendedor_id',l:'Vendedor',f:nome},{c:'resp',l:'Resp'},{c:'motivo_perda',l:'MotivoPerda'},
     {c:'id_cliente',l:'Cliente'},{c:'nif',l:'NIF',p:1},{c:'cc',l:'CC',p:1},{c:'morada',l:'Morada',p:1},{c:'email',l:'Email',p:1},{c:'contacto',l:'Contacto',p:1},{c:'local',l:'CodPostal'},
-    {c:'neg',l:'DataNegocio'},{c:'mes1',l:'MesRef'},{c:'type',l:'Tipo'},{c:'pvp',l:'PVP'},{c:'origin',l:'Origem'},{c:'lead_webapp',l:'NumLeadWebApp'},{c:'profile',l:'Perfil'},{c:'retoma',l:'Retoma'},{c:'retoma_mat',l:'MatRetoma'},{c:'biz',l:'Bizagi'},{c:'fin',l:'Financiamento'},
+    {c:'neg',l:'DataNegocio'},{c:'mes1',l:'MesRef'},{c:'type',l:'Tipo'},{c:'pvp',l:'PVP'},{c:'origin',l:'Origem'},{c:'lead_webapp',l:'NumLeadWebApp'},{c:'profile',l:'Perfil'},{c:'retoma',l:'Retoma'},{c:'retoma_modelo',l:'ModeloRetoma'},{c:'retoma_mat',l:'MatRetoma'},{c:'biz',l:'Bizagi'},{c:'fin',l:'Financiamento'},
     {c:'model',l:'Modelo'},{c:'version',l:'Versao'},{c:'stock',l:'EmStock'},{c:'enc',l:'Encomenda'},{c:'chas',l:'Chassis'},{c:'mat',l:'Matricula'},{c:'stock_id',l:'MotaStock',f:nomeStock},{c:'gar',l:'Garantia'},{c:'gar_periodo',l:'PeriodoGarantia'},
     {c:'flag_ccgo',l:'CCGo',f:bool},{c:'flag_rgpd',l:'RGPD',f:bool},{c:'flag_seguro',l:'SeguroNosso',f:bool},{c:'flag_lifestyle',l:'Lifestyle',f:bool},{c:'xev',l:'xEV'},{c:'bev',l:'BEV'},{c:'qor',l:'QOR'},{c:'m_flag',l:'M_FLAG'},{c:'csc',l:'CSC'},{c:'cme',l:'CME'},{c:'cme_confirmed',l:'CME_Confirmado'},
     {c:'col_198',l:'198'},{c:'dmat',l:'DataMatricula'},{c:'col_298',l:'298'},{c:'app',l:'APP'},
