@@ -1361,13 +1361,14 @@ async function saveLead(){
   const body={vendedor_id:f.vendedor_id,status:f.status||'Morno',origin:'Lead',
     campanha:String(f.campanha).trim(),id_cliente:String(f.id_cliente).trim(),
     contacto:f.contacto?String(f.contacto).trim():null,model:f.model?String(f.model).trim():null,
-    obs:f.obs?String(f.obs).trim():null};
+    obs:f.obs?String(f.obs).trim():null,
+    alert_date:(f.alert_date&&String(f.alert_date).trim())||(()=>{const d=new Date();d.setDate(d.getDate()+2);return d.toISOString().slice(0,10);})()};
   setState({loading:true,leadErr:'',leadOk:''});
   try{
     await supabaseApi('POST','/baviera_control',body);
     await loadRecords();
     const nome=body.id_cliente;
-    S.leadForm={campanha:body.campanha,vendedor_id:body.vendedor_id,status:body.status};
+    S.leadForm={campanha:body.campanha,vendedor_id:body.vendedor_id,status:body.status,alert_date:body.alert_date};
     S.campSel=body.campanha;
     setState({loading:false,leadErr:'',leadOk:nome+' → funil de '+(vendName(body.vendedor_id)||'')});
     const el=document.getElementById('lead-cliente');if(el)el.focus();
@@ -1996,6 +1997,22 @@ function textoVenda(r){r=r||{};const modelo=[r.model,r.version].filter(Boolean).
     });
     return 'Eng. Ruben,\n\nSolicito autorização para matricular '+(pl?'os seguintes demonstradores':'o seguinte demonstrador')+':\n\n'+linhas.join('\n');
   }
+function campTexto(){
+  const cSel=S.campSel;
+  const arr=recs.filter(r=>r.campanha&&String(r.campanha).trim()===cSel);
+  if(!arr.length)return'';
+  const g=arr.filter(r=>r.status==='Retail'||r.status==='Carteira'),p=arr.filter(r=>r.status==='Perdido'),c=arr.filter(r=>FUNIL.includes(r.status));
+  const l=arr.map(r=>{
+    let est=r.status;
+    if(r.status==='Perdido'&&r.motivo_perda)est='Perdido — '+r.motivo_perda;
+    else if(r.status==='Retail'||r.status==='Carteira')est='Negócio fechado ('+r.status+')';
+    const v=vendName(r.vendedor_id);
+    return '• '+(r.id_cliente||'?')+(r.model?' ('+r.model+')':'')+' — '+est+(v?' — '+v:' — por atribuir')+(r.obs?' | '+r.obs:'');
+  });
+  return `Ponto de situação — ${cSel}\n\nRecebidas: ${arr.length} | Em curso: ${c.length} | Convertidas: ${g.length} | Perdidas: ${p.length}\n\n${l.join('\n')}`;
+}
+// ---- Funil (todos os vendedores) ----
+
 function copiarTexto(txt,btn){
   const flash=()=>{if(!btn)return;const o=btn.getAttribute('data-label')||btn.textContent;if(!btn.getAttribute('data-label'))btn.setAttribute('data-label',o);btn.textContent='✓ Copiado';btn.classList.add('copied');setTimeout(()=>{btn.textContent=btn.getAttribute('data-label');btn.classList.remove('copied');},1600);};
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(flash).catch(()=>fallbackCopy(txt,flash));}
@@ -3259,7 +3276,7 @@ function renderDashboard(){
     if(!S.leadAdding)return`<div style="margin:0 16px 14px"><button class="btn btn-orange" data-action="lead-add-open">＋ Inserir leads e enviar ao funil</button></div>`;
     return`<div class="gpp-card vd-form" style="margin:0 16px 14px">
       <div class="vd-form-t">🎯 Nova lead → funil do vendedor</div>
-      <div class="vd-form-sub">A campanha e o vendedor ficam fixos entre inserções — mete uma lead atrás da outra sem repetir.</div>
+      <div class="vd-form-sub">A campanha, o vendedor e a data ficam fixos entre inserções. A lead entra no funil dele e <b>acende-lhe o alerta “para contactar”</b> na data que puseres (por omissão, daqui a 2 dias).</div>
       ${S.leadErr?`<div class="error" style="margin-bottom:10px">${esc(S.leadErr)}</div>`:''}
       ${S.leadOk?`<div class="lead-ok">✓ ${esc(S.leadOk)}</div>`:''}
       <div class="vd-grid">
@@ -3268,6 +3285,7 @@ function renderDashboard(){
         <div class="vd-f"><label>Cliente *</label><input class="norma-inp" id="lead-cliente" data-lead-f="id_cliente" value="${esc(f.id_cliente||'')}" placeholder="Nome do cliente"></div>
         <div class="vd-f"><label>Telefone</label><input class="norma-inp" data-lead-f="contacto" value="${esc(f.contacto||'')}" placeholder="9xxxxxxxx"></div>
         <div class="vd-f"><label>Mota atual / interesse</label><input class="norma-inp" data-lead-f="model" value="${esc(f.model||'')}" placeholder="Ex: R 1150 R (2001)"></div>
+        <div class="vd-f"><label>Contactar até *</label><input class="norma-inp" type="date" data-lead-f="alert_date" value="${esc(f.alert_date||(()=>{const d=new Date();d.setDate(d.getDate()+2);return d.toISOString().slice(0,10);})())}"></div>
         <div class="vd-f"><label>Estado no funil</label><select class="norma-inp" data-lead-f="status">${['Quente','Morno','Frio'].map(x=>`<option ${((f.status||'Morno')===x)?'selected':''}>${x}</option>`).join('')}</select></div>
         <div class="vd-f" style="grid-column:1/-1"><label>Notas</label><input class="norma-inp" data-lead-f="obs" value="${esc(f.obs||'')}" placeholder="Ex: passou na oficina, previsão de troca"></div>
       </div>
@@ -3299,7 +3317,7 @@ function renderDashboard(){
       <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}">${esc(r.model||'')} ${esc(r.version||'')}</td>
       <td>${esc(vendName(r.vendedor_id)||'<span style="color:var(--red)">por atribuir</span>')}</td>
       <td>${badge(r)}</td>
-      <td style="color:var(--text3);font-size:12px">${r.status_updated_at?esc(String(r.status_updated_at).slice(0,10)):'—'}</td>
+      <td style="font-size:12px">${(()=>{if(!r.alert_date)return'<span style="color:var(--text3)">—</span>';const hoje=new Date().toISOString().slice(0,10);const atras=r.alert_date<=hoje&&FUNIL.includes(r.status);return`<span style="color:${atras?'var(--red)':'var(--text3)'};font-weight:${atras?'700':'400'}">${esc(r.alert_date)}${atras?' ⚠️':''}</span>`;})()}</td>
       <td style="color:var(--text3);font-size:12px">${esc(r.obs||'')}</td>
     </tr>`;
     return`<div class="gpp-tot-head" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
@@ -3316,25 +3334,10 @@ function renderDashboard(){
       ${semTratar.length?`<div class="mg-aviso">⚠️ <b>${semTratar.length}</b> lead${semTratar.length!==1?'s':''} ainda sem estado de funil — ninguém lhes pegou.</div>`:''}
       <div style="margin:0 16px 12px"><button class="btn btn-orange btn-sm" data-action="camp-copiar">📋 Copiar ponto de situação (para email)</button></div>
       <div class="gpp-card" style="margin:0 16px 20px;overflow-x:auto"><table class="gpp-ltable lc-tbl">
-        <thead><tr><th>Cliente</th><th>Viatura</th><th>Vendedor</th><th>Estado</th><th>Últ. atualização</th><th>Notas</th></tr></thead>
+        <thead><tr><th>Cliente</th><th>Viatura</th><th>Vendedor</th><th>Estado</th><th>Contactar até</th><th>Notas</th></tr></thead>
         <tbody>${arr.map(linha).join('')}</tbody></table></div>
       <div class="gpp-pend-desc" style="margin:0 16px 16px">As leads inseridas aqui vão direto para o funil do vendedor escolhido. Ele trabalha-as como qualquer outra e o ponto de situação atualiza-se sozinho.</div>`;
   }
-  function campTexto(){
-    const cSel=S.campSel;
-    const arr=recs.filter(r=>r.campanha&&String(r.campanha).trim()===cSel);
-    if(!arr.length)return'';
-    const g=arr.filter(r=>r.status==='Retail'||r.status==='Carteira'),p=arr.filter(r=>r.status==='Perdido'),c=arr.filter(r=>FUNIL.includes(r.status));
-    const l=arr.map(r=>{
-      let est=r.status;
-      if(r.status==='Perdido'&&r.motivo_perda)est='Perdido — '+r.motivo_perda;
-      else if(r.status==='Retail'||r.status==='Carteira')est='Negócio fechado ('+r.status+')';
-      const v=vendName(r.vendedor_id);
-      return '• '+(r.id_cliente||'?')+(r.model?' ('+r.model+')':'')+' — '+est+(v?' — '+v:' — por atribuir')+(r.obs?' | '+r.obs:'');
-    });
-    return `Ponto de situação — ${cSel}\n\nRecebidas: ${arr.length} | Em curso: ${c.length} | Convertidas: ${g.length} | Perdidas: ${p.length}\n\n${l.join('\n')}`;
-  }
-  // ---- Funil (todos os vendedores) ----
   function funilView(){
     const FUN=['Quente','Morno','Frio'];
     const grupos={Quente:[],Morno:[],Frio:[]};
