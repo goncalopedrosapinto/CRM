@@ -1997,22 +1997,36 @@ function textoVenda(r){r=r||{};const modelo=[r.model,r.version].filter(Boolean).
     });
     return 'Eng. Ruben,\n\nSolicito autorização para matricular '+(pl?'os seguintes demonstradores':'o seguinte demonstrador')+':\n\n'+linhas.join('\n');
   }
+function campSelAtual(){
+  const todas=(S.records||[]).filter(r=>r.campanha&&String(r.campanha).trim());
+  const camps=[...new Set(todas.map(r=>String(r.campanha).trim()))].sort().reverse();
+  if(!camps.length)return null;
+  return (S.campSel&&camps.includes(S.campSel))?S.campSel:camps[0];
+}
 function campTexto(){
-  const cSel=S.campSel;
-  const arr=recs.filter(r=>r.campanha&&String(r.campanha).trim()===cSel);
-  if(!arr.length)return'';
-  const g=arr.filter(r=>r.status==='Retail'||r.status==='Carteira'),p=arr.filter(r=>r.status==='Perdido'),c=arr.filter(r=>FUNIL.includes(r.status));
+  const cSel=campSelAtual();
+  if(!cSel)return '';
+  const arr=(S.records||[]).filter(r=>r.campanha&&String(r.campanha).trim()===cSel);
+  if(!arr.length)return '';
+  const g=arr.filter(r=>r.status==='Retail'||r.status==='Carteira');
+  const p=arr.filter(r=>r.status==='Perdido');
+  const c=arr.filter(r=>FUNIL.includes(r.status));
+  const semAcao=arr.filter(r=>!r.status_updated_at);
   const l=arr.map(r=>{
-    let est=r.status;
+    let est=r.status||'—';
     if(r.status==='Perdido'&&r.motivo_perda)est='Perdido — '+r.motivo_perda;
     else if(r.status==='Retail'||r.status==='Carteira')est='Negócio fechado ('+r.status+')';
+    else if(FUNIL.includes(r.status)&&!r.status_updated_at)est=r.status+' — ainda sem contacto registado';
     const v=vendName(r.vendedor_id);
-    return '• '+(r.id_cliente||'?')+(r.model?' ('+r.model+')':'')+' — '+est+(v?' — '+v:' — por atribuir')+(r.obs?' | '+r.obs:'');
+    const prazo=(r.alert_date&&FUNIL.includes(r.status))?' | contactar até '+String(r.alert_date).slice(0,10):'';
+    return '• '+(r.id_cliente||'?')+(r.model?' ('+r.model+')':'')+' — '+est+(v?' — '+v:' — por atribuir')+prazo+(r.obs?' | '+r.obs:'');
   });
-  return `Ponto de situação — ${cSel}\n\nRecebidas: ${arr.length} | Em curso: ${c.length} | Convertidas: ${g.length} | Perdidas: ${p.length}\n\n${l.join('\n')}`;
+  const hoje=new Date().toLocaleDateString('pt-PT');
+  return 'Ponto de situação — '+cSel+'  ('+hoje+')\n\n'
+    +'Recebidas: '+arr.length+' | Em curso: '+c.length+' | Convertidas: '+g.length+' | Perdidas: '+p.length
+    +(semAcao.length?'\nSem contacto registado até à data: '+semAcao.length:'')
+    +'\n\n'+l.join('\n');
 }
-// ---- Funil (todos os vendedores) ----
-
 function copiarTexto(txt,btn){
   const flash=()=>{if(!btn)return;const o=btn.getAttribute('data-label')||btn.textContent;if(!btn.getAttribute('data-label'))btn.setAttribute('data-label',o);btn.textContent='✓ Copiado';btn.classList.add('copied');setTimeout(()=>{btn.textContent=btn.getAttribute('data-label');btn.classList.remove('copied');},1600);};
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(flash).catch(()=>fallbackCopy(txt,flash));}
