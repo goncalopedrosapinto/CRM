@@ -1037,7 +1037,7 @@ let S={
   token:null,records:[],selected:null,form:{},
   me:null,team:[],objetivos:[],objEquipa:[],eventos:[],inscricoes:[],ranking:[],transicoes:[],norma:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
-  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',vdAdding:false,vdForm:{},vdErr:'',amAdding:false,amForm:{},amErr:'',depTaxa:(()=>{try{return parseFloat(localStorage.getItem('bc_dep_taxa'))||0}catch(e){return 0}})(),premiosCfg:[],comissoes:[],campSel:null,leadAdding:false,leadForm:{},leadErr:'',leadOk:'',exportBusy:false,exportMsg:'',gppSideOff:(()=>{try{return localStorage.getItem('bc_side')==='1'}catch(e){return false}})(),pedAutOpen:false,pedAutSel:{},
+  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',vdAdding:false,vdForm:{},vdErr:'',amAdding:false,amForm:{},amErr:'',depTaxa:(()=>{try{return parseFloat(localStorage.getItem('bc_dep_taxa'))||0}catch(e){return 0}})(),premiosCfg:[],comissoes:[],campSel:null,depVendOpen:false,leadAdding:false,leadForm:{},leadErr:'',leadOk:'',exportBusy:false,exportMsg:'',gppSideOff:(()=>{try{return localStorage.getItem('bc_side')==='1'}catch(e){return false}})(),pedAutOpen:false,pedAutSel:{},
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{INFO:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
@@ -3743,10 +3743,15 @@ function renderDashboard(){
     const fmtE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
     const mesesEmStock=d=>{if(!d)return null;const dt=new Date(d);if(isNaN(dt.getTime()))return null;const now=new Date();let m=(now.getFullYear()-dt.getFullYear())*12+(now.getMonth()-dt.getMonth());if(now.getDate()<dt.getDate())m-=1;return Math.max(0,m);};
     const byRec=(a,b)=>{const x=a.data_rececao||'9999-12-31';const y=b.data_rececao||'9999-12-31';return x<y?-1:x>y?1:0;};
-    const arr=(S.stock||[]).filter(m=>(m.categoria||'usada')==='usada'&&m.estado!=='Vendida').slice().sort(byRec);
+    const usadas=(S.stock||[]).filter(m=>(m.categoria||'usada')==='usada');
+    const arr=usadas.filter(m=>m.estado!=='Vendida').slice().sort(byRec);
+    const vend=usadas.filter(m=>m.estado==='Vendida').slice().sort(byRec).reverse();
     const taxa=Number(S.depTaxa)||0;
     let tEnt=0,tDep=0,tPrep=0,tApos=0,tVenda=0,tMargem=0,nEnt=0;
-    const linhas=arr.map(m=>{
+    const T={};
+    const fazLinhas=(lista,bucket)=>{
+      let e=0,d=0,p=0,a=0,v=0,mg=0,n=0;
+      const html=lista.map(m=>{
       const entrada=(m.valor_entrada!=null&&m.valor_entrada!=='')?Number(m.valor_entrada):null;
       const meses=mesesEmStock(m.data_rececao);
       const ov=m.dep_manual;
@@ -3760,8 +3765,8 @@ function renderDashboard(){
       const apos=entrada!=null?Math.max(0,entrada-dep+prep):null;
       const vf=(m.venda_ficticia!=null&&m.venda_ficticia!=='')?Number(m.venda_ficticia):null;
       const margem=(vf!=null&&apos!=null)?(vf-apos):null;
-      if(entrada!=null){tEnt+=entrada;tDep+=dep;tPrep+=prep;tApos+=apos;nEnt++;}
-      if(margem!=null){tVenda+=vf;tMargem+=margem;}
+      if(entrada!=null){e+=entrada;d+=dep;p+=prep;a+=apos;n++;}
+      if(margem!=null){v+=vf;mg+=margem;}
       const campoVal=ehManual?String(Number(ov)):((entrada!=null&&meses!=null)?String(Math.round(dep)):'');
       return `<tr class="gpp-lrow">
         <td style="font-weight:600">${esc(m.modelo||'—')}</td>
@@ -3776,10 +3781,28 @@ function renderDashboard(){
         <td style="text-align:right"><div class="stock-eurwrap"><input class="stock-inp stock-num" data-dep-venda="${m.id}" type="number" value="${vf!=null?String(vf):''}" placeholder="0"><span class="stock-eur2">€</span></div></td>
         <td style="text-align:right;font-weight:800;color:${margem==null?'var(--text3)':(margem>=0?'var(--green)':'var(--red)')}">${margem!=null?fmtE(margem):'—'}</td>
       </tr>`;
-    }).join('');
+      }).join('');
+      T[bucket]={tEnt:e,tDep:d,tPrep:p,tApos:a,tVenda:v,tMargem:mg,nEnt:n};
+      return html;
+    };
+    const linhas=fazLinhas(arr,'ativas');
+    const linhasV=fazLinhas(vend,'vendidas');
+    ({tEnt,tDep,tPrep,tApos,tVenda,tMargem,nEnt}=T.ativas);
+    const V=T.vendidas;
+    const CAB='<thead><tr><th>Modelo</th><th>Matrícula</th><th>Recebida</th><th style="text-align:right">Em stock</th><th style="text-align:right">Entrada</th><th style="text-align:right">Depreciação</th><th style="text-align:right">Garantia</th><th style="text-align:right">Comissão</th><th style="text-align:right">Legalização</th><th style="text-align:right">Oficina</th><th style="text-align:right">Prep. total</th><th style="text-align:right">Valor mínimo de venda</th><th style="text-align:right">Venda fictícia</th><th style="text-align:right">Margem</th></tr></thead>';
+    const RODAPE=(t,lbl)=>`<tfoot><tr style="background:var(--bg);font-weight:700">
+      <td colspan="4">${lbl} (${t.nEnt} com entrada)</td>
+      <td style="text-align:right">${fmtE(t.tEnt)}</td>
+      <td style="text-align:right">${fmtE(t.tDep)}</td>
+      <td colspan="4"></td>
+      <td style="text-align:right">${fmtE(t.tPrep)}</td>
+      <td style="text-align:right">${fmtE(t.tApos)}</td>
+      <td style="text-align:right">${t.tVenda?fmtE(t.tVenda):'—'}</td>
+      <td style="text-align:right;color:${t.tMargem>=0?'var(--green)':'var(--red)'}">${t.tMargem?fmtE(t.tMargem):'—'}</td>
+    </tr></tfoot>`;
     return `
       <div class="gpp-tot-head" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-        <span>📉 Calculadora de depreciação · <b>${arr.length}</b> usada${arr.length!==1?'s':''} por vender</span>
+        <span>📉 Calculadora de depreciação · <b>${arr.length}</b> por vender${vend.length?` · <b>${vend.length}</b> vendidas`:''}</span>
       </div>
       <div class="gpp-card" style="margin:0 16px 12px;padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
         <label style="font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px">Depreciação sugerida
@@ -3790,20 +3813,22 @@ function renderDashboard(){
       </div>
       ${arr.length===0?'<div class="gpp-empty">Sem usadas por vender em stock.</div>':`
       <div class="gpp-card" style="margin:0 16px 8px;overflow-x:auto"><table class="gpp-ltable dep-tbl">
-        <thead><tr><th>Modelo</th><th>Matrícula</th><th>Recebida</th><th style="text-align:right">Em stock</th><th style="text-align:right">Entrada</th><th style="text-align:right">Depreciação</th><th style="text-align:right">Garantia</th><th style="text-align:right">Comissão</th><th style="text-align:right">Legalização</th><th style="text-align:right">Oficina</th><th style="text-align:right">Prep. total</th><th style="text-align:right">Valor mínimo de venda</th><th style="text-align:right">Venda fictícia</th><th style="text-align:right">Margem</th></tr></thead>
+        ${CAB}
         <tbody>${linhas}</tbody>
-        <tfoot><tr style="background:var(--bg);font-weight:700">
-          <td colspan="4">Total (${nEnt} com entrada)</td>
-          <td style="text-align:right">${fmtE(tEnt)}</td>
-          <td style="text-align:right">${fmtE(tDep)}</td>
-          <td colspan="4"></td>
-          <td style="text-align:right">${fmtE(tPrep)}</td>
-          <td style="text-align:right">${fmtE(tApos)}</td>
-          <td style="text-align:right">${tVenda?fmtE(tVenda):'—'}</td>
-          <td style="text-align:right;color:${tMargem>=0?'var(--green)':'var(--red)'}">${tMargem?fmtE(tMargem):'—'}</td>
-        </tr></tfoot>
+        ${RODAPE(T.ativas,'Total por vender')}
       </table></div>`}
-      <div class="gpp-pend-desc" style="margin:0 16px 16px">Só motas por vender. <b>Valor mínimo de venda = entrada − depreciação + preparação.</b> Escreve um <b>valor fictício de venda</b> e a <b>margem</b> = venda fictícia − valor mínimo de venda (verde = lucro, vermelho = prejuízo). A data <b>Recebida</b> tem de estar preenchida para o cálculo automático da depreciação. Tudo o que escreveres fica gravado.</div>`;
+      ${vend.length?`
+      <div class="stock-vendidas-h ${S.depVendOpen?'open':''}" data-action="dep-vend-toggle" style="margin-top:6px">
+        <span>🏁 Vendidas <b>${vend.length}</b></span>
+        <span style="font-size:11px;color:var(--text3);font-weight:400">histórico — continuas a trabalhar os valores</span>
+        <span class="stock-vend-arrow">${S.depVendOpen?'▾':'▸'}</span>
+      </div>
+      ${S.depVendOpen?`<div class="gpp-card" style="margin:0 16px 8px;overflow-x:auto"><table class="gpp-ltable dep-tbl">
+        ${CAB}
+        <tbody>${linhasV}</tbody>
+        ${RODAPE(V,'Total vendidas')}
+      </table></div>`:''}`:''}
+      <div class="gpp-pend-desc" style="margin:0 16px 16px">As <b>vendidas</b> ficam no histórico em baixo e continuam editáveis. <b>Valor mínimo de venda = entrada − depreciação + preparação.</b> Escreve um <b>valor fictício de venda</b> e a <b>margem</b> = venda fictícia − valor mínimo de venda (verde = lucro, vermelho = prejuízo). A data <b>Recebida</b> tem de estar preenchida para o cálculo automático da depreciação. Tudo o que escreveres fica gravado.</div>`;
   }
 
   function retailView(){
@@ -4226,6 +4251,7 @@ function bindEvents(){
       case'evento-add-cancel':setState({eventoAdding:false,eventoForm:{},eventoErr:''});break;
       case'evento-save-new':saveEventoNovo();break;
       case'evento-toggle':toggleEventoAtivo(parseInt(el.dataset.id));break;
+      case'dep-vend-toggle':setState({depVendOpen:!S.depVendOpen});break;
       case'lead-add-open':setState({leadAdding:true,leadErr:'',leadOk:''});break;
       case'lead-add-close':setState({leadAdding:false,leadErr:'',leadOk:''});break;
       case'lead-save':saveLead();break;
