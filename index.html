@@ -1037,7 +1037,7 @@ let S={
   token:null,records:[],selected:null,form:{},
   me:null,team:[],objetivos:[],objEquipa:[],eventos:[],inscricoes:[],ranking:[],transicoes:[],norma:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
-  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',vdAdding:false,vdForm:{},vdErr:'',amAdding:false,amForm:{},amErr:'',depTaxa:(()=>{try{return parseFloat(localStorage.getItem('bc_dep_taxa'))||0}catch(e){return 0}})(),premiosCfg:[],comissoes:[],campSel:null,depVendOpen:false,leadAdding:false,leadForm:{},leadErr:'',leadOk:'',exportBusy:false,exportMsg:'',gppSideOff:(()=>{try{return localStorage.getItem('bc_side')==='1'}catch(e){return false}})(),pedAutOpen:false,pedAutSel:{},
+  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',vdAdding:false,vdForm:{},vdErr:'',amAdding:false,amForm:{},amErr:'',depTaxa:(()=>{try{return parseFloat(localStorage.getItem('bc_dep_taxa'))||0}catch(e){return 0}})(),premiosCfg:[],comissoes:[],campSel:null,depVendOpen:false,voltarGpp:null,leadAdding:false,leadForm:{},leadErr:'',leadOk:'',exportBusy:false,exportMsg:'',gppSideOff:(()=>{try{return localStorage.getItem('bc_side')==='1'}catch(e){return false}})(),pedAutOpen:false,pedAutSel:{},
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{INFO:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
@@ -4225,7 +4225,7 @@ function bindEvents(){
       case'dash-periodo':setState({dashPeriodo:el.dataset.p});break;
       case'dash-section':setState({dashSection:el.dataset.s,dashAlertOpen:null});break;
       case'dash-alert-toggle':setState({dashAlertOpen:S.dashAlertOpen===el.dataset.id?null:el.dataset.id});break;
-      case'open-record-from-dash':{const r=S.records.find(x=>String(x.id)===String(el.dataset.id));if(r)setState({selected:r,screen:'detail',gppMais:false});break}
+      case'open-record-from-dash':{const r=S.records.find(x=>String(x.id)===String(el.dataset.id));if(r)setState({selected:r,screen:'detail',gppMais:false,voltarGpp:S.gppSec||'home'});break}
       case'export-csv':{if(!S.stockLoaded){loadStock().then(()=>exportCSV(true));}else exportCSV(true);break}
       case'export-csv-safe':{if(!S.stockLoaded){loadStock().then(()=>exportCSV(false));}else exportCSV(false);break}
       case'export-tudo':exportarTudo();break;
@@ -4382,8 +4382,11 @@ function bindEvents(){
         });
         break;
       }
-      case'open-detail':{const id=parseInt(el.dataset.id),r=S.records.find(x=>x.id===id);if(r)setState({selected:r,screen:'detail',confirmDelete:false,openGroups:{INFO:true}});break}
-      case'back-to-list':setState({screen:'list',selected:null});break;
+      case'open-detail':{const id=parseInt(el.dataset.id),r=S.records.find(x=>x.id===id);if(r)setState({selected:r,screen:'detail',confirmDelete:false,openGroups:{INFO:true},voltarGpp:null});break}
+      case'back-to-list':{
+        if(S.voltarGpp){const sec=S.voltarGpp;setState({screen:'dashboard',gppSec:sec,selected:null,voltarGpp:null});}
+        else setState({screen:'list',selected:null});
+        break;}
       case'open-edit':setState({form:recordToForm(S.selected||{}),screen:'edit',error:'',openGroups:{INFO:true}});break;
       case'open-add':setState({selected:null,form:emptyForm(),screen:'edit',error:'',openGroups:{INFO:true}});break;
       case'back-from-edit':setState({screen:S.selected?'detail':'list',error:''});break;
