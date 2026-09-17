@@ -659,11 +659,11 @@ html,body{overflow-x:hidden;max-width:100vw}
 .ev-vend-picker{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
 .ev-pick{padding:8px 14px;border-radius:20px;border:1.5px solid var(--border2);background:var(--surface);font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);font-family:inherit}
 .ev-pick.on{background:var(--orange);border-color:var(--orange);color:#fff}
-.ndemo-legend{display:grid;grid-template-columns:16px minmax(110px,1.5fr) 1fr 1.3fr 1.2fr 46px 18px;gap:10px;padding:8px 14px 4px;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);font-weight:700}
+.ndemo-legend{display:grid;grid-template-columns:16px minmax(110px,1.5fr) 1fr 1.3fr 1.2fr 46px 46px 18px;gap:10px;padding:8px 14px 4px;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);font-weight:700}
 .ndemo-list{padding:0;overflow:hidden}
 .ndemo{border-bottom:1px solid var(--border)}
 .ndemo:last-child{border-bottom:none}
-.ndemo-head{display:grid;grid-template-columns:16px minmax(110px,1.5fr) 1fr 1.3fr 1.2fr 46px 18px;gap:10px;align-items:center;padding:12px 14px;cursor:pointer}
+.ndemo-head{display:grid;grid-template-columns:16px minmax(110px,1.5fr) 1fr 1.3fr 1.2fr 46px 46px 18px;gap:10px;align-items:center;padding:12px 14px;cursor:pointer}
 .ndemo-head:hover{background:var(--bg)}
 .ndemo.open .ndemo-head{background:var(--bg)}
 .ndemo-dot{width:9px;height:9px;border-radius:50%;display:inline-block}
@@ -2654,7 +2654,7 @@ function EXPORT_FOLHAS(){
     {nome:'Stock Norma',path:'/stock_norma?select=*&order=ordem.asc',cols:[
       {c:'id',l:'ID'},{c:'ordem',l:'Ordem'},{c:'modelo',l:'Modelo'},{c:'coluna',l:'Coluna'},{c:'estado',l:'Estado'},
       {c:'matricula',l:'Matrícula'},{c:'data_matricula',l:'Data matrícula',f:d},{c:'chassi',l:'Nº chassis'},{c:'encomenda',l:'Encomenda'},
-      {c:'kms',l:'Km'},{c:'preco',l:'Preço'},{c:'tem_seguro',l:'Tem seguro',f:sn},{c:'vendida',l:'Vendida',f:sn},
+      {c:'kms',l:'Km'},{c:'pvp',l:'PVP'},{c:'preco',l:'Preço de demo'},{c:'maxterauto',l:'Maxterauto',f:sn},{c:'tem_seguro',l:'Tem seguro',f:sn},{c:'vendida',l:'Vendida',f:sn},
       {c:'obs',l:'Observações'},{c:'updated_at',l:'Atualizado',f:dt},
     ]},
     {nome:'Eventos',path:'/eventos?select=*&order=id.asc',cols:[
@@ -2776,7 +2776,7 @@ async function exportarTudo(){
   ficheiros.push(()=>csvDescarregar(`baviera_stock_norma_${hoje}.csv`,tabelaParaLinhas(S.norma,[
     {c:'ordem',l:'Ordem'},{c:'modelo',l:'Modelo'},{c:'coluna',l:'Coluna'},{c:'estado',l:'Estado'},
     {c:'matricula',l:'Matricula'},{c:'data_matricula',l:'DataMatricula'},{c:'chassi',l:'Chassis'},{c:'encomenda',l:'Encomenda'},
-    {c:'kms',l:'Km'},{c:'preco',l:'Preco'},{c:'tem_seguro',l:'TemSeguro'},{c:'obs',l:'Obs'}
+    {c:'kms',l:'Km'},{c:'pvp',l:'PVP'},{c:'preco',l:'PrecoDemo'},{c:'maxterauto',l:'Maxterauto'},{c:'tem_seguro',l:'TemSeguro'},{c:'obs',l:'Obs'}
   ])));
   // 4. Eventos
   ficheiros.push(()=>csvDescarregar(`baviera_eventos_${hoje}.csv`,tabelaParaLinhas(S.eventos,[
@@ -3543,6 +3543,7 @@ function renderDashboard(){
           <span class="ndemo-atual">${atualTxt(n)}</span>
           <span class="ndemo-futura">${n.encomenda?esc(n.encomenda):'<span class="ndemo-mut">—</span>'}</span>
           <span class="ndemo-obs">${flag}${n.obs?' '+esc(n.obs):''}</span>
+          <span class="ndemo-seg" style="text-align:center"><button class="toggle-btn stock-max-toggle stock-max-mini ${n.maxterauto?'on':''}" data-action="norma-toggle-max" data-id="${n.id}" title="${n.maxterauto?'No Maxterauto':'Por inserir no Maxterauto'}">${n.maxterauto?'✓':'—'}</button></span>
           <span class="ndemo-seg" style="text-align:center"><button class="toggle-btn stock-seg-toggle stock-max-mini ${n.tem_seguro?'on':''}" data-action="norma-toggle-seguro" data-id="${n.id}" title="${n.tem_seguro?'Com seguro — clica para tirar':'Sem seguro — clica para pôr'}">${n.tem_seguro?'✓':'—'}</button></span>
           <span class="ndemo-chev">${aberto?'▾':'▸'}</span>
         </div>
@@ -3554,7 +3555,9 @@ function renderDashboard(){
             <div class="ndemo-f"><label>Futura a associar (proposta / VIN)</label><input class="norma-inp" data-norma-id="${n.id}" data-norma-f="encomenda" value="${esc(n.encomenda||'')}" placeholder="Ex: Proposta Nº 4405 / VIN…"></div>
             <div class="ndemo-f"><label>Matriculada em</label><input class="norma-inp" type="date" data-norma-id="${n.id}" data-norma-f="data_matricula" value="${esc(n.data_matricula||'')}">${(q.txt&&n.estado==='Matriculada')?`<div class="norma-4m ${q.cls}">4 meses: ${q.txt}</div>`:''}</div>
             <div class="ndemo-f"><label>Km</label><input class="norma-inp stock-num" type="number" data-norma-id="${n.id}" data-norma-f="kms" value="${n.kms!=null?n.kms:''}" placeholder="—"></div>
-            <div class="ndemo-f"><label>Preço</label><div class="stock-eurwrap"><input class="norma-inp stock-num" type="number" data-norma-id="${n.id}" data-norma-f="preco" value="${n.preco!=null?n.preco:''}" placeholder="—"><span class="stock-eur2">€</span></div></div>
+            <div class="ndemo-f"><label>PVP</label><div class="stock-eurwrap"><input class="norma-inp stock-num" type="number" step="0.01" data-norma-id="${n.id}" data-norma-f="pvp" value="${n.pvp!=null?n.pvp:''}" placeholder="—"><span class="stock-eur2">€</span></div></div>
+            <div class="ndemo-f"><label>Preço de demo</label><div class="stock-eurwrap"><input class="norma-inp stock-num" type="number" step="0.01" data-norma-id="${n.id}" data-norma-f="preco" value="${n.preco!=null?n.preco:''}" placeholder="—"><span class="stock-eur2">€</span></div></div>
+            <div class="ndemo-f"><label>Maxterauto</label><button class="toggle-btn stock-max-toggle ${n.maxterauto?'on':''}" data-action="norma-toggle-max" data-id="${n.id}" style="width:fit-content;padding:6px 14px">${n.maxterauto?'✓ Inserida':'— Por inserir'}</button></div>
             <div class="ndemo-f"><label>Seguro</label><button class="toggle-btn stock-seg-toggle ${n.tem_seguro?'on':''}" data-action="norma-toggle-seguro" data-id="${n.id}" style="width:fit-content;padding:6px 12px">${n.tem_seguro?'✓ Tem seguro':'— Sem seguro'}</button></div>
           </div>
           <div class="ndemo-f"><label>Observações</label><input class="norma-inp norma-obs" data-norma-id="${n.id}" data-norma-f="obs" value="${esc(n.obs||'')}" placeholder="Ex: já em parque, cor, extras, a quem está atribuída…"></div>
@@ -3565,7 +3568,7 @@ function renderDashboard(){
     return`${cab}
       <div class="norma-toolbar" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-orange btn-sm" data-action="ped-aut-abrir">📋 Pedido autorização demonstrador</button><button class="btn btn-dark btn-sm" data-action="norma-pdf">⬇ PDF (1 página)</button></div>
       ${pedAutPainel()}
-      <div class="ndemo-legend"><span></span><span>Modelo</span><span>Atual</span><span>Futura (associar)</span><span>Obs</span><span style="text-align:center">Seguro</span><span></span></div>
+      <div class="ndemo-legend"><span></span><span>Modelo</span><span>Atual</span><span>Futura (associar)</span><span>Obs</span><span style="text-align:center">Maxt.</span><span style="text-align:center">Seguro</span><span></span></div>
       <div class="gpp-card ndemo-list">${norma.map(item).join('')}</div>`;
   }
   function stockView(catParam){
@@ -4175,7 +4178,7 @@ function bindEvents(){
     if(el.dataset&&el.dataset.action==='obj-equipa-save'){saveObjEquipa(el.dataset.mes,el.value,el.dataset.tipo||'novas').then(()=>render());return;}
     if(el.dataset&&el.dataset.normaId){
       const id=el.dataset.normaId,campo=el.dataset.normaF;let valor=el.value;
-      if(campo==='kms'||campo==='preco')valor=valor===''?null:parseFloat(valor);
+      if(campo==='kms'||campo==='preco'||campo==='pvp')valor=valor===''?null:parseFloat(valor);
       if(campo==='data_matricula')valor=valor||null;
       saveNormaCampo(id,campo,valor).then(()=>{
         // se meteu matrícula e estava 'Em falta', promove para Matriculada
@@ -4245,6 +4248,7 @@ function bindEvents(){
       case'norma-pdf':exportNormaPDF();break;
       case'norma-abrir':setState({normaAberta:String(S.normaAberta)===String(el.dataset.id)?null:el.dataset.id});break;
       case'norma-vendida':{const n=(S.norma||[]).find(x=>String(x.id)===String(el.dataset.id));if(n)saveNormaCampo(el.dataset.id,'vendida',!n.vendida);break;}
+      case'norma-toggle-max':{const n=(S.norma||[]).find(x=>String(x.id)===String(el.dataset.id));if(n)saveNormaCampo(el.dataset.id,'maxterauto',!n.maxterauto);break;}
       case'norma-toggle-seguro':{const n=(S.norma||[]).find(x=>String(x.id)===String(el.dataset.id));if(n)saveNormaCampo(el.dataset.id,'tem_seguro',!n.tem_seguro);break;}
       case'norma-subst-fechar':setState({normaSubst:null});break;
       case'evento-add-open':setState({eventoAdding:true,eventoForm:{},eventoErr:''});break;
