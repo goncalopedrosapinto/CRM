@@ -626,6 +626,24 @@ html,body{overflow-x:hidden;max-width:100vw}
 .pr-del{border:none;background:var(--border);color:var(--text2);border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:11px;font-family:inherit}
 .pr-del:hover{background:var(--red);color:#fff}
 .lead-ok{background:var(--green-bg);border:1px solid var(--green);color:#15803d;font-size:12.5px;font-weight:600;padding:7px 10px;border-radius:8px;margin-bottom:10px}
+.en-list{display:flex;flex-direction:column;gap:10px;margin:0 16px 14px}
+.en-card{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--amber);border-radius:10px;padding:12px 14px}
+.en-card.en-ok{border-left-color:var(--green)}
+.en-head{display:grid;grid-template-columns:1fr auto 150px;gap:12px;align-items:center;margin-bottom:10px}
+.en-tit{font-size:14px;cursor:pointer}.en-tit:hover b{color:var(--orange)}
+.en-vend{font-size:12px;color:var(--text3);white-space:nowrap}
+.en-prog{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800}
+.en-bar{flex:1;height:7px;background:var(--bg3);border-radius:4px;overflow:hidden}.en-fill{height:100%;border-radius:4px}
+.en-chips,.en-docs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}
+.en-chip{font-size:12px;font-weight:600;padding:5px 10px;border-radius:14px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);cursor:pointer;font-family:inherit;white-space:nowrap}
+.en-chip.on{background:var(--green-bg);border-color:var(--green);color:#15803d}
+.en-chip.en-auto{cursor:default}.en-chip.en-auto.falta{background:#fee2e2;border-color:var(--red);color:#b91c1c}
+.en-chip.en-na{cursor:default;opacity:.55}
+.en-lbl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--red);margin-right:4px}.en-lbl.ok{color:var(--green)}
+.en-inputs{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.en-inputs .norma-inp{flex:1;min-width:160px}.en-inputs .en-obs{flex:2}
+.en-dt{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3)}.en-dt .norma-inp{min-width:140px;flex:0}
+@media(max-width:700px){.en-head{grid-template-columns:1fr;gap:6px}}
 .lc-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:0 16px 12px}
 .lc-sel{font-size:12px;padding:4px 6px;border:1px solid var(--border2);border-radius:6px;background:var(--surface);color:var(--text);font-family:inherit;max-width:170px}
 .lc-sel:hover{border-color:var(--orange)}
@@ -1039,7 +1057,7 @@ let S={
   token:null,records:[],selected:null,form:{},
   me:null,team:[],objetivos:[],objEquipa:[],eventos:[],inscricoes:[],ranking:[],transicoes:[],norma:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
-  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',vdAdding:false,vdForm:{},vdErr:'',amAdding:false,amForm:{},amErr:'',depTaxa:(()=>{try{return parseFloat(localStorage.getItem('bc_dep_taxa'))||0}catch(e){return 0}})(),premiosCfg:[],comissoes:[],campSel:null,depVendOpen:false,voltarGpp:null,leadAdding:false,leadForm:{},leadErr:'',leadOk:'',exportBusy:false,exportMsg:'',gppSideOff:(()=>{try{return localStorage.getItem('bc_side')==='1'}catch(e){return false}})(),pedAutOpen:false,pedAutSel:{},
+  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',vdAdding:false,vdForm:{},vdErr:'',amAdding:false,amForm:{},amErr:'',depTaxa:(()=>{try{return parseFloat(localStorage.getItem('bc_dep_taxa'))||0}catch(e){return 0}})(),premiosCfg:[],comissoes:[],campSel:null,depVendOpen:false,entregas:{},entregasErr:'',voltarGpp:null,leadAdding:false,leadForm:{},leadErr:'',leadOk:'',exportBusy:false,exportMsg:'',gppSideOff:(()=>{try{return localStorage.getItem('bc_side')==='1'}catch(e){return false}})(),pedAutOpen:false,pedAutSel:{},
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{INFO:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
@@ -2033,6 +2051,41 @@ function campTexto(){
     +(semAcao.length?'\nSem contacto registado até à data: '+semAcao.length:'')
     +'\n\n'+l.join('\n');
 }
+const ENT_DOCS_BASE=['CC / NIF','Comprovativo de morada','Carta de condução','Proposta / contrato assinado'];
+function entDocsFor(r){const l=ENT_DOCS_BASE.slice();if(r.fin==='Fint'||r.fin==='Fext')l.push('Documentos da financeira');if(r.retoma==='Sim')l.push('DUA da retoma');return l;}
+function entFsAplica(r){return r.fin==='Fint'||r.fin==='Fext';}
+function entOf(id){return (S.entregas||{})[String(id)]||null;}
+function entProgresso(r){
+  const e=entOf(r.id)||{};const d=e.docs||{};const docs=entDocsFor(r);
+  const itens=[!!(r.biz&&String(r.biz).trim()),docs.every(x=>d[x]),!!e.prep_pedida];
+  if(e.pecas_precisa)itens.push(!!e.pecas_chegaram);
+  itens.push(!!e.pago);
+  if(entFsAplica(r))itens.push(!!e.fs_tratado);
+  const ok=itens.filter(Boolean).length;
+  return {ok,tot:itens.length,pct:Math.round(100*ok/itens.length)};
+}
+async function loadEntregas(){
+  try{const d=await supabaseApi('GET','/entregas?select=*');const m={};(d||[]).forEach(x=>{m[String(x.negocio_id)]=x;});S.entregas=m;S.entregasErr='';}
+  catch(e){S.entregas={};S.entregasErr=(e&&e.message)||'erro';}
+}
+async function saveEntrega(id,patch){
+  id=String(id);const ex=entOf(id);
+  const body=Object.assign({},patch,{updated_at:new Date().toISOString()});
+  const full=Object.assign({negocio_id:Number(id),docs:{}},ex||{},body);
+  S.entregas=Object.assign({},S.entregas||{});S.entregas[id]=full;render();
+  try{
+    if(ex){
+      const r=await supabaseApi('PATCH',`/entregas?negocio_id=eq.${id}`,body);
+      if(Array.isArray(r)&&r.length===0)await supabaseApi('POST','/entregas',full);
+    }else{
+      try{await supabaseApi('POST','/entregas',full);}
+      catch(e){await supabaseApi('PATCH',`/entregas?negocio_id=eq.${id}`,body);}
+    }
+  }catch(e){alert('Erro ao gravar entrega: '+((e&&e.message)||e));await loadEntregas();render();}
+}
+function toggleEntrega(id,k){const e=entOf(id)||{};saveEntrega(id,{[k]:!e[k]});}
+function toggleEntregaDoc(id,doc){const e=entOf(id)||{};const d=Object.assign({},e.docs||{});d[doc]=!d[doc];saveEntrega(id,{docs:d});}
+
 function copiarTexto(txt,btn){
   const flash=()=>{if(!btn)return;const o=btn.getAttribute('data-label')||btn.textContent;if(!btn.getAttribute('data-label'))btn.setAttribute('data-label',o);btn.textContent='✓ Copiado';btn.classList.add('copied');setTimeout(()=>{btn.textContent=btn.getAttribute('data-label');btn.classList.remove('copied');},1600);};
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(flash).catch(()=>fallbackCopy(txt,flash));}
@@ -2693,6 +2746,15 @@ function EXPORT_FOLHAS(){
       {c:'id',l:'ID'},{c:'dia',l:'Dia',f:d},{c:'vendedor_id',l:'Vendedor',f:nome},{c:'estado',l:'Estado'},
       {c:'created_at',l:'Criado',f:dt},{c:'updated_at',l:'Atualizado',f:dt},{c:'updated_by',l:'Atualizado por',f:nome},
     ]},
+    {nome:'Entregas',path:'/entregas?select=*&order=negocio_id.asc',cols:[
+      {c:'negocio_id',l:'Negócio ID'},
+      {c:'negocio_id',l:'Cliente',f:v=>{const r=(S.records||[]).find(x=>String(x.id)===String(v));return r?(r.id_cliente||''):''}},
+      {c:'docs',l:'Documentos OK',f:v=>(v&&typeof v==='object')?Object.keys(v).filter(k=>v[k]).join(' | '):''},
+      {c:'docs_obs',l:'Docs em falta / notas'},{c:'prep_pedida',l:'Preparação pedida',f:sn},
+      {c:'pecas_precisa',l:'Precisa peças',f:sn},{c:'pecas_chegaram',l:'Peças chegaram',f:sn},{c:'pecas_obs',l:'Peças'},
+      {c:'pago',l:'Pago',f:sn},{c:'fs_tratado',l:'FS tratado',f:sn},{c:'data_entrega',l:'Data entrega',f:d},
+      {c:'obs',l:'Observações'},{c:'updated_at',l:'Atualizado',f:dt},
+    ]},
     {nome:'Prémios (escalões)',path:'/premios_config?select=*&order=escopo.asc,pct_min.asc',cols:[
       {c:'id',l:'ID'},{c:'escopo',l:'Escopo'},{c:'pct_min',l:'A partir de %'},{c:'valor',l:'Prémio'},{c:'nota',l:'Nota'},{c:'created_at',l:'Criado',f:dt},
     ]},
@@ -2857,6 +2919,7 @@ function renderDashboard(){
 
   const TOPICOS=[
     ['home','🏠','Home'],
+    ['entregas','🚚','Entregas'],
     ['retail','✅','Retail'],
     ['comercio','🤝','Vendas Comerciante'],
     ['depreciacao','📉','Depreciação'],
@@ -2876,7 +2939,7 @@ function renderDashboard(){
     ['exportar','⬇️','Exportar'],
   ];
   const NAV_GRUPOS=[
-    ['Diário',['home','pendentes','perdidos']],
+    ['Diário',['home','entregas','pendentes','perdidos']],
     ['Negócio',['retail','comercio','carteira','funil','fechados','leads']],
     ['Recursos',['stock','depreciacao','margem','demos','evento','escala']],
     ['Ferramentas',['comissoes','premios','exportar']]
@@ -3357,6 +3420,47 @@ function renderDashboard(){
         <thead><tr><th>Cliente</th><th>Viatura</th><th>Vendedor</th><th>Estado</th><th>Contactar até</th><th>Notas</th></tr></thead>
         <tbody>${arr.map(linha).join('')}</tbody></table></div>
       <div class="gpp-pend-desc" style="margin:0 16px 16px">As leads vão direto para o funil do vendedor escolhido. Podes <b>trocar o vendedor</b> ou a <b>data de contacto</b> aqui na lista — grava logo e a lead muda de funil. Sem data, o alerta só acende ao fim de 10 dias.</div>`;
+  }
+  function entregasView(){
+    const arr=recs.filter(r=>r.status==='Carteira'&&r.mes1===mesSel)
+      .map(r=>({r,p:entProgresso(r)}))
+      .sort((a,b)=>a.p.pct-b.p.pct||String(a.r.id_cliente||'').localeCompare(String(b.r.id_cliente||'')));
+    const completos=arr.filter(x=>x.p.pct===100).length;
+    const chip=(on,label,action,extra)=>`<button class="en-chip ${on?'on':''}" data-action="${action}" ${extra}>${on?'✓':'○'} ${label}</button>`;
+    const cartao=({r,p})=>{
+      const e=entOf(r.id)||{};const d=e.docs||{};const docs=entDocsFor(r);const dOk=docs.filter(x=>d[x]).length;
+      const cor=p.pct===100?'var(--green)':(p.pct>=50?'var(--amber)':'var(--red)');
+      const biz=r.biz&&String(r.biz).trim();
+      return`<div class="en-card ${p.pct===100?'en-ok':''}">
+        <div class="en-head">
+          <div class="en-tit gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}"><b>${esc(r.id_cliente||'—')}</b> · ${esc(r.model||'')} ${esc(r.version||'')} <span class="gpp-tipo-badge">${esc(r.type||'?')}</span></div>
+          <div class="en-vend">${esc(vendName(r.vendedor_id)||'—')}</div>
+          <div class="en-prog"><div class="en-bar"><div class="en-fill" style="width:${p.pct}%;background:${cor}"></div></div><span style="color:${cor}">${p.ok}/${p.tot}</span></div>
+        </div>
+        <div class="en-chips">
+          <span class="en-chip en-auto ${biz?'on':'falta'}" title="Lido do campo Bizagi do negócio">${biz?'✓ Bizagi '+esc(biz):'✕ Bizagi em falta'}</span>
+          ${chip(e.prep_pedida,'Preparação pedida','ent-toggle',`data-id="${r.id}" data-k="prep_pedida"`)}
+          ${chip(e.pecas_precisa,'Precisa peças','ent-toggle',`data-id="${r.id}" data-k="pecas_precisa"`)}
+          ${e.pecas_precisa?chip(e.pecas_chegaram,'Peças chegaram','ent-toggle',`data-id="${r.id}" data-k="pecas_chegaram"`):''}
+          ${chip(e.pago,'Cliente pagou','ent-toggle',`data-id="${r.id}" data-k="pago"`)}
+          ${entFsAplica(r)?chip(e.fs_tratado,'FS tratado','ent-toggle',`data-id="${r.id}" data-k="fs_tratado"`):`<span class="en-chip en-na" title="Pronto pagamento — FS não se aplica">FS n/a${r.fin?' ('+esc(r.fin)+')':''}</span>`}
+        </div>
+        <div class="en-docs"><span class="en-lbl ${dOk===docs.length?'ok':''}">Documentos ${dOk}/${docs.length}</span>
+          ${docs.map(x=>chip(d[x],esc(x),'ent-doc',`data-id="${r.id}" data-doc="${esc(x)}"`)).join('')}
+        </div>
+        <div class="en-inputs">
+          <input class="norma-inp" data-ent-id="${r.id}" data-ent-f="docs_obs" value="${esc(e.docs_obs||'')}" placeholder="Documentos em falta / notas">
+          ${e.pecas_precisa?`<input class="norma-inp" data-ent-id="${r.id}" data-ent-f="pecas_obs" value="${esc(e.pecas_obs||'')}" placeholder="Que peças?">`:''}
+          <label class="en-dt">Entrega <input class="norma-inp" type="date" data-ent-id="${r.id}" data-ent-f="data_entrega" value="${e.data_entrega?esc(String(e.data_entrega).slice(0,10)):''}"></label>
+          <input class="norma-inp en-obs" data-ent-id="${r.id}" data-ent-f="obs" value="${esc(e.obs||'')}" placeholder="Observações">
+        </div>
+      </div>`;
+    };
+    return`${mesBar}
+      <div class="gpp-tot-head">Entregas · ${esc(mesSel)} · <b>${arr.length}</b> em carteira${arr.length?` · <span style="color:var(--green)">${completos} prontas</span> · <span style="color:var(--amber)">${arr.length-completos} com pendentes</span>`:''}</div>
+      ${S.entregasErr?`<div class="mg-aviso">⚠️ Não consegui ler a tabela de entregas (${esc(S.entregasErr)}). Se ainda não correste o SQL da tabela <b>entregas</b> no Supabase, é isso.</div>`:''}
+      ${arr.length===0?'<div class="gpp-empty">Sem negócios em carteira neste mês.</div>':`<div class="en-list">${arr.map(cartao).join('')}</div>`}
+      <div class="gpp-pend-desc" style="margin:0 16px 16px">Só para ti — os vendedores não veem isto. Ordenado do mais atrasado para o mais pronto. O Bizagi lê-se do próprio negócio; o FS só conta quando é financiado. Clica no nome para abrir o negócio.</div>`;
   }
   function funilView(){
     const FUN=['Quente','Morno','Frio'];
@@ -4068,6 +4172,7 @@ function renderDashboard(){
   else if(sec==='home')body=mesBar+(recs.filter(r=>r.status==='Retail'&&!r.col_298).length?`${(()=>{const semData=recs.filter(r=>r.status==='Retail'&&!r.col_298);return`<div class="gpp-alerta ${S.dashAlertOpen==='sem298'?'open':''}"><div class="gpp-alerta-head" data-action="dash-alert-toggle" data-id="sem298"><span>⚠️</span><span><b>${semData.length}</b> mota${semData.length>1?'s':''} em Retail sem data 298 — não contam nos totais</span><span class="gpp-alerta-arrow">${S.dashAlertOpen==='sem298'?'▾':'▸'}</span></div>${S.dashAlertOpen==='sem298'?`<div class="gpp-alerta-lista">${semData.map(r=>`<div class="gpp-alerta-item" data-action="open-record-from-dash" data-id="${r.id}"><b>${esc(r.id_cliente||'(sem cliente)')}</b><span>${esc(r.model||'')} ${esc(r.version||'')}</span><span class="gpp-alerta-tipo">${esc(r.type||'?')}</span><span style="color:var(--text3)">${esc(vendName(r.vendedor_id)||'')}</span></div>`).join('')}</div>`:''}</div>`})()}`:'')+tabelaResumo()+homeAcoes();
   else if(sec==='funil')body=funilView();
   else if(sec==='fechados')body=fechadosView();
+  else if(sec==='entregas')body=entregasView();
   else if(sec==='leads')body=leadsView();
   else if(sec==='margem')body=margemView();
   else if(sec==='premios')body=premiosView();
@@ -4150,6 +4255,7 @@ function bindEvents(){
     if(el.dataset&&el.dataset.depId){const id=el.dataset.depId,v=el.value;saveStockField(id,'dep_manual',(v===''||v==null)?null:Number(v));return;}
     if(el.dataset&&el.dataset.pedMotivo){const sel=Object.assign({},S.pedAutSel||{});sel[String(el.dataset.pedMotivo)]=el.value;setState({pedAutSel:sel});return;}
     if(el.dataset&&el.dataset.prepId){const v=el.value;saveStockField(el.dataset.prepId,el.dataset.prepF,(v===''||v==null)?null:Number(v));return;}
+    if(el.dataset&&el.dataset.entId){const v=el.value;saveEntrega(el.dataset.entId,{[el.dataset.entF]:(v===''?null:v)});return;}
     if(el.dataset&&el.dataset.leadRec){const v=el.value;saveRecordField(el.dataset.leadRec,el.dataset.leadField,(v===''||v==null)?null:v);return;}
     if(el.dataset&&el.dataset.mgStock){const v=el.value;saveStockField(el.dataset.mgStock,el.dataset.mgF,(v===''||v==null)?null:Number(v));return;}
     if(el.dataset&&el.dataset.mgRec){const v=el.value;saveRecordField(el.dataset.mgRec,el.dataset.mgF,(v===''||v==null)?null:Number(v));return;}
@@ -4258,6 +4364,8 @@ function bindEvents(){
       case'evento-add-cancel':setState({eventoAdding:false,eventoForm:{},eventoErr:''});break;
       case'evento-save-new':saveEventoNovo();break;
       case'evento-toggle':toggleEventoAtivo(parseInt(el.dataset.id));break;
+      case'ent-toggle':toggleEntrega(el.dataset.id,el.dataset.k);break;
+      case'ent-doc':toggleEntregaDoc(el.dataset.id,el.dataset.doc);break;
       case'dep-vend-toggle':setState({depVendOpen:!S.depVendOpen});break;
       case'lead-add-open':setState({leadAdding:true,leadErr:'',leadOk:''});break;
       case'lead-add-close':setState({leadAdding:false,leadErr:'',leadOk:''});break;
@@ -4294,6 +4402,7 @@ function bindEvents(){
       case'gpp-mais-close':setState({gppMais:false});break;
       case'gpp-sec':{const s=el.dataset.s;S.gppBusca='';S.gppMais=false;if(s==='escala'){setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}else if(s==='stock'||s==='depreciacao'||s==='margem'){setState({gppSec:s,dashAlertOpen:null});if(!S.stockLoaded)loadStock().then(()=>render());}
       else if(s==='premios'){setState({gppSec:s,dashAlertOpen:null});if(!(S.premiosCfg||[]).length)loadPremiosCfg().then(()=>render());}
+      else if(s==='entregas'){setState({gppSec:s,dashAlertOpen:null});loadEntregas().then(()=>render());}
       else if(s==='comissoes'){setState({gppSec:s,dashAlertOpen:null});loadComissoes().then(()=>render());}else if(s==='evento'){setState({gppSec:s,dashAlertOpen:null,eventoErr:''});const ev=eventoAtual();if(ev){S.eventoSel=ev.id;loadRanking(ev.id).then(()=>render());}}else if(s==='funil'){setState({gppSec:s,dashAlertOpen:null});loadTransicoes().then(()=>render());}else{setState({gppSec:s,dashAlertOpen:null});}break}
       case'stock-cat':setState({stockCat:el.dataset.c,stockAdding:false});break;
       case'stock-vend-toggle':setState({stockVendOpen:!S.stockVendOpen});break;
