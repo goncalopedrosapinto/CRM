@@ -2054,10 +2054,13 @@ function campTexto(){
 const ENT_DOCS_BASE=['CC / NIF','Comprovativo de morada','Carta de condução','Proposta / contrato assinado'];
 function entDocsFor(r){const l=ENT_DOCS_BASE.slice();if(r.fin==='Fint'||r.fin==='Fext')l.push('Documentos da financeira');if(r.retoma==='Sim')l.push('DUA da retoma');return l;}
 function entFsAplica(r){return r.fin==='Fint'||r.fin==='Fext';}
+function entMatAplica(r){return r.type==='MN';}
+function entMatFeito(r){const e=entOf(r.id)||{};return !!e.pedido_matricula||!!r.dmat;}
 function entOf(id){return (S.entregas||{})[String(id)]||null;}
 function entProgresso(r){
   const e=entOf(r.id)||{};const d=e.docs||{};const docs=entDocsFor(r);
   const itens=[!!(r.biz&&String(r.biz).trim()),docs.every(x=>d[x]),!!e.prep_pedida];
+  if(entMatAplica(r))itens.push(entMatFeito(r));
   if(e.pecas_precisa)itens.push(!!e.pecas_chegaram);
   itens.push(!!e.pago);
   if(entFsAplica(r))itens.push(!!e.fs_tratado);
@@ -2750,7 +2753,7 @@ function EXPORT_FOLHAS(){
       {c:'negocio_id',l:'Negócio ID'},
       {c:'negocio_id',l:'Cliente',f:v=>{const r=(S.records||[]).find(x=>String(x.id)===String(v));return r?(r.id_cliente||''):''}},
       {c:'docs',l:'Documentos OK',f:v=>(v&&typeof v==='object')?Object.keys(v).filter(k=>v[k]).join(' | '):''},
-      {c:'docs_obs',l:'Docs em falta / notas'},{c:'prep_pedida',l:'Preparação pedida',f:sn},
+      {c:'docs_obs',l:'Docs em falta / notas'},{c:'pedido_matricula',l:'Pedido matrícula feito',f:sn},{c:'prep_pedida',l:'Preparação pedida',f:sn},
       {c:'pecas_precisa',l:'Precisa peças',f:sn},{c:'pecas_chegaram',l:'Peças chegaram',f:sn},{c:'pecas_obs',l:'Peças'},
       {c:'pago',l:'Pago',f:sn},{c:'fs_tratado',l:'FS tratado',f:sn},{c:'data_entrega',l:'Data entrega',f:d},
       {c:'obs',l:'Observações'},{c:'updated_at',l:'Atualizado',f:dt},
@@ -3439,6 +3442,7 @@ function renderDashboard(){
         </div>
         <div class="en-chips">
           <span class="en-chip en-auto ${biz?'on':'falta'}" title="Lido do campo Bizagi do negócio">${biz?'✓ Bizagi '+esc(biz):'✕ Bizagi em falta'}</span>
+          ${!entMatAplica(r)?`<span class="en-chip en-na" title="Demo e usada já estão matriculadas">Pedido matrícula n/a (${esc(r.type||'')})</span>`:(r.dmat?`<span class="en-chip en-auto on" title="Tem Data de Matrícula no negócio">✓ Matriculada ${esc(String(r.dmat).slice(0,10))}</span>`:chip(e.pedido_matricula,'Pedido de matrícula feito','ent-toggle',`data-id="${r.id}" data-k="pedido_matricula"`))}
           ${chip(e.prep_pedida,'Preparação pedida','ent-toggle',`data-id="${r.id}" data-k="prep_pedida"`)}
           ${chip(e.pecas_precisa,'Precisa peças','ent-toggle',`data-id="${r.id}" data-k="pecas_precisa"`)}
           ${e.pecas_precisa?chip(e.pecas_chegaram,'Peças chegaram','ent-toggle',`data-id="${r.id}" data-k="pecas_chegaram"`):''}
