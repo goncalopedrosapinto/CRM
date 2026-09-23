@@ -2104,7 +2104,10 @@ function toggleEntrega(id,k){const e=entOf(id)||{};saveEntrega(id,{[k]:!e[k]});}
 function toggleEntregaDoc(id,doc){const e=entOf(id)||{};const d=Object.assign({},e.docs||{});d[doc]=!d[doc];saveEntrega(id,{docs:d});}
 
 // ---- Comissionamento (regras num sítio só) ----
-const COM_REGRAS={pctNovas:0.15,pctUsadas:0.25,valorDemo:75,minMargemNeg:35};
+const COM_REGRAS={pctNovas:0.15,pctUsadas:0.25,valorDemo:75,minimo:35};
+const COM_ORDEM_TIPO={MN:0,MD:1,MU:2};
+function comOrdena(a,b){const oa=COM_ORDEM_TIPO[a.type]!=null?COM_ORDEM_TIPO[a.type]:9,ob=COM_ORDEM_TIPO[b.type]!=null?COM_ORDEM_TIPO[b.type]:9;
+  return oa-ob||String(a.mat||'').localeCompare(String(b.mat||''))||String(a.id_cliente||'').localeCompare(String(b.id_cliente||''));}
 function comElegivel(r){return !!r&&!r.venda_direta&&!r.automatricula&&!!r.vendedor_id;}
 function margemDe(id){const m=(S.margens||{})[String(id)];return (m&&m.margem!=null)?Number(m.margem):null;}
 function comissaoDe(r){
@@ -2112,9 +2115,10 @@ function comissaoDe(r){
   if(r.type==='MD')return {valor:COM_REGRAS.valorDemo,regra:'demo/cortesia — valor fixo'};
   const m=margemDe(r.id);
   if(m==null)return {valor:null,regra:'falta margem libertada'};
-  if(m<0)return {valor:COM_REGRAS.minMargemNeg,regra:'margem negativa — mínimo'};
   const pct=(r.type==='MU')?COM_REGRAS.pctUsadas:COM_REGRAS.pctNovas;
-  return {valor:m*pct,regra:Math.round(pct*100)+'% da margem'};
+  const bruto=m*pct;
+  if(bruto<COM_REGRAS.minimo)return {valor:COM_REGRAS.minimo,regra:(m<0?'margem negativa':Math.round(pct*100)+'% = '+bruto.toFixed(2)+' €')+' — mínimo garantido'};
+  return {valor:bruto,regra:Math.round(pct*100)+'% da margem'};
 }
 async function loadMargens(){
   try{const d=await supabaseApi('GET','/margens?select=*');const mp={};(d||[]).forEach(x=>{mp[String(x.negocio_id)]=x;});S.margens=mp;S.margensErr='';}
@@ -2549,6 +2553,43 @@ function exportEscala(){
   a.href=url;a.download=`escala_${linhaLabel(linhaAtiva)}_${escalaMesRef()}.csv`;a.click();
   URL.revokeObjectURL(url);
 }
+function exportComissoesPDF(){
+  const mes=S.dashMes||curYM();
+  const fE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' \u20ac';
+  const arr=(S.records||[]).filter(r=>r.status==='Retail'&&retailYM(r)===mes&&comElegivel(r));
+  if(!arr.length){alert('Sem comissões para '+mes+'.');return;}
+  let corpo='',total=0;
+  (S.team||[]).filter(p=>p.role==='vendedor').forEach(p=>{
+    const meus=arr.filter(r=>r.vendedor_id===p.id).slice().sort(comOrdena);
+    if(!meus.length)return;
+    const sub=meus.map(comissaoDe).reduce((a,c)=>a+(c.valor||0),0);total+=sub;
+    corpo+='<h2>'+esc(p.nome||'?')+' <span class="n">'+meus.length+' mota'+(meus.length!==1?'s':'')+'</span></h2>';
+    corpo+='<table><thead><tr><th>Matr\u00edcula</th><th>Cliente</th><th>Modelo</th><th>Tipo</th><th class="num">Margem libertada</th><th>Regra</th><th class="num">Comiss\u00e3o</th></tr></thead><tbody>';
+    meus.forEach(r=>{const c=comissaoDe(r);const m=margemDe(r.id);
+      corpo+='<tr><td><b>'+esc(r.mat||'\u2014')+'</b></td><td>'+esc(r.id_cliente||'')+'</td><td>'+esc((r.model||'')+' '+(r.version||''))+'</td><td>'+esc(r.type||'')+'</td>'
+        +'<td class="num">'+(r.type==='MD'?'n/a':(m!=null?fE(m):'\u2014'))+'</td><td class="reg">'+esc(c.regra)+'</td>'
+        +'<td class="num"><b>'+(c.valor==null?'por lan\u00e7ar':fE(c.valor))+'</b></td></tr>';});
+    corpo+='<tr class="sub"><td colspan="6">Subtotal '+esc(p.nome||'')+'</td><td class="num">'+fE(sub)+'</td></tr>';
+    corpo+='</tbody></table>';
+  });
+  const html='<!doctype html><html lang="pt"><head><meta charset="utf-8"><title>Comiss\u00f5es '+mes+'</title>'
+    +'<style>@page{size:A4;margin:12mm}body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:0}'
+    +'h1{font-size:17px;margin:0 0 2px}.sub1{color:#666;font-size:11px;margin:0 0 4px}'
+    +'.regras{font-size:10px;color:#444;border:1px solid #cbd5e1;padding:5px 8px;border-radius:4px;margin:8px 0 14px}'
+    +'h2{font-size:13px;margin:14px 0 5px;border-bottom:2px solid #111;padding-bottom:3px}h2 .n{font-weight:400;color:#666;font-size:11px}'
+    +'table{width:100%;border-collapse:collapse;font-size:10px;margin-bottom:6px}'
+    +'th,td{border:1px solid #cbd5e1;padding:4px 6px;text-align:left}th{background:#f1f5f9;text-transform:uppercase;font-size:9px}'
+    +'td.num,th.num{text-align:right}td.reg{color:#666;font-size:9px}tr.sub td{background:#f8fafc;font-weight:700}'
+    +'.tot{margin-top:10px;padding:8px 10px;border:2px solid #111;border-radius:4px;font-size:13px;text-align:right}'
+    +'</style></head><body>'
+    +'<h1>Comiss\u00f5es \u2014 '+mes+'</h1><p class="sub1">Baviera Control \u00b7 gerado em '+new Date().toLocaleDateString('pt-PT')+'</p>'
+    +'<div class="regras">Novas '+Math.round(COM_REGRAS.pctNovas*100)+'% \u00b7 Usadas '+Math.round(COM_REGRAS.pctUsadas*100)+'% da margem libertada \u00b7 Demos/cortesias '+fE(COM_REGRAS.valorDemo)+' \u00b7 M\u00ednimo garantido '+fE(COM_REGRAS.minimo)+'</div>'
+    +corpo+'<div class="tot">Total da equipa: <b>'+fE(total)+'</b></div></body></html>';
+  const w=window.open('','_blank');
+  if(!w){alert('Permite pop-ups neste site para gerar o PDF.');return;}
+  w.document.open();w.document.write(html);w.document.close();w.focus();
+  setTimeout(()=>{try{w.print();}catch(e){}},350);
+}
 function exportComissoes(){
   const mes=S.dashMes||curYM();
   const esc2=v=>{v=(v==null?'':String(v));return /[;\n"]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
@@ -2556,7 +2597,7 @@ function exportComissoes(){
   const arr=(S.records||[]).filter(r=>r.status==='Retail'&&retailYM(r)===mes&&comElegivel(r));
   const rows=[['Mes','Vendedor','Matricula','Cliente','Modelo','Tipo','MargemLibertada','Regra','Comissao'].join(';')];
   (S.team||[]).filter(p=>p.role==='vendedor').forEach(p=>{
-    const meus=arr.filter(r=>r.vendedor_id===p.id);if(!meus.length)return;
+    const meus=arr.filter(r=>r.vendedor_id===p.id).slice().sort(comOrdena);if(!meus.length)return;
     meus.forEach(r=>{const c=comissaoDe(r);
       rows.push([mes,p.nome||'',r.mat||'',r.id_cliente||'',(r.model||'')+' '+(r.version||''),r.type||'',n2(margemDe(r.id)),c.regra,n2(c.valor)].map(esc2).join(';'));});
     const sub=meus.map(comissaoDe).reduce((a,c)=>a+(c.valor||0),0);
@@ -4090,7 +4131,7 @@ function renderDashboard(){
       </tr>`;
     };
     const bloco=p=>{
-      const meus=elegiveis.filter(r=>r.vendedor_id===p.id);
+      const meus=elegiveis.filter(r=>r.vendedor_id===p.id).slice().sort(comOrdena);
       if(!meus.length)return'';
       const cs=meus.map(comissaoDe);
       const sub=cs.reduce((a,c)=>a+(c.valor||0),0);
@@ -4106,9 +4147,9 @@ function renderDashboard(){
     return`${mesBar}
       <div class="gpp-tot-head" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
         <span>Comissões · ${esc(mesSel)} · <b>${elegiveis.length}</b> motas · <b style="color:var(--green)">${fmtE(total)}</b></span>
-        ${elegiveis.length?`<button class="btn btn-orange btn-sm" data-action="export-comissoes">⬇ CSV</button>`:''}
+        ${elegiveis.length?`<span style="display:flex;gap:8px"><button class="btn btn-dark btn-sm" data-action="export-comissoes-pdf">⬇ PDF</button><button class="btn btn-orange btn-sm" data-action="export-comissoes">⬇ CSV</button></span>`:''}
       </div>
-      <div class="cm-regras">Novas <b>${Math.round(COM_REGRAS.pctNovas*100)}%</b> · Usadas <b>${Math.round(COM_REGRAS.pctUsadas*100)}%</b> da margem libertada · Demos/cortesias <b>${fmtE(COM_REGRAS.valorDemo)}</b> · Margem negativa <b>${fmtE(COM_REGRAS.minMargemNeg)}</b></div>
+      <div class="cm-regras">Novas <b>${Math.round(COM_REGRAS.pctNovas*100)}%</b> · Usadas <b>${Math.round(COM_REGRAS.pctUsadas*100)}%</b> da margem libertada · Demos/cortesias <b>${fmtE(COM_REGRAS.valorDemo)}</b> · Mínimo garantido <b>${fmtE(COM_REGRAS.minimo)}</b></div>
       ${S.margensErr?`<div class="mg-aviso">⚠️ Não consigo ler as margens (${esc(S.margensErr)}). Falta correr o SQL da tabela <b>margens</b>.</div>`:''}
       ${porLancar?`<div class="mg-aviso">⚠️ <b>${porLancar}</b> mota${porLancar!==1?'s':''} sem margem libertada lançada — não entram no total.</div>`:''}
       ${elegiveis.length===0?'<div class="gpp-empty">Sem retail de vendedores neste mês.</div>':vendedores.map(bloco).join('')}
@@ -4456,6 +4497,7 @@ function bindEvents(){
       case'evento-add-cancel':setState({eventoAdding:false,eventoForm:{},eventoErr:''});break;
       case'evento-save-new':saveEventoNovo();break;
       case'evento-toggle':toggleEventoAtivo(parseInt(el.dataset.id));break;
+      case'export-comissoes-pdf':exportComissoesPDF();break;
       case'ent-toggle':toggleEntrega(el.dataset.id,el.dataset.k);break;
       case'ent-doc':toggleEntregaDoc(el.dataset.id,el.dataset.doc);break;
       case'dep-vend-toggle':setState({depVendOpen:!S.depVendOpen});break;
