@@ -4857,6 +4857,30 @@ function collectFormData(){document.querySelectorAll('input[data-field],select[d
 function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes(),loadTransicoes(),loadNorma()]):Promise.all([loadTeam(),loadEventos(),loadInscricoes(),loadInscricoesAll(),loadMargens(),loadEntregas()]);return extra}).then(function(){return loadRecords()}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:isAdmin()?'dashboard':'list',loading:false})})}
 (function(){
   S.screen='loading';render();
+  // Link de recuperacao do Supabase: #access_token=...&type=recovery
+  var rec=null;
+  try{
+    var h=(location.hash||'').replace(/^#/,'');
+    if(h.indexOf('access_token=')>=0){
+      var p=new URLSearchParams(h);
+      var at=p.get('access_token'), tp=p.get('type');
+      if(at){rec={token:at,tipo:tp||'',erro:null};}
+    }else if(h.indexOf('error=')>=0){
+      var pe=new URLSearchParams(h);
+      rec={token:null,tipo:'',erro:(pe.get('error_description')||pe.get('error')||'').replace(/\+/g,' ')};
+    }
+    if(h)history.replaceState(null,'',location.pathname+location.search);
+  }catch(e){}
+  if(rec&&rec.erro){setState({screen:'login',error:'Link inválido ou expirado. Pede um novo email de recuperação.'});return;}
+  if(rec&&rec.token){
+    S.token=rec.token;
+    afterAuth().then(function(){
+      setState({screen:'password',pwMsg:'Define aqui a tua nova password.',pwErr:'',loading:false});
+    }).catch(function(){
+      setState({screen:'login',error:'O link expirou. Pede um novo email de recuperação.'});
+    });
+    return;
+  }
   refreshSession().then(function(token){
     if(token){S.token=token;return afterAuth()}
     else{setState({screen:'login'})}
