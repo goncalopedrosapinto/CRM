@@ -1677,13 +1677,14 @@ function vBarraMes(meses,sel,acao){
       ${meses.length===0?`<option>${esc(sel||'—')}</option>`:meses.slice().reverse().map(m=>`<option value="${m}" ${sel===m?'selected':''}>${esc(m)}</option>`).join('')}
     </select></div>`;
 }
-function vGraficoEntregas(){
+function vGraficoEntregas(desde){
   const ent={},car={};
   (S.records||[]).forEach(r=>{
     if(r.status==='Retail'){const m=retailYM(r);if(!m)return;if(!ent[m])ent[m]={n:0,u:0};if(r.type==='MU')ent[m].u++;else ent[m].n++;}
     else if(r.status==='Carteira'&&r.mes1){const m=r.mes1;if(!car[m])car[m]={n:0,u:0};if(r.type==='MU')car[m].u++;else car[m].n++;}
   });
-  const meses=[...new Set([...Object.keys(ent),...Object.keys(car)])].sort();
+  let meses=[...new Set([...Object.keys(ent),...Object.keys(car)])].sort();
+  if(desde)meses=meses.filter(m=>m>=desde);
   if(!meses.length)return'';
   const g=(o,m)=>o[m]||{n:0,u:0};
   const tot=o=>o.n+o.u;
@@ -1692,11 +1693,14 @@ function vGraficoEntregas(){
   const W=Math.max(320,meses.length*(grupo+26)+40),H=250,padT=26,padB=48,padL=24;
   const chartH=H-padT-padB;
   let bars='';
-  const pilha=(x,d,cN,cU)=>{
+  const AZ='#2563EB',LA='#D97706';
+  const pilha=(x,d,prev)=>{
     let out='';const hN=(d.n/maxV)*chartH,hU=(d.u/maxV)*chartH;
     const yN=padT+chartH-hN,yU=yN-hU;
-    if(d.n)out+=`<rect x="${x}" y="${yN}" width="${bw}" height="${hN}" fill="${cN}" rx="2"/>${hN>14?`<text x="${x+bw/2}" y="${yN+hN/2+4}" text-anchor="middle" font-size="10" fill="#fff" font-weight="700">${d.n}</text>`:''}`;
-    if(d.u)out+=`<rect x="${x}" y="${yU}" width="${bw}" height="${hU}" fill="${cU}" rx="2"/>${hU>14?`<text x="${x+bw/2}" y="${yU+hU/2+4}" text-anchor="middle" font-size="10" fill="#fff" font-weight="700">${d.u}</text>`:''}`;
+    const est=(c)=>prev?`fill="${c}" fill-opacity=".28" stroke="${c}" stroke-width="1.5" stroke-dasharray="3 2"`:`fill="${c}"`;
+    const txt=(c)=>prev?c:'#fff';
+    if(d.n)out+=`<rect x="${x}" y="${yN}" width="${bw}" height="${hN}" ${est(AZ)} rx="2"/>${hN>14?`<text x="${x+bw/2}" y="${yN+hN/2+4}" text-anchor="middle" font-size="10" fill="${txt(AZ)}" font-weight="800">${d.n}</text>`:''}`;
+    if(d.u)out+=`<rect x="${x}" y="${yU}" width="${bw}" height="${hU}" ${est(LA)} rx="2"/>${hU>14?`<text x="${x+bw/2}" y="${yU+hU/2+4}" text-anchor="middle" font-size="10" fill="${txt(LA)}" font-weight="800">${d.u}</text>`:''}`;
     const t=tot(d);
     if(t)out+=`<text x="${x+bw/2}" y="${padT+chartH-(t/maxV)*chartH-5}" text-anchor="middle" font-size="10" fill="var(--text)" font-weight="800">${t}</text>`;
     return out;
@@ -1704,19 +1708,20 @@ function vGraficoEntregas(){
   const gap=(W-padL-meses.length*grupo)/(meses.length+1);
   meses.forEach((m,i)=>{
     const x=padL+gap+i*(grupo+gap);
-    bars+=pilha(x,g(ent,m),'#15803D','#65A30D');
-    bars+=pilha(x+bw+pair,g(car,m),'#2563EB','#D97706');
+    bars+=pilha(x,g(ent,m),false);
+    bars+=pilha(x+bw+pair,g(car,m),true);
     bars+=`<text x="${x+grupo/2}" y="${padT+chartH+16}" text-anchor="middle" font-size="9" fill="var(--text3)">${esc(m)}</text>`;
     bars+=`<text x="${x+bw/2}" y="${padT+chartH+29}" text-anchor="middle" font-size="7" fill="var(--text3)">entregue</text>`;
     bars+=`<text x="${x+bw+pair+bw/2}" y="${padT+chartH+29}" text-anchor="middle" font-size="7" fill="var(--text3)">previsto</text>`;
   });
-  const tE=Object.values(ent).reduce((a,d)=>a+tot(d),0),tC=Object.values(car).reduce((a,d)=>a+tot(d),0);
+  const tE=meses.reduce((a,m)=>a+tot(g(ent,m)),0),tC=meses.reduce((a,m)=>a+tot(g(car,m)),0);
   const lg=(c,t)=>`<span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;background:${c};border-radius:2px"></span>${t}</span>`;
-  return`<div class="gpp-tot-head" style="font-size:13px">Histórico · entregues <b style="color:#15803D">${tE}</b> · por entregar <b style="color:#2563EB">${tC}</b></div>
+  const lg2=(t,prev)=>`<span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:${prev?'rgba(100,116,139,.28)':'#64748B'};${prev?'border:1.5px dashed #64748B':''}"></span>${t}</span>`;
+  return`<div class="gpp-tot-head" style="font-size:13px">De ${esc(meses[0])} em diante · entregues <b>${tE}</b> · por entregar <b style="color:${AZ}">${tC}</b></div>
     <div class="gpp-card" style="margin:0 16px 12px;padding:12px 8px">
       <div style="overflow-x:auto;display:flex;justify-content:center"><svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${Math.min(W,560)}px;height:auto">${bars}</svg></div>
       <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;padding:8px 0 2px;font-size:11px">
-        ${lg('#15803D','Entregues novas')}${lg('#65A30D','Entregues usadas')}${lg('#2563EB','Previstas novas')}${lg('#D97706','Previstas usadas')}
+        ${lg(AZ,'Novas')}${lg(LA,'Usadas')}<span style="color:var(--border2)">|</span>${lg2('Entregue',false)}${lg2('Previsto',true)}
       </div>
     </div>`;
 }
@@ -1761,7 +1766,7 @@ function renderMinhasEntregas(){
     <div class="ve-resumo"><b>${esc(sel)}</b> · <b style="color:var(--blue)">${doMes.length}</b> por entregar${prontas?` · <b style="color:var(--green)">${prontas}</b> prontas`:''} · <b style="color:var(--text3)">${entreguesMes}</b> já entregues</div>
     ${doMes.length===0?'<div class="gpp-empty">Nada por entregar neste mês.</div>':`<div class="ve-list">${lista.map(item).join('')}</div>`}
     <div class="gpp-pend-desc" style="margin:0 16px 10px">Ordenado pela data de entrega mais próxima. "Falta" é o que trava a entrega — pede ao cliente o que estiver em falta do lado dele.</div>
-    ${vGraficoEntregas()}
+    ${vGraficoEntregas(sel)}
   </div></div></div></div>`;
 }
 function renderMinhasComissoes(){
