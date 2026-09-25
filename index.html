@@ -658,6 +658,32 @@ html,body{overflow-x:hidden;max-width:100vw}
 .sec-tab-n{font-size:10px;background:var(--red);color:#fff;border-radius:8px;padding:1px 6px;margin-left:2px}
 .sec-tab-n.mut{background:var(--text3)}
 @media(max-width:700px){.per-meses{grid-template-columns:repeat(6,1fr);min-width:0;width:100%}}
+.pm-wrap{display:flex;gap:12px;align-items:flex-start;margin:0 16px 12px;flex-wrap:wrap}
+.pm-tbl{min-width:860px}
+.pm-tbl td,.pm-tbl th{padding:6px 8px}
+.pm-g td{background:var(--bg3);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text2)}
+.pm-cr{font-weight:600;white-space:nowrap}
+.pm-auto{font-size:9px;font-weight:800;background:var(--blue);color:#fff;border-radius:6px;padding:1px 5px;margin-left:6px;vertical-align:middle}
+.pm-in{white-space:nowrap;text-align:center}
+.pm-in input{width:74px;text-align:right}
+.pm-un{font-size:10px;color:var(--text3);margin-left:3px}
+.pm-t{text-align:center;font-size:11px;color:var(--text3);border-radius:6px}
+.pm-t.neg{color:var(--red)}.pm-t.zero{color:var(--text3)}
+.pm-t.on{background:var(--green-bg);color:#15803d;font-weight:800;box-shadow:inset 0 0 0 2px var(--green)}
+.pm-t.on.neg{background:#fee2e2;color:#b91c1c;box-shadow:inset 0 0 0 2px var(--red)}
+.pm-t.on.zero{background:var(--bg3);color:var(--text2);box-shadow:inset 0 0 0 2px var(--border2)}
+.pm-tl{font-size:8.5px;color:var(--text3);font-weight:600;margin-top:1px}
+.pm-eur{text-align:right;font-weight:800;white-space:nowrap}
+.pm-eur.ok{color:var(--green)}.pm-eur.neg{color:var(--red)}.pm-eur.zero{color:var(--text3)}
+.pm-total{font-size:20px;font-weight:800;color:var(--green)}.pm-total.neg{color:var(--red)}
+.pm-ajuda{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;min-width:190px}
+.pm-ajuda-h{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--text2);margin-bottom:6px}
+.pm-ajuda-t{width:100%;border-collapse:collapse;font-size:12px}
+.pm-ajuda-t td{padding:3px 0;border-bottom:1px solid var(--border)}
+.pm-ajuda-t td:last-child{text-align:right}
+.pm-real td{background:var(--amber-bg)}
+.pm-delta td{color:var(--text3)}.pm-delta.ok td{color:var(--green)}
+.pm-sem{font-size:12px;color:var(--text3)}
 .pan-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:10px;margin:0 16px 10px}
 .pan-c{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
 .pan-v{font-size:19px;font-weight:800;margin-top:2px}
@@ -1144,7 +1170,7 @@ let S={
   token:null,records:[],selected:null,form:{},
   me:null,team:[],objetivos:[],objEquipa:[],eventos:[],inscricoes:[],ranking:[],transicoes:[],norma:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
-  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',vdAdding:false,vdForm:{},vdErr:'',amAdding:false,amForm:{},amErr:'',depTaxa:(()=>{try{return parseFloat(localStorage.getItem('bc_dep_taxa'))||0}catch(e){return 0}})(),premiosCfg:[],comissoes:[],campSel:null,depVendOpen:false,entregas:{},entregasErr:'',margens:{},margensErr:'',vMes:null,vMesCom:null,voltarGpp:null,leadAdding:false,leadForm:{},leadErr:'',leadOk:'',exportBusy:false,exportMsg:'',gppSideOff:(()=>{try{return localStorage.getItem('bc_side')==='1'}catch(e){return false}})(),pedAutOpen:false,pedAutSel:{},
+  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',vdAdding:false,vdForm:{},vdErr:'',amAdding:false,amForm:{},amErr:'',depTaxa:(()=>{try{return parseFloat(localStorage.getItem('bc_dep_taxa'))||0}catch(e){return 0}})(),premiosCfg:[],premiosMes:{},premiosMesErr:'',comissoes:[],campSel:null,depVendOpen:false,entregas:{},entregasErr:'',margens:{},margensErr:'',vMes:null,vMesCom:null,voltarGpp:null,leadAdding:false,leadForm:{},leadErr:'',leadOk:'',exportBusy:false,exportMsg:'',gppSideOff:(()=>{try{return localStorage.getItem('bc_side')==='1'}catch(e){return false}})(),pedAutOpen:false,pedAutSel:{},
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{INFO:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
@@ -2326,6 +2352,59 @@ const COM_REGRAS={pctNovas:0.15,pctUsadas:0.25,valorDemo:75,minimo:35};
 const COM_ORDEM_TIPO={MN:0,MD:1,MU:2};
 function comOrdena(a,b){const oa=COM_ORDEM_TIPO[a.type]!=null?COM_ORDEM_TIPO[a.type]:9,ob=COM_ORDEM_TIPO[b.type]!=null?COM_ORDEM_TIPO[b.type]:9;
   return oa-ob||String(a.mat||'').localeCompare(String(b.mat||''))||String(a.id_cliente||'').localeCompare(String(b.id_cliente||''));}
+// Comissão de usada = 25% da margem. Como a margem inclui a comissão no custo, resolve-se:
+//   com = pct*(venda - base) / (1+pct)   [base = custo SEM comissão]; nunca abaixo do mínimo.
+function comissaoUsada(base,venda){
+  const pct=COM_REGRAS.pctUsadas,min=COM_REGRAS.minimo;
+  if(venda==null||base==null)return {valor:min,regra:'mínimo (sem preço de venda)'};
+  const bruto=pct*(venda-base)/(1+pct);
+  if(bruto<min)return {valor:min,regra:Math.round(pct*100)+'% = '+bruto.toFixed(2)+' € — mínimo'};
+  return {valor:bruto,regra:Math.round(pct*100)+'% da margem'};
+}
+// ---- Plano de prémios do chefe de vendas (mensal) ----
+// tiers: [rotulo, minimo, valor]. 'gap' = faixa sem prémio nem penalização.
+const PREMIO_PLANO=[
+  {k:'retail',  g:'Volume', lb:"Retail's Motorrad",              un:'%',  auto:true,
+   tiers:[['<95%',null,-20],['95–99%',95,0],['100%',100,60],['110%',110,90],['125%',125,110],['>135%',135,125]]},
+  {k:'fatvu',   g:'Volume', lb:'Faturação VU',                   un:'%',
+   tiers:[['<95%',null,-20],['95–99%',95,0],['100%',100,60],['110%',110,90],['125%',125,110],['>135%',135,125]]},
+  {k:'rent',    g:'Volume', lb:'Rentabilidade',                  un:'%',
+   tiers:[['<95%',null,-20],['95–99%',95,0],['100%',100,60],['110%',110,90],['125%',125,110],['>135%',135,125]]},
+  {k:'fs',      g:'Volume', lb:'Penetração BMW FS',              un:'%',
+   tiers:[['<95%',null,-20],['95–99%',95,0],['100%',100,60],['110%',110,90],['125%',125,110],['>135%',135,125]]},
+  {k:'voc',     g:'Qualidade', lb:'Satisfação VOC',              un:'pts',
+   tiers:[['<86',null,-50],['86–89',86,0],['90',90,30],['94',94,40],['95',95,40],['>98',98,45]]},
+  {k:'consent', g:'Qualidade', lb:'Consentimentos Motorrad',     un:'%',
+   tiers:[['<75%',null,-10],['75–79%',75,0],['80%',80,15],['85%',85,20],['90%',90,25],['>95%',95,30]]},
+  {k:'dados',   g:'Qualidade', lb:'Consistência de Dados (VN+VU)',un:'%',
+   tiers:[['<50%',null,-10],['50–59%',50,0],['60%',60,10],['70%',70,15],['80%',80,20],['>90%',90,25]]},
+];
+function premioTier(c,v){
+  if(v==null||v==='')return -1;
+  const x=Number(v);if(!isFinite(x))return -1;
+  let idx=0;
+  c.tiers.forEach((t,i)=>{if(t[1]!=null&&x>=t[1])idx=i;});
+  return idx;
+}
+function premioValor(c,v){const i=premioTier(c,v);return i<0?null:c.tiers[i][2];}
+async function loadPremiosMes(){
+  try{const d=await supabaseApi('GET','/premios_mes?select=*');const m={};(d||[]).forEach(x=>{m[String(x.mes)]=x.dados||{};});S.premiosMes=m;S.premiosMesErr='';}
+  catch(e){S.premiosMes={};S.premiosMesErr=(e&&e.message)||'erro';}
+}
+function premioDados(mes){return (S.premiosMes||{})[String(mes)]||{};}
+async function savePremioMes(mes,chave,valor){
+  mes=String(mes);const atual=Object.assign({},premioDados(mes));
+  if(valor===''||valor==null)delete atual[chave];else atual[chave]=Number(valor);
+  const tinha=(S.premiosMes||{})[mes]!==undefined;
+  S.premiosMes=Object.assign({},S.premiosMes||{},{[mes]:atual});render();
+  const body={dados:atual,updated_at:new Date().toISOString()};
+  try{
+    if(tinha){const r=await supabaseApi('PATCH',`/premios_mes?mes=eq.${encodeURIComponent(mes)}`,body);
+      if(Array.isArray(r)&&r.length===0)await supabaseApi('POST','/premios_mes',Object.assign({mes},body));}
+    else{try{await supabaseApi('POST','/premios_mes',Object.assign({mes},body));}
+      catch(e){await supabaseApi('PATCH',`/premios_mes?mes=eq.${encodeURIComponent(mes)}`,body);}}
+  }catch(e){alert('Erro ao gravar prémio: '+((e&&e.message)||e));await loadPremiosMes();render();}
+}
 function comElegivel(r){return !!r&&!r.venda_direta&&!r.automatricula&&!!r.vendedor_id;}
 function margemDe(id){const m=(S.margens||{})[String(id)];return (m&&m.margem!=null)?Number(m.margem):null;}
 function comissaoDe(r){
@@ -2356,8 +2435,8 @@ async function saveMargem(id,valor){
 
 // ---- Navegação agrupada (menu com separadores) ----
 const GRUPOS_SEC={
-  atratar:{ic:'📋',lb:'A tratar',tabs:[['entregas','Entregas'],['pendentes','Pendentes']]},
-  vendas:{ic:'✅',lb:'Vendas',tabs:[['retail','Retail'],['carteira','Carteira'],['fechados','Fechados'],['perdidos','Perdidos'],['comercio','Comerciante']]},
+  atratar:{ic:'📋',lb:'A tratar',tabs:[['pendentes','A tratar hoje'],['entregas','Entregas']]},
+  vendas:{ic:'✅',lb:'Vendas',tabs:[['retail','Retail'],['carteira','Carteira'],['fechados','Fechados'],['perdidos','Perdidos'],['comercio','Comerciante'],['saude','Saúde da equipa']]},
   usadas:{ic:'🏍️',lb:'Usadas',tabs:[['stock','Stock'],['depreciacao','Depreciação'],['margem','Margem']]},
   comissoesg:{ic:'💰',lb:'Comissões',tabs:[['comissoes','Resumo'],['premios','Os meus prémios']]}
 };
@@ -3155,8 +3234,12 @@ function EXPORT_FOLHAS(){
     {nome:'Comissões (manual, histórico)',path:'/comissoes?select=*&order=id.asc',cols:[
       {c:'id',l:'ID'},{c:'vendedor_id',l:'Vendedor',f:nome},{c:'mes',l:'Mês'},{c:'descricao',l:'Descrição'},{c:'valor',l:'Valor'},{c:'created_at',l:'Criado',f:dt},
     ]},
-    {nome:'Prémios (escalões)',path:'/premios_config?select=*&order=escopo.asc,pct_min.asc',cols:[
-      {c:'id',l:'ID'},{c:'escopo',l:'Escopo'},{c:'pct_min',l:'A partir de %'},{c:'valor',l:'Prémio'},{c:'nota',l:'Nota'},{c:'created_at',l:'Criado',f:dt},
+    {nome:'Prémios (mensal)',path:'/premios_mes?select=*&order=mes.asc',cols:[
+      {c:'mes',l:'Mês'},
+      ...PREMIO_PLANO.map(c=>({c:'dados',l:c.lb+' ('+c.un+')',f:v=>(v&&v[c.k]!=null)?v[c.k]:''})),
+      ...PREMIO_PLANO.map(c=>({c:'dados',l:'€ '+c.lb,f:v=>{const x=(v&&v[c.k]!=null)?premioValor(c,v[c.k]):null;return x==null?'':x;}})),
+      {c:'dados',l:'TOTAL €',f:v=>PREMIO_PLANO.reduce((a,c)=>a+((v&&v[c.k]!=null)?(premioValor(c,v[c.k])||0):0),0)},
+      {c:'updated_at',l:'Atualizado',f:dt},
     ]},
     {nome:'Equipa',path:'/profiles?select=*&order=nome.asc',cols:[
       {c:'id',l:'ID'},{c:'nome',l:'Nome'},{c:'role',l:'Função'},{c:'linha',l:'Linha'},{c:'created_at',l:'Criado',f:dt},
@@ -3329,6 +3412,7 @@ function renderDashboard(){
     ['carteira','📦','Carteira'],
     ['funil','🔻','Funil'],
     ['fechados','🏁','Negócios Fechados'],
+    ['saude','❤️','Saúde da equipa'],
     ['leads','🎯','Leads / Campanhas'],
     ['margem','💶','Margem Usadas'],
     ['premios','🏆','Os Meus Prémios'],
@@ -3487,7 +3571,8 @@ function renderDashboard(){
     const inatHtml=inat.length?`
       <div class="gpp-sub-h" style="border-left:3px solid var(--amber)">Equipa sem atividade</div>
       <div class="home-inat">${inat.map(v=>`<div class="home-inat-row"><span>${esc((v.nome||'?').split(' ').slice(0,2).join(' '))}</span><span class="home-inat-d">${v.dias==null?'sem registos':`há ${v.dias} dias`}</span></div>`).join('')}</div>`:'';
-    return ritmoHtml+acoesHtml+inatHtml+'<div style="height:16px"></div>';
+    S._acoesHtml=acoesHtml;
+    return ritmoHtml+inatHtml+'<div style="height:16px"></div>';
   }
   function tabelaResumo(){
     const retail=recs.filter(r=>r.status==='Retail'&&retailYM(r)===mesSel);
@@ -3647,9 +3732,12 @@ function renderDashboard(){
       const venda=r.pvp!=null?Number(r.pvp):null;
       const ent=m&&m.valor_entrada!=null?Number(m.valor_entrada):null;
       const dep=m&&m.dep_manual!=null?Number(m.dep_manual):0;
-      const prep=m?((Number(m.prep_garantia)||0)+(Number(m.prep_comissao)||0)+(Number(m.prep_legalizacao)||0)+(Number(m.prep_oficina)||0)):0;
+      const _pSem=m?((Number(m.prep_garantia)||0)+(Number(m.prep_legalizacao)||0)+(Number(m.prep_oficina)||0)):0;
+      const _base=(ent!=null)?(ent-dep+_pSem):null;
+      const _cm=comissaoUsada(_base,venda);
+      const prep=_pSem+_cm.valor;
       const custo=ent!=null?(ent-dep+prep):null;
-      const com=m?(Number(m.prep_comissao)||0):0;
+      const com=_cm.valor;
       const marg=(venda!=null&&custo!=null)?(venda-custo):null;
       const dias=(m&&m.data_rececao&&r.neg)?Math.max(0,Math.round((new Date(String(r.neg).slice(0,10))-new Date(String(m.data_rececao).slice(0,10)))/86400000)):null;
       if(marg!=null){tVenda+=venda;tCusto+=custo;tCom+=com;tMargem+=marg;nOk++;}else{nSem++;}
@@ -3684,79 +3772,58 @@ function renderDashboard(){
       <div class="gpp-card" style="margin:0 16px 20px;overflow-x:auto"><table class="gpp-ltable mg-tbl">
         <thead><tr><th>Data</th><th>Cliente</th><th>Modelo</th><th>Matrícula</th><th style="text-align:right">Dias stock</th><th style="text-align:right">Entrada</th><th style="text-align:right">Deprec.</th><th style="text-align:right">Prep.</th><th style="text-align:right">Custo</th><th style="text-align:right">Venda (PVP)</th><th style="text-align:right">Comissão<br><span style="font-weight:400;font-size:9px">(na prep.)</span></th><th style="text-align:right">Margem líq.</th></tr></thead>
         <tbody>${linhas}</tbody></table></div>`}
-      <div class="gpp-pend-desc" style="margin:0 16px 16px"><b>Preparação = garantia + comissão do vendedor + legalização + oficina</b> (edita cada parcela na Calculadora de Depreciação). Custo = entrada − depreciação + preparação. <b>Margem líquida = venda (PVP) − custo</b> — a comissão já lá está dentro, por isso não é descontada outra vez. Podes editar a entrada, a depreciação e o PVP aqui. Não inclui IVA nem encargos de financiamento.</div>`;
+      <div class="gpp-pend-desc" style="margin:0 16px 16px"><b>Preparação = garantia + legalização + oficina + comissão</b> (as três primeiras editas na Calculadora de Depreciação; a <b>comissão é calculada</b>: 25% da margem, mínimo 35 €). Custo = entrada − depreciação + preparação. <b>Margem líquida = venda (PVP) − custo</b> — a comissão já lá está dentro, por isso não é descontada outra vez. Podes editar a entrada, a depreciação e o PVP aqui. Não inclui IVA nem encargos de financiamento.</div>`;
   }
   function premiosView(){
     const fmtE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
-    const isNovas=r=>r.type==='MN'||r.type==='MD';
-    const mAtual=curYM();
-    const mSel=S.dashMes||mAtual;
-    const [aa,mm]=mSel.split('/').map(Number);
-    const ymOf=(y,m)=>`${y}/${String(m+1).padStart(2,'0')}`;
-    const tri=Math.floor((mm-1)/3);
-    const mesesTri=[0,1,2].map(i=>ymOf(aa,tri*3+i));
-    const cfg=S.premiosCfg||[];
-    const esc_=e=>cfg.filter(c=>c.escopo===e).slice().sort((a,b)=>Number(a.pct_min)-Number(b.pct_min));
-    // realizado: retail de novas por data 298 (mesma regra dos objetivos)
-    const realNovas=ym=>recs.filter(r=>r.status==='Retail'&&isNovas(r)&&retailYM(r)===ym).length;
-    const autoNovas=ym=>recs.filter(r=>r.status==='Retail'&&isNovas(r)&&r.automatricula&&retailYM(r)===ym).length;
-    const realUsadas=ym=>recs.filter(r=>r.status==='Retail'&&r.type==='MU'&&retailYM(r)===ym).length;
-    const objNovas=ym=>{const o=objEquipaGet(ym,'novas');return o?Number(o.objetivo)||0:0;};
-    const premioDe=(escopo,pct)=>{const t=esc_(escopo).filter(c=>pct>=Number(c.pct_min));return t.length?t[t.length-1]:null;};
-    // mensal
-    const oM=objNovas(mSel),rM=realNovas(mSel),aM=autoNovas(mSel);
-    const pM=oM>0?Math.round(1000*rM/oM)/10:null;
-    const prM=pM!=null?premioDe('mensal',pM):null;
-    // trimestral
-    const oT=mesesTri.reduce((a,m)=>a+objNovas(m),0), rT=mesesTri.reduce((a,m)=>a+realNovas(m),0), aT=mesesTri.reduce((a,m)=>a+autoNovas(m),0);
-    const pT=oT>0?Math.round(1000*rT/oT)/10:null;
-    const prT=pT!=null?premioDe('trimestral',pT):null;
-    const cor=p=>p==null?'var(--text3)':(p>=100?'var(--green)':(p>=90?'var(--amber)':'var(--red)'));
-    const bloco=(tit,sub,obj,real,pct,pr,escopo,auto)=>`
-      <div class="pr-bloco">
-        <div class="pr-h">${tit}<span class="pr-sub">${sub}</span></div>
-        <div class="pr-main">
-          <div class="pr-pct" style="color:${cor(pct)}">${pct!=null?pct+'%':'—'}</div>
-          <div class="pr-frac">${real} de ${obj||'—'} novas${auto?`<div class="pr-auto">${real-auto} vendidas + <b>${auto}</b> automatriculada${auto!==1?'s':''} · sem elas: <b>${obj>0?Math.round(1000*(real-auto)/obj)/10:0}%</b></div>`:''}</div>
-        </div>
-        <div class="pr-bar"><div class="pr-fill" style="width:${Math.min(100,pct||0)}%;background:${cor(pct)}"></div></div>
-        <div class="pr-premio">${obj===0?'<span class="pr-falta">Objetivo não lançado para este período</span>':(esc_(escopo).length===0?'<span class="pr-falta">Sem escalões definidos — configura abaixo</span>':(pr?`Prémio: <b>${fmtE(pr.valor)}</b> <span class="pr-tier">(escalão ${pr.pct_min}%)</span>`:'<span class="pr-falta">Abaixo do primeiro escalão</span>'))}</div>
-      </div>`;
-    const tabelaEsc=escopo=>{
-      const l=esc_(escopo);
-      return`<div class="pr-cfg">
-        <div class="pr-cfg-h">Escalões ${escopo==='mensal'?'mensais':'trimestrais'}</div>
-        ${l.length?`<table class="gpp-ltable pr-tbl"><thead><tr><th>A partir de</th><th style="text-align:right">Prémio</th><th>Nota</th><th></th></tr></thead><tbody>
-          ${l.map(c=>`<tr><td><b>${c.pct_min}%</b></td><td style="text-align:right">${fmtE(c.valor)}</td><td style="color:var(--text3)">${esc(c.nota||'')}</td><td style="text-align:right"><button class="pr-del" data-action="premio-del" data-id="${c.id}" title="Remover">✕</button></td></tr>`).join('')}
-        </tbody></table>`:'<div class="pr-falta" style="padding:6px 0">Sem escalões. Adiciona o primeiro em baixo.</div>'}
-        <div class="pr-add">
-          <input class="field-input" id="pr-pct-${escopo}" type="number" step="1" placeholder="% (ex: 100)" style="width:110px">
-          <input class="field-input" id="pr-val-${escopo}" type="number" step="0.01" placeholder="€ prémio" style="width:110px">
-          <input class="field-input" id="pr-nota-${escopo}" placeholder="nota (opcional)" style="flex:1;min-width:120px">
-          <button class="btn btn-dark btn-sm" data-action="premio-add" data-escopo="${escopo}">＋ Adicionar</button>
-        </div>
-      </div>`;
+    const dados=premioDados(mesSel);
+    // auto: Retail Motorrad = retail de novas ÷ objetivo de equipa
+    const objN=(objEquipaGet(mesSel,'novas')||{}).objetivo||0;
+    const feitas=recs.filter(r=>r.status==='Retail'&&isNovas(r)&&retailYM(r)===mesSel).length;
+    const autoPct=objN>0?Math.round(1000*feitas/objN)/10:null;
+    const valDe=c=>{const v=dados[c.k];if(v!=null&&v!=='')return Number(v);return (c.auto&&autoPct!=null)?autoPct:null;};
+    const usaAuto=c=>c.auto&&(dados[c.k]==null||dados[c.k]==='')&&autoPct!=null;
+    let total=0,nPreench=0;
+    const linha=c=>{
+      const v=valDe(c);const i=premioTier(c,v);const eur=i<0?null:c.tiers[i][2];
+      if(eur!=null){total+=eur;nPreench++;}
+      const cels=c.tiers.map((t,k)=>`<td class="pm-t ${k===i?'on':''} ${t[2]<0?'neg':(t[2]===0?'zero':'')}">${t[2]>0?'+':''}${t[2]}€<div class="pm-tl">${esc(t[0])}</div></td>`).join('');
+      return`<tr>
+        <td class="pm-cr">${esc(c.lb)}${usaAuto(c)?'<span class="pm-auto" title="Calculado: retail de novas ÷ objetivo de equipa">auto</span>':''}</td>
+        <td class="pm-in"><input class="stock-inp stock-num" data-pm-k="${c.k}" data-pm-mes="${esc(mesSel)}" type="number" step="0.1" value="${dados[c.k]!=null?dados[c.k]:''}" placeholder="${usaAuto(c)?autoPct:'—'}"><span class="pm-un">${c.un}</span></td>
+        ${cels}
+        <td class="pm-eur ${eur==null?'':(eur<0?'neg':(eur===0?'zero':'ok'))}">${eur==null?'—':(eur>0?'+':'')+fmtE(eur)}</td>
+      </tr>`;
     };
-    const meses=[...new Set(recs.filter(r=>r.status==='Retail'&&retailYM(r)).map(retailYM))].sort();
-    if(!meses.includes(mAtual))meses.push(mAtual);
+    const grupos=[...new Set(PREMIO_PLANO.map(c=>c.g))];
+    const corpo=grupos.map(g=>`<tr class="pm-g"><td colspan="9">${esc(g)}</td></tr>`+PREMIO_PLANO.filter(c=>c.g===g).map(linha).join('')).join('');
+    const falta=PREMIO_PLANO.length-nPreench;
+    // ajuda de volume (objetivo em unidades)
+    const escadas=objN>0?`<div class="pm-ajuda">
+      <div class="pm-ajuda-h">Retail Novas · ${esc(mesSel)}</div>
+      <table class="pm-ajuda-t"><tbody>
+        <tr><td>Objetivo</td><td><b>${objN}</b></td></tr>
+        ${[[110,'110%'],[125,'125%'],[135,'135%']].map(([p,l])=>`<tr><td>${l}</td><td><b>${Math.ceil(objN*p/100)}</b></td></tr>`).join('')}
+        <tr class="pm-real"><td>Realizado</td><td><b>${feitas}</b></td></tr>
+        <tr class="pm-real"><td>%</td><td><b>${autoPct!=null?autoPct+'%':'—'}</b></td></tr>
+        ${[[100,'objetivo'],[110,'110%'],[125,'125%'],[135,'135%']].map(([p,l])=>{const f=Math.max(0,Math.ceil(objN*p/100)-feitas);return`<tr class="pm-delta ${f===0?'ok':''}"><td>Faltam p/ ${l}</td><td><b>${f}</b></td></tr>`;}).join('')}
+      </tbody></table></div>`:'<div class="pm-ajuda"><div class="pm-ajuda-h">Retail Novas</div><div class="pm-sem">Sem objetivo lançado para este mês.</div></div>';
     return`${mesBar}
-      <div class="gpp-tot-head">Os meus prémios · ${esc(mSel)}</div>
-      <div class="pr-grid">
-        ${bloco('Prémio mensal',esc(mSel),oM,rM,pM,prM,'mensal',aM)}
-        ${bloco('Prémio trimestral','T'+(tri+1)+' '+aa+' · '+mesesTri.map(m=>m.slice(5)).join('+'),oT,rT,pT,prT,'trimestral',aT)}
+      <div class="gpp-tot-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <span>Os meus prémios · ${esc(mesSel)}</span>
+        <span class="pm-total ${total<0?'neg':''}">${total>0?'+':''}${fmtE(total)}</span>
       </div>
-      ${(prM||prT)?`<div class="pr-total">Total estimado do período: <b>${fmtE((prM?Number(prM.valor):0)+(prT?Number(prT.valor):0))}</b> <span style="font-weight:400;color:var(--text3)">(mensal + trimestral)</span></div>`:''}
-      <div class="pr-ctx">
-        <div class="pr-ctx-h">Contexto do mês (ainda sem prémio associado)</div>
-        <div class="pr-ctx-l">
-          <span>Usadas retail: <b>${realUsadas(mSel)}</b></span>
-          <span>Novas no trimestre: <b>${rT}</b></span>
-          <span>Meses do trimestre lançados: <b>${mesesTri.filter(m=>objNovas(m)>0).length}/3</b></span>
-        </div>
+      ${S.premiosMesErr?`<div class="mg-aviso">⚠️ Não consigo ler os prémios (${esc(S.premiosMesErr)}). Falta correr o SQL da tabela <b>premios_mes</b>.</div>`:''}
+      ${falta?`<div class="mg-aviso">⚠️ <b>${falta}</b> critério${falta!==1?'s':''} por preencher — não contam no total.</div>`:''}
+      <div class="pm-wrap">
+        <div class="gpp-card" style="overflow-x:auto;flex:1;min-width:0"><table class="gpp-ltable pm-tbl">
+          <thead><tr><th>Critério</th><th style="text-align:center">Realizado</th>${PREMIO_PLANO[0].tiers.map(t=>`<th style="text-align:center">${esc(t[0])}</th>`).join('')}<th style="text-align:right">Prémio</th></tr></thead>
+          <tbody>${corpo}</tbody>
+          <tfoot><tr><td colspan="8" style="text-align:right;font-weight:700">Total do mês</td><td class="pm-eur ${total<0?'neg':'ok'}">${total>0?'+':''}${fmtE(total)}</td></tr></tfoot>
+        </table></div>
+        ${escadas}
       </div>
-      ${tabelaEsc('mensal')}
-      ${tabelaEsc('trimestral')}
-      <div class="gpp-pend-desc" style="margin:0 16px 16px">Cumprimento = <b>retail de novas (MN+MD) por data 298</b> ÷ objetivo de equipa — a mesma regra que o painel usa. O escalão aplicado é o mais alto que atingires. Os valores dos escalões são teus: muda-os quando a política fechar.</div>`;
+      <div class="gpp-pend-desc" style="margin:0 16px 16px">Escreve o <b>realizado</b> de cada critério; a coluna atingida acende e soma. O <b>Retail's Motorrad</b> vem sozinho do CRM (retail de novas ÷ objetivo) — escreve por cima se quiseres outro valor. As colunas de cabeçalho são os mínimos de cada escalão; entre o penúltimo negativo e o objetivo há uma faixa a <b>0 €</b> (nem prémio nem penalização).</div>`;
   }
   function leadFormHTML(){
     const f=S.leadForm||{};
@@ -3986,6 +4053,7 @@ function renderDashboard(){
       ${foto}${hist}`;
   }
 
+  function acoesHoje(){homeAcoes();return S._acoesHtml||'';}
   function pendentesView(){
     // Retail sem 298 (não está no calcAlerts, é específico)
     const semData=recs.filter(r=>r.status==='Retail'&&!r.col_298);
@@ -4335,7 +4403,11 @@ function renderDashboard(){
       if(ehManual)dep=Number(ov)||0;
       else if(entrada!=null&&meses!=null)dep=entrada*taxa/100*meses;
       else dep=0;
-      const pGar=Number(m.prep_garantia)||0,pCom=Number(m.prep_comissao)||0,pLeg=Number(m.prep_legalizacao)||0,pOfi=Number(m.prep_oficina)||0;
+      const pGar=Number(m.prep_garantia)||0,pLeg=Number(m.prep_legalizacao)||0,pOfi=Number(m.prep_oficina)||0;
+      const _vfr=(m.venda_ficticia!=null&&m.venda_ficticia!=='')?Number(m.venda_ficticia):null;
+      const _base=(entrada!=null)?(entrada-dep+pGar+pLeg+pOfi):null;
+      const _cm=comissaoUsada(_base,_vfr);
+      const pCom=_cm.valor;
       const prep=pGar+pCom+pLeg+pOfi;
       const apos=entrada!=null?Math.max(0,entrada-dep+prep):null;
       const vf=(m.venda_ficticia!=null&&m.venda_ficticia!=='')?Number(m.venda_ficticia):null;
@@ -4350,7 +4422,8 @@ function renderDashboard(){
         <td style="text-align:right">${meses!=null?(meses+(meses===1?' mês':' meses')):'—'}</td>
         <td style="text-align:right">${entrada!=null?fmtE(entrada):'—'}</td>
         <td style="text-align:right"><div class="stock-eurwrap"><input class="stock-inp stock-num" data-dep-id="${m.id}" type="number" value="${campoVal}" placeholder="0" style="${ehManual?'border-color:var(--orange)':''}"><span class="stock-eur2">€</span></div></td>
-        ${[['prep_garantia',pGar],['prep_comissao',pCom],['prep_legalizacao',pLeg],['prep_oficina',pOfi]].map(([k,v])=>`<td style="text-align:right"><div class="stock-eurwrap"><input class="stock-inp stock-num" data-prep-id="${m.id}" data-prep-f="${k}" type="number" step="0.01" value="${v?String(v):''}" placeholder="0"><span class="stock-eur2">€</span></div></td>`).join('')}
+        ${[['prep_garantia',pGar],['prep_legalizacao',pLeg],['prep_oficina',pOfi]].map(([k,v])=>`<td style="text-align:right"><div class="stock-eurwrap"><input class="stock-inp stock-num" data-prep-id="${m.id}" data-prep-f="${k}" type="number" step="0.01" value="${v?String(v):''}" placeholder="0"><span class="stock-eur2">€</span></div></td>`).join('')}
+        <td style="text-align:right" title="${esc(_cm.regra)}">${fmtE(pCom)}<div style="font-size:9px;color:var(--text3);white-space:nowrap">${esc(_cm.regra)}</div></td>
         <td style="text-align:right;font-weight:600;color:var(--text2)">${prep?fmtE(prep):'—'}</td>
         <td style="text-align:right;font-weight:700;color:${apos!=null?'var(--green)':'var(--text3)'}">${apos!=null?fmtE(apos):'—'}</td>
         <td style="text-align:right"><div class="stock-eurwrap"><input class="stock-inp stock-num" data-dep-venda="${m.id}" type="number" value="${vf!=null?String(vf):''}" placeholder="0"><span class="stock-eur2">€</span></div></td>
@@ -4364,7 +4437,7 @@ function renderDashboard(){
     const linhasV=fazLinhas(vend,'vendidas');
     ({tEnt,tDep,tPrep,tApos,tVenda,tMargem,nEnt}=T.ativas);
     const V=T.vendidas;
-    const CAB='<thead><tr><th>Modelo</th><th>Matrícula</th><th>Recebida</th><th style="text-align:right">Em stock</th><th style="text-align:right">Entrada</th><th style="text-align:right">Depreciação</th><th style="text-align:right">Garantia</th><th style="text-align:right">Comissão</th><th style="text-align:right">Legalização</th><th style="text-align:right">Oficina</th><th style="text-align:right">Prep. total</th><th style="text-align:right">Valor mínimo de venda</th><th style="text-align:right">Venda fictícia</th><th style="text-align:right">Margem</th></tr></thead>';
+    const CAB='<thead><tr><th>Modelo</th><th>Matrícula</th><th>Recebida</th><th style="text-align:right">Em stock</th><th style="text-align:right">Entrada</th><th style="text-align:right">Depreciação</th><th style="text-align:right">Garantia</th><th style="text-align:right">Legalização</th><th style="text-align:right">Oficina</th><th style="text-align:right">Comissão<br><span style="font-weight:400;font-size:9px">(calculada)</span></th><th style="text-align:right">Prep. total</th><th style="text-align:right">Valor mínimo de venda</th><th style="text-align:right">Venda fictícia</th><th style="text-align:right">Margem</th></tr></thead>';
     const RODAPE=(t,lbl)=>`<tfoot><tr style="background:var(--bg);font-weight:700">
       <td colspan="4">${lbl} (${t.nEnt} com entrada)</td>
       <td style="text-align:right">${fmtE(t.tEnt)}</td>
@@ -4384,7 +4457,7 @@ function renderDashboard(){
           <span class="stock-eurwrap"><input id="dep-taxa-inp" class="stock-inp stock-num" type="number" step="0.5" min="0" value="${(S.depTaxa!=null&&S.depTaxa!==0)?S.depTaxa:''}" placeholder="0" style="max-width:70px"><span class="stock-eur2">%</span></span>
           <span style="color:var(--text3);font-weight:400;font-size:12px">por mês em stock</span>
         </label>
-        <span style="color:var(--text3);font-size:12px;flex:1;min-width:200px">Calculado: entrada × taxa × meses. Escreve um valor à mão numa linha para o forçar (fica com borda laranja). Para voltar ao automático, apaga o valor dessa linha. A <b>preparação</b> divide-se em garantia, comissão do vendedor, legalização e oficina. <b>Tudo o que escreveres fica gravado.</b></span>
+        <span style="color:var(--text3);font-size:12px;flex:1;min-width:200px">Calculado: entrada × taxa × meses. Escreve um valor à mão numa linha para o forçar (fica com borda laranja). Para voltar ao automático, apaga o valor dessa linha. A <b>preparação</b> = garantia + legalização + oficina + <b>comissão</b>. A comissão é <b>calculada</b>: 25% da margem (resolvida algebricamente, porque a margem já a inclui no custo), nunca abaixo de 35 €. Sem venda fictícia preenchida, entra o mínimo de 35 €. <b>Tudo o que escreveres fica gravado.</b></span>
       </div>
       ${arr.length===0?'<div class="gpp-empty">Sem usadas por vender em stock.</div>':`
       <div class="gpp-card" style="margin:0 16px 8px;overflow-x:auto"><table class="gpp-ltable dep-tbl">
@@ -4665,9 +4738,10 @@ function renderDashboard(){
           <td>${vendTag(r.vendedor_id)}</td></tr>`).join('')}</tbody>
       </table></div>`}`;
   }
-  else if(sec==='home')body=mesBar+(recs.filter(r=>r.status==='Retail'&&!r.col_298).length?`${(()=>{const semData=recs.filter(r=>r.status==='Retail'&&!r.col_298);return`<div class="gpp-alerta ${S.dashAlertOpen==='sem298'?'open':''}"><div class="gpp-alerta-head" data-action="dash-alert-toggle" data-id="sem298"><span>⚠️</span><span><b>${semData.length}</b> mota${semData.length>1?'s':''} em Retail sem data 298 — não contam nos totais</span><span class="gpp-alerta-arrow">${S.dashAlertOpen==='sem298'?'▾':'▸'}</span></div>${S.dashAlertOpen==='sem298'?`<div class="gpp-alerta-lista">${semData.map(r=>`<div class="gpp-alerta-item" data-action="open-record-from-dash" data-id="${r.id}"><b>${esc(r.id_cliente||'(sem cliente)')}</b><span>${esc(r.model||'')} ${esc(r.version||'')}</span><span class="gpp-alerta-tipo">${esc(r.type||'?')}</span><span style="color:var(--text3)">${esc(vendName(r.vendedor_id)||'')}</span></div>`).join('')}</div>`:''}</div>`})()}`:'')+tabelaResumo()+saudeEquipa()+homeAcoes();
+  else if(sec==='home')body=mesBar+(recs.filter(r=>r.status==='Retail'&&!r.col_298).length?`${(()=>{const semData=recs.filter(r=>r.status==='Retail'&&!r.col_298);return`<div class="gpp-alerta ${S.dashAlertOpen==='sem298'?'open':''}"><div class="gpp-alerta-head" data-action="dash-alert-toggle" data-id="sem298"><span>⚠️</span><span><b>${semData.length}</b> mota${semData.length>1?'s':''} em Retail sem data 298 — não contam nos totais</span><span class="gpp-alerta-arrow">${S.dashAlertOpen==='sem298'?'▾':'▸'}</span></div>${S.dashAlertOpen==='sem298'?`<div class="gpp-alerta-lista">${semData.map(r=>`<div class="gpp-alerta-item" data-action="open-record-from-dash" data-id="${r.id}"><b>${esc(r.id_cliente||'(sem cliente)')}</b><span>${esc(r.model||'')} ${esc(r.version||'')}</span><span class="gpp-alerta-tipo">${esc(r.type||'?')}</span><span style="color:var(--text3)">${esc(vendName(r.vendedor_id)||'')}</span></div>`).join('')}</div>`:''}</div>`})()}`:'')+tabelaResumo()+homeAcoes();
   else if(sec==='funil')body=funilView();
   else if(sec==='fechados')body=fechadosView();
+  else if(sec==='saude')body=saudeEquipa();
   else if(sec==='entregas')body=entregasView();
   else if(sec==='leads')body=leadsView();
   else if(sec==='margem')body=margemView();
@@ -4676,7 +4750,7 @@ function renderDashboard(){
   else if(sec==='carteira')body=carteiraChart()+listaEstado('Carteira',r=>r.mes1);
   else if(sec==='retail')body=retailView();
   else if(sec==='comercio')body=comercioView();
-  else if(sec==='pendentes')body=pendentesView();
+  else if(sec==='pendentes')body=acoesHoje()+pendentesView();
   else if(sec==='stock')body=stockView('usada');
   else if(sec==='depreciacao')body=depreciacaoView();
   else if(sec==='demos')body=normaView();
@@ -4753,6 +4827,7 @@ function bindEvents(){
     if(el.dataset&&el.dataset.depId){const id=el.dataset.depId,v=el.value;saveStockField(id,'dep_manual',(v===''||v==null)?null:Number(v));return;}
     if(el.dataset&&el.dataset.pedMotivo){const sel=Object.assign({},S.pedAutSel||{});sel[String(el.dataset.pedMotivo)]=el.value;setState({pedAutSel:sel});return;}
     if(el.dataset&&el.dataset.prepId){const v=el.value;saveStockField(el.dataset.prepId,el.dataset.prepF,(v===''||v==null)?null:Number(v));return;}
+    if(el.dataset&&el.dataset.pmK){savePremioMes(el.dataset.pmMes,el.dataset.pmK,el.value);return;}
     if(el.dataset&&el.dataset.mrgId){saveMargem(el.dataset.mrgId,el.value);return;}
     if(el.dataset&&el.dataset.entId){const v=el.value;saveEntrega(el.dataset.entId,{[el.dataset.entF]:(v===''?null:v)});return;}
     if(el.dataset&&el.dataset.leadRec){const v=el.value;saveRecordField(el.dataset.leadRec,el.dataset.leadField,(v===''||v==null)?null:v);return;}
@@ -4913,7 +4988,7 @@ function bindEvents(){
       case'gpp-mais':setState({gppMais:!S.gppMais});break;
       case'gpp-mais-close':setState({gppMais:false});break;
       case'gpp-sec':{let s=el.dataset.s;if(GRUPOS_SEC[s])s=((S.gppTab||{})[s])||GRUPOS_SEC[s].tabs[0][0];{const _g=grupoDe(s);if(_g)S.gppTab=Object.assign({},S.gppTab||{},{[_g]:s});}S.gppBusca='';S.gppMais=false;if(s==='escala'){setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}else if(s==='stock'||s==='depreciacao'||s==='margem'){setState({gppSec:s,dashAlertOpen:null});if(!S.stockLoaded)loadStock().then(()=>render());}
-      else if(s==='premios'){setState({gppSec:s,dashAlertOpen:null});if(!(S.premiosCfg||[]).length)loadPremiosCfg().then(()=>render());}
+      else if(s==='premios'){setState({gppSec:s,dashAlertOpen:null});loadPremiosMes().then(()=>render());}
       else if(s==='entregas'){setState({gppSec:s,dashAlertOpen:null});loadEntregas().then(()=>render());}
       else if(s==='comissoes'){setState({gppSec:s,dashAlertOpen:null});loadMargens().then(()=>render());}else if(s==='evento'){setState({gppSec:s,dashAlertOpen:null,eventoErr:''});const ev=eventoAtual();if(ev){S.eventoSel=ev.id;loadRanking(ev.id).then(()=>render());}}else if(s==='funil'){setState({gppSec:s,dashAlertOpen:null});loadTransicoes().then(()=>render());}else{setState({gppSec:s,dashAlertOpen:null});}break}
       case'stock-cat':setState({stockCat:el.dataset.c,stockAdding:false});break;
