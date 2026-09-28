@@ -658,6 +658,9 @@ html,body{overflow-x:hidden;max-width:100vw}
 .sec-tab-n{font-size:10px;background:var(--red);color:#fff;border-radius:8px;padding:1px 6px;margin-left:2px}
 .sec-tab-n.mut{background:var(--text3)}
 @media(max-width:700px){.per-meses{grid-template-columns:repeat(6,1fr);min-width:0;width:100%}}
+
+.am-demo{margin-bottom:10px;max-width:420px}
+.am-demo-vazio{font-size:11px;color:var(--text3);margin-top:4px}
 .mx-tirar{background:#fee2e2!important;border-color:var(--red)!important;color:#b91c1c!important}
 .toggle-btn.mx-vend{background:var(--red)!important;border-color:var(--red)!important;color:#fff!important;animation:mxpulse 1.6s ease-in-out infinite}
 @keyframes mxpulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.45)}50%{box-shadow:0 0 0 5px rgba(220,38,38,0)}}
@@ -1544,6 +1547,9 @@ async function saveAutomatricula(){
   setState({loading:true,amErr:''});
   try{
     await supabaseApi('POST','/baviera_control',body);
+    if(f.tipo==='MD'&&f.demo_id&&f.demo_vendida!==false){
+      try{await supabaseApi('PATCH',`/stock_norma?id=eq.${f.demo_id}`,{vendida:true});await loadNorma();}catch(e){}
+    }
     if(f.criar_stock!==false){
       try{await supabaseApi('POST','/stock_usadas',{modelo:f.model.trim(),matricula:f.mat?f.mat.trim():null,categoria:'usada',estado:'Disponível',valor_entrada:compra,data_rececao:d298});}catch(e){}
     }
@@ -4361,6 +4367,8 @@ function renderDashboard(){
         <div class="per-seg" style="margin:6px 0 8px"><button type="button" class="per-b ${f.destino!=='c4'?'on':''}" data-action="am-destino" data-d="bmw">Compra à BMW</button><button type="button" class="per-b ${f.destino==='c4'?'on':''}" data-action="am-destino" data-d="c4">Venda à Caetano 4</button></div>
         <div class="vd-form-sub">${f.destino==='c4'?'Matrícula em nome da <b>Caetano 4</b>: conta como <b>retail da empresa</b> e abate ao objetivo, <b>não fica associada a nenhum vendedor</b>, e a mota passa para o <b>Stock Usadas</b>.':'Conta como <b>retail da empresa</b> e abate ao objetivo. <b>Não conta para nenhum vendedor.</b> A mota entra no teu stock de usadas com o valor que pagaste.'}</div>
         ${S.amErr?`<div class="error" style="margin-bottom:10px">${esc(S.amErr)}</div>`:''}
+        ${f.tipo==='MD'?(()=>{const dm=(S.norma||[]).filter(n=>!n.vendida).slice().sort((a,b)=>(a.ordem||0)-(b.ordem||0));
+          return`<div class="vd-f am-demo"><label>Demo *</label><select class="norma-inp" data-am-f="demo_id"><option value="">— escolhe a demo —</option>${dm.map(n=>`<option value="${n.id}" ${String(f.demo_id)===String(n.id)?'selected':''}>${esc(n.modelo||'?')}${n.matricula?' · '+esc(n.matricula):''}${n.estado&&n.estado!=='Matriculada'?' · '+esc(n.estado):''}</option>`).join('')}</select>${dm.length?'':'<div class="am-demo-vazio">Não há demos por vender no programa.</div>'}</div>`;})():''}
         <div class="vd-grid">
           <div class="vd-f"><label>Modelo *</label><input class="norma-inp" data-am-f="model" value="${esc(f.model||'')}" placeholder="Ex: R 1300 GS"></div>
           <div class="vd-f"><label>Tipo</label><select class="norma-inp" data-am-f="tipo"><option value="MN" ${f.tipo!=='MD'?'selected':''}>MN — nova</option><option value="MD" ${f.tipo==='MD'?'selected':''}>MD — demo</option></select></div>
@@ -4370,6 +4378,7 @@ function renderDashboard(){
           <div class="vd-f"><label>${f.destino==='c4'?'Valor da venda à Caetano 4 *':'Valor de compra à BMW *'}</label><div class="stock-eurwrap"><input class="norma-inp stock-num" data-am-f="valor_entrada" type="number" step="0.01" value="${f.valor_entrada!=null?esc(f.valor_entrada):''}" placeholder="0"><span class="stock-eur2">€</span></div></div>
         </div>
         <label class="am-chk"><input type="checkbox" data-am-f="criar_stock" ${f.criar_stock!==false?'checked':''}> Criar também a mota no <b>Stock Usadas</b> (recomendado)</label>
+        ${f.tipo==='MD'&&f.demo_id?`<label class="am-chk"><input type="checkbox" data-am-f="demo_vendida" ${f.demo_vendida!==false?'checked':''}> Marcar a demo como <b>vendida</b> no programa de demos (evita tê-la em dois sítios)</label>`:''}
         <div style="display:flex;gap:8px;margin-top:12px">
           <button class="btn btn-orange btn-sm" data-action="am-save" ${S.loading?'disabled':''}>${S.loading?'A gravar…':(f.destino==='c4'?'Registar venda à Caetano 4':'Registar automatriculação')}</button>
           <button class="btn btn-dark btn-sm" data-action="am-cancel">Cancelar</button>
@@ -4854,7 +4863,10 @@ function bindEvents(){
     if(el.dataset&&el.dataset.depVenda){const id=el.dataset.depVenda,v=el.value;saveStockField(id,'venda_ficticia',(v===''||v==null)?null:Number(v));return;}
     if(el.dataset&&el.dataset.obsGestor){saveObsGestor(el.dataset.obsGestor,el.value);return;}
     if(el.dataset&&el.dataset.leadF){const k=el.dataset.leadF;S.leadForm=Object.assign({},S.leadForm||{},{[k]:el.value});if(k==='campanha')S.campSel=el.value;render();return;}
-    if(el.dataset&&el.dataset.amF){const k=el.dataset.amF;const v=(el.type==='checkbox')?el.checked:el.value;S.amForm=Object.assign({},S.amForm||{},{[k]:v});render();return;}
+    if(el.dataset&&el.dataset.amF){const k=el.dataset.amF;const v=(el.type==='checkbox')?el.checked:el.value;const up={[k]:v};
+      if(k==='demo_id'){const n=(S.norma||[]).find(x=>String(x.id)===String(v));if(n){up.model=n.modelo||'';up.mat=n.matricula||'';up.chas=n.chassi||n.encomenda||'';}}
+      if(k==='tipo'&&v!=='MD'){up.demo_id='';}
+      S.amForm=Object.assign({},S.amForm||{},up);render();return;}
     if(el.dataset&&el.dataset.vdF){S.vdForm=Object.assign({},S.vdForm,{[el.dataset.vdF]:el.value});if(el.dataset.vdF==='pvp'||el.dataset.vdF==='valor_entrada')render();return;}
     if(el.classList&&el.classList.contains('stock-kms-inp')){saveKmsVend(el.dataset.kmsTipo,el.dataset.kmsId,el.value);return;}
     if(el.classList&&el.classList.contains('stock-vend-estado')){
