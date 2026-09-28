@@ -658,6 +658,9 @@ html,body{overflow-x:hidden;max-width:100vw}
 .sec-tab-n{font-size:10px;background:var(--red);color:#fff;border-radius:8px;padding:1px 6px;margin-left:2px}
 .sec-tab-n.mut{background:var(--text3)}
 @media(max-width:700px){.per-meses{grid-template-columns:repeat(6,1fr);min-width:0;width:100%}}
+.mx-tirar{background:#fee2e2!important;border-color:var(--red)!important;color:#b91c1c!important}
+.toggle-btn.mx-vend{background:var(--red)!important;border-color:var(--red)!important;color:#fff!important;animation:mxpulse 1.6s ease-in-out infinite}
+@keyframes mxpulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.45)}50%{box-shadow:0 0 0 5px rgba(220,38,38,0)}}
 .pm-wrap{display:flex;gap:12px;align-items:flex-start;margin:0 16px 12px;flex-wrap:wrap}
 .pm-tbl{min-width:860px}
 .pm-tbl td,.pm-tbl th{padding:6px 8px}
@@ -1518,24 +1521,25 @@ async function saveAutomatricula(){
   const f=S.amForm||{};
   if(!f.model||!f.model.trim()){setState({amErr:'Indica o modelo.'});return;}
   const compra=(f.valor_entrada===''||f.valor_entrada==null)?null:parseFloat(f.valor_entrada);
-  if(compra==null){setState({amErr:'Indica quanto pagaste à BMW (valor de compra).'});return;}
+  const c4=f.destino==='c4';
+  if(compra==null){setState({amErr:c4?'Indica o valor da venda à Caetano 4.':'Indica quanto pagaste à BMW (valor de compra).'});return;}
   const hoje=new Date().toISOString().slice(0,10);
   const d298=(f.col_298&&String(f.col_298).trim())?String(f.col_298).trim():hoje;
   const body={
-    vendedor_id:(S.me&&S.me.id)||null,
+    vendedor_id:c4?null:((S.me&&S.me.id)||null),
     type:(f.tipo==='MD'?'MD':'MN'),
     status:'Retail',
-    id_cliente:(f.id_cliente&&f.id_cliente.trim())||'Automatrícula — Baviera',
+    id_cliente:(f.id_cliente&&f.id_cliente.trim())||(c4?'Caetano 4':'Automatrícula — Baviera'),
     model:f.model.trim(),
     mat:f.mat?f.mat.trim():null,
     chas:f.chas?f.chas.trim():null,
     pvp:compra,
     valor_entrada:compra,
     automatricula:true,
-    origin:'BMW Portugal',
+    origin:c4?'Caetano 4':'BMW Portugal',
     neg:hoje,
     col_298:d298,
-    obs_gestor:'Automatriculação — compra a BMW Portugal.'
+    obs_gestor:c4?'Matrícula para a Caetano 4 — passou a stock de usadas.':'Automatriculação — compra a BMW Portugal.'
   };
   setState({loading:true,amErr:''});
   try{
@@ -3575,7 +3579,14 @@ function renderDashboard(){
     const inatHtml=inat.length?`
       <div class="gpp-sub-h" style="border-left:3px solid var(--amber)">Equipa sem atividade</div>
       <div class="home-inat">${inat.map(v=>`<div class="home-inat-row"><span>${esc((v.nome||'?').split(' ').slice(0,2).join(' '))}</span><span class="home-inat-d">${v.dias==null?'sem registos':`há ${v.dias} dias`}</span></div>`).join('')}</div>`:'';
-    S._acoesHtml=acoesHtml;
+    const _mxU=(S.stock||[]).filter(m=>m.maxterauto&&m.estado==='Vendida');
+    const _mxD=(S.norma||[]).filter(n=>n.maxterauto&&n.vendida);
+    const _mxL=(l,f)=>l.map(f).filter(Boolean).join(', ');
+    const mxHtml=(_mxU.length||_mxD.length)?`<div class="gpp-sub-h" style="border-left:3px solid var(--red)">Tirar do Maxterauto</div><div class="home-acts">`
+      +(_mxU.length?`<div class="home-act"><div class="home-act-h" data-action="gpp-sec" data-s="stock"><span class="home-act-ic">🔴</span><span class="home-act-lb"><b>${_mxU.length}</b> usada${_mxU.length!==1?'s':''} vendida${_mxU.length!==1?'s':''} ainda no Maxterauto — ${esc(_mxL(_mxU,m=>m.matricula||m.modelo))}</span><span class="gpp-alerta-arrow">›</span></div></div>`:'')
+      +(_mxD.length?`<div class="home-act"><div class="home-act-h" data-action="gpp-sec" data-s="demos"><span class="home-act-ic">🔴</span><span class="home-act-lb"><b>${_mxD.length}</b> demo${_mxD.length!==1?'s':''} vendida${_mxD.length!==1?'s':''} ainda no Maxterauto — ${esc(_mxL(_mxD,n=>n.matricula||n.modelo))}</span><span class="gpp-alerta-arrow">›</span></div></div>`:'')
+      +`</div>`:'';
+    S._acoesHtml=mxHtml+acoesHtml;
     return ritmoHtml+inatHtml+'<div style="height:16px"></div>';
   }
   function tabelaResumo(){
@@ -4057,7 +4068,7 @@ function renderDashboard(){
       ${foto}${hist}`;
   }
 
-  function acoesHoje(){homeAcoes();return S._acoesHtml||'';}
+  function acoesHoje(){if(!S.stockLoaded&&!S.stockLoading){S.stockLoading=true;loadStock().then(()=>{S.stockLoading=false;render();}).catch(()=>{S.stockLoading=false;});}homeAcoes();return S._acoesHtml||'';}
   function pendentesView(){
     // Retail sem 298 (não está no calcAlerts, é específico)
     const semData=recs.filter(r=>r.status==='Retail'&&!r.col_298);
@@ -4187,7 +4198,7 @@ function renderDashboard(){
           <span class="ndemo-futura">${n.encomenda?esc(n.encomenda):'<span class="ndemo-mut">—</span>'}</span>
           <span class="ndemo-obs">${flag}${n.obs?' '+esc(n.obs):''}</span>
           <span class="ndemo-preco">${n.preco!=null&&n.preco!==''?Number(n.preco).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:0})+' €':'<span class="ndemo-preco-vazio">—</span>'}</span>
-          <span class="ndemo-seg" style="text-align:center"><button class="toggle-btn stock-max-toggle stock-max-mini ${n.maxterauto?'on':''}" data-action="norma-toggle-max" data-id="${n.id}" title="${n.maxterauto?'No Maxterauto':'Por inserir no Maxterauto'}">${n.maxterauto?'✓':'—'}</button></span>
+          <span class="ndemo-seg" style="text-align:center"><button class="toggle-btn stock-max-toggle stock-max-mini ${n.maxterauto?'on':''} ${n.maxterauto&&n.vendida?'mx-vend':''}" data-action="norma-toggle-max" data-id="${n.id}" title="${n.maxterauto?'No Maxterauto':'Por inserir no Maxterauto'}">${n.maxterauto?'✓':'—'}</button></span>
           <span class="ndemo-seg" style="text-align:center"><button class="toggle-btn stock-seg-toggle stock-max-mini ${n.tem_seguro?'on':''}" data-action="norma-toggle-seguro" data-id="${n.id}" title="${n.tem_seguro?'Com seguro — clica para tirar':'Sem seguro — clica para pôr'}">${n.tem_seguro?'✓':'—'}</button></span>
           <span class="ndemo-chev">${aberto?'▾':'▸'}</span>
         </div>
@@ -4224,6 +4235,7 @@ function renderDashboard(){
     const neg=st.filter(m=>m.estado==='A negociar').length;
     const vnd=st.filter(m=>m.estado==='Vendida').length;
     const semMax=st.filter(m=>!m.maxterauto&&m.estado!=='Vendida').length;
+    const vendMax=st.filter(m=>m.maxterauto&&m.estado==='Vendida');
     const segPorAnular=st.filter(m=>m.estado==='Vendida'&&m.tem_seguro&&!m.seguro_anulado);
     const vends=S.team.filter(p=>p.role==='vendedor');
     const nome=cat==='demo'?'demo':'usada';
@@ -4265,7 +4277,7 @@ function renderDashboard(){
             <td><select class="stock-inp" data-stock-id="${m.id}" data-stock-f="estado" style="color:${estadoBadge[m.estado]||'var(--text)'};font-weight:700">${['Disponível','A negociar','Vendida'].map(e=>`<option value="${e}" ${m.estado===e?'selected':''}>${e}</option>`).join('')}</select></td>
             <td><select class="stock-inp" data-stock-id="${m.id}" data-stock-f="negociado_por"><option value="">—</option>${vends.map(p=>`<option value="${p.id}" ${m.negociado_por===p.id?'selected':''}>${esc((p.nome||'').split(' ')[0])}</option>`).join('')}</select></td>
             <td style="text-align:center"><button class="toggle-btn stock-max-toggle stock-max-mini ${m.consignada?'on':''}" data-action="stock-toggle-consig" data-id="${m.id}" title="Consignação">${m.consignada?'✓':'—'}</button></td>
-            <td style="text-align:center"><button class="toggle-btn stock-max-toggle stock-max-mini ${m.maxterauto?'on':''}" data-action="stock-toggle-max" data-id="${m.id}">${m.maxterauto?'✓':'—'}</button></td>
+            <td style="text-align:center"><button class="toggle-btn stock-max-toggle stock-max-mini ${m.maxterauto?'on':''} ${m.maxterauto&&m.estado==='Vendida'?'mx-vend':''}" title="${m.maxterauto&&m.estado==='Vendida'?'Vendida — tirar do Maxterauto':''}" data-action="stock-toggle-max" data-id="${m.id}">${m.maxterauto?'✓':'—'}</button></td>
             <td style="text-align:center">
               <button class="toggle-btn stock-seg-toggle stock-max-mini ${m.tem_seguro?'on':''}" data-action="stock-toggle-seguro" data-id="${m.id}">${m.tem_seguro?'✓':'—'}</button>
               ${(m.estado==='Vendida'&&m.tem_seguro&&!m.seguro_anulado)?`<button class="stock-seg-anular" data-action="stock-anular-seguro" data-id="${m.id}" title="Marcar seguro como anulado">⚠ anular</button>`:''}
@@ -4290,6 +4302,7 @@ function renderDashboard(){
       </div>
     </div>
     ${form}
+    ${vendMax.length&&!S.stockAdding?`<div class="stock-warn mx-tirar">🔴 <b>${vendMax.length}</b> vendida${vendMax.length>1?'s':''} ainda no Maxterauto — tira do anúncio: ${esc(vendMax.map(m=>m.matricula||m.modelo).join(', '))}</div>`:''}
     ${semMax>0&&!S.stockAdding?`<div class="stock-warn">⚠️ <b>${semMax}</b> mota${semMax>1?'s':''} por inserir no Maxterauto</div>`:''}
     ${segPorAnular.length?`<div class="stock-warn stock-warn-seg">
       <div>🛡️ <b>${segPorAnular.length}</b> ${nome}${segPorAnular.length>1?'s':''} vendida${segPorAnular.length>1?'s':''} com <b>seguro por anular</b>:</div>
@@ -4344,8 +4357,9 @@ function renderDashboard(){
     const f=S.amForm||{};
     return S.amAdding?`
       <div class="gpp-card vd-form" style="margin:0 16px 14px">
-        <div class="vd-form-t">🏷️ Automatriculação (compra à BMW Portugal)</div>
-        <div class="vd-form-sub">Conta como <b>retail da empresa</b> e abate ao objetivo. <b>Não conta para nenhum vendedor.</b> A mota entra no teu stock de usadas com o valor que pagaste.</div>
+        <div class="vd-form-t">${f.destino==='c4'?'🏢 Matrícula para a Caetano 4':'🏷️ Automatriculação (compra à BMW Portugal)'}</div>
+        <div class="per-seg" style="margin:6px 0 8px"><button type="button" class="per-b ${f.destino!=='c4'?'on':''}" data-action="am-destino" data-d="bmw">Compra à BMW</button><button type="button" class="per-b ${f.destino==='c4'?'on':''}" data-action="am-destino" data-d="c4">Venda à Caetano 4</button></div>
+        <div class="vd-form-sub">${f.destino==='c4'?'Matrícula em nome da <b>Caetano 4</b>: conta como <b>retail da empresa</b> e abate ao objetivo, <b>não fica associada a nenhum vendedor</b>, e a mota passa para o <b>Stock Usadas</b>.':'Conta como <b>retail da empresa</b> e abate ao objetivo. <b>Não conta para nenhum vendedor.</b> A mota entra no teu stock de usadas com o valor que pagaste.'}</div>
         ${S.amErr?`<div class="error" style="margin-bottom:10px">${esc(S.amErr)}</div>`:''}
         <div class="vd-grid">
           <div class="vd-f"><label>Modelo *</label><input class="norma-inp" data-am-f="model" value="${esc(f.model||'')}" placeholder="Ex: R 1300 GS"></div>
@@ -4353,14 +4367,14 @@ function renderDashboard(){
           <div class="vd-f"><label>Matrícula</label><input class="norma-inp" data-am-f="mat" value="${esc(f.mat||'')}" placeholder="Ex: AA-00-AA"></div>
           <div class="vd-f"><label>Nº chassis</label><input class="norma-inp" data-am-f="chas" value="${esc(f.chas||'')}" placeholder="—"></div>
           <div class="vd-f"><label>Mês de retail (data 298) *</label><input class="norma-inp" type="date" data-am-f="col_298" value="${esc(f.col_298||new Date().toISOString().slice(0,10))}"></div>
-          <div class="vd-f"><label>Valor de compra à BMW *</label><div class="stock-eurwrap"><input class="norma-inp stock-num" data-am-f="valor_entrada" type="number" step="0.01" value="${f.valor_entrada!=null?esc(f.valor_entrada):''}" placeholder="0"><span class="stock-eur2">€</span></div></div>
+          <div class="vd-f"><label>${f.destino==='c4'?'Valor da venda à Caetano 4 *':'Valor de compra à BMW *'}</label><div class="stock-eurwrap"><input class="norma-inp stock-num" data-am-f="valor_entrada" type="number" step="0.01" value="${f.valor_entrada!=null?esc(f.valor_entrada):''}" placeholder="0"><span class="stock-eur2">€</span></div></div>
         </div>
         <label class="am-chk"><input type="checkbox" data-am-f="criar_stock" ${f.criar_stock!==false?'checked':''}> Criar também a mota no <b>Stock Usadas</b> (recomendado)</label>
         <div style="display:flex;gap:8px;margin-top:12px">
-          <button class="btn btn-orange btn-sm" data-action="am-save" ${S.loading?'disabled':''}>${S.loading?'A gravar…':'Registar automatriculação'}</button>
+          <button class="btn btn-orange btn-sm" data-action="am-save" ${S.loading?'disabled':''}>${S.loading?'A gravar…':(f.destino==='c4'?'Registar venda à Caetano 4':'Registar automatriculação')}</button>
           <button class="btn btn-dark btn-sm" data-action="am-cancel">Cancelar</button>
         </div>
-      </div>`:`<div style="margin:0 16px 14px"><button class="btn btn-dark btn-sm" data-action="am-add">🏷️ Registar automatriculação (compra à BMW)</button></div>`;
+      </div>`:`<div style="margin:0 16px 14px"><button class="btn btn-dark btn-sm" data-action="am-add">🏷️ Automatrícula / Caetano 4</button></div>`;
   }
   function comercioView(){
     const fmtE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:0})+' €';
@@ -4961,6 +4975,7 @@ function bindEvents(){
       case'lead-save':saveLead();break;
       case'camp-copiar':{const t=campTexto();if(t)copiarTexto(t,el);break;}
       case'am-add':setState({amAdding:true,amForm:{},amErr:''});break;
+      case'am-destino':{S.amForm=Object.assign({},S.amForm||{},{destino:el.dataset.d});render();break;}
       case'am-cancel':setState({amAdding:false,amForm:{},amErr:''});break;
       case'am-save':saveAutomatricula();break;
       case'comissao-add':comissaoAdd(el.dataset.vid,el.dataset.mes);break;
