@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
 <link rel="icon" type="image/png" href="favicon.png?v=2">
 <link rel="manifest" href="manifest.json?v=2">
-<title>Baviera Control</title>
+<title>Bimby Motorrad</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -687,6 +687,12 @@ html,body{overflow-x:hidden;max-width:100vw}
 .eq-add .norma-inp{padding:6px 8px;font-size:12px}
 .eq-sem-motas{margin:0 16px 8px;font-size:12px;color:var(--text3)}
 .v-parc{margin:-4px 16px 10px;font-size:12px;color:var(--text3);text-align:right}
+.rec-link{display:block;width:100%;margin-top:14px;background:none;border:0;color:var(--text3);font-size:12.5px;text-decoration:underline;cursor:pointer;font-family:inherit}
+.rec-link:hover{color:var(--orange)}
+.rec-box{margin:6px 0 14px;padding:12px 14px;background:var(--bg);border:1px solid var(--border2);border-radius:10px}
+.rec-h{font-size:13px;font-weight:800;margin-bottom:3px}
+.rec-sub{font-size:11.5px;color:var(--text3);line-height:1.45}
+.rec-ok{margin-top:8px;font-size:12px;color:#15803d;background:var(--green-bg);border:1px solid var(--green);border-radius:8px;padding:8px 10px;line-height:1.4}
 .sa-vazio{max-width:420px;margin:60px auto;text-align:center;padding:30px 20px;background:var(--surface);border:1px solid var(--border);border-radius:14px}
 .sa-ic{font-size:42px}.sa-nome{font-size:18px;font-weight:800;margin-top:8px}
 .sa-role{display:inline-block;margin-top:6px;font-size:12px;font-weight:700;background:var(--orange-bg);color:var(--orange);padding:3px 10px;border-radius:12px}
@@ -1206,13 +1212,24 @@ let S={
   token:null,records:[],selected:null,form:{},
   me:null,team:[],objetivos:[],objEquipa:[],eventos:[],inscricoes:[],ranking:[],transicoes:[],norma:[],nps:[],viewVendedor:null,vselOpen:false,dashLinha:'all',
   dashPeriodo:'mes',escala:{},escalaMes:null,escalaPicker:null,escalaLinha:null,folgaSaldo:{},
-  pwMsg:'',pwErr:'',pwLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',vdAdding:false,vdForm:{},vdErr:'',amAdding:false,amForm:{},amErr:'',depTaxa:(()=>{try{return parseFloat(localStorage.getItem('bc_dep_taxa'))||0}catch(e){return 0}})(),premiosCfg:[],premiosMes:{},premiosMesErr:'',equip:[],equipErr:'',eqColarAberto:null,comissoes:[],campSel:null,depVendOpen:false,entregas:{},entregasErr:'',margens:{},margensErr:'',vMes:null,vMesCom:null,voltarGpp:null,leadAdding:false,leadForm:{},leadErr:'',leadOk:'',exportBusy:false,exportMsg:'',gppSideOff:(()=>{try{return localStorage.getItem('bc_side')==='1'}catch(e){return false}})(),pedAutOpen:false,pedAutSel:{},
+  pwMsg:'',pwErr:'',pwLoading:false,recAberto:false,recErr:'',recMsg:'',recLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',vdAdding:false,vdForm:{},vdErr:'',amAdding:false,amForm:{},amErr:'',depTaxa:(()=>{try{return parseFloat(localStorage.getItem('bc_dep_taxa'))||0}catch(e){return 0}})(),premiosCfg:[],premiosMes:{},premiosMesErr:'',equip:[],equipErr:'',eqColarAberto:null,comissoes:[],campSel:null,depVendOpen:false,entregas:{},entregasErr:'',margens:{},margensErr:'',vMes:null,vMesCom:null,voltarGpp:null,leadAdding:false,leadForm:{},leadErr:'',leadOk:'',exportBusy:false,exportMsg:'',gppSideOff:(()=>{try{return localStorage.getItem('bc_side')==='1'}catch(e){return false}})(),pedAutOpen:false,pedAutSel:{},
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
   openGroups:{INFO:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
 };
 function setState(u){Object.assign(S,u);render()}
 
+async function pedirRecuperacao(){
+  const el=document.getElementById('f-rec-email');
+  const em=(el&&el.value||'').trim();
+  if(!em||em.indexOf('@')<0){setState({recErr:'Escreve o teu email.',recMsg:''});return;}
+  setState({recLoading:true,recErr:'',recMsg:''});
+  try{
+    const r=await fetch(`${S.config.url}/auth/v1/recover`,{method:'POST',headers:{'apikey':S.config.key,'Content-Type':'application/json'},body:JSON.stringify({email:em,redirect_to:location.origin+location.pathname})});
+    if(!r.ok&&r.status!==422){let t='';try{t=(await r.json()).msg||'';}catch(e){}throw new Error(t||('erro '+r.status));}
+    setState({recLoading:false,recMsg:'Se existir conta com esse email, foi enviado um link. Abre-o e define a nova password.',recErr:''});
+  }catch(e){setState({recLoading:false,recErr:'Não consegui enviar: '+((e&&e.message)||e)});}
+}
 async function supabaseAuth(e,p){const r=await fetch(`${S.config.url}/auth/v1/token?grant_type=password`,{method:'POST',headers:{'apikey':S.config.key,'Content-Type':'application/json'},body:JSON.stringify({email:e,password:p})});if(!r.ok)throw new Error('Login falhou. Verifica email e password.');const d=await r.json();saveSession(d);return d}
 function saveSession(d){try{if(d.access_token&&d.refresh_token){localStorage.setItem('bc_session',JSON.stringify({refresh_token:d.refresh_token}))}}catch(e){}}
 function clearSession(){try{localStorage.removeItem('bc_session')}catch(e){}}
@@ -1376,7 +1393,7 @@ function renderAssessor(){
 function renderSemAcesso(){
   const r=(S.me&&S.me.role)||'';
   return`<div class="app-layout"><div class="main-panel" style="width:100%">
-  <div class="hdr"><div class="hdr-accent"></div><div class="hdr-title">Baviera Control</div>
+  <div class="hdr"><div class="hdr-accent"></div><div class="hdr-title">Bimby Motorrad</div>
     <button class="hdr-btn" data-action="go-password">🔑</button><button class="hdr-btn" data-action="logout">Sair</button></div>
   <div class="content"><div class="sa-vazio">
     <div class="sa-ic">🗂️</div>
@@ -2120,13 +2137,25 @@ function renderLogin(){return`
 <div class="content"><div class="center-screen"><div class="center-box">
   <div style="display:flex;align-items:center;gap:11px;margin-bottom:28px">
     ${logoSVG(40,'login')}
-    <div><div style="font-size:22px;font-weight:800;letter-spacing:-.5px">Baviera Control</div>
+    <div><div style="font-size:22px;font-weight:800;letter-spacing:-.5px">Bimby Motorrad</div>
     <div style="font-size:12px;color:var(--text3)">Pipeline de vendas</div></div>
   </div>
   ${S.error?`<div class="error">${esc(S.error)}</div>`:''}
   <div class="field"><label class="field-label">Email</label><input class="field-input" type="email" id="f-email" placeholder="email@exemplo.pt"></div>
   <div class="field"><label class="field-label">Password</label><input class="field-input" type="password" id="f-pw" placeholder="••••••••"></div>
+  ${S.recAberto?`<div class="rec-box">
+    <div class="rec-h">Recuperar acesso</div>
+    <div class="rec-sub">Escreve o teu email. Recebes um link para definir uma password nova — não precisas da antiga.</div>
+    ${S.recErr?`<div class="error" style="margin:8px 0">${esc(S.recErr)}</div>`:''}
+    ${S.recMsg?`<div class="rec-ok">${esc(S.recMsg)}</div>`:`
+      <input class="field-input" type="email" id="f-rec-email" placeholder="email@caetano.pt" style="margin:8px 0">
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-orange btn-sm" data-action="rec-enviar" ${S.recLoading?'disabled':''}>${S.recLoading?'A enviar…':'Enviar link'}</button>
+        <button class="btn btn-dark btn-sm" data-action="rec-toggle">Cancelar</button>
+      </div>`}
+  </div>`:''}
   <button class="btn btn-orange btn-block" data-action="login" ${S.loading?'disabled':''} style="margin-top:4px">${S.loading?'A entrar...':'Entrar'}</button>
+  ${S.recAberto?'':'<button class="rec-link" data-action="rec-toggle">Esqueci-me da password</button>'}
 </div></div></div>`}
 
 function renderViewSelector(){
@@ -2268,7 +2297,7 @@ function renderList(){
     <div class="sidebar-header">
       <div class="sidebar-logo">
         <div class="sidebar-logo-icon">${logoSVG(36,'vend')}</div>
-        <div><div class="sidebar-logo-text">Baviera Control</div>
+        <div><div class="sidebar-logo-text">Bimby Motorrad</div>
         <div class="sidebar-logo-sub">Pipeline de vendas</div></div>
       </div>
     </div>
@@ -3006,7 +3035,7 @@ function exportNormaPDF(){
     .foot{margin-top:10px;font-size:9px;color:#999}
   </style></head><body>
     <h1>Programa de Demos — coluna M</h1>
-    <div class="sub">Baviera Control · ${new Date().toLocaleDateString('pt-PT')}</div>
+    <div class="sub">Bimby Motorrad · ${new Date().toLocaleDateString('pt-PT')}</div>
     <div class="resumo">
       <span class="big">${nMat}/${total}</span>
       <span class="rk"><i style="background:#16a34a"></i>Matriculadas ${nMat}</span>
@@ -3131,34 +3160,66 @@ function exportComissoesPDF(){
   const mes=perLabel();
   const fE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' \u20ac';
   const arr=(S.records||[]).filter(r=>r.status==='Retail'&&perInclui(retailYM(r))&&comElegivel(r));
-  if(!arr.length){alert('Sem comissões para '+mes+'.');return;}
-  let corpo='',total=0;
-  (S.team||[]).filter(p=>p.role==='vendedor').forEach(p=>{
-    const meus=arr.filter(r=>r.vendedor_id===p.id).slice().sort(comOrdena);
-    if(!meus.length)return;
-    const sub=meus.map(comissaoDe).reduce((a,c)=>a+(c.valor||0),0);total+=sub;
-    corpo+='<h2>'+esc(p.nome||'?')+' <span class="n">'+meus.length+' mota'+(meus.length!==1?'s':'')+'</span></h2>';
-    corpo+='<table><thead><tr><th>Matr\u00edcula</th><th>Cliente</th><th>Modelo</th><th>Tipo</th><th class="num">Margem libertada</th><th>Regra</th><th class="num">Comiss\u00e3o</th></tr></thead><tbody>';
+  const eqAll=(S.equip||[]).filter(l=>perInclui(eqYM(l)));
+  const vends=(S.team||[]).filter(p=>p.role==='vendedor');
+  const asses=(S.assessores||[]);
+  if(!arr.length&&!eqAll.length){alert('Sem comiss\u00f5es nem equipamento para '+mes+'.');return;}
+  let corpo='',tMotas=0,tEquip=0;
+  const tabMotas=meus=>{
+    let h='<table><thead><tr><th>Matr\u00edcula</th><th>Cliente</th><th>Modelo</th><th>Tipo</th><th class="num">Margem</th><th>Regra</th><th class="num">Comiss\u00e3o</th></tr></thead><tbody>';
     meus.forEach(r=>{const c=comissaoDe(r);const m=margemDe(r.id);
-      corpo+='<tr><td><b>'+esc(r.mat||'\u2014')+'</b></td><td>'+esc(r.id_cliente||'')+'</td><td>'+esc((r.model||'')+' '+(r.version||''))+'</td><td>'+esc(r.type||'')+'</td>'
+      h+='<tr><td><b>'+esc(r.mat||'\u2014')+'</b></td><td>'+esc(r.id_cliente||'')+'</td><td>'+esc((r.model||'')+' '+(r.version||''))+'</td><td>'+esc(r.type||'')+'</td>'
         +'<td class="num">'+(r.type==='MD'?'n/a':(m!=null?fE(m):'\u2014'))+'</td><td class="reg">'+esc(c.regra)+'</td>'
         +'<td class="num"><b>'+(c.valor==null?'por lan\u00e7ar':fE(c.valor))+'</b></td></tr>';});
-    corpo+='<tr class="sub"><td colspan="6">Subtotal '+esc(p.nome||'')+'</td><td class="num">'+fE(sub)+'</td></tr>';
-    corpo+='</tbody></table>';
+    return h+'</tbody></table>';
+  };
+  const tabEquip=L=>{
+    let h='<table><thead><tr><th>Data</th><th>Fatura</th><th>Descri\u00e7\u00e3o</th><th class="num">Qtd</th><th class="num">Venda</th><th>Campanha</th><th class="num">Margem</th><th class="num">Comiss\u00e3o</th></tr></thead><tbody>';
+    L.forEach(l=>{h+='<tr><td>'+esc(String(l.data||'').split('-').reverse().join('/'))+'</td><td>'+esc(l.fatura||'')+'</td><td>'+esc(l.descricao||l.artigo||'')+'</td>'
+      +'<td class="num">'+esc(String(l.qtd))+'</td><td class="num">'+fE(eqVendaEf(l))+'</td><td class="reg">'+esc(eqCampInfo(l.campanha)[1])+'</td>'
+      +'<td class="num">'+fE(eqMargem(l))+'</td><td class="num"><b>'+fE(eqComissao(l))+'</b></td></tr>';});
+    return h+'</tbody></table>';
+  };
+  vends.forEach(p=>{
+    const meus=arr.filter(r=>r.vendedor_id===p.id).slice().sort(comOrdena);
+    const eqP=eqAll.filter(l=>String(l.vendedor_id)===String(p.id));
+    if(!meus.length&&!eqP.length)return;
+    const subM=meus.map(comissaoDe).reduce((a,c)=>a+(c.valor||0),0);
+    const subE=eqP.reduce((a,l)=>a+eqComissao(l),0);
+    tMotas+=subM;tEquip+=subE;
+    corpo+='<h2>'+esc(p.nome||'?')+' <span class="n">Vendedor</span></h2>';
+    if(meus.length){corpo+='<h3>Motas \u00b7 '+meus.length+'</h3>'+tabMotas(meus)+'<div class="sub2">Subtotal motas: <b>'+fE(subM)+'</b></div>';}
+    if(eqP.length){corpo+='<h3>Equipamento \u00b7 '+eqP.length+'</h3>'+tabEquip(eqP)+'<div class="sub2">Subtotal equipamento: <b>'+fE(subE)+'</b></div>';}
+    corpo+='<div class="subT">Total '+esc(p.nome||'')+': <b>'+fE(subM+subE)+'</b></div>';
   });
+  asses.forEach(p=>{
+    const eqP=eqAll.filter(l=>String(l.vendedor_id)===String(p.id));if(!eqP.length)return;
+    const subE=eqP.reduce((a,l)=>a+eqComissao(l),0);tEquip+=subE;
+    corpo+='<h2>'+esc(p.nome||'?')+' <span class="n">Assessor de Servi\u00e7o</span></h2>';
+    corpo+='<h3>Equipamento \u00b7 '+eqP.length+'</h3>'+tabEquip(eqP)+'<div class="subT">Total '+esc(p.nome||'')+': <b>'+fE(subE)+'</b></div>';
+  });
+  const tGeral=tMotas+tEquip;
   const html='<!doctype html><html lang="pt"><head><meta charset="utf-8"><title>Comiss\u00f5es '+mes+'</title>'
     +'<style>@page{size:A4;margin:12mm}body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:0}'
     +'h1{font-size:17px;margin:0 0 2px}.sub1{color:#666;font-size:11px;margin:0 0 4px}'
-    +'.regras{font-size:10px;color:#444;border:1px solid #cbd5e1;padding:5px 8px;border-radius:4px;margin:8px 0 14px}'
-    +'h2{font-size:13px;margin:14px 0 5px;border-bottom:2px solid #111;padding-bottom:3px}h2 .n{font-weight:400;color:#666;font-size:11px}'
-    +'table{width:100%;border-collapse:collapse;font-size:10px;margin-bottom:6px}'
+    +'.regras{font-size:10px;color:#444;border:1px solid #cbd5e1;padding:5px 8px;border-radius:4px;margin:8px 0 12px}'
+    +'.resumo{width:100%;border-collapse:collapse;font-size:11px;margin:0 0 14px}.resumo th,.resumo td{border:1px solid #cbd5e1;padding:5px 8px}.resumo th{background:#111;color:#fff}.resumo td.num,.resumo th.num{text-align:right}.resumo tr.tot td{background:#f1f5f9;font-weight:800}'
+    +'h2{font-size:13px;margin:16px 0 4px;border-bottom:2px solid #111;padding-bottom:3px;page-break-after:avoid}h2 .n{font-weight:400;color:#666;font-size:10px}'
+    +'h3{font-size:11px;margin:8px 0 3px;color:#444;page-break-after:avoid}'
+    +'table{width:100%;border-collapse:collapse;font-size:10px;margin-bottom:4px}'
     +'th,td{border:1px solid #cbd5e1;padding:4px 6px;text-align:left}th{background:#f1f5f9;text-transform:uppercase;font-size:9px}'
-    +'td.num,th.num{text-align:right}td.reg{color:#666;font-size:9px}tr.sub td{background:#f8fafc;font-weight:700}'
-    +'.tot{margin-top:10px;padding:8px 10px;border:2px solid #111;border-radius:4px;font-size:13px;text-align:right}'
+    +'td.num,th.num{text-align:right}td.reg{color:#666;font-size:9px}'
+    +'.sub2{font-size:10px;text-align:right;color:#555;margin:0 0 6px}.subT{font-size:11px;text-align:right;font-weight:700;border-top:1px solid #999;padding-top:3px;margin-bottom:4px}'
+    +'.tot{margin-top:12px;padding:9px 12px;border:2px solid #111;border-radius:4px;font-size:14px;text-align:right}'
     +'</style></head><body>'
-    +'<h1>Comiss\u00f5es \u2014 '+mes+'</h1><p class="sub1">Baviera Control \u00b7 gerado em '+new Date().toLocaleDateString('pt-PT')+'</p>'
-    +'<div class="regras">Novas '+Math.round(COM_REGRAS.pctNovas*100)+'% \u00b7 Usadas '+Math.round(COM_REGRAS.pctUsadas*100)+'% da margem libertada \u00b7 Demos/cortesias '+fE(COM_REGRAS.valorDemo)+' \u00b7 M\u00ednimo garantido '+fE(COM_REGRAS.minimo)+'</div>'
-    +corpo+'<div class="tot">Total da equipa: <b>'+fE(total)+'</b></div></body></html>';
+    +'<h1>Comiss\u00f5es \u2014 '+mes+'</h1><p class="sub1">Bimby Motorrad \u00b7 gerado em '+new Date().toLocaleDateString('pt-PT')+'</p>'
+    +'<div class="regras">Motas: Novas '+Math.round(COM_REGRAS.pctNovas*100)+'% \u00b7 Usadas '+Math.round(COM_REGRAS.pctUsadas*100)+'% da margem \u00b7 Demos '+fE(COM_REGRAS.valorDemo)+' \u00b7 M\u00ednimo '+fE(COM_REGRAS.minimo)+' \u2014 Equipamento: '+Math.round(EQ_PCT*100)+'% da margem</div>'
+    +'<table class="resumo"><thead><tr><th>Quem</th><th class="num">Motas</th><th class="num">Equipamento</th><th class="num">Total</th></tr></thead><tbody>'
+    +vends.map(p=>{const m=arr.filter(r=>r.vendedor_id===p.id).map(comissaoDe).reduce((a,c)=>a+(c.valor||0),0);const e=eqAll.filter(l=>String(l.vendedor_id)===String(p.id)).reduce((a,l)=>a+eqComissao(l),0);return (m||e)?('<tr><td>'+esc(p.nome||'')+'</td><td class="num">'+fE(m)+'</td><td class="num">'+fE(e)+'</td><td class="num"><b>'+fE(m+e)+'</b></td></tr>'):'';}).join('')
+    +asses.map(p=>{const e=eqAll.filter(l=>String(l.vendedor_id)===String(p.id)).reduce((a,l)=>a+eqComissao(l),0);return e?('<tr><td>'+esc(p.nome||'')+' <i>(assessor)</i></td><td class="num">\u2014</td><td class="num">'+fE(e)+'</td><td class="num"><b>'+fE(e)+'</b></td></tr>'):'';}).join('')
+    +'<tr class="tot"><td>TOTAL EQUIPA</td><td class="num">'+fE(tMotas)+'</td><td class="num">'+fE(tEquip)+'</td><td class="num">'+fE(tGeral)+'</td></tr>'
+    +'</tbody></table>'
+    +corpo+'<div class="tot">Total geral da equipa: <b>'+fE(tGeral)+'</b></div></body></html>';
   const w=window.open('','_blank');
   if(!w){alert('Permite pop-ups neste site para gerar o PDF.');return;}
   w.document.open();w.document.write(html);w.document.close();w.focus();
@@ -3239,7 +3300,7 @@ function exportStockPDF(){
   const trs=arr.map(o=>`<tr>${cols.map(c=>`<td class="${c.num?'num':''}">${esc(String(cellVal(o,c)))}</td>`).join('')}</tr>`).join('');
   const html='<!doctype html><html lang="pt"><head><meta charset="utf-8"><title>Stock Usadas</title>'
     +'<style>@page{size:A4 landscape;margin:10mm}body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:0}h1{font-size:16px;margin:0 0 2px}.sub{color:#666;font-size:11px;margin:0 0 10px}table{width:100%;border-collapse:collapse;font-size:10px}th,td{border:1px solid #cbd5e1;padding:4px 6px;text-align:left}th{background:#f1f5f9;text-transform:uppercase;font-size:9px;letter-spacing:.3px}td.num,th.num{text-align:right}tr:nth-child(even) td{background:#f8fafc}</style></head><body>'
-    +'<h1>Stock Usadas — Baviera Control</h1><p class="sub">'+arr.length+' viaturas · '+hoje+'</p>'
+    +'<h1>Stock Usadas — Bimby Motorrad</h1><p class="sub">'+arr.length+' viaturas · '+hoje+'</p>'
     +'<table><thead><tr>'+th+'</tr></thead><tbody>'+trs+'</tbody></table></body></html>';
   const w=window.open('','_blank');
   if(!w){alert('Permite pop-ups neste site para gerar o PDF.');return;}
@@ -5202,6 +5263,8 @@ function bindEvents(){
       case'evento-toggle':toggleEventoAtivo(parseInt(el.dataset.id));break;
       case'export-comissoes-pdf':exportComissoesPDF();break;
       case'tbl-sort':tblSortClick(el.dataset.tk,+el.dataset.col);break;
+      case'rec-toggle':setState({recAberto:!S.recAberto,recErr:'',recMsg:''});break;
+      case'rec-enviar':pedirRecuperacao();break;
       case'sec-tab':setState({secTab:el.dataset.t,secAberto:null});break;
       case'sec-toggle':setState({secAberto:String(S.secAberto)===String(el.dataset.id)?null:el.dataset.id});break;
       case'eq-add':eqAdd(el.dataset.vid);break;
