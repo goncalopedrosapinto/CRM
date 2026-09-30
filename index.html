@@ -1411,6 +1411,7 @@ const FM_TOPO=[['pvb','PVB'],['opc','OPC'],['bsi','BSI/Garantia'],['sgpu','SGPU'
 const FM_DESC=[['mg_fixa','MG. FIXA',1],['mg_var','MG. VARIÁVEL',1],['pac','PAC',0],['protocolo','PROTOCOLO',1],['apoio_demo','APOIO DEMO',1],['apoio_adic','APOIO Adicional',1],['depreciacoes','DEPRECIAÇÕES',0],['apoio','APOIO',0]];
 const FM_SOMA=[['recondicionamento','Preparação / Recondicionamento'],['acess_marca','Acessórios Originais Marca'],['acess_conc','Acessórios Concessionário'],['ofertas','Ofertas']];
 function fmN(k){const v=(S.fm||{})[k];const n=typeof v==='string'?numPT(v):v;return (n==null||!isFinite(n))?0:n;}
+const FM_PREP_CIVA=120; // preparação fixa da mota, já com IVA
 function fmCalc(){
   const iva=(S.fm&&S.fm.iva!=null&&S.fm.iva!=='')?(numPT(S.fm.iva)||0)/100:0.23;
   const soma=FM_TOPO.reduce((a,[k])=>a+fmN(k),0);
@@ -1418,7 +1419,9 @@ function fmCalc(){
   const dl=FM_DESC.map(([k,l,pct])=>{const v=pct?(fmN(k+'_pct')/100)*base:fmN(k);return {k,l,pct:!!pct,valor:v,taxa:pct?fmN(k+'_pct'):null};});
   const desc=dl.reduce((a,x)=>a+x.valor,0);
   const somas=FM_SOMA.reduce((a,[k])=>a+fmN(k),0);
-  const custo=pvp-desc*(1+iva)+somas*(1+iva);
+  const prep=FM_PREP_CIVA;
+  const custo=pvp-desc*(1+iva)+somas*(1+iva)+prep;
+  const prepS=prep/(1+iva);
   const venda=fmN('preco_venda'), vendaS=venda/(1+iva);
   const margem=venda?(vendaS-custo/(1+iva)):0;
   const margemPct=vendaS?margem/vendaS:0;
@@ -1429,7 +1432,7 @@ function fmCalc(){
   else if(!venda){com=null;regraCom='falta preço de venda';}
   else{const b=margem*pct;if(b<COM_REGRAS.minimo){com=COM_REGRAS.minimo;regraCom=Math.round(pct*100)+'% = '+b.toFixed(2)+' € — mínimo garantido';}else{com=b;regraCom=Math.round(pct*100)+'% da margem';}}
   const descPct=base?desc/base:0;
-  return {iva,soma,vIva,pvp,base,dl,desc,descPct,somas,custo,venda,vendaS,margem,margemPct,com,regraCom,descValor:venda-pvp,descPercent:pvp?(venda-pvp)/pvp:0};
+  return {iva,soma,vIva,pvp,base,dl,desc,descPct,somas,prep,prepS,custo,venda,vendaS,margem,margemPct,com,regraCom,descValor:venda-pvp,descPercent:pvp?(venda-pvp)/pvp:0};
 }
 function fmPDF(){
   const c=fmCalc(),fm=S.fm||{};
@@ -1454,6 +1457,7 @@ function fmPDF(){
    +c.dl.map(x=>lin(x.l,-x.valor,'',x.pct?(x.taxa/100):null)).join('')
    +lin('DESC. TOTAL',-c.desc,'t',c.descPct)
    +FM_SOMA.map(([k,l])=>lin(l,fmN(k))).join('')
+   +lin('Prepara\u00e7\u00e3o da mota (fixa, c/IVA)',c.prep)
    +lin('PRE\u00c7O CUSTO',c.custo,'t')
    +lin('PRE\u00c7O VENDA (c/IVA)',c.venda)+lin('PRE\u00c7O VENDA (s/IVA)',c.vendaS)
    +lin('MARGEM',c.margem,'big',c.margemPct)
@@ -1498,6 +1502,7 @@ function renderFichaMargem(){
         ${linha('DESC. TOTAL',`<span class="fm-hint">${pc(c.descPct)}</span>`,`<b class="fm-neg">−${fE(c.desc)}</b>`,'fm-t')}
         <tr class="fm-sep"><td colspan="3">Custos a somar</td></tr>
         ${FM_SOMA.map(([k,l])=>linha(l,'',inE(k))).join('')}
+        ${linha('Preparação da mota (fixa, c/IVA)','',`<b>${fE(c.prep)}</b>`)}
         ${linha('PREÇO CUSTO','',`<b>${fE(c.custo)}</b>`,'fm-t')}
         <tr class="fm-sep"><td colspan="3">Venda</td></tr>
         ${linha('PREÇO VENDA (c/IVA)','',inE('preco_venda','preço acordado'))}
