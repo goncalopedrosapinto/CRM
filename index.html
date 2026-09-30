@@ -687,6 +687,20 @@ html,body{overflow-x:hidden;max-width:100vw}
 .eq-add .norma-inp{padding:6px 8px;font-size:12px}
 .eq-sem-motas{margin:0 16px 8px;font-size:12px;color:var(--text3)}
 .v-parc{margin:-4px 16px 10px;font-size:12px;color:var(--text3);text-align:right}
+.tri-card{margin:0 16px 10px;padding:12px;overflow-x:auto}
+.tri-tbl{border-collapse:separate;border-spacing:3px;margin:0 auto}
+.tri-tbl th,.tri-tbl td{padding:7px 14px;text-align:center;min-width:72px;font-size:14px;border-radius:4px}
+.tri-h th{background:#31678E;color:#fff;font-weight:800;letter-spacing:.5px}
+.tri-lb{background:#31678E;color:#fff;font-weight:800;text-align:right!important;font-size:12px;white-space:nowrap}
+.tri-tbl td{background:#DCE6F1;color:#111}
+.tri-tt{background:#C5D9F1!important;font-weight:800}
+.tri-real td{background:#FCD5B4}
+.tri-pok{background:#EBF1DE!important;color:#1F7A1F;font-weight:800}
+.tri-pko{background:#F2DCDB!important;color:#C00;font-weight:800}
+.tri-ok{background:#00A65A!important;color:#fff;font-weight:800}
+.tri-ko{background:#E03131!important;color:#FFE066;font-weight:800}
+.tri-in{width:56px;text-align:center;border:1px solid transparent;background:transparent;font-size:14px;font-weight:700;color:#111;font-family:inherit;border-radius:4px;padding:2px}
+.tri-in:hover,.tri-in:focus{border-color:var(--orange);background:#fff;outline:none}
 .fm-id{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:0 16px 12px}
 .fm-id label{display:flex;flex-direction:column;gap:3px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.3px}
 .fm-card{margin:0 16px 10px;padding:0;overflow-x:auto}
@@ -1509,6 +1523,69 @@ function renderFichaMargem(){
     </div>
     <div class="gpp-pend-desc" style="margin:0 16px 16px">Rúbricas do topo <b>sem IVA</b>. Os bónus em % incidem sobre <b>PVB+OPC</b>. Margem = venda s/IVA − custo s/IVA. A ficha fica guardada neste dispositivo; usa <b>⬇ PDF</b> para anexar ao negócio.</div>
   </div></div></div></div>`;
+}
+// ---- Mapa de controlo trimestral (OBJ ORÇ. / OBJ BMW / 110% / REAL / Δ) ----
+function triMeses(ym){const a=+ym.slice(0,4),m=+ym.slice(5,7),q=Math.floor((m-1)/3);return [0,1,2].map(i=>a+'/'+String(q*3+1+i).padStart(2,'0'));}
+function triNome(ym){const q=Math.floor((+ym.slice(5,7)-1)/3);return 'T'+(q+1)+' '+ym.slice(0,4);}
+const MES_CURTO=['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+function triDados(ym){
+  const meses=triMeses(ym);
+  const recs=(S.records||[]).filter(r=>r.status==='Retail');
+  const linhas=meses.map(m=>{
+    const orc=(objEquipaGet(m,'novas')||{}).objetivo||0;
+    const ob=(objEquipaGet(m,'bmw')||{}).objetivo;
+    const bmw=(ob==null||ob==='')?orc:Number(ob);
+    const c110=Math.ceil(bmw*1.1);
+    const lista=recs.filter(r=>retailYM(r)===m&&(r.type==='MN'||r.type==='MD'));
+    const real=lista.length;
+    return {mes:m,lbl:MES_CURTO[+m.slice(5,7)-1],orc,bmw,c110,real,pct:bmw?real/bmw:0,dB:real-bmw,d110:real-c110,lista};
+  });
+  const sOrc=linhas.reduce((a,x)=>a+x.orc,0), sBmw=linhas.reduce((a,x)=>a+x.bmw,0), sReal=linhas.reduce((a,x)=>a+x.real,0);
+  const t110=Math.ceil(sBmw*1.1);
+  return {meses,linhas,tot:{orc:sOrc,bmw:sBmw,c110:t110,real:sReal,pct:sBmw?sReal/sBmw:0,dB:sReal-sBmw,d110:sReal-t110}};
+}
+function triPDF(){
+  const ym=S.dashMes||curYM(); const d=triDados(ym);
+  const pc=n=>(n*100).toLocaleString('pt-PT',{minimumFractionDigits:1,maximumFractionDigits:1})+' %';
+  const cor=v=>v>=0?'ok':'ko';
+  const cel=(v,cls)=>'<td class="'+(cls||'')+'">'+v+'</td>';
+  let tab='<table class="mapa"><tr><th></th>'+d.linhas.map(l=>'<th>'+l.lbl+'</th>').join('')+'<th class="tt">TOTAL</th></tr>';
+  tab+='<tr><th class="lb">OBJ OR\u00c7.</th>'+d.linhas.map(l=>cel(l.orc)).join('')+cel('<b>'+d.tot.orc+'</b>','tt')+'</tr>';
+  tab+='<tr><th class="lb">OBJ BMW</th>'+d.linhas.map(l=>cel(l.bmw)).join('')+cel('<b>'+d.tot.bmw+'</b>','tt')+'</tr>';
+  tab+='<tr><th class="lb">110% BMW</th>'+d.linhas.map(l=>cel(l.c110)).join('')+cel('<b>'+d.tot.c110+'</b>','tt')+'</tr>';
+  tab+='<tr><th class="lb">REAL</th>'+d.linhas.map(l=>cel('<b>'+l.real+'</b>','re')).join('')+cel('<b>'+d.tot.real+'</b>','re tt')+'</tr>';
+  tab+='<tr><th class="lb">REAL %</th>'+d.linhas.map(l=>cel(pc(l.pct),l.pct>=1?'pok':'pko')).join('')+cel('<b>'+pc(d.tot.pct)+'</b>',(d.tot.pct>=1?'pok':'pko')+' tt')+'</tr>';
+  tab+='<tr><th class="lb">\u0394 (BMW)</th>'+d.linhas.map(l=>cel((l.dB>0?'+':'')+l.dB,cor(l.dB))).join('')+cel('<b>'+(d.tot.dB>0?'+':'')+d.tot.dB+'</b>',cor(d.tot.dB)+' tt')+'</tr>';
+  tab+='<tr><th class="lb">\u0394 (110%)</th>'+d.linhas.map(l=>cel((l.d110>0?'+':'')+l.d110,cor(l.d110))).join('')+cel('<b>'+(d.tot.d110>0?'+':'')+d.tot.d110+'</b>',cor(d.tot.d110)+' tt')+'</tr>';
+  tab+='</table>';
+  let det='';
+  d.linhas.forEach(l=>{
+    det+='<h2>'+l.lbl+' \u00b7 '+esc(l.mes)+' \u2014 '+l.real+' retail'+(l.real!==1?'s':'')+'</h2>';
+    if(!l.lista.length){det+='<p class="vazio">Sem retail neste m\u00eas.</p>';return;}
+    det+='<table class="det"><thead><tr><th>Data 298</th><th>Matr\u00edcula</th><th>Modelo</th><th>Tipo</th><th>Cliente</th><th>Vendedor</th></tr></thead><tbody>';
+    l.lista.slice().sort((a,b)=>String(a.col_298||'').localeCompare(String(b.col_298||''))).forEach(r=>{
+      det+='<tr><td>'+esc(String(r.col_298||'').split('-').reverse().join('/'))+'</td><td><b>'+esc(r.mat||'\u2014')+'</b></td><td>'+esc(((r.model||'')+' '+(r.version||'')).trim())+'</td><td>'+esc(r.type||'')+'</td><td>'+esc(r.id_cliente||'')+'</td><td>'+esc(vendName(r.vendedor_id)||'\u2014')+'</td></tr>';});
+    det+='</tbody></table>';
+  });
+  const html='<!doctype html><html lang="pt"><head><meta charset="utf-8"><title>'+triNome(ym)+'</title>'
+   +'<style>@page{size:A4;margin:12mm}body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:0}'
+   +'h1{font-size:17px;margin:0 0 2px}.s{color:#666;font-size:11px;margin:0 0 12px}'
+   +'table.mapa{border-collapse:collapse;margin-bottom:16px;font-size:12px}'
+   +'table.mapa th,table.mapa td{border:1px solid #fff;padding:6px 14px;text-align:center;min-width:64px}'
+   +'table.mapa th{background:#31678E;color:#fff;font-weight:700}table.mapa th.lb{text-align:right;min-width:92px}'
+   +'table.mapa td{background:#DCE6F1}td.re{background:#FCD5B4}td.tt,th.tt{background:#C5D9F1}td.re.tt{background:#FCD5B4}'
+   +'td.pok{background:#EBF1DE;color:#1F7A1F;font-weight:700}td.pko{background:#F2DCDB;color:#C00;font-weight:700}'
+   +'td.ok{background:#00A65A;color:#fff;font-weight:700}td.ko{background:#E03131;color:#FFE066;font-weight:700}'
+   +'h2{font-size:12px;margin:14px 0 4px;border-bottom:2px solid #111;padding-bottom:3px;page-break-after:avoid}'
+   +'table.det{width:100%;border-collapse:collapse;font-size:10px}table.det th,table.det td{border:1px solid #cbd5e1;padding:4px 6px;text-align:left}'
+   +'table.det th{background:#f1f5f9;text-transform:uppercase;font-size:9px}.vazio{font-size:10px;color:#888;margin:2px 0 8px}'
+   +'</style></head><body><h1>Controlo trimestral \u2014 '+triNome(ym)+'</h1>'
+   +'<p class="s">Bimby Motorrad \u00b7 retail de novas (MN+MD) \u00b7 gerado em '+new Date().toLocaleDateString('pt-PT')+'</p>'
+   +tab+'<h1 style="font-size:13px;margin-top:18px">Detalhe dos retails</h1>'+det+'</body></html>';
+  const w=window.open('','_blank');
+  if(!w){alert('Permite pop-ups neste site para gerar o PDF.');return;}
+  w.document.open();w.document.write(html);w.document.close();w.focus();
+  setTimeout(()=>{try{w.print();}catch(e){}},350);
 }
 function renderSemAcesso(){
   const r=(S.me&&S.me.role)||'';
@@ -2786,7 +2863,7 @@ async function saveMargem(id,valor){
 // ---- Navegação agrupada (menu com separadores) ----
 const GRUPOS_SEC={
   atratar:{ic:'📋',lb:'A tratar',tabs:[['pendentes','A tratar hoje'],['entregas','Entregas']]},
-  vendas:{ic:'✅',lb:'Vendas',tabs:[['retail','Retail'],['carteira','Carteira'],['fechados','Fechados'],['perdidos','Perdidos'],['comercio','Comerciante'],['saude','Saúde da equipa']]},
+  vendas:{ic:'✅',lb:'Vendas',tabs:[['retail','Retail'],['carteira','Carteira'],['fechados','Fechados'],['perdidos','Perdidos'],['comercio','Comerciante'],['trimestre','Trimestre'],['saude','Saúde da equipa']]},
   usadas:{ic:'🏍️',lb:'Usadas',tabs:[['stock','Stock'],['depreciacao','Depreciação'],['margem','Margem']]},
   comissoesg:{ic:'💰',lb:'Comissões',tabs:[['comissoes','Resumo'],['premios','Os meus prémios']]}
 };
@@ -3610,6 +3687,9 @@ function EXPORT_FOLHAS(){
       {c:'negocio_id',l:'Comissão',f:v=>{const r=(S.records||[]).find(x=>String(x.id)===String(v));return r?(comissaoDe(r).valor??''):''}},
       {c:'updated_at',l:'Atualizado',f:dt},
     ]},
+    {nome:'Objetivos equipa',path:'/objetivos_equipa?select=*&order=mes.asc,tipo.asc',cols:[
+      {c:'mes',l:'Mês',f:d},{c:'tipo',l:'Tipo'},{c:'objetivo',l:'Objetivo'},
+    ]},
     {nome:'Equipamento',path:'/equipamento?select=*&order=data.asc,id.asc',cols:[
       {c:'data',l:'Data',f:d},{c:'vendedor_id',l:'Vendedor',f:nome},{c:'wip',l:'WIP/OR'},{c:'fatura',l:'Fatura'},{c:'artigo',l:'Artigo'},{c:'descricao',l:'Descrição'},
       {c:'qtd',l:'Qtd'},{c:'custo',l:'Preço custo'},{c:'venda',l:'Preço venda'},{c:'campanha',l:'Campanha',f:v=>eqCampInfo(v)[1]},
@@ -3817,6 +3897,7 @@ function renderDashboard(){
     ['comissoes','💰','Resumo Comissões'],
     ['evento','🎟️','Evento'],
     ['ficha','🧮','Ficha de Margem'],
+    ['trimestre','📐','Controlo trimestral'],
     ['exportar','⬇️','Exportar'],
   ];
   const NAV_GRUPOS=[
@@ -4368,6 +4449,32 @@ function renderDashboard(){
         <thead><tr><th>Vendedor</th><th style="text-align:right">Fechados</th><th style="text-align:right">Entregues</th><th style="text-align:right">R</th><th style="text-align:right">R 3m</th><th style="text-align:right">Lead time</th><th style="text-align:right">Carteira</th><th style="text-align:right">Idade cart.</th></tr></thead>
         <tbody>${vends.map(linha).join('')}</tbody></table></div>`:''}
       <div class="gpp-pend-desc" style="margin:0 16px 14px"><b>R = negócios fechados ÷ retails entregues.</b> Acima de 1 a carteira cresce; abaixo está a esvaziar. Num mês só, com dois vendedores, oscila muito — o <b>R 3m</b> é a leitura fiável. Sem vendas a comerciante nem automatriculações.</div>`;
+  }
+  function trimestreView(){
+    const d=triDados(mesSel);
+    const pc=n=>(n*100).toLocaleString('pt-PT',{minimumFractionDigits:1,maximumFractionDigits:1})+' %';
+    const sig=v=>(v>0?'+':'')+v;
+    const cor=v=>v>=0?'tri-ok':'tri-ko';
+    const inObj=(m,tipo,v)=>`<input class="tri-in" type="number" min="0" step="1" data-tri-mes="${m}" data-tri-tipo="${tipo}" value="${v||''}" placeholder="0">`;
+    const col=l=>`<th>${esc(l.lbl)}</th>`;
+    return`${mesBar}
+      <div class="gpp-tot-head" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <span>Controlo trimestral · <b>${esc(triNome(mesSel))}</b> · retail de novas (MN+MD)</span>
+        <button class="btn btn-dark btn-sm" data-action="tri-pdf">⬇ PDF com detalhe</button>
+      </div>
+      <div class="gpp-card tri-card">
+        <table class="tri-tbl"><tbody>
+          <tr class="tri-h"><th></th>${d.linhas.map(col).join('')}<th class="tri-tt">TOTAL</th></tr>
+          <tr><th class="tri-lb">OBJ ORÇ.</th>${d.linhas.map(l=>`<td>${inObj(l.mes,'novas',l.orc)}</td>`).join('')}<td class="tri-tt"><b>${d.tot.orc}</b></td></tr>
+          <tr><th class="tri-lb">OBJ BMW</th>${d.linhas.map(l=>`<td>${inObj(l.mes,'bmw',l.bmw)}</td>`).join('')}<td class="tri-tt"><b>${d.tot.bmw}</b></td></tr>
+          <tr><th class="tri-lb">110% BMW</th>${d.linhas.map(l=>`<td>${l.c110}</td>`).join('')}<td class="tri-tt"><b>${d.tot.c110}</b></td></tr>
+          <tr class="tri-real"><th class="tri-lb">REAL</th>${d.linhas.map(l=>`<td><b>${l.real}</b></td>`).join('')}<td class="tri-tt"><b>${d.tot.real}</b></td></tr>
+          <tr><th class="tri-lb">REAL %</th>${d.linhas.map(l=>`<td class="${l.pct>=1?'tri-pok':'tri-pko'}">${pc(l.pct)}</td>`).join('')}<td class="tri-tt ${d.tot.pct>=1?'tri-pok':'tri-pko'}"><b>${pc(d.tot.pct)}</b></td></tr>
+          <tr><th class="tri-lb">Δ (BMW)</th>${d.linhas.map(l=>`<td class="${cor(l.dB)}">${sig(l.dB)}</td>`).join('')}<td class="tri-tt ${cor(d.tot.dB)}"><b>${sig(d.tot.dB)}</b></td></tr>
+          <tr><th class="tri-lb">Δ (110%)</th>${d.linhas.map(l=>`<td class="${cor(l.d110)}">${sig(l.d110)}</td>`).join('')}<td class="tri-tt ${cor(d.tot.d110)}"><b>${sig(d.tot.d110)}</b></td></tr>
+        </tbody></table>
+      </div>
+      <div class="gpp-pend-desc" style="margin:0 16px 16px">Escreve os objetivos <b>ORÇ.</b> e <b>BMW</b> em cada mês — gravam logo. O <b>110%</b> é o objetivo BMW ×1,1 arredondado para cima; no total do trimestre é calculado sobre o objetivo trimestral, não é a soma dos meses. <b>REAL</b> conta o retail de novas (MN+MD) pela data 298, automatriculações e Caetano 4 incluídas.</div>`;
   }
   function funilView(){
     const FUN=['Quente','Morno','Frio'];
@@ -5179,6 +5286,7 @@ function renderDashboard(){
   else if(sec==='funil')body=funilView();
   else if(sec==='fechados')body=fechadosView();
   else if(sec==='saude')body=saudeEquipa();
+  else if(sec==='trimestre')body=trimestreView();
   else if(sec==='ficha')body=renderFichaMargem();
   else if(sec==='entregas')body=entregasView();
   else if(sec==='leads')body=leadsView();
@@ -5265,6 +5373,7 @@ function bindEvents(){
     if(el.dataset&&el.dataset.depId){const id=el.dataset.depId,v=el.value;saveStockField(id,'dep_manual',(v===''||v==null)?null:Number(v));return;}
     if(el.dataset&&el.dataset.pedMotivo){const sel=Object.assign({},S.pedAutSel||{});sel[String(el.dataset.pedMotivo)]=el.value;setState({pedAutSel:sel});return;}
     if(el.dataset&&el.dataset.prepId){const v=el.value;saveStockField(el.dataset.prepId,el.dataset.prepF,(v===''||v==null)?null:Number(v));return;}
+    if(el.dataset&&el.dataset.triMes){saveObjEquipa(el.dataset.triMes,el.value,el.dataset.triTipo).then(()=>render());return;}
     if(el.dataset&&el.dataset.fm){fmSet(el.dataset.fm,el.value);return;}
     if(el.dataset&&el.dataset.eqCamp){eqCampanha(el.dataset.eqCamp,el.value);return;}
     if(el.dataset&&el.dataset.pmK){savePremioMes(el.dataset.pmMes,el.dataset.pmK,el.value);return;}
@@ -5387,6 +5496,7 @@ function bindEvents(){
       case'evento-toggle':toggleEventoAtivo(parseInt(el.dataset.id));break;
       case'export-comissoes-pdf':exportComissoesPDF();break;
       case'tbl-sort':tblSortClick(el.dataset.tk,+el.dataset.col);break;
+      case'tri-pdf':triPDF();break;
       case'go-ficha':setState({screen:'ficha'});break;
       case'fm-pdf':fmPDF();break;
       case'fm-limpar':fmLimpar();break;
