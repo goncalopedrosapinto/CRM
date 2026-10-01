@@ -687,6 +687,7 @@ html,body{overflow-x:hidden;max-width:100vw}
 .eq-add .norma-inp{padding:6px 8px;font-size:12px}
 .eq-sem-motas{margin:0 16px 8px;font-size:12px;color:var(--text3)}
 .v-parc{margin:-4px 16px 10px;font-size:12px;color:var(--text3);text-align:right}
+.tri-mail{width:100%;min-height:300px;font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.5;padding:10px;border:1px solid var(--border2);border-radius:8px;background:var(--bg);color:var(--text);box-sizing:border-box;resize:vertical}
 .tri-card{margin:0 16px 10px;padding:12px;overflow-x:auto}
 .tri-tbl{border-collapse:separate;border-spacing:3px;margin:0 auto}
 .tri-tbl th,.tri-tbl td{padding:7px 14px;text-align:center;min-width:72px;font-size:14px;border-radius:4px}
@@ -1550,6 +1551,78 @@ function triDados(ym){
   const t110=Math.ceil(sBmw*1.1);
   return {meses,linhas,tot:{orc:sOrc,bmw:sBmw,c110:t110,real:sReal,pct:sBmw?sReal/sBmw:0,dB:sReal-sBmw,d110:sReal-t110}};
 }
+// ---- Email de performance do trimestre (dados reais da plataforma) ----
+function triEmailTexto(ym){
+  const d=triDados(ym);
+  const meses=d.meses;
+  const pct=n=>(n*100).toFixed(0)+'%';
+  const recs=(S.records||[]).filter(r=>!r.venda_direta);
+  const noTri=f=>meses.includes(f);
+  // retail do trimestre
+  const ret=recs.filter(r=>r.status==='Retail'&&noTri(retailYM(r)));
+  const novas=ret.filter(r=>r.type==='MN'||r.type==='MD').length;
+  const usadas=ret.filter(r=>r.type==='MU').length;
+  // negócios fechados no trimestre
+  const fech=recs.filter(r=>(r.status==='Retail'||r.status==='Carteira')&&noTri(negYM(r)));
+  // por vendedor
+  const vends=(S.team||[]).filter(p=>p.role==='vendedor').map(p=>({
+    nome:p.nome||'?',
+    ret:ret.filter(r=>r.vendedor_id===p.id).length,
+    fech:fech.filter(r=>r.vendedor_id===p.id).length
+  })).filter(v=>v.ret||v.fech).sort((a,b)=>b.ret-a.ret);
+  // mix de modelos (top 6)
+  const mix={};ret.forEach(r=>{const m=(r.model||'—').trim();mix[m]=(mix[m]||0)+1;});
+  const mixTop=Object.entries(mix).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  // método de pagamento
+  const pag={};ret.forEach(r=>{const k=r.fin||'N/A';pag[k]=(pag[k]||0)+1;});
+  const pagL=Object.entries(pag).sort((a,b)=>b[1]-a[1]);
+  const LBL={PP:'Pronto pagamento',Fint:'BMW Financial Services',Fext:'Financiamento externo','N/A':'Por definir'};
+  // carteira em aberto
+  const cart=recs.filter(r=>r.status==='Carteira').length;
+  const funil=recs.filter(r=>FUNIL.includes(r.status)).length;
+  const L=[];
+  L.push('Assunto: '+triNome(ym)+' | Performance BMW Motorrad Aveiro');
+  L.push('');
+  L.push('Bom dia,');
+  L.push('');
+  L.push('Fechámos o trimestre e aqui ficam os resultados da equipa Motorrad.');
+  L.push('');
+  L.push('RETAIL — '+triNome(ym));
+  L.push('  Objetivo BMW: '+d.tot.bmw+'   ·   110%: '+d.tot.c110+'   ·   Realizado: '+d.tot.real+'   ('+pct(d.tot.pct)+')');
+  L.push('  '+(d.tot.dB>=0?'Acima do objetivo em '+d.tot.dB:'Abaixo do objetivo em '+Math.abs(d.tot.dB))+' unidade(s)'+(d.tot.d110>=0?'; 110% atingido.':'; faltaram '+Math.abs(d.tot.d110)+' para os 110%.'));
+  L.push('');
+  L.push('  Por mês:');
+  d.linhas.forEach(l=>L.push('    '+l.lbl+': '+l.real+' / '+l.bmw+'  ('+pct(l.pct)+')'+(l.dB>=0?'  ▲ +'+l.dB:'  ▼ '+l.dB)));
+  L.push('');
+  L.push('  Novas (MN+MD): '+novas+'   ·   Usadas (MU): '+usadas+'   ·   Total faturado: '+ret.length);
+  L.push('');
+  if(vends.length){
+    L.push('POR COMERCIAL');
+    vends.forEach(v=>L.push('  '+v.nome+': '+v.ret+' retail · '+v.fech+' negócios fechados'));
+    L.push('');
+  }
+  L.push('NEGÓCIOS FECHADOS NO TRIMESTRE: '+fech.length);
+  L.push('');
+  if(mixTop.length){
+    L.push('MIX DE MODELOS (top '+mixTop.length+')');
+    mixTop.forEach(([m,n])=>L.push('  '+m+': '+n+'  ('+Math.round(100*n/Math.max(1,ret.length))+'%)'));
+    L.push('');
+  }
+  if(pagL.length){
+    L.push('MÉTODO DE PAGAMENTO');
+    pagL.forEach(([k,n])=>L.push('  '+(LBL[k]||k)+': '+n+'  ('+Math.round(100*n/Math.max(1,ret.length))+'%)'));
+    L.push('');
+  }
+  L.push('PIPELINE À DATA');
+  L.push('  Carteira (por entregar): '+cart+'   ·   Funil em aberto: '+funil);
+  L.push('');
+  L.push('Obrigado pelo trabalho destes três meses.');
+  L.push('');
+  L.push((S.me&&S.me.nome)||'');
+  L.push('Chefe de Vendas | BMW Motorrad Aveiro');
+  return L.join('\n');
+}
+function triEmailCopiar(btn){const t=triEmailTexto(S.dashMes||curYM());copiarTexto(t,btn);}
 function triPDF(){
   const ym=S.dashMes||curYM(); const d=triDados(ym);
   const pc=n=>(n*100).toLocaleString('pt-PT',{minimumFractionDigits:1,maximumFractionDigits:1})+' %';
@@ -4466,7 +4539,7 @@ function renderDashboard(){
     return`${mesBar}
       <div class="gpp-tot-head" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
         <span>Controlo trimestral · <b>${esc(triNome(mesSel))}</b> · retail de novas (MN+MD)</span>
-        <button class="btn btn-dark btn-sm" data-action="tri-pdf">⬇ PDF com detalhe</button>
+        <span style="display:flex;gap:8px"><button class="btn btn-orange btn-sm" data-action="tri-email">📧 Email de performance</button><button class="btn btn-dark btn-sm" data-action="tri-pdf">⬇ PDF com detalhe</button></span>
       </div>
       <div class="gpp-card tri-card">
         <table class="tri-tbl"><tbody>
@@ -4480,6 +4553,7 @@ function renderDashboard(){
           <tr><th class="tri-lb">Δ (110%)</th>${d.linhas.map(l=>`<td class="${cor(l.d110)}">${sig(l.d110)}</td>`).join('')}<td class="tri-tt ${cor(d.tot.d110)}"><b>${sig(d.tot.d110)}</b></td></tr>
         </tbody></table>
       </div>
+      ${S.triEmailPrev?`<div class="gpp-card" style="margin:0 16px 12px;padding:12px"><div style="font-size:12px;font-weight:800;margin-bottom:6px">📧 Email copiado — revê antes de enviar</div><textarea class="tri-mail">${esc(triEmailTexto(mesSel))}</textarea><div style="margin-top:6px;display:flex;gap:8px"><button class="btn btn-orange btn-sm" data-action="tri-email">📋 Copiar outra vez</button><button class="btn btn-dark btn-sm" data-action="tri-email-fechar">Fechar</button></div></div>`:''}
       <div class="gpp-pend-desc" style="margin:0 16px 16px">Escreve os objetivos <b>ORÇ.</b> e <b>BMW</b> em cada mês — gravam logo. O <b>110%</b> é o objetivo BMW ×1,1 arredondado para cima; no total do trimestre é calculado sobre o objetivo trimestral, não é a soma dos meses. <b>REAL</b> conta o retail de novas (MN+MD) pela data 298, automatriculações e Caetano 4 incluídas.</div>`;
   }
   function funilView(){
@@ -5503,6 +5577,8 @@ function bindEvents(){
       case'export-comissoes-pdf':exportComissoesPDF();break;
       case'tbl-sort':tblSortClick(el.dataset.tk,+el.dataset.col);break;
       case'tri-pdf':triPDF();break;
+      case'tri-email-fechar':setState({triEmailPrev:false});break;
+      case'tri-email':{triEmailCopiar(el);setState({triEmailPrev:!S.triEmailPrev});break;}
       case'go-ficha':setState({screen:'ficha'});break;
       case'fm-pdf':fmPDF();break;
       case'fm-limpar':fmLimpar();break;
