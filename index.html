@@ -1341,7 +1341,7 @@ function renderSecretaria(){
   const sel=(S.secMes&&meses.includes(S.secMes))?S.secMes:curYM();
   const recs=S.records||[];
   const dt=v=>v?String(v).slice(0,10).split('-').reverse().join('/'):'—';
-  const tag=r=>r.venda_direta?'<span class="sec-tag">comerciante</span>':(r.automatricula?'<span class="sec-tag">automatrícula</span>':'');
+  const tag=r=>r.venda_direta?'<span class="sec-tag">comerciante</span>':(r.automatricula?'<span class="sec-tag">remarketing</span>':'');
   const linha=(r,cels)=>`<tr class="gpp-lrow2 sec-row ${String(S.secAberto)===String(r.id)?'on':''}" data-action="sec-toggle" data-id="${r.id}">${cels}</tr>${secDetalhe(r,7)}`;
   let corpo='';
   if(tab==='retail'){
@@ -1552,6 +1552,21 @@ function triDados(ym){
   return {meses,linhas,tot:{orc:sOrc,bmw:sBmw,c110:t110,real:sReal,pct:sBmw?sReal/sBmw:0,dB:sReal-sBmw,d110:sReal-t110}};
 }
 // ---- Email de performance do trimestre (dados reais da plataforma) ----
+// Junta grafias diferentes do mesmo modelo (R1300GS = R 1300 GS), sem fundir modelos distintos (GS != GSA)
+function modeloChave(m){return String(m||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Z0-9]/g,'');}
+function modeloAgrupa(lista){
+  const g={};
+  lista.forEach(m=>{const k=modeloChave(m);if(!k)return;const nome=String(m||'').trim();
+    if(!g[k])g[k]={n:0,formas:{}};g[k].n++;g[k].formas[nome]=(g[k].formas[nome]||0)+1;});
+  return Object.keys(g).map(k=>{
+    const todas=Object.entries(g[k].formas);
+    const ord=(a,b)=>b[1]-a[1]||b[0].length-a[0].length;
+    // prefere a grafia com espaços (forma oficial BMW); só usa as coladas se não houver outra
+    const comEsp=todas.filter(x=>/\s/.test(x[0])).sort(ord);
+    const f=(comEsp.length?comEsp:todas.slice().sort(ord))[0];
+    return {chave:k,nome:f[0],n:g[k].n,variantes:todas.length};
+  }).sort((a,b)=>b.n-a.n);
+}
 function triEmailTexto(ym){
   const d=triDados(ym);
   const meses=d.meses;
@@ -1571,8 +1586,8 @@ function triEmailTexto(ym){
     fech:fech.filter(r=>r.vendedor_id===p.id).length
   })).filter(v=>v.ret||v.fech).sort((a,b)=>b.ret-a.ret);
   // mix de modelos (top 6)
-  const mix={};ret.forEach(r=>{const m=(r.model||'—').trim();mix[m]=(mix[m]||0)+1;});
-  const mixTop=Object.entries(mix).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const mixAll=modeloAgrupa(ret.map(r=>r.model));
+  const mixTop=mixAll.slice(0,6);
   // método de pagamento
   const pag={};ret.forEach(r=>{const k=r.fin||'N/A';pag[k]=(pag[k]||0)+1;});
   const pagL=Object.entries(pag).sort((a,b)=>b[1]-a[1]);
@@ -1604,8 +1619,8 @@ function triEmailTexto(ym){
   L.push('NEGÓCIOS FECHADOS NO TRIMESTRE: '+fech.length);
   L.push('');
   if(mixTop.length){
-    L.push('MIX DE MODELOS (top '+mixTop.length+')');
-    mixTop.forEach(([m,n])=>L.push('  '+m+': '+n+'  ('+Math.round(100*n/Math.max(1,ret.length))+'%)'));
+    L.push('MIX DE MODELOS (top '+mixTop.length+' de '+mixAll.length+')');
+    mixTop.forEach(x=>L.push('  '+x.nome+': '+x.n+'  ('+Math.round(100*x.n/Math.max(1,ret.length))+'%)'));
     L.push('');
   }
   if(pagL.length){
@@ -1966,10 +1981,10 @@ async function saveAutomatricula(){
   const hoje=new Date().toISOString().slice(0,10);
   const d298=(f.col_298&&String(f.col_298).trim())?String(f.col_298).trim():hoje;
   const body={
-    vendedor_id:c4?null:((S.me&&S.me.id)||null),
+    vendedor_id:(S.me&&S.me.id)||null,
     type:(f.tipo==='MD'?'MD':'MN'),
     status:'Retail',
-    id_cliente:(f.id_cliente&&f.id_cliente.trim())||(c4?'Caetano 4':'Automatrícula — Baviera'),
+    id_cliente:(f.id_cliente&&f.id_cliente.trim())||(c4?'Caetano 4':'Remarketing'),
     model:f.model.trim(),
     mat:f.mat?f.mat.trim():null,
     chas:f.chas?f.chas.trim():null,
@@ -1979,7 +1994,7 @@ async function saveAutomatricula(){
     origin:c4?'Caetano 4':'BMW Portugal',
     neg:hoje,
     col_298:d298,
-    obs_gestor:c4?'Matrícula para a Caetano 4 — passou a stock de usadas.':'Automatriculação — compra a BMW Portugal.'
+    obs_gestor:c4?'Matrícula para a Caetano 4 — passou a stock de usadas.':'Remarketing — compra a BMW Portugal.'
   };
   setState({loading:true,amErr:''});
   try{
@@ -3689,7 +3704,7 @@ function EXPORT_FOLHAS(){
   return [
     {nome:'Negócios',path:'/baviera_control?select=*&order=id.asc',cols:[
       {c:'id',l:'ID'},{c:'status',l:'Status'},{c:'vendedor_id',l:'Vendedor',f:nome},
-      {c:'venda_direta',l:'Venda a comerciante',f:sn},{c:'automatricula',l:'Automatriculação',f:sn},
+      {c:'venda_direta',l:'Venda a comerciante',f:sn},{c:'automatricula',l:'Remarketing / Caetano 4',f:sn},
       {c:'id_cliente',l:'Cliente'},{c:'nif',l:'NIF'},{c:'cc',l:'CC'},{c:'morada',l:'Morada'},
       {c:'email',l:'Email'},{c:'contacto',l:'Contacto'},
       {c:'resp',l:'Responsável'},{c:'local',l:'Local'},{c:'neg',l:'Data negócio',f:d},{c:'mes1',l:'Mês'},
@@ -4527,7 +4542,7 @@ function renderDashboard(){
       ${vends.length?`<div class="gpp-card" style="margin:0 16px 8px;overflow-x:auto"><table class="gpp-ltable sa-tbl">
         <thead><tr><th>Vendedor</th><th style="text-align:right">Fechados</th><th style="text-align:right">Entregues</th><th style="text-align:right">R</th><th style="text-align:right">R 3m</th><th style="text-align:right">Lead time</th><th style="text-align:right">Carteira</th><th style="text-align:right">Idade cart.</th></tr></thead>
         <tbody>${vends.map(linha).join('')}</tbody></table></div>`:''}
-      <div class="gpp-pend-desc" style="margin:0 16px 14px"><b>R = negócios fechados ÷ retails entregues.</b> Acima de 1 a carteira cresce; abaixo está a esvaziar. Num mês só, com dois vendedores, oscila muito — o <b>R 3m</b> é a leitura fiável. Sem vendas a comerciante nem automatriculações.</div>`;
+      <div class="gpp-pend-desc" style="margin:0 16px 14px"><b>R = negócios fechados ÷ retails entregues.</b> Acima de 1 a carteira cresce; abaixo está a esvaziar. Num mês só, com dois vendedores, oscila muito — o <b>R 3m</b> é a leitura fiável. Sem vendas a comerciante nem remarketing/Caetano 4.</div>`;
   }
   function trimestreView(){
     const d=triDados(mesSel);
@@ -4554,7 +4569,7 @@ function renderDashboard(){
         </tbody></table>
       </div>
       ${S.triEmailPrev?`<div class="gpp-card" style="margin:0 16px 12px;padding:12px"><div style="font-size:12px;font-weight:800;margin-bottom:6px">📧 Email copiado — revê antes de enviar</div><textarea class="tri-mail">${esc(triEmailTexto(mesSel))}</textarea><div style="margin-top:6px;display:flex;gap:8px"><button class="btn btn-orange btn-sm" data-action="tri-email">📋 Copiar outra vez</button><button class="btn btn-dark btn-sm" data-action="tri-email-fechar">Fechar</button></div></div>`:''}
-      <div class="gpp-pend-desc" style="margin:0 16px 16px">Escreve os objetivos <b>ORÇ.</b> e <b>BMW</b> em cada mês — gravam logo. O <b>110%</b> é o objetivo BMW ×1,1 arredondado para cima; no total do trimestre é calculado sobre o objetivo trimestral, não é a soma dos meses. <b>REAL</b> conta o retail de novas (MN+MD) pela data 298, automatriculações e Caetano 4 incluídas.</div>`;
+      <div class="gpp-pend-desc" style="margin:0 16px 16px">Escreve os objetivos <b>ORÇ.</b> e <b>BMW</b> em cada mês — gravam logo. O <b>110%</b> é o objetivo BMW ×1,1 arredondado para cima; no total do trimestre é calculado sobre o objetivo trimestral, não é a soma dos meses. <b>REAL</b> conta o retail de novas (MN+MD) pela data 298, remarketing e Caetano 4 incluídos.</div>`;
   }
   function funilView(){
     const FUN=['Quente','Morno','Frio'];
@@ -4930,9 +4945,9 @@ function renderDashboard(){
     const f=S.amForm||{};
     return S.amAdding?`
       <div class="gpp-card vd-form" style="margin:0 16px 14px">
-        <div class="vd-form-t">${f.destino==='c4'?'🏢 Matrícula para a Caetano 4':'🏷️ Automatriculação (compra à BMW Portugal)'}</div>
-        <div class="per-seg" style="margin:6px 0 8px"><button type="button" class="per-b ${f.destino!=='c4'?'on':''}" data-action="am-destino" data-d="bmw">Compra à BMW</button><button type="button" class="per-b ${f.destino==='c4'?'on':''}" data-action="am-destino" data-d="c4">Venda à Caetano 4</button></div>
-        <div class="vd-form-sub">${f.destino==='c4'?'Matrícula em nome da <b>Caetano 4</b>: conta como <b>retail da empresa</b> e abate ao objetivo, <b>não fica associada a nenhum vendedor</b>, e a mota passa para o <b>Stock Usadas</b>.':'Conta como <b>retail da empresa</b> e abate ao objetivo. <b>Não conta para nenhum vendedor.</b> A mota entra no teu stock de usadas com o valor que pagaste.'}</div>
+        <div class="vd-form-t">${f.destino==='c4'?'🏢 Matrícula para a Caetano 4':'🏷️ Remarketing (compra à BMW Portugal)'}</div>
+        <div class="per-seg" style="margin:6px 0 8px"><button type="button" class="per-b ${f.destino!=='c4'?'on':''}" data-action="am-destino" data-d="bmw">Remarketing (BMW)</button><button type="button" class="per-b ${f.destino==='c4'?'on':''}" data-action="am-destino" data-d="c4">Venda à Caetano 4</button></div>
+        <div class="vd-form-sub">${f.destino==='c4'?'Matrícula em nome da <b>Caetano 4</b>: conta como <b>retail da empresa</b> e abate ao objetivo, fica <b>em teu nome</b> (sem comissão), e a mota passa para o <b>Stock Usadas</b>.':'Conta como <b>retail da empresa</b> e abate ao objetivo. Fica <b>em teu nome</b>, mas <b>não gera comissão</b>. A mota entra no teu stock de usadas com o valor que pagaste.'}</div>
         ${S.amErr?`<div class="error" style="margin-bottom:10px">${esc(S.amErr)}</div>`:''}
         ${f.tipo==='MD'?(()=>{const dm=(S.norma||[]).filter(n=>!n.vendida).slice().sort((a,b)=>(a.ordem||0)-(b.ordem||0));
           return`<div class="vd-f am-demo"><label>Demo *</label><select class="norma-inp" data-am-f="demo_id"><option value="">— escolhe a demo —</option>${dm.map(n=>`<option value="${n.id}" ${String(f.demo_id)===String(n.id)?'selected':''}>${esc(n.modelo||'?')}${n.matricula?' · '+esc(n.matricula):''}${n.estado&&n.estado!=='Matriculada'?' · '+esc(n.estado):''}</option>`).join('')}</select>${dm.length?'':'<div class="am-demo-vazio">Não há demos por vender no programa.</div>'}</div>`;})():''}
@@ -4947,10 +4962,10 @@ function renderDashboard(){
         <label class="am-chk"><input type="checkbox" data-am-f="criar_stock" ${f.criar_stock!==false?'checked':''}> Criar também a mota no <b>Stock Usadas</b> (recomendado)</label>
         ${f.tipo==='MD'&&f.demo_id?`<label class="am-chk"><input type="checkbox" data-am-f="demo_vendida" ${f.demo_vendida!==false?'checked':''}> Marcar a demo como <b>vendida</b> no programa de demos (evita tê-la em dois sítios)</label>`:''}
         <div style="display:flex;gap:8px;margin-top:12px">
-          <button class="btn btn-orange btn-sm" data-action="am-save" ${S.loading?'disabled':''}>${S.loading?'A gravar…':(f.destino==='c4'?'Registar venda à Caetano 4':'Registar automatriculação')}</button>
+          <button class="btn btn-orange btn-sm" data-action="am-save" ${S.loading?'disabled':''}>${S.loading?'A gravar…':(f.destino==='c4'?'Registar venda à Caetano 4':'Registar remarketing')}</button>
           <button class="btn btn-dark btn-sm" data-action="am-cancel">Cancelar</button>
         </div>
-      </div>`:`<div style="margin:0 16px 14px"><button class="btn btn-dark btn-sm" data-action="am-add">🏷️ Automatrícula / Caetano 4</button></div>`;
+      </div>`:`<div style="margin:0 16px 14px"><button class="btn btn-dark btn-sm" data-action="am-add">🏷️ Remarketing / Caetano 4</button></div>`;
   }
   function comercioView(){
     const fmtE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:0})+' €';
@@ -5215,8 +5230,8 @@ function renderDashboard(){
       ${porLancar?`<div class="mg-aviso">⚠️ <b>${porLancar}</b> mota${porLancar!==1?'s':''} sem margem libertada lançada — não entram no total.</div>`:''}
       ${vendedores.map(bloco).join('')}${assessores.length?`<div class="gpp-tot-head" style="font-size:14px;margin-top:6px">Assessores de serviço</div>${assessores.map(blocoAss).join('')}`:''}
       ${fora.length?`<div class="gpp-sub-h" style="border-left-color:var(--amber)">🤝 Fora de comissão · ${fora.length}</div>
-        <div class="gpp-card" style="margin:0 16px 12px"><div class="cm-fora">${fora.map(r=>`<span>${esc(r.mat||r.id_cliente||'—')} <em>${r.venda_direta?'comerciante':(r.automatricula?'automatrícula':'sem vendedor')}</em></span>`).join('')}</div></div>`:''}
-      <div class="gpp-pend-desc" style="margin:0 16px 16px">Só tu editas a <b>margem libertada</b>; os vendedores veem-na na ficha do negócio mas não a conseguem alterar. Conta o <b>retail do mês</b> (data 298). Vendas a comerciante e automatriculações não geram comissão.</div>`;
+        <div class="gpp-card" style="margin:0 16px 12px"><div class="cm-fora">${fora.map(r=>`<span>${esc(r.mat||r.id_cliente||'—')} <em>${r.venda_direta?'comerciante':(r.automatricula?'remarketing / C4':'sem vendedor')}</em></span>`).join('')}</div></div>`:''}
+      <div class="gpp-pend-desc" style="margin:0 16px 16px">Só tu editas a <b>margem libertada</b>; os vendedores veem-na na ficha do negócio mas não a conseguem alterar. Conta o <b>retail do mês</b> (data 298). Vendas a comerciante, remarketing e Caetano 4 não geram comissão.</div>`;
   }
   function perdidosView(){
     const perdidos=recs.filter(r=>r.status==='Perdido').slice().sort((a,b)=>new Date(b.status_updated_at||0)-new Date(a.status_updated_at||0));
