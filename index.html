@@ -1540,10 +1540,10 @@ function fmCalc(){
   const pvpRef=plat||pvpDesc;
   const descCli=venda?(pvpRef-venda)/k:null;
   const descCliPct=(descCli!=null&&base)?descCli/base:null;
-  // aprovação: desconto ao cliente a menos de 1 ponto das margens (MG. Fixa + MG. Variável)
-  const margPct=(fmN('mg_fixa_pct')+fmN('mg_var_pct'))/100;
-  const folga=(descCliPct!=null&&margPct>0)?margPct-descCliPct:null;
-  const aprovacao=folga!=null&&folga<0.01;
+  // aprovação da chefia: margem (s/IVA) abaixo de 0,50% do valor proposto
+  const FM_MARGEM_MIN=0.005;
+  const margPct=null,folga=null;
+  const aprovacao=!!venda&&margemPct<FM_MARGEM_MIN;
   return {margPct,folga,aprovacao,modo:fmModo(),iva,k,isv,sgpu,base,baseD:base-descPreco,dl,desc,descMarg,descPreco,pvpRef,descCli,descCliPct,descPct:base?desc/base:0,diversos,ptot,ptotD,taxasTab:taxas(ptot),taxasDesc:taxas(ptotD),
     pvp:pvpTab,pvpTab,pvpDesc,internos,custo,custoSC,compart,descCusto,venda,vendaS,margem,margemPct,com,regraCom,
     descValor:venda-pvpRef,descPercent:pvpRef?(venda-pvpRef)/pvpRef:0,plat,difPlat};
@@ -1624,14 +1624,15 @@ function fmPDF(){
   const pc=n=>(n*100).toLocaleString('pt-PT',{minimumFractionDigits:1,maximumFractionDigits:2})+' %';
   const iv=t=>t?' <span class="iva">'+(t==='c'?'c/IVA':'s/IVA')+'</span>':'';
   const lin=(l,p,v,cls,t)=>'<tr class="'+(cls||'')+'"><td>'+esc(l)+iv(t)+'</td><td class="num">'+(p||'')+'</td><td class="num">'+(v==null?'':v)+'</td></tr>';
+  const linV=(l,raw,t)=>(raw?lin(l,'',fE(raw),'',t):'');   // linhas de entrada: só aparecem se tiverem valor
   const sec=t=>'<tr class="sec"><td colspan="3">'+t+'</td></tr>';
   let r='<tr class="h"><td>R\u00fabrica</td><td class="num">%</td><td class="num">\u20ac</td></tr>';
   r+=sec('Painel direito \u2014 sem IVA')+lin('ISV','',fE(c.isv),'','s')+lin('SGPU','',fE(c.sgpu),'','s')+lin('IVA',pc(c.iva),'','','');
   r+=sec('Como na plataforma \u2014 com IVA');
   r+=lin('Modelo (j\u00e1 inclui ISV)','',fE(fmN('pvb')),'','c')+lin('Equipamento Opcional','',fE(fmN('opc')),'','c');
   r+=lin('Model and Options','',fE((c.base+c.isv)*k),'t','c');
-  FM_PLAT2.forEach(([kk,l])=>r+=lin(l,'',fE(fmN(kk)),'','c'));
-  FM_DIV.forEach(([kk,l])=>r+=lin('Diversos \u00b7 '+l,'',fE(fmN(kk)),'','c'));
+  FM_PLAT2.forEach(([kk,l])=>r+=linV(l,fmN(kk),'c'));
+  FM_DIV.forEach(([kk,l])=>r+=linV('Diversos \u00b7 '+l,fmN(kk),'c'));
   r+=lin('PVP (c/ impostos)','',fE(c.pvpTab),'big','c');
   r+=sec('Descontos e apoios (% sobre Model and Options net = '+fE(c.base)+')');
   c.dl.forEach(x=>{if(x.valor)r+=lin(x.l+(x.marg?' (margem)':''),x.pct?pc(x.taxa/100):'','\u2212'+fE(x.valor*k),'','c');});
@@ -1639,7 +1640,7 @@ function fmPDF(){
   r+=lin('PVP a confirmar (sem margens)','',fE(c.pvpDesc),'t','c');
   if(c.plat)r+=lin('PVP confirmado na plataforma',Math.abs(c.difPlat)<=0.05?'\u2713 bate':'dif. '+fE(c.difPlat),fE(c.plat),'','c');
   r+=sec('Custos internos (n\u00e3o est\u00e3o na plataforma)');
-  FM_INT.forEach(([kk,l])=>r+=lin(l,'',fE(fmN(kk)),'',kk==='compart_conc'?'s':'c'));
+  FM_INT.forEach(([kk,l])=>r+=linV(l,fmN(kk),kk==='compart_conc'?'s':'c'));
   r+=lin('PRE\u00c7O CUSTO','',fE(c.custo),'t','c');
   r+=sec('Venda');
   r+=lin('Valor proposto de venda','',fE(c.venda),'','c');
@@ -1648,20 +1649,21 @@ function fmPDF(){
   r+=lin('MARGEM',pc(c.margemPct),fE(c.margem),'big','s');
   r+=lin('COMISS\u00c3O',esc(c.regraCom),c.com==null?'\u2014':fE(c.com),'t','');
   const html='<!doctype html><html lang="pt"><head><meta charset="utf-8"><title>Ficha de Margem'+(fm.modelo?' \u2014 '+fm.modelo:'')+'</title>'
-   +'<style>@page{size:A4;margin:12mm}body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:0}'
-   +'h1{font-size:16px;margin:0 0 2px}.s{color:#666;font-size:11px;margin:0 0 10px}'
-   +'.id{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:10px}.id td{border:1px solid #cbd5e1;padding:4px 8px}.id td.k{background:#f1f5f9;font-weight:700;width:100px}'
-   +'table.r{width:100%;border-collapse:collapse;font-size:10.5px}table.r td{border:1px solid #cbd5e1;padding:3px 7px}td.num{text-align:right;white-space:nowrap}'
-   +'tr.h td{background:#111;color:#fff;font-weight:700;text-transform:uppercase;font-size:8.5px}'
-   +'tr.sec td{background:#f8fafc;font-size:8.5px;font-weight:800;text-transform:uppercase;color:#475569}'
-   +'tr.t td{background:#f1f5f9;font-weight:800}tr.big td{background:#111;color:#fff;font-weight:800;font-size:11.5px}'
+   +'<style>@page{size:A4;margin:9mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:0}'
+   +'h1{font-size:14px;margin:0 0 1px}.s{color:#666;font-size:9px;margin:0 0 6px}'
+   +'.id{width:100%;border-collapse:collapse;font-size:9px;margin-bottom:6px}.id td{border:1px solid #cbd5e1;padding:2px 6px}.id td.k{background:#f1f5f9;font-weight:700;width:80px}'
+   +'table.r{width:100%;border-collapse:collapse;font-size:9px}table.r td{border:1px solid #d5dce6;padding:1.5px 6px;line-height:1.25}td.num{text-align:right;white-space:nowrap}'
+   +'tr.h td{background:#e2e8f0;color:#111;font-weight:800;text-transform:uppercase;font-size:7.5px}'
+   +'tr.sec td{background:#f8fafc;font-size:7.5px;font-weight:800;text-transform:uppercase;color:#475569}'
+   +'tr.t td{background:#f1f5f9;font-weight:800}tr.big td{background:#fff;color:#111;font-weight:800;font-size:10.5px;border-top:2px solid #111;border-bottom:2px solid #111}'
    +'.iva{font-size:7.5px;font-weight:700;color:#64748B;border:1px solid #cbd5e1;border-radius:3px;padding:0 3px;margin-left:4px}'
    +'.nota{margin-top:8px;font-size:9px;color:#666}'
-   +'table.res{width:100%;border-collapse:separate;border-spacing:5px 0;margin:0 -5px 10px;}table.res td{background:#f1f5f9;border-radius:6px;padding:7px 9px;vertical-align:top;width:20%}'
-   +'table.res td.dsc{background:#DBEAFE}table.res td.mg{background:#DCFCE7}.rk{font-size:8px;font-weight:800;text-transform:uppercase;color:#475569}.rv{font-size:14px;font-weight:800;margin-top:2px}.rs{font-size:8px;color:#64748B;margin-top:1px}'
-   +'.aprov{background:#FEE2E2;border:2px solid #DC2626;color:#991B1B;font-weight:800;font-size:11px;padding:8px 10px;border-radius:6px;margin-bottom:10px}'
-   +'.ass{margin-top:26px;border-top:2px solid #111;padding-top:8px;page-break-inside:avoid}.ass-t{font-size:10px;font-weight:800;text-transform:uppercase;margin-bottom:30px}'
-   +'.ass-g{display:flex;gap:24px}.ass-g>div{flex:1;font-size:9px;color:#475569;text-align:center}.ln{border-bottom:1px solid #111;height:28px;margin-bottom:4px}'
+   +'table.res{width:100%;border-collapse:separate;border-spacing:4px 0;margin:0 -4px 6px;}table.res td{background:#f1f5f9;border:1px solid #cbd5e1;border-radius:5px;padding:4px 7px;vertical-align:top;width:20%}'
+   +'table.res td.dsc{background:#DBEAFE;border-color:#93C5FD}table.res td.mg{background:#DCFCE7;border-color:#86EFAC}.rk{font-size:7px;font-weight:800;text-transform:uppercase;color:#475569}.rv{font-size:12px;font-weight:800;margin-top:1px}.rs{font-size:7px;color:#64748B}'
+   +'.aprov{background:#FEE2E2;border:2px solid #DC2626;color:#991B1B;font-weight:800;font-size:9.5px;padding:5px 8px;border-radius:5px;margin-bottom:6px}'
+   +'.ass{margin-top:12px;border-top:1.5px solid #111;padding-top:5px;page-break-inside:avoid}.ass-t{font-size:8.5px;font-weight:800;text-transform:uppercase;margin-bottom:16px}'
+   +'.ass-g{display:flex;gap:20px}.ass-g>div{flex:1;font-size:8px;color:#475569;text-align:center}.ln{border-bottom:1px solid #111;height:20px;margin-bottom:3px}'
+   +'.nota{margin-top:4px!important;font-size:7.5px!important}'
    +'</style></head><body>'
    +'<h1>Ficha de Margem</h1><p class="s">Bimby Motorrad \u00b7 '+new Date().toLocaleDateString('pt-PT')+(S.me&&S.me.nome?' \u00b7 '+esc(S.me.nome):'')+'</p>'
    +'<table class="id"><tr><td class="k">Natureza</td><td>'+esc(fm.natureza||'')+'</td><td class="k">Modelo</td><td>'+esc(fm.modelo||'')+'</td></tr>'
@@ -1674,7 +1676,7 @@ function fmPDF(){
    +'<td class="mg"><div class="rk">Margem</div><div class="rv">'+(c.venda?fE(c.margem):'\u2014')+'</div><div class="rs">'+(c.venda?pc(c.margemPct)+' s/IVA':'')+'</div></td>'
    +'<td class="mg"><div class="rk">Comiss\u00e3o</div><div class="rv">'+(c.com==null?'\u2014':fE(c.com))+'</div></td>'
    +'</tr></table>'
-   +(c.aprovacao?'<div class="aprov">NECESS\u00c1RIO APROVA\u00c7\u00c3O DA CHEFIA \u2014 desconto ao cliente '+pc(c.descCliPct)+' a menos de 1 ponto das margens MG. Fixa + Vari\u00e1vel ('+pc(c.margPct)+').</div>':'')
+   +(c.aprovacao?'<div class="aprov">NECESS\u00c1RIO APROVA\u00c7\u00c3O DA CHEFIA \u2014 margem de '+pc(c.margemPct)+', abaixo do m\u00ednimo de 0,50 %.</div>':'')
    +'<table class="r">'+r+'</table>'
    +'<div class="nota">Valores com IVA, como na plataforma BMW, exceto ISV, SGPU e Comparticipa\u00e7\u00e3o Concession\u00e1rio (sem IVA). A margem e a comiss\u00e3o s\u00e3o calculadas sem IVA.</div>'
    +'<div class="ass"><div class="ass-t">'+(c.aprovacao?'Aprova\u00e7\u00e3o da chefia (obrigat\u00f3ria)':'Aprova\u00e7\u00e3o da chefia')+'</div>'
@@ -1734,7 +1736,7 @@ function renderFichaMargem(){
       <div class="fm-res-c ${c.margem<0?'neg':'mg'}"><div class="fm-res-k">Margem</div><div class="fm-res-v">${c.venda?fE(c.margem):'—'}</div><div class="fm-res-s">${c.venda?pc(c.margemPct)+' · s/IVA':''}</div></div>
       <div class="fm-res-c mg"><div class="fm-res-k">Comissão</div><div class="fm-res-v">${c.com==null?'—':fE(c.com)}</div><div class="fm-res-s">${esc(c.regraCom)}</div></div>
     </div>
-    ${c.aprovacao?`<div class="fm-aprov">⚠️ <b>Necessário aprovação da chefia</b> — o desconto ao cliente (${(c.descCliPct*100).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})}%) fica a menos de 1 ponto das margens MG. Fixa + MG. Variável (${(c.margPct*100).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})}%). Folga: ${(c.folga*100).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})} pontos.</div>`:''}
+    ${c.aprovacao?`<div class="fm-aprov">⚠️ <b>Necessário aprovação da chefia</b> — margem de ${(c.margemPct*100).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})}%, abaixo do mínimo de 0,50%.</div>`:''}
     <div class="gpp-card fm-card">
       <table class="fm-tbl"><tbody>
         <tr class="fm-h"><td>Rúbrica</td><td>%</td><td>€</td></tr>
