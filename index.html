@@ -1628,7 +1628,7 @@ function fmPDF(){
   const pc=n=>(n*100).toLocaleString('pt-PT',{minimumFractionDigits:1,maximumFractionDigits:2})+' %';
   const iv=t=>t?' <span class="iva">'+(t==='c'?'c/IVA':'s/IVA')+'</span>':'';
   const lin=(l,p,v,cls,t)=>'<tr class="'+(cls||'')+'"><td>'+esc(l)+iv(t)+'</td><td class="num">'+(p||'')+'</td><td class="num">'+(v==null?'':v)+'</td></tr>';
-  const linV=(l,raw,t)=>(raw?lin(l,'',fE(raw),'',t):'');   // linhas de entrada: só aparecem se tiverem valor
+  const linV=(l,raw,t)=>lin(l,'',fE(raw),'',t);   // todas as alíneas aparecem, mesmo a zero
   const sec=t=>'<tr class="sec"><td colspan="3">'+t+'</td></tr>';
   let r='<tr class="h"><td>R\u00fabrica</td><td class="num">%</td><td class="num">\u20ac</td></tr>';
   r+=sec('Painel direito \u2014 sem IVA')+lin('ISV','',fE(c.isv),'','s')+lin('SGPU','',fE(c.sgpu),'','s')+lin('IVA',pc(c.iva),'','','');
@@ -1639,7 +1639,7 @@ function fmPDF(){
   FM_DIV.forEach(([kk,l])=>r+=linV('Diversos \u00b7 '+l,fmN(kk),'c'));
   r+=lin('PVP (c/ impostos) \u2014 antes do PAC','',fE(c.pvpTab),'t','c');
   r+=sec('Descontos e apoios (% sobre Model and Options net = '+fE(c.base)+')');
-  c.dl.forEach(x=>{if(x.valor)r+=lin(x.l+(x.marg?' (margem)':''),x.pct?pc(x.taxa/100):'','\u2212'+fE(x.valor*k),'','c');});
+  c.dl.forEach(x=>{r+=lin(x.l+(x.marg?' (margem)':''),x.pct?pc(x.taxa/100):'','\u2212'+fE(x.valor*k),'','c');});
   r+=lin('DESC. TOTAL',pc(c.descPct),'\u2212'+fE(c.desc*k),'t','c');
   r+=lin('PVP','',fE(c.pvpDesc),'dest','c');
   if(c.plat)r+=lin('PVP confirmado na plataforma',Math.abs(c.difPlat)<=0.05?'\u2713 bate':'dif. '+fE(c.difPlat),fE(c.plat),'','c');
