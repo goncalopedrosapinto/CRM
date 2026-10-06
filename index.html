@@ -1402,6 +1402,29 @@ html,body{overflow-x:hidden;max-width:100vw}
 .seq-nota{font-size:11.5px;color:var(--text3);margin-top:8px}
 @media(max-width:700px){.seq-wrap{padding:12px 12px 24px}.seq-row{grid-template-columns:1fr 46px;row-gap:6px}.seq-tags{grid-column:1/2}.seq-vbtn{grid-column:2/3;grid-row:2}.seq-q{min-width:100%}}
 .as-tabs{display:flex;gap:2px;margin:10px 16px 0}
+.seq-row{grid-template-columns:1fr 210px 150px 86px!important}
+.seq-tamsl{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.seq-tam{border:1px solid var(--border2);background:var(--surface);border-radius:7px;padding:3px 8px;font-size:11.5px;font-weight:700;color:var(--text);cursor:pointer;font-family:inherit}
+.seq-tam small{font-weight:600;color:var(--text3);margin-left:2px}
+.seq-tam.on{background:var(--text);color:#fff;border-color:var(--text)}.seq-tam.on small{color:rgba(255,255,255,.6)}
+.seq-precos{display:flex;flex-direction:column;gap:3px;font-size:12px}
+.seq-precos div{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.seq-precos span{color:var(--text3);font-size:10.5px;text-transform:uppercase;letter-spacing:.3px;min-width:92px}
+.seq-precos b{font-size:13px}.seq-precos b.site{color:var(--blue)}.seq-precos em{font-style:normal;font-size:10.5px;font-weight:800;color:var(--blue);background:var(--blue-bg);border-radius:5px;padding:0 5px}
+.seq-flag{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;background:var(--red-bg);color:var(--red);border-radius:5px;padding:1px 6px;vertical-align:middle}
+.seq-flag.dc{background:var(--amber-bg);color:#92600a}
+.seq-nosite{color:var(--text3);font-style:italic}
+.seq-tams{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-bottom:10px}.seq-tams>span{font-size:11px;color:var(--text3);font-weight:600;margin-right:4px}
+.seq-pbtns{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-bottom:10px}
+.seq-pbtn{display:flex;flex-direction:column;align-items:flex-start;gap:1px;border:1px solid var(--border2);background:var(--surface);border-radius:var(--r);padding:8px 10px;cursor:pointer;font-family:inherit;font-size:11px;color:var(--text3);font-weight:600;text-align:left}
+.seq-pbtn b{font-size:15px;color:var(--text)}.seq-pbtn small{font-size:11px;color:var(--text2)}
+.seq-pbtn.on{border-color:var(--orange);box-shadow:0 0 0 2px var(--orange-light)}
+.seq-link{font-size:12px;font-weight:700;color:var(--blue);text-decoration:none;margin-left:auto}
+.seq-admp{margin-top:10px;font-size:12px;color:var(--text2);display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding-top:10px;border-top:1px dashed var(--border2)}
+.seq-orig{font-size:11px;color:var(--text3)}
+.seq-prog{background:var(--blue-bg);color:var(--blue);border-radius:var(--r);padding:8px 12px;font-size:12.5px;font-weight:600;margin-bottom:10px}
+@media(max-width:900px){.seq-row{grid-template-columns:1fr 180px 86px!important}.seq-tags{display:none}}
+@media(max-width:700px){.seq-row{grid-template-columns:1fr 80px!important}.seq-precos{grid-column:1/2}.seq-vbtn{grid-column:2/3;grid-row:1}.seq-precos span{min-width:84px}}
 </style>
 </head>
 <body>
@@ -2982,10 +3005,10 @@ function renderEventoVend(){
 const SEQ_CATS=[['capacetes','Capacetes'],['casacos','Casacos e fatos'],['calcas','Calças'],['botas','Botas e calçado'],['luvas','Luvas'],['protecao','Proteção e técnico'],['outros','Outros']];
 const SEQ_IVA=0.23;
 function seqCatLabel(k){if(k==='lifestyle')return'Lifestyle';const c=SEQ_CATS.find(x=>x[0]===k);return c?c[1]:'Outros';}
-function seqCategoria(sub,desc,marca){
+function seqCategoria(sub,desc,marca,semLife){
   const d=eotNorm(desc),s=eotNorm(sub);
-  if(eotNorm(marca)==='bmw')return'lifestyle';
-  if(/\b(bone|cap|gorro|mochila|longsleeve|polo|hoodie|sweat|sweatshirt|t-shirt|tshirt|camisola|caneta|caneca|oculos|cinto|porta-chaves|chaveiro|bandana|softshell|de desporto|make life a ride|chapeu|toalha|guarda-chuva|garrafa|carteira|pulseira)\b/.test(d))return'lifestyle';
+  if(!semLife&&eotNorm(marca)==='bmw')return'lifestyle';
+  if(!semLife&&/\b(bone|cap|gorro|mochila|longsleeve|polo|hoodie|sweat|sweatshirt|t-shirt|tshirt|camisola|caneta|caneca|oculos|cinto|porta-chaves|chaveiro|bandana|softshell|de desporto|make life a ride|chapeu|toalha|guarda-chuva|garrafa|carteira|pulseira)\b/.test(d))return'lifestyle';
   if(s==='capacetes'||/^capacete/.test(d))return'capacetes';
   if(s==='blusoes'||/^(casaco|blusao|colete|fato)/.test(d))return'casacos';
   if(s==='calcas'||/^calca/.test(d))return'calcas';
@@ -3001,7 +3024,7 @@ function seqParse(rows){
   if(hi<0)throw new Error('Não encontrei o cabeçalho ("Ref. Peça" e "Descrição Peça"). É o mapa "Stock de Peças - Detalhe"?');
   const H=(rows[hi]||[]).map(eotNorm);const col=n=>H.indexOf(n);
   const C={polo:col('polo'),loja:col('ponto venda'),marca:col('marca peca'),fam:col('familia peca'),sub:col('sub-familia peca'),qual:col('qualidade de stock no polo'),
-    antig:col('antig - ult. saida'),ults:col('ult. saida stock'),ref:col('ref. peca'),desc:col('descricao peca'),qtd:col('qtd stock'),cst:col('cst stock'),proc:col('procura media mensal'),dsc:col('% desconto s/ pvp')};
+    antig:col('antig - ult. saida'),ults:col('ult. saida stock'),pav:H.findIndex(h=>/preco caetano aveiro|preco aveiro/.test(h)),vsite:H.findIndex(h=>/venda site|preco site/.test(h)),ref:col('ref. peca'),desc:col('descricao peca'),qtd:col('qtd stock'),cst:col('cst stock'),proc:col('procura media mensal'),dsc:col('% desconto s/ pvp')};
   const falta=['loja','ref','desc','qtd','cst'].filter(k=>C[k]<0);
   if(falta.length)throw new Error('Faltam colunas no ficheiro: '+falta.join(', '));
   const g=(r,k)=>C[k]>=0?r[C[k]]:null;const linhas=[];
@@ -3013,8 +3036,9 @@ function seqParse(rows){
     linhas.push({ponto_venda:eotTxt(g(r,'loja')),polo:eotTxt(g(r,'polo')),ref:String(ref).replace(/\.0+$/,''),descricao:desc,marca:eotTxt(g(r,'marca')),
       familia:eotTxt(g(r,'fam')),subfamilia:eotTxt(g(r,'sub')),categoria:seqCategoria(g(r,'sub'),desc,g(r,'marca')),qualidade:eotTxt(g(r,'qual')),
       antig_saida:eotTxt(g(r,'antig')),ult_saida:seqData8(g(r,'ults')),qtd,custo_total:cst,custo_unit:cst!=null?Math.round(cst/qtd*100)/100:null,
-      procura:eotNum(g(r,'proc')),desc_max:dsc});
+      procura:eotNum(g(r,'proc')),desc_max:dsc,_pav:eotNum(g(r,'pav')),_vsite:eotNum(g(r,'vsite'))});
   }
+  linhas.temPrecoAv=C.pav>=0;linhas.temVendaSite=C.vsite>=0;
   return linhas;
 }
 async function apiTodos(path){let all=[],off=0;const sep=path.includes('?')?'&':'?';for(;;){const d=await supabaseApi('GET',`${path}${sep}limit=1000&offset=${off}`);all=all.concat(d||[]);if(!d||d.length<1000)break;off+=1000;}return all;}
@@ -3024,7 +3048,7 @@ async function loadStockEq(){
   catch(e){S.stockEq=[];S.stockEqErr=(e&&e.message)||'erro';}
   S.stockEqLoaded=true;
 }
-function seqGarantirCarga(){if(!S.stockEqLoaded&&!S._seqLoading){S._seqLoading=true;Promise.all([loadStockEq(),isAdmin()&&!(S.assessores||[]).length?loadAssessores():null]).then(()=>{S._seqLoading=false;render();});}}
+function seqGarantirCarga(){if(!S.stockEqLoaded&&!S._seqLoading){S._seqLoading=true;Promise.all([loadStockEq(),loadPrecosRef(),isAdmin()&&!(S.assessores||[]).length?loadAssessores():null]).then(()=>{S._seqLoading=false;render();});}}
 async function seqFicheiro(f){
   if(!f)return;
   setState({seqBusy:true,seqErrImp:'',seqMsg:'',seqPrev:null});
@@ -3034,7 +3058,8 @@ async function seqFicheiro(f){
     const ws=wb.Sheets[wb.SheetNames[0]];const rows=X.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
     const linhas=seqParse(rows);
     if(!linhas.length)throw new Error('Não encontrei artigos com stock no ficheiro.');
-    setState({seqBusy:false,seqPrev:{nome:f.name,linhas}});
+    const excel={};linhas.forEach(l=>{if(l._pav!=null||l._vsite!=null)excel[l.ref]={preco_aveiro:l._pav,venda_site:l._vsite};});
+    setState({seqBusy:false,seqPrev:{nome:f.name,linhas:linhas.map(l=>{const o=Object.assign({},l);delete o._pav;delete o._vsite;return o;}),excel,temPrecoAv:linhas.temPrecoAv,temVendaSite:linhas.temVendaSite}});
   }catch(e){setState({seqBusy:false,seqErrImp:(e&&e.message)||String(e)});}
 }
 async function seqInserir(lote){
@@ -3053,7 +3078,8 @@ async function seqConfirmar(){
     // só apaga o mapa antigo depois de o novo estar todo gravado
     await supabaseApi('DELETE','/stock_equip?lote=neq.'+encodeURIComponent(lote));
     await loadStockEq();
-    setState({seqBusy:false,seqPrev:null,seqMsg:`Stock atualizado: ${P.linhas.length} artigos.`});
+    setState({seqBusy:false,seqPrev:null,seqMsg:`Stock atualizado: ${P.linhas.length} referências.`});
+    await seqAtualizarSite(P.linhas.map(l=>l.ref),P.excel||{});
   }catch(e){setState({seqBusy:false,seqErrImp:'Erro ao gravar: '+((e&&e.message)||e)});}
 }
 function seqLojaCurta(l){return String(l||'').replace(/^\d+\s*-\s*/,'').replace(/^Lisboa - /,'').trim()||'—';}
@@ -3062,16 +3088,97 @@ function seqDescHTML(x){if(x.desc_max==null)return'';const p=Math.round(x.desc_m
 function seqEstadoHTML(x){const q=String(x.qualidade||'');const c={Vivo:'seq-e-vivo',Moribundo:'seq-e-mor',Morto:'seq-e-morto',Analisar:'seq-e-an'}[q]||'seq-e-an';
   const t=String(x.antig_saida||'').replace(/^Últ\. Saída /,'última saída ').replace(/^Sem Movimento de Saída$/,'nunca vendeu');return`<span class="seq-e ${c}" title="${esc(x.antig_saida||'')}">${esc(q||'—')}</span>${t?`<span class="seq-ant">${esc(t)}</span>`:''}`;}
 function seqQuemPode(){return isAdmin()||isVendedor()||(S.me&&S.me.role==='assessor');}
-function seqCalc(x,V){
-  const qtd=Math.max(1,parseInt(V.qtd,10)||1);const ci=numPT(V.preco);
-  if(ci==null||!x)return null;
-  const si=Math.round(ci/(1+SEQ_IVA)*100)/100;
-  const l={qtd,venda:si,custo:Number(x.custo_unit)||0,campanha:V.campanha||null};
-  return{qtd,si,margem:eqMargem(l),com:eqComissao(l),total:Math.round(eqVendaEf(l)*qtd*(1+SEQ_IVA)*100)/100};
+// ---- Cruzamento com lifestyle.caetano.pt (preço, tamanho, categoria) ----
+const SITE_BASE='https://lifestyle.caetano.pt/wp-json/wc/store/v1';
+const SITE_LIFE=new Set(['casual-wear','fun']);
+async function loadPrecosRef(){try{const all=await apiTodos('/precos_ref?select=*&order=ref.asc');const m={};all.forEach(r=>{m[r.ref]=r;});S.precosRef=m;S.precosRefErr='';}catch(e){S.precosRef=S.precosRef||{};S.precosRefErr=(e&&e.message)||'erro';}}
+function seqSi(x){return x&&(S.precosRef||{})[x.ref]||null;}
+function siteTamanho(p){const v=String(p&&p.variation||'');let m=v.match(/tamanho:\s*([^,]+)/i);if(m)return m[1].trim();if(v.includes(':'))return v.split(':').slice(1).join(':').split(',')[0].trim()||null;
+  try{const u=new URL(p.permalink);for(const [k,val] of u.searchParams)if(k.startsWith('attribute_'))return val.replace(/-/g,' ');}catch(e){}return null;}
+// Lê o site diretamente do browser (se o site o permitir)
+async function siteDireto(refs){
+  const get=async u=>{const r=await fetch(u,{headers:{Accept:'application/json'}});if(!r.ok)throw new Error('site '+r.status);return r.json();};
+  const cats=[];for(let pg=1;pg<=5;pg++){const c=await get(`${SITE_BASE}/products/categories?per_page=100&page=${pg}`);cats.push(...c);if(c.length<100)break;}
+  const porId=new Map(cats.map(c=>[c.id,c])),slugId=new Map(cats.map(c=>[c.slug,c.id]));
+  const raiz=id=>{let c=porId.get(id),g=0;while(c&&c.parent&&g++<6)c=porId.get(c.parent);return c?c.slug:'';};
+  const want=new Set(refs),out={};
+  for(let i=0;i<refs.length;i+=20){const lote=refs.slice(i,i+20).map(encodeURIComponent).join(',');
+    for(const tipo of ['variation','']){const arr=await get(`${SITE_BASE}/products?per_page=100&sku=${lote}${tipo?'&type='+tipo:''}`).catch(()=>[]);
+      for(const p of arr){const sku=String(p&&p.sku||'');if(!want.has(sku)||out[sku])continue;const mu=Number((p.prices||{}).currency_minor_unit??2);const e=v=>v==null||v===''?null:Math.round(Number(v))/Math.pow(10,mu);
+        out[sku]={nome_site:p.name||null,tamanho:p.type==='variation'?siteTamanho(p):null,pvp:e((p.prices||{}).regular_price),venda_site:e((p.prices||{}).price),url:p.permalink||null,site_stock:!!p.is_in_stock,parent:p.parent||p.id,categorias:(p.categories||[]).map(c=>c.slug)};}}}
+  const pais=[...new Set(Object.values(out).filter(o=>!o.categorias.length).map(o=>o.parent))];
+  for(let i=0;i<pais.length;i+=50){const arr=await get(`${SITE_BASE}/products?per_page=100&include=${pais.slice(i,i+50).join(',')}`).catch(()=>[]);const m=new Map(arr.map(p=>[p.id,p.categories||[]]));
+    Object.values(out).forEach(o=>{if(!o.categorias.length&&m.has(o.parent))o.categorias=(m.get(o.parent)||[]).map(c=>c.slug);});}
+  Object.values(out).forEach(o=>{const rz=o.categorias.map(s=>raiz(slugId.get(s)));o.lifestyle=rz.some(r=>SITE_LIFE.has(r));o.outlet=o.categorias.includes('outlet');o.dress_code=o.categorias.includes('dress-code');o.categorias=o.categorias.join(',');});
+  return out;
 }
-function seqCalcHTML(x,V){const fE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';const c=seqCalc(x,V);
-  if(!c)return'<span class="seq-calc-v">Escreve o preço ao cliente para ver a comissão.</span>';
-  return`<span>s/IVA <b>${fE(c.si)}</b>${c.qtd>1?' × '+c.qtd:''}</span><span>Margem <b class="${c.margem<0?'neg':''}">${fE(c.margem)}</b></span><span class="seq-com">Comissão <b class="${c.com<0?'neg':''}">${fE(c.com)}</b></span>${c.margem<0?'<span class="neg">⚠️ abaixo do custo</span>':''}`;}
+// Pela função do Supabase (quando o site não deixa o browser ler diretamente)
+async function siteFuncao(refs){
+  const go=()=>fetch(`${S.config.url}/functions/v1/site-precos`,{method:'POST',headers:{'apikey':S.config.key,'Authorization':`Bearer ${S.token}`,'Content-Type':'application/json'},body:JSON.stringify({refs})});
+  let r=await go();if(r.status===401){const nt=await refreshSession();if(nt){S.token=nt;r=await go();}}
+  if(!r.ok)throw new Error(r.status===404?'A função "site-precos" ainda não está instalada no Supabase.':'Função site-precos: erro '+r.status);
+  const j=await r.json();if(!j.ok)throw new Error(j.erro||'erro na função');return j.dados||{};
+}
+async function siteConsultar(refs){
+  if(S._siteModo!=='funcao'){try{const d=await siteDireto(refs);S._siteModo='direto';return d;}catch(e){S._siteModo='funcao';}}
+  return siteFuncao(refs);
+}
+async function sbUpsert(tabela,rows,conflito){
+  const h={'apikey':S.config.key,'Authorization':`Bearer ${S.token}`,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'};
+  const url=`${S.config.url}/rest/v1/${tabela}?on_conflict=${conflito}`;
+  for(let i=0;i<rows.length;i+=500){const b=JSON.stringify(rows.slice(i,i+500));
+    let r=await fetch(url,{method:'POST',headers:h,body:b});
+    if(r.status===401){const nt=await refreshSession();if(nt){S.token=nt;h.Authorization=`Bearer ${nt}`;r=await fetch(url,{method:'POST',headers:h,body:b});}}
+    if(!r.ok)throw new Error(await r.text());}
+}
+// excel: mapa ref -> {preco_aveiro, venda_site} vindo do Excel (só quando chamado na importação)
+async function seqAtualizarSite(refsIn,excel){
+  const refs=[...new Set((refsIn||(S.stockEq||[]).map(x=>x.ref)).filter(Boolean).map(String))];
+  if(!refs.length)return;
+  setState({seqSiteBusy:true,seqSiteProg:`A cruzar com o site… 0/${refs.length}`,seqErrImp:''});
+  await loadPrecosRef();
+  const prev=S.precosRef||{},agora=new Date().toISOString(),rows=[];let enc=0,erro='';
+  for(let i=0;i<refs.length;i+=100){
+    const lote=refs.slice(i,i+100);let d;
+    try{d=await siteConsultar(lote);}catch(e){erro=(e&&e.message)||String(e);break;}
+    lote.forEach(ref=>{
+      const s=d[ref]||null,p=prev[ref]||{},xl=excel?excel[ref]||{}:null;if(s)enc++;
+      const r={ref,site_em:agora,no_site:!!s,nome_site:s?s.nome_site:null,tamanho:s?s.tamanho:(p.tamanho||null),pvp:s?s.pvp:null,
+        venda_site:s?s.venda_site:null,url:s?s.url:null,site_stock:s?s.site_stock:null,parent:s?s.parent:null,
+        lifestyle:s?s.lifestyle:null,outlet:s?s.outlet:null,dress_code:s?s.dress_code:null,categorias:s?s.categorias:null,updated_at:agora};
+      // Preço Caetano Aveiro: manual > Excel > PVP do site
+      if(p.preco_aveiro_origem==='manual'){r.preco_aveiro=p.preco_aveiro;r.preco_aveiro_origem='manual';}
+      else if(xl&&xl.preco_aveiro!=null){r.preco_aveiro=xl.preco_aveiro;r.preco_aveiro_origem='excel';}
+      else if(!xl&&p.preco_aveiro_origem==='excel'){r.preco_aveiro=p.preco_aveiro;r.preco_aveiro_origem='excel';}
+      else{r.preco_aveiro=s?s.pvp:null;r.preco_aveiro_origem=s?'site':null;}
+      if(xl&&xl.venda_site!=null)r.venda_site=xl.venda_site;
+      rows.push(r);
+    });
+    setState({seqSiteProg:`A cruzar com o site… ${Math.min(i+100,refs.length)}/${refs.length} · ${enc} encontradas`});
+  }
+  try{if(rows.length)await sbUpsert('precos_ref',rows,'ref');}catch(e){erro=erro||('Erro a gravar preços: '+((e&&e.message)||e));}
+  await loadPrecosRef();
+  setState({seqSiteBusy:false,seqSiteProg:'',seqErrImp:erro?('Cruzamento com o site incompleto: '+erro):'',
+    seqMsg:(S.seqMsg?S.seqMsg+' ':'')+`Site: ${enc} de ${rows.length} referências encontradas (preço, tamanho e categoria).`});
+}
+async function seqPrecoManual(ref,v){
+  const n=numPT(v);const si=(S.precosRef||{})[ref]||{};
+  const row=n==null?{ref,preco_aveiro:si.pvp??null,preco_aveiro_origem:si.pvp!=null?'site':null,updated_at:new Date().toISOString()}:{ref,preco_aveiro:n,preco_aveiro_origem:'manual',updated_at:new Date().toISOString()};
+  try{await sbUpsert('precos_ref',[row],'ref');S.precosRef=Object.assign({},S.precosRef||{},{[ref]:Object.assign({},si,row)});render();}catch(e){alert('Erro a gravar preço: '+((e&&e.message)||e));}
+}
+function seqCategoriaEf(x){const si=seqSi(x);if(si&&si.categorias){if(si.lifestyle)return'lifestyle';if(x.categoria==='lifestyle')return seqCategoria(x.subfamilia,x.descricao,'',true);}return x.categoria;}
+function seqNome(x){const si=seqSi(x);return(si&&si.nome_site)||x.descricao||x.ref;}
+const SEQ_TAM_ORD=['XXS','XS','S','M','L','XL','2XL','XXL','3XL','XXXL','4XL','5XL'];
+function seqTamKey(t){t=String(t||'').toUpperCase().trim();const i=SEQ_TAM_ORD.indexOf(t.replace(/\s*\(.*\)/,''));if(i>=0)return 100+i;const n=parseFloat(t.replace(/^W/,''));return isFinite(n)?n:999;}
+function seqPrecos(x){const si=seqSi(x)||{};const pvp=si.pvp!=null?Number(si.pvp):null;const av=si.preco_aveiro!=null?Number(si.preco_aveiro):pvp;const site=si.venda_site!=null?Number(si.venda_site):null;
+  const max=(pvp!=null&&x.desc_max!=null)?Math.round(pvp*(1-x.desc_max)*100)/100:null;return{pvp,av,site,max,origem:si.preco_aveiro_origem||null};}
+function seqComA(x,ci,qtd,campanha){if(ci==null)return null;const l={qtd:qtd||1,venda:Math.round(ci/(1+SEQ_IVA)*100)/100,custo:Number(x.custo_unit)||0,campanha:campanha||null};return{si:l.venda,margem:eqMargem(l),com:eqComissao(l)};}
+function seqCalc(x,V){const qtd=Math.max(1,parseInt(V.qtd,10)||1);const ci=numPT(V.preco);if(ci==null||!x)return null;const c=seqComA(x,ci,qtd,V.campanha);return Object.assign({qtd,ci},c);}
+function seqCalcHTML(x,V){const fE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';const c=seqCalc(x,V);const P=seqPrecos(x);
+  if(!c)return'<span class="seq-calc-v">Escolhe um preço acima ou escreve o preço ao cliente.</span>';
+  const alertas=[];if(c.margem<0)alertas.push('abaixo do custo');if(P.max!=null&&c.ci<P.max-0.01)alertas.push(`desconto acima do máximo (${Math.round(x.desc_max*100)}%)`);
+  if(P.site!=null&&c.ci>P.site+0.01)alertas.push('acima do preço do site');
+  return`<span>s/IVA <b>${fE(c.si)}</b>${c.qtd>1?' × '+c.qtd:''}</span>${P.pvp?`<span>Desconto <b>${Math.round((1-c.ci/P.pvp)*100)}%</b></span>`:''}<span>Margem <b class="${c.margem<0?'neg':''}">${fE(c.margem)}</b></span><span class="seq-com">Comissão <b class="${c.com<0?'neg':''}">${fE(c.com)}</b></span>${alertas.length?`<span class="neg">⚠️ ${alertas.join(' · ')}</span>`:''}`;}
 function seqCalcAtualizar(){const x=(S.stockEq||[]).find(y=>String(y.id)===String(S.seqVender));const el=document.getElementById('seq-calc');if(el)el.innerHTML=seqCalcHTML(x,S.seqVenda||{});}
 async function seqRegistar(){
   const x=(S.stockEq||[]).find(y=>String(y.id)===String(S.seqVender));if(!x)return;
@@ -3081,80 +3188,112 @@ async function seqRegistar(){
   if(c.margem<0&&!confirm('A venda fica abaixo do custo (comissão negativa). Registar mesmo assim?'))return;
   const vid=isAdmin()?V.vendedor_id:(S.me&&S.me.id);
   if(!vid){alert('Escolhe quem fez a venda.');return;}
-  const fora=!/aveiro/i.test(x.ponto_venda||'');
+  const si=seqSi(x)||{};const fora=!/aveiro/i.test(x.ponto_venda||'');
   const body={vendedor_id:vid,data:V.data||new Date().toISOString().slice(0,10),wip:V.wip||null,fatura:V.fatura||null,artigo:x.ref,
-    descricao:(x.descricao||'')+(fora?' · stock '+seqLojaCurta(x.ponto_venda):''),qtd:c.qtd,custo:Number(x.custo_unit)||0,venda:c.si,campanha:V.campanha||null};
+    descricao:seqNome(x)+(si.tamanho?' · T. '+si.tamanho:'')+(fora?' · stock '+seqLojaCurta(x.ponto_venda):''),qtd:c.qtd,custo:Number(x.custo_unit)||0,venda:c.si,campanha:V.campanha||null};
   setState({seqBusy:true});
   try{await supabaseApi('POST','/equipamento',body);await loadEquipamento();
     const fE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
-    setState({seqBusy:false,seqVender:null,seqVenda:null,seqMsg:`Venda registada: ${x.descricao||x.ref} — comissão ${fE(c.com)}${isAdmin()?' para '+vendName(vid):''}. Já aparece nas Comissões.`});}
+    setState({seqBusy:false,seqVender:null,seqVenda:null,seqMsg:`Venda registada: ${body.descricao} — comissão ${fE(c.com)}${isAdmin()?' para '+vendName(vid):''}. Já aparece nas Comissões.`});}
   catch(e){setState({seqBusy:false});alert('Erro ao registar: '+((e&&e.message)||e)+(String(e&&e.message).includes('row-level')?'\n\nFalta correr o SQL do stock de equipamento no Supabase.':''));}
+}
+function seqGrupos(arr,rede){
+  const m=new Map();
+  arr.forEach(x=>{const si=seqSi(x);const k=(si&&si.parent?'p'+si.parent:'d'+eotNorm(x.descricao))+(rede?'':'|'+x.ponto_venda);
+    if(!m.has(k))m.set(k,[]);m.get(k).push(x);});
+  return [...m.values()].map(L=>{L.sort((a,b)=>seqTamKey((seqSi(a)||{}).tamanho)-seqTamKey((seqSi(b)||{}).tamanho)||String(a.ponto_venda).localeCompare(String(b.ponto_venda)));
+    const P=L.map(seqPrecos);const num=a=>a.filter(v=>v!=null);
+    return{L,nome:seqNome(L[0]),qtd:L.reduce((a,x)=>a+(Number(x.qtd)||0),0),desc:Math.max(...L.map(x=>Number(x.desc_max)||0)),
+      av:num(P.map(p=>p.av)),site:num(P.map(p=>p.site)),pvp:num(P.map(p=>p.pvp)),cat:seqCategoriaEf(L[0]),si:seqSi(L[0])};});
 }
 function stockEqView(){
   seqGarantirCarga();
+  const fE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+  const faixa=a=>{if(!a.length)return'—';const mn=Math.min(...a),mx=Math.max(...a);return mn===mx?fE(mn):fE(mn)+' – '+fE(mx);};
   const F=Object.assign({tab:'equip',cat:'',loja:null,q:'',ord:'desc'},S.seqF||{});
   if(F.loja==null)F.loja=seqLojaPadrao();
   const todos=S.stockEq||[];
   const lojas=[...new Set(todos.map(x=>x.ponto_venda).filter(Boolean))].sort((a,b)=>(/aveiro/i.test(b)?1:0)-(/aveiro/i.test(a)?1:0)||a.localeCompare(b));
   const daLoja=todos.filter(x=>!F.loja||x.ponto_venda===F.loja);
-  const nEq=daLoja.filter(x=>x.categoria!=='lifestyle').length,nLs=daLoja.length-nEq;
-  let arr=daLoja.filter(x=>F.tab==='lifestyle'?x.categoria==='lifestyle':x.categoria!=='lifestyle');
-  const porCat={};arr.forEach(x=>{porCat[x.categoria]=(porCat[x.categoria]||0)+1;});
-  if(F.tab!=='lifestyle'&&F.cat)arr=arr.filter(x=>x.categoria===F.cat);
-  const q=eotNorm(F.q);if(q)arr=arr.filter(x=>eotNorm([x.descricao,x.ref,x.subfamilia].join(' ')).includes(q));
+  const isLife=x=>seqCategoriaEf(x)==='lifestyle';
+  const nEq=daLoja.filter(x=>!isLife(x)).length,nLs=daLoja.length-nEq;
+  let arr=daLoja.filter(x=>F.tab==='lifestyle'?isLife(x):!isLife(x));
+  const porCat={};arr.forEach(x=>{const c=seqCategoriaEf(x);porCat[c]=(porCat[c]||0)+1;});
+  if(F.tab!=='lifestyle'&&F.cat)arr=arr.filter(x=>seqCategoriaEf(x)===F.cat);
+  const q=eotNorm(F.q);if(q)arr=arr.filter(x=>{const si=seqSi(x)||{};return eotNorm([x.descricao,x.ref,x.subfamilia,si.nome_site,si.tamanho].join(' ')).includes(q);});
+  if(F.so==='site')arr=arr.filter(x=>(seqSi(x)||{}).no_site);
+  if(F.so==='outlet')arr=arr.filter(x=>(seqSi(x)||{}).outlet);
+  const G=seqGrupos(arr,!F.loja);
   const ordAnt={'Sem Movimento de Saída':9,'Últ. Saída há mais de 3 anos':8,'Últ. Saída de 2 a 3 anos':7,'Últ. Saída de 1 a 2 anos':6,'Últ. Saída de 6 meses a 1 ano':5,'Últ. Saída de 3 a 6 meses':4,'Últ. Saída até 3 meses':3};
-  arr=arr.slice().sort(F.ord==='alfa'?((a,b)=>String(a.descricao||'').localeCompare(String(b.descricao||''),'pt')):
-    F.ord==='parado'?((a,b)=>(ordAnt[b.antig_saida]||0)-(ordAnt[a.antig_saida]||0)||String(a.descricao||'').localeCompare(String(b.descricao||''),'pt')):
-    ((a,b)=>(Number(b.desc_max)||0)-(Number(a.desc_max)||0)||String(a.descricao||'').localeCompare(String(b.descricao||''),'pt')));
+  const alfa=(a,b)=>String(a.nome).localeCompare(String(b.nome),'pt');
+  G.sort(F.ord==='alfa'?alfa:F.ord==='parado'?((a,b)=>Math.max(...b.L.map(x=>ordAnt[x.antig_saida]||0))-Math.max(...a.L.map(x=>ordAnt[x.antig_saida]||0))||alfa(a,b)):
+    F.ord==='preco'?((a,b)=>(Math.max(0,...b.av)-Math.max(0,...a.av))||alfa(a,b)):((a,b)=>b.desc-a.desc||alfa(a,b)));
   const pecas=arr.reduce((a,x)=>a+(Number(x.qtd)||0),0);
-  const oport=arr.filter(x=>(Number(x.desc_max)||0)>=0.4).length;
+  const comSite=todos.filter(x=>(seqSi(x)||{}).no_site).length;
   const ult=todos.map(x=>x.importado_em).filter(Boolean).sort().pop();
-  const lim=S.seqLim||80;
+  const siteUlt=Object.values(S.precosRef||{}).map(r=>r.site_em).filter(Boolean).sort().pop();
+  const lim=S.seqLim||60;
   const P=S.seqPrev;
   const pessoas=[...(S.team||[]).filter(p=>p.role==='vendedor'),...(S.assessores||[])];
   const V=S.seqVenda||{};
-  const form=x=>`<div class="seq-form">
+  const form=(g,x)=>{const si=seqSi(x)||{};const Pz=seqPrecos(x);
+    const btn=(lb,v)=>v==null?'':`<button class="seq-pbtn ${numPT(V.preco)!=null&&Math.abs(numPT(V.preco)-v)<0.01?'on':''}" data-action="seq-preco-set" data-v="${v}">${lb}<b>${fE(v)}</b><small>${(()=>{const c=seqComA(x,v,1,V.campanha);return c?'comissão '+fE(c.com):'';})()}</small></button>`;
+    return`<div class="seq-form">
+      ${g.L.length>1?`<div class="seq-tams"><span>Tamanho</span>${g.L.map(y=>{const t=(seqSi(y)||{}).tamanho;return`<button class="seq-tam ${String(y.id)===String(x.id)?'on':''}" data-action="seq-vender" data-id="${y.id}" data-keep="1">${esc(t||y.ref)}${!F.loja?' · '+esc(seqLojaCurta(y.ponto_venda)):''} <small>${Number(y.qtd)||0}un</small></button>`;}).join('')}</div>`:''}
+      <div class="seq-pbtns">${btn('Preço Caetano Aveiro',Pz.av)}${btn('Venda site',Pz.site)}${btn(`Desconto máx. ${x.desc_max!=null?Math.round(x.desc_max*100)+'%':''}`,Pz.max)}</div>
       <div class="seq-form-g">
         ${isAdmin()?`<label>Vendido por<select class="norma-inp" data-seq-v="vendedor_id"><option value="">— escolher —</option>${pessoas.map(p=>`<option value="${p.id}" ${V.vendedor_id===p.id?'selected':''}>${esc(p.nome||'?')}${p.role==='assessor'?' (assessor)':''}</option>`).join('')}</select></label>`:''}
-        <label>Data<input type="date" class="norma-inp" data-seq-v="data" value="${esc(V.data||new Date().toISOString().slice(0,10))}"></label>
-        <label>Qtd<input type="number" min="1" step="1" class="norma-inp" data-seq-v="qtd" value="${esc(V.qtd||1)}"></label>
         <label>Preço ao cliente (c/IVA, por unidade)<input class="norma-inp" data-seq-v="preco" inputmode="decimal" value="${esc(V.preco||'')}" placeholder="Ex: 289,00" id="seq-preco"></label>
+        <label>Qtd<input type="number" min="1" step="1" class="norma-inp" data-seq-v="qtd" value="${esc(V.qtd||1)}"></label>
+        <label>Data<input type="date" class="norma-inp" data-seq-v="data" value="${esc(V.data||new Date().toISOString().slice(0,10))}"></label>
         <label>Campanha<select class="norma-inp" data-seq-v="campanha">${EQ_CAMP.map(o=>`<option value="${o[0]}" ${(V.campanha||'')===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></label>
         <label>Fatura<input class="norma-inp" data-seq-v="fatura" value="${esc(V.fatura||'')}" placeholder="opcional"></label>
         <label>WIP/OR<input class="norma-inp" data-seq-v="wip" value="${esc(V.wip||'')}" placeholder="opcional"></label>
       </div>
       <div class="seq-calc" id="seq-calc">${seqCalcHTML(x,V)}</div>
-      <div style="display:flex;gap:8px;margin-top:10px">
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center">
         <button class="btn btn-orange btn-sm" data-action="seq-registar" ${S.seqBusy?'disabled':''}>${S.seqBusy?'A registar…':'✓ Registar venda'}</button>
         <button class="btn btn-dark btn-sm" data-action="seq-vender" data-id="">Cancelar</button>
+        ${si.url?`<a class="seq-link" href="${esc(si.url)}" target="_blank" rel="noopener">Ver no site ↗</a>`:''}
       </div>
-      <div class="seq-nota">A comissão é 20% da margem (preço s/IVA − custo). O custo vem do mapa de stock.${x.desc_max!=null?` Desconto máximo autorizado neste artigo: <b>${Math.round(x.desc_max*100)}%</b> sobre o PVP.`:''}</div>
-    </div>`;
-  const item=x=>{const aberto=String(S.seqVender)===String(x.id);return`<div class="seq-item ${aberto?'on':''}">
+      ${isAdmin()?`<div class="seq-admp">Preço Caetano Aveiro desta referência (c/IVA): <input class="norma-inp" id="seq-pav-${esc(x.ref)}" value="${Pz.av!=null?String(Pz.av).replace('.',','):''}" style="width:100px"> <button class="btn btn-dark btn-sm" data-action="seq-pav" data-ref="${esc(x.ref)}">Gravar</button> <span class="seq-orig">origem: ${esc({manual:'escrito por ti',excel:'Excel',site:'PVP do site'}[Pz.origem]||'—')}</span>${Pz.origem==='manual'?` <button class="btn btn-dark btn-sm" data-action="seq-pav-repor" data-ref="${esc(x.ref)}">Repor do site</button>`:''}</div>`:''}
+      <div class="seq-nota">Ref. <span class="sec-mono">${esc(x.ref)}</span>${si.tamanho?' · tamanho '+esc(si.tamanho):''} · ${Number(x.qtd)||0} em stock em ${esc(seqLojaCurta(x.ponto_venda))}. Comissão = 20% da margem (preço s/IVA − custo do mapa).${si.dress_code?' Artigo de <b>Dress Code</b>.':''}${si.outlet?' Está no <b>Outlet</b> do site.':''}</div>
+    </div>`;};
+  const grupo=g=>{const aberto=g.L.find(x=>String(x.id)===String(S.seqVender));const x0=g.L[0];const si=g.si||{};
+    const tams=g.L.map(y=>{const t=(seqSi(y)||{}).tamanho;return`<button class="seq-tam ${aberto&&String(y.id)===String(aberto.id)?'on':''}" data-action="seq-vender" data-id="${y.id}" title="Ref. ${esc(y.ref)}">${t?esc(t):'<span class="sec-mono">'+esc(y.ref.slice(-5))+'</span>'}${!F.loja?' · '+esc(seqLojaCurta(y.ponto_venda)):''} <small>${Number(y.qtd)||0}</small></button>`;}).join('');
+    const descSite=(g.pvp.length&&g.site.length)?Math.round((1-Math.min(...g.site)/Math.max(...g.pvp))*100):null;
+    return`<div class="seq-item ${aberto?'on':''}">
       <div class="seq-row">
-        <div class="seq-main"><div class="seq-desc">${esc(x.descricao||'—')}</div>
-          <div class="seq-meta"><span class="sec-mono">${esc(x.ref)}</span> · ${esc(seqCatLabel(x.categoria))}${!F.loja?` · <b>${esc(seqLojaCurta(x.ponto_venda))}</b>`:''}</div></div>
-        <div class="seq-qtd"><b>${Number(x.qtd)||0}</b><span>un.</span></div>
-        <div class="seq-tags">${seqDescHTML(x)}<div class="seq-est">${seqEstadoHTML(x)}</div></div>
-        ${seqQuemPode()?`<button class="btn ${aberto?'btn-dark':'btn-orange'} btn-sm seq-vbtn" data-action="seq-vender" data-id="${aberto?'':x.id}">${aberto?'Fechar':'Vender'}</button>`:''}
+        <div class="seq-main"><div class="seq-desc">${esc(g.nome)}${si.outlet?' <span class="seq-flag">Outlet</span>':''}${si.dress_code?' <span class="seq-flag dc">Dress Code</span>':''}</div>
+          <div class="seq-meta">${esc(seqCatLabel(g.cat))}${F.loja?'':' · '+[...new Set(g.L.map(y=>seqLojaCurta(y.ponto_venda)))].map(esc).join(', ')} · ${g.qtd} un.${g.si&&!g.si.no_site?' · <span class="seq-nosite">não está no site</span>':''}</div>
+          <div class="seq-tamsl">${tams}</div></div>
+        <div class="seq-precos">
+          <div><span>Caetano Aveiro</span><b>${faixa(g.av)}</b></div>
+          <div><span>Venda site</span><b class="site">${faixa(g.site)}</b>${descSite>0?`<em>−${descSite}%</em>`:''}</div>
+        </div>
+        <div class="seq-tags">${seqDescHTML({desc_max:g.desc||null})}<div class="seq-est">${seqEstadoHTML(x0)}</div></div>
+        ${seqQuemPode()?`<button class="btn ${aberto?'btn-dark':'btn-orange'} btn-sm seq-vbtn" data-action="seq-vender" data-id="${aberto?'':x0.id}">${aberto?'Fechar':'Vender'}</button>`:''}
       </div>
-      ${aberto?form(x):''}
+      ${aberto?form(g,aberto):''}
     </div>`;};
   return`<div class="seq-wrap">
     <div class="seq-head">
-      <div><div class="seq-tit">Stock Equipamento &amp; Lifestyle</div><div class="seq-sub">${ult?'Mapa de '+esc(new Date(ult).toLocaleDateString('pt-PT')):'Sem mapa carregado'} · ${todos.length} artigos em ${lojas.length} loja${lojas.length!==1?'s':''}</div></div>
-      ${isAdmin()?`<label class="btn btn-orange btn-sm" style="cursor:pointer;margin:0">${S.seqBusy&&!P?'A ler…':'📥 Carregar mapa de stock (Excel)'}<input type="file" id="seq-file" accept=".xls,.xlsx" style="display:none"></label>`:''}
+      <div><div class="seq-tit">Stock Equipamento &amp; Lifestyle</div><div class="seq-sub">${ult?'Mapa de '+esc(new Date(ult).toLocaleDateString('pt-PT')):'Sem mapa carregado'} · ${todos.length} referências em ${lojas.length} loja${lojas.length!==1?'s':''}${siteUlt?` · site cruzado a ${esc(new Date(siteUlt).toLocaleDateString('pt-PT'))} (${comSite} no site)`:''}</div></div>
+      ${isAdmin()?`<div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${todos.length?`<button class="btn btn-dark btn-sm" data-action="seq-site" ${S.seqSiteBusy?'disabled':''}>${S.seqSiteBusy?'A cruzar…':'🔄 Atualizar preços do site'}</button>`:''}
+        <label class="btn btn-orange btn-sm" style="cursor:pointer;margin:0">${S.seqBusy&&!P?'A ler…':'📥 Carregar mapa de stock (Excel)'}<input type="file" id="seq-file" accept=".xls,.xlsx" style="display:none"></label></div>`:''}
     </div>
     ${S.stockEqErr?`<div class="mg-aviso">⚠️ A tabela <b>stock_equip</b> ainda não existe ou não tens acesso. ${isAdmin()?'Corre o SQL do stock de equipamento no Supabase e recarrega.':'Fala com o chefe de vendas.'}</div>`:''}
+    ${S.seqSiteProg?`<div class="seq-prog">⏳ ${esc(S.seqSiteProg)}</div>`:''}
     ${S.seqErrImp?`<div class="error" style="margin-bottom:10px">${esc(S.seqErrImp)}</div>`:''}
     ${S.seqMsg?`<div class="lead-ok" style="margin-bottom:10px">✓ ${esc(S.seqMsg)}</div>`:''}
     ${P?`<div class="gpp-card eot-prev" style="margin:0 0 14px">
       <div class="vd-form-t">📄 ${esc(P.nome)} — confirmar</div>
       <div class="eot-prev-g">
-        <div><b>${P.linhas.length}</b> artigos com stock · ${P.linhas.reduce((a,l)=>a+(Number(l.qtd)||0),0)} peças</div>
-        ${[...new Set(P.linhas.map(l=>l.ponto_venda))].map(lj=>`<div>${esc(seqLojaCurta(lj))}: <b>${P.linhas.filter(l=>l.ponto_venda===lj).length}</b> artigos</div>`).join('')}
-        <div>Lifestyle: <b>${P.linhas.filter(l=>l.categoria==='lifestyle').length}</b> · Equipamento: <b>${P.linhas.filter(l=>l.categoria!=='lifestyle').length}</b></div>
-        <div class="mut">O mapa anterior é substituído por este. As vendas já registadas não mudam.</div>
+        <div><b>${P.linhas.length}</b> referências com stock · ${P.linhas.reduce((a,l)=>a+(Number(l.qtd)||0),0)} peças</div>
+        ${[...new Set(P.linhas.map(l=>l.ponto_venda))].map(lj=>`<div>${esc(seqLojaCurta(lj))}: <b>${P.linhas.filter(l=>l.ponto_venda===lj).length}</b> referências</div>`).join('')}
+        ${P.temPrecoAv||P.temVendaSite?`<div class="ok">O Excel traz ${[P.temPrecoAv?'"Preço Caetano Aveiro"':'',P.temVendaSite?'"Venda site"':''].filter(Boolean).join(' e ')} — esses valores ganham ao site.</div>`:''}
+        <div class="mut">Depois de gravar, a plataforma cruza cada referência com lifestyle.caetano.pt (preço, tamanho e categoria). O mapa anterior é substituído; as vendas já registadas e os preços que escreveste à mão não mudam.</div>
       </div>
       <div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-orange btn-sm" data-action="seq-confirmar" ${S.seqBusy?'disabled':''}>${S.seqBusy?'A gravar…':'Confirmar e substituir'}</button><button class="btn btn-dark btn-sm" data-action="seq-cancelar">Cancelar</button></div>
     </div>`:''}
@@ -3162,14 +3301,15 @@ function stockEqView(){
     <div class="seq-bar">
       <div class="sec-tabs2"><button class="sec-tab2 ${F.tab!=='lifestyle'?'on':''}" data-action="seq-f" data-k="tab" data-v="equip">🧥 Equipamento <span>${nEq}</span></button><button class="sec-tab2 ${F.tab==='lifestyle'?'on':''}" data-action="seq-f" data-k="tab" data-v="lifestyle">👕 Stock Lifestyle <span>${nLs}</span></button></div>
       <select class="seq-sel" data-seq-f="loja"><option value="" ${!F.loja?'selected':''}>Toda a rede</option>${lojas.map(l=>`<option value="${esc(l)}" ${F.loja===l?'selected':''}>${esc(seqLojaCurta(l))}</option>`).join('')}</select>
-      <select class="seq-sel" data-seq-f="ord"><option value="desc" ${F.ord==='desc'?'selected':''}>Maior desconto primeiro</option><option value="parado" ${F.ord==='parado'?'selected':''}>Mais parado primeiro</option><option value="alfa" ${F.ord==='alfa'?'selected':''}>A → Z</option></select>
+      <select class="seq-sel" data-seq-f="ord"><option value="desc" ${F.ord==='desc'?'selected':''}>Maior desconto primeiro</option><option value="parado" ${F.ord==='parado'?'selected':''}>Mais parado primeiro</option><option value="preco" ${F.ord==='preco'?'selected':''}>Mais caro primeiro</option><option value="alfa" ${F.ord==='alfa'?'selected':''}>A → Z</option></select>
+      <select class="seq-sel" data-seq-f="so"><option value="" ${!F.so?'selected':''}>Todos</option><option value="site" ${F.so==='site'?'selected':''}>Só os que estão no site</option><option value="outlet" ${F.so==='outlet'?'selected':''}>Só Outlet do site</option></select>
       <input class="sec-q" id="seq-q" placeholder="🔍 Procurar artigo, referência, tamanho…" value="${esc(F.q||'')}">
     </div>
     ${F.tab!=='lifestyle'?`<div class="vchips" style="padding:8px 0 0"><button class="vchip ${!F.cat?'on':''}" data-action="seq-f" data-k="cat" data-v="">Tudo <span>${Object.values(porCat).reduce((a,b)=>a+b,0)}</span></button>${SEQ_CATS.filter(([k])=>porCat[k]).map(([k,l])=>`<button class="vchip ${F.cat===k?'on':''}" data-action="seq-f" data-k="cat" data-v="${k}">${l} <span>${porCat[k]}</span></button>`).join('')}</div>`:''}
-    <div class="seq-res"><b>${arr.length}</b> artigo${arr.length!==1?'s':''} · ${pecas} peça${pecas!==1?'s':''}${oport?` · <span class="seq-d seq-d40">${oport} com desconto até −40% ou mais</span>`:''}</div>
-    <div class="seq-list">${arr.slice(0,lim).map(item).join('')||'<div class="gpp-empty">Nada com estes filtros.</div>'}</div>
-    ${arr.length>lim?`<div style="padding:10px 0"><button class="btn btn-outline btn-block" data-action="seq-mais">Mostrar mais (${arr.length-lim})</button></div>`:''}
-    <div class="seq-nota" style="margin-top:12px">Os <b>descontos máximos</b> vêm do mapa: artigos parados há mais tempo podem ser vendidos com mais desconto — são os mais fáceis de fechar. O stock é o do dia do mapa; confirma a disponibilidade antes de prometer ao cliente, sobretudo noutras lojas.</div>`:''}
+    <div class="seq-res"><b>${G.length}</b> artigo${G.length!==1?'s':''} · ${arr.length} referências · ${pecas} peça${pecas!==1?'s':''}</div>
+    <div class="seq-list">${G.slice(0,lim).map(grupo).join('')||'<div class="gpp-empty">Nada com estes filtros.</div>'}</div>
+    ${G.length>lim?`<div style="padding:10px 0"><button class="btn btn-outline btn-block" data-action="seq-mais">Mostrar mais (${G.length-lim})</button></div>`:''}
+    <div class="seq-nota" style="margin-top:12px">Cada artigo junta os vários tamanhos (o site diz qual é o tamanho de cada referência). <b>Caetano Aveiro</b> é o PVP do site, salvo se o Excel trouxer outro preço ou se o chefe o tiver alterado. O stock é o do dia do mapa — confirma antes de prometer ao cliente.</div>`:''}
   </div>`;
 }
 function renderStockEqVend(){
@@ -4705,6 +4845,11 @@ function EXPORT_FOLHAS(){
       {c:'obs',l:'Observações'},{c:'obs_gestor',l:'Obs. chefe'},
       {c:'status_updated_at',l:'Status atualizado',f:dt},
       {c:'created_at',l:'Criado',f:dt},{c:'updated_at',l:'Atualizado',f:dt},{c:'updated_by',l:'Atualizado por',f:nome},
+    ]},
+    {nome:'Preços por referência',path:'/precos_ref?select=*&order=ref.asc',cols:[
+      {c:'ref',l:'Referência'},{c:'nome_site',l:'Nome no site'},{c:'tamanho',l:'Tamanho'},{c:'preco_aveiro',l:'Preço Caetano Aveiro'},{c:'preco_aveiro_origem',l:'Origem do preço'},
+      {c:'pvp',l:'PVP (site)'},{c:'venda_site',l:'Venda site'},{c:'no_site',l:'Está no site',f:sn},{c:'site_stock',l:'Stock online',f:sn},{c:'lifestyle',l:'Lifestyle (site)',f:sn},
+      {c:'outlet',l:'Outlet',f:sn},{c:'dress_code',l:'Dress Code',f:sn},{c:'categorias',l:'Categorias site'},{c:'url',l:'Link'},{c:'site_em',l:'Consultado em',f:dt},
     ]},
     {nome:'Stock Equipamento',path:'/stock_equip?select=*&order=ponto_venda.asc,descricao.asc',cols:[
       {c:'ponto_venda',l:'Loja'},{c:'polo',l:'Polo'},{c:'ref',l:'Referência'},{c:'descricao',l:'Descrição'},{c:'categoria',l:'Categoria',f:v=>seqCatLabel(v)},
@@ -6625,11 +6770,15 @@ function bindEvents(){
       case'sec-csv':secCSV();break;
       case'go-vstockeq':setState({screen:'vstockeq',seqMsg:''});break;
       case'seq-f':{const F=Object.assign({},S.seqF||{});F[el.dataset.k]=el.dataset.v;if(el.dataset.k==='tab')F.cat='';setState({seqF:F,seqLim:80,seqVender:null});break;}
-      case'seq-vender':{const id=el.dataset.id||null;setState({seqVender:id,seqVenda:id?{data:new Date().toISOString().slice(0,10),qtd:1}:null,seqMsg:''});if(id){const p=document.getElementById('seq-preco');if(p)p.focus();}break;}
+      case'seq-vender':{const id=el.dataset.id||null;const keep=el.dataset.keep&&S.seqVenda;setState({seqVender:id,seqVenda:id?(keep?Object.assign({},S.seqVenda,{preco:''}):{data:new Date().toISOString().slice(0,10),qtd:1}):null,seqMsg:''});break;}
+      case'seq-preco-set':{S.seqVenda=Object.assign({},S.seqVenda||{},{preco:String(el.dataset.v).replace('.',',')});render();break;}
+      case'seq-site':seqAtualizarSite(null);break;
+      case'seq-pav':{const i=document.getElementById('seq-pav-'+el.dataset.ref);seqPrecoManual(el.dataset.ref,i?i.value:'');break;}
+      case'seq-pav-repor':seqPrecoManual(el.dataset.ref,'');break;
       case'seq-registar':seqRegistar();break;
       case'seq-confirmar':seqConfirmar();break;
       case'seq-cancelar':setState({seqPrev:null,seqErrImp:''});break;
-      case'seq-mais':setState({seqLim:(S.seqLim||80)+80});break;
+      case'seq-mais':setState({seqLim:(S.seqLim||60)+60});break;
       case'as-tab':setState({asTab:el.dataset.t});break;
       case'sec-toggle':setState({secAberto:String(S.secAberto)===String(el.dataset.id)?null:el.dataset.id});break;
       case'eq-add':eqAdd(el.dataset.vid);break;
