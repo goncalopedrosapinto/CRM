@@ -1425,6 +1425,22 @@ html,body{overflow-x:hidden;max-width:100vw}
 .seq-prog{background:var(--blue-bg);color:var(--blue);border-radius:var(--r);padding:8px 12px;font-size:12.5px;font-weight:600;margin-bottom:10px}
 @media(max-width:900px){.seq-row{grid-template-columns:1fr 180px 86px!important}.seq-tags{display:none}}
 @media(max-width:700px){.seq-row{grid-template-columns:1fr 80px!important}.seq-precos{grid-column:1/2}.seq-vbtn{grid-column:2/3;grid-row:1}.seq-precos span{min-width:84px}}
+.seq-row{grid-template-columns:1fr 160px 86px!important}
+.seq-refs{border-top:1px solid var(--border);margin:0 14px 10px;font-size:12.5px}
+.seq-rh,.seq-rl{display:grid;grid-template-columns:130px 1fr 70px 120px 130px;gap:10px;align-items:center;padding:6px 6px}
+.seq-rh.rede,.seq-rl.rede{grid-template-columns:130px 1fr 110px 70px 120px 130px}
+.seq-rh{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.4px}
+.seq-rl{border-top:1px dashed var(--border);border-radius:6px;cursor:pointer}
+.seq-rl:hover{background:var(--surface2)}
+.seq-rl.on{background:var(--orange-bg);box-shadow:inset 3px 0 0 var(--orange)}
+.seq-rh .r,.seq-rl .r{text-align:right}
+.seq-rref{font-size:12px;font-weight:700;color:var(--text)}
+.seq-robs{color:var(--text2)}.seq-robs i{color:var(--text3)}
+.seq-rl .site{color:var(--blue);font-weight:700}
+.seq-rl em{font-style:normal;font-size:10px;font-weight:800;background:var(--blue-bg);border-radius:4px;padding:0 4px}
+.seq-avender{font-size:12.5px;color:var(--text2);margin-bottom:10px}
+@media(max-width:900px){.seq-row{grid-template-columns:1fr 86px!important}}
+@media(max-width:700px){.seq-rh{display:none}.seq-rl,.seq-rl.rede{grid-template-columns:1fr auto;row-gap:2px}.seq-rl .r{text-align:left}.seq-refs{margin:0 10px 10px}}
 </style>
 </head>
 <body>
@@ -3102,10 +3118,13 @@ async function siteDireto(refs){
   const porId=new Map(cats.map(c=>[c.id,c])),slugId=new Map(cats.map(c=>[c.slug,c.id]));
   const raiz=id=>{let c=porId.get(id),g=0;while(c&&c.parent&&g++<6)c=porId.get(c.parent);return c?c.slug:'';};
   const want=new Set(refs),out={};
-  for(let i=0;i<refs.length;i+=20){const lote=refs.slice(i,i+20).map(encodeURIComponent).join(',');
-    for(const tipo of ['variation','']){const arr=await get(`${SITE_BASE}/products?per_page=100&sku=${lote}${tipo?'&type='+tipo:''}`).catch(()=>[]);
-      for(const p of arr){const sku=String(p&&p.sku||'');if(!want.has(sku)||out[sku])continue;const mu=Number((p.prices||{}).currency_minor_unit??2);const e=v=>v==null||v===''?null:Math.round(Number(v))/Math.pow(10,mu);
-        out[sku]={nome_site:p.name||null,tamanho:p.type==='variation'?siteTamanho(p):null,pvp:e((p.prices||{}).regular_price),venda_site:e((p.prices||{}).price),url:p.permalink||null,site_stock:!!p.is_in_stock,parent:p.parent||p.id,categorias:(p.categories||[]).map(c=>c.slug)};}}}
+  const guardar=p=>{const sku=String(p&&p.sku||'');if(!want.has(sku)||out[sku])return;const mu=Number((p.prices||{}).currency_minor_unit??2);const e=v=>v==null||v===''?null:Math.round(Number(v))/Math.pow(10,mu);
+    out[sku]={nome_site:p.name||null,tamanho:p.type==='variation'?siteTamanho(p):null,variacao:p.type==='variation'?(p.variation||null):null,pvp:e((p.prices||{}).regular_price),venda_site:e((p.prices||{}).price),url:p.permalink||null,site_stock:!!p.is_in_stock,parent:p.parent||p.id,categorias:(p.categories||[]).map(c=>c.slug)};};
+  // o site às vezes ignora o filtro e devolve a lista geral: aí pergunta-se referência a referência
+  const consultar=async(skus,tipo)=>{const q=l=>get(`${SITE_BASE}/products?per_page=100&sku=${l.map(encodeURIComponent).join(',')}${tipo?'&type='+tipo:''}`).catch(()=>[]);
+    const arr=await q(skus);const hits=arr.filter(p=>want.has(String(p&&p.sku||'')));
+    if(arr.length&&!hits.length&&skus.length>1){for(let k=0;k<skus.length;k+=4){const res=await Promise.all(skus.slice(k,k+4).map(x=>q([x])));res.flat().forEach(guardar);}}else hits.forEach(guardar);};
+  for(let i=0;i<refs.length;i+=8){const lote=refs.slice(i,i+8);await consultar(lote,'variation');const falta=lote.filter(r=>!out[r]);if(falta.length)await consultar(falta,'');}
   const pais=[...new Set(Object.values(out).filter(o=>!o.categorias.length).map(o=>o.parent))];
   for(let i=0;i<pais.length;i+=50){const arr=await get(`${SITE_BASE}/products?per_page=100&include=${pais.slice(i,i+50).join(',')}`).catch(()=>[]);const m=new Map(arr.map(p=>[p.id,p.categories||[]]));
     Object.values(out).forEach(o=>{if(!o.categorias.length&&m.has(o.parent))o.categorias=(m.get(o.parent)||[]).map(c=>c.slug);});}
@@ -3143,7 +3162,7 @@ async function seqAtualizarSite(refsIn,excel){
     try{d=await siteConsultar(lote);}catch(e){erro=(e&&e.message)||String(e);break;}
     lote.forEach(ref=>{
       const s=d[ref]||null,p=prev[ref]||{},xl=excel?excel[ref]||{}:null;if(s)enc++;
-      const r={ref,site_em:agora,no_site:!!s,nome_site:s?s.nome_site:null,tamanho:s?s.tamanho:(p.tamanho||null),pvp:s?s.pvp:null,
+      const r={ref,site_em:agora,no_site:!!s,nome_site:s?s.nome_site:null,tamanho:s?seqTamCor(s):(p.tamanho||null),pvp:s?s.pvp:null,
         venda_site:s?s.venda_site:null,url:s?s.url:null,site_stock:s?s.site_stock:null,parent:s?s.parent:null,
         lifestyle:s?s.lifestyle:null,outlet:s?s.outlet:null,dress_code:s?s.dress_code:null,categorias:s?s.categorias:null,updated_at:agora};
       // Preço Caetano Aveiro: manual > Excel > PVP do site
@@ -3166,6 +3185,7 @@ async function seqPrecoManual(ref,v){
   const row=n==null?{ref,preco_aveiro:si.pvp??null,preco_aveiro_origem:si.pvp!=null?'site':null,updated_at:new Date().toISOString()}:{ref,preco_aveiro:n,preco_aveiro_origem:'manual',updated_at:new Date().toISOString()};
   try{await sbUpsert('precos_ref',[row],'ref');S.precosRef=Object.assign({},S.precosRef||{},{[ref]:Object.assign({},si,row)});render();}catch(e){alert('Erro a gravar preço: '+((e&&e.message)||e));}
 }
+function seqTamCor(s){const t=s.tamanho||null;const m=String(s.variacao||'').match(/cor:\s*([^,]+)/i);const cor=m?m[1].trim():null;return t&&cor?`${t} (${cor})`:(t||cor);}
 function seqCategoriaEf(x){const si=seqSi(x);if(si&&si.categorias){if(si.lifestyle)return'lifestyle';if(x.categoria==='lifestyle')return seqCategoria(x.subfamilia,x.descricao,'',true);}return x.categoria;}
 function seqNome(x){const si=seqSi(x);return(si&&si.nome_site)||x.descricao||x.ref;}
 const SEQ_TAM_ORD=['XXS','XS','S','M','L','XL','2XL','XXL','3XL','XXXL','4XL','5XL'];
@@ -3239,7 +3259,7 @@ function stockEqView(){
   const form=(g,x)=>{const si=seqSi(x)||{};const Pz=seqPrecos(x);
     const btn=(lb,v)=>v==null?'':`<button class="seq-pbtn ${numPT(V.preco)!=null&&Math.abs(numPT(V.preco)-v)<0.01?'on':''}" data-action="seq-preco-set" data-v="${v}">${lb}<b>${fE(v)}</b><small>${(()=>{const c=seqComA(x,v,1,V.campanha);return c?'comissão '+fE(c.com):'';})()}</small></button>`;
     return`<div class="seq-form">
-      ${g.L.length>1?`<div class="seq-tams"><span>Tamanho</span>${g.L.map(y=>{const t=(seqSi(y)||{}).tamanho;return`<button class="seq-tam ${String(y.id)===String(x.id)?'on':''}" data-action="seq-vender" data-id="${y.id}" data-keep="1">${esc(t||y.ref)}${!F.loja?' · '+esc(seqLojaCurta(y.ponto_venda)):''} <small>${Number(y.qtd)||0}un</small></button>`;}).join('')}</div>`:''}
+      <div class="seq-avender">A vender: <span class="sec-mono">${esc(x.ref)}</span>${si.tamanho?' · <b>Tamanho '+esc(si.tamanho)+'</b>':''} · ${Number(x.qtd)||0} em stock em ${esc(seqLojaCurta(x.ponto_venda))}${g.L.length>1?' <span class="seq-orig">(escolhe outra referência na lista acima)</span>':''}</div>
       <div class="seq-pbtns">${btn('Preço Caetano Aveiro',Pz.av)}${btn('Venda site',Pz.site)}${btn(`Desconto máx. ${x.desc_max!=null?Math.round(x.desc_max*100)+'%':''}`,Pz.max)}</div>
       <div class="seq-form-g">
         ${isAdmin()?`<label>Vendido por<select class="norma-inp" data-seq-v="vendedor_id"><option value="">— escolher —</option>${pessoas.map(p=>`<option value="${p.id}" ${V.vendedor_id===p.id?'selected':''}>${esc(p.nome||'?')}${p.role==='assessor'?' (assessor)':''}</option>`).join('')}</select></label>`:''}
@@ -3266,13 +3286,21 @@ function stockEqView(){
       <div class="seq-row">
         <div class="seq-main"><div class="seq-desc">${esc(g.nome)}${si.outlet?' <span class="seq-flag">Outlet</span>':''}${si.dress_code?' <span class="seq-flag dc">Dress Code</span>':''}</div>
           <div class="seq-meta">${esc(seqCatLabel(g.cat))}${F.loja?'':' · '+[...new Set(g.L.map(y=>seqLojaCurta(y.ponto_venda)))].map(esc).join(', ')} · ${g.qtd} un.${g.si&&!g.si.no_site?' · <span class="seq-nosite">não está no site</span>':''}</div>
-          <div class="seq-tamsl">${tams}</div></div>
-        <div class="seq-precos">
-          <div><span>Caetano Aveiro</span><b>${faixa(g.av)}</b></div>
-          <div><span>Venda site</span><b class="site">${faixa(g.site)}</b>${descSite>0?`<em>−${descSite}%</em>`:''}</div>
         </div>
         <div class="seq-tags">${seqDescHTML({desc_max:g.desc||null})}<div class="seq-est">${seqEstadoHTML(x0)}</div></div>
         ${seqQuemPode()?`<button class="btn ${aberto?'btn-dark':'btn-orange'} btn-sm seq-vbtn" data-action="seq-vender" data-id="${aberto?'':x0.id}">${aberto?'Fechar':'Vender'}</button>`:''}
+      </div>
+      <div class="seq-refs">
+        <div class="seq-rh ${F.loja?'':'rede'}"><span>Referência</span><span>Observação</span>${F.loja?'':'<span>Loja</span>'}<span class="r">Stock</span><span class="r">Caetano Aveiro</span><span class="r">Venda site</span></div>
+        ${g.L.map(y=>{const sy=seqSi(y)||{};const Py=seqPrecos(y);const on=aberto&&String(y.id)===String(aberto.id);const dsy=(Py.pvp&&Py.site!=null&&Py.site<Py.pvp)?Math.round((1-Py.site/Py.pvp)*100):0;
+          return`<div class="seq-rl ${on?'on':''} ${F.loja?'':'rede'}" ${seqQuemPode()?`data-action="seq-vender" data-id="${on?'':y.id}" title="Clica para vender esta referência"`:''}>
+            <span class="sec-mono seq-rref">${esc(y.ref)}</span>
+            <span class="seq-robs">${sy.tamanho?'Tamanho '+esc(sy.tamanho):(g.si||sy.site_em?'<i>sem tamanho no site</i>':'<i>—</i>')}</span>
+            ${F.loja?'':`<span>${esc(seqLojaCurta(y.ponto_venda))}</span>`}
+            <span class="r"><b>${Number(y.qtd)||0}</b> un.</span>
+            <span class="r">${Py.av!=null?fE(Py.av):'—'}</span>
+            <span class="r site">${Py.site!=null?fE(Py.site):'—'}${dsy>0?` <em>−${dsy}%</em>`:''}</span>
+          </div>`;}).join('')}
       </div>
       ${aberto?form(g,aberto):''}
     </div>`;};
