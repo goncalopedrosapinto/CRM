@@ -1264,6 +1264,73 @@ html,body{overflow-x:hidden;max-width:100vw}
 .stock-preco{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;line-height:1.2}
 .stock-preco-old{font-size:11px;color:var(--text3);text-decoration:line-through}
 .stock-preco-now{font-size:16px;font-weight:800;color:var(--orange)}
+/* ---- Vendedor: navegação e Hoje ---- */
+.vnav{padding:6px 0 10px}
+.vnav-sec{padding:16px 20px 6px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.3)}
+.vnav-item{display:flex;align-items:center;gap:12px;padding:9px 20px;font-size:13px;font-weight:600;color:rgba(255,255,255,.62);cursor:pointer;border-left:3px solid transparent;transition:background .12s,color .12s}
+.vnav-item:hover{background:rgba(255,255,255,.04);color:#fff}
+.vnav-item.on{color:#fff;background:rgba(255,255,255,.09);border-left-color:var(--orange)}
+.vnav-ic{width:20px;text-align:center;font-size:14px;flex-shrink:0}
+.vnav-lb{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vnav-n{font-size:11px;opacity:.5;font-weight:500}
+.vnav-badge{font-size:10px;font-weight:700;background:var(--red);color:#fff;border-radius:9px;padding:1px 7px;min-width:18px;text-align:center}
+.vnav-foot{display:flex;gap:6px;padding:12px 14px calc(var(--safe-b) + 12px);border-top:1px solid rgba(255,255,255,.08)}
+.vnav-fb{flex:1;background:rgba(255,255,255,.06);color:rgba(255,255,255,.72);border:0;border-radius:8px;padding:8px;font-size:12px;font-weight:600;cursor:pointer}
+.vnav-fb:hover{background:rgba(255,255,255,.12);color:#fff}
+.vnav-close{flex:0 0 36px}
+.vh{padding:4px 16px 24px;max-width:1040px}
+.vh-hello{font-size:20px;font-weight:800;letter-spacing:-.3px;margin:12px 0 14px}
+.vh-hello span{display:block;font-size:12px;color:var(--text3);font-weight:500;letter-spacing:0;margin-top:2px}
+.vh-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.vh-kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:12px 14px;box-shadow:var(--elev1);cursor:pointer;transition:transform .12s,box-shadow .12s}
+.vh-kpi:hover{box-shadow:var(--elev2);transform:translateY(-1px)}
+.vh-k{font-size:10.5px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.vh-v{font-size:26px;font-weight:800;letter-spacing:-.5px;margin:4px 0 2px}
+.vh-s{font-size:11.5px;color:var(--text2)}
+.vh-sec{display:flex;align-items:center;gap:8px;margin:22px 0 8px;font-size:13px;font-weight:800}
+.vh-cnt{background:var(--orange);color:#fff;font-size:11px;font-weight:700;border-radius:9px;padding:1px 8px}
+.vh-cnt.red{background:var(--red)}
+.vh-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;box-shadow:var(--elev1)}
+.vh-row,.vh-crow{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer;font-size:13px}
+.vh-row:last-child,.vh-crow:last-child{border-bottom:0}
+.vh-row:hover,.vh-crow:hover{background:var(--surface2)}
+.vh-ic{width:22px;text-align:center;flex-shrink:0}
+.vh-txt{flex:1;min-width:0}
+.vh-chev{color:var(--text3);font-size:18px;margin-left:auto;line-height:1}
+.vh-crow .card-status{flex-shrink:0;min-width:56px;text-align:center}
+.vh-cnome{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.vh-cnome small{color:var(--text3);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vh-tel{font-size:12px;font-weight:700;color:var(--blue);text-decoration:none;white-space:nowrap;padding:6px 10px;border-radius:8px;background:var(--blue-bg);flex-shrink:0}
+.vh-ok{padding:14px;color:var(--green);font-size:13px;font-weight:600}
+.vh-mais{padding:10px 14px;font-size:12px;color:var(--orange);font-weight:700;cursor:pointer}
+.vh-ev{margin-top:12px;background:var(--orange-bg);border:1px solid var(--orange-light);border-radius:var(--r2);padding:10px 14px;font-size:13px;cursor:pointer;display:flex;gap:6px;align-items:center}
+.vchips{display:flex;gap:6px;padding:12px 16px 0;overflow-x:auto;scrollbar-width:none}
+.vchip{border:1px solid var(--border2);background:var(--surface);border-radius:var(--rp);padding:6px 12px;font-size:12px;font-weight:600;color:var(--text2);white-space:nowrap;cursor:pointer}
+.vchip span{opacity:.55;margin-left:3px}
+.vchip.on{background:var(--text);color:#fff;border-color:var(--text)}
+.vfilt-bar{padding:10px 16px 0;display:flex;gap:8px;align-items:center}
+.vcard-b{padding:10px 14px 12px}
+.vcard-top{display:flex;align-items:center;gap:8px}
+.vcard-nome{font-size:14px;font-weight:700;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vcard-pvp{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap}
+.vcard-mod{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12.5px;color:var(--text2);margin-top:5px}
+.vcard-mat{font-family:ui-monospace,monospace;letter-spacing:.5px;font-size:11.5px;color:var(--text)}
+.vcard-meta{font-size:11.5px;color:var(--text3);margin-top:4px}
+.vcard-al{color:var(--red);font-weight:700}
+.vcard-obs{font-size:12px;color:var(--text2);margin-top:7px;padding-top:7px;border-top:1px dashed var(--border2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(min-width:900px){.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:10px;padding:10px 16px}}
+.vbn{display:none}
+@media(max-width:700px){
+  .vbn{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:90;background:var(--surface);border-top:1px solid var(--border2);padding:6px 4px calc(var(--safe-b) + 6px);box-shadow:0 -4px 16px rgba(0,0,0,.05)}
+  .vbn-i{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:600;color:var(--text3);background:none;border:0;padding:2px 0}
+  .vbn-i.on{color:var(--orange)}
+  .vbn-ic{font-size:18px;position:relative;line-height:1}
+  .vbn-ic i{position:absolute;top:-5px;left:14px;background:var(--red);color:#fff;font-style:normal;font-size:9px;font-weight:700;border-radius:8px;padding:1px 5px;line-height:1.3}
+  .main-panel .fab{bottom:calc(var(--safe-b) + 74px)}
+  .vh-kpis{grid-template-columns:repeat(2,1fr)}
+  .vh-v{font-size:22px}
+  .vh-tel{padding:6px 8px}
+}
 </style>
 </head>
 <body>
@@ -1314,7 +1381,7 @@ let S={
   pwMsg:'',pwErr:'',pwLoading:false,recAberto:false,fmNeg:null,fmVolta:null,fmRascunho:null,fmEstado:'',fmErro:'',fmGravado:'',fichasIdx:{},fm:(()=>{try{const o=JSON.parse(localStorage.getItem('bc_fm'));return o?fmParaCiva(fmMigra(o)):{natureza:'MN',iva:23,modo:'civa'}}catch(e){return {natureza:'MN',iva:23,modo:'civa'}}})(),recErr:'',recMsg:'',recLoading:false,dashAlertOpen:null,dashSection:'resumo',carteiraMes:'',dashMes:'',gppSec:'home',stock:[],stockLoaded:false,stockErr:'',stockVendOpen:false,stockAdding:false,stockFormMax:false,stockCat:'usada',gppBusca:'',gppMais:false,normaPub:[],normaAberta:null,retailModo:'mes',retailVend:'',retailTipo:'',retailOrd:'data',retailDir:'desc',retailMat:'',normaSubst:null,eventoSel:null,inscAdding:false,inscForm:{},eventoAdding:false,eventoForm:{},eventoErr:'',inscBusca:'',inscVendFiltro:'',vdAdding:false,vdForm:{},vdErr:'',amAdding:false,amForm:{},amErr:'',depTaxa:(()=>{try{return parseFloat(localStorage.getItem('bc_dep_taxa'))||0}catch(e){return 0}})(),premiosCfg:[],premiosMes:{},premiosMesErr:'',equip:[],equipErr:'',eqColarAberto:null,comissoes:[],campSel:null,depVendOpen:false,entregas:{},entregasErr:'',margens:{},margensErr:'',vMes:null,vMesCom:null,voltarGpp:null,leadAdding:false,leadForm:{},leadErr:'',leadOk:'',exportBusy:false,exportMsg:'',gppSideOff:(()=>{try{return localStorage.getItem('bc_side')==='1'}catch(e){return false}})(),pedAutOpen:false,pedAutSel:{},
 
   search:'',statusFilter:'all',monthFilter:[],bevFilter:'all',xevFilter:'all',
-  openGroups:{INFO:true},loading:false,error:'',confirmDelete:false,sidebarOpen:true,filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
+  openGroups:{INFO:true},loading:false,error:'',confirmDelete:false,sidebarOpen:(typeof window==='undefined'||window.innerWidth>700),filtersOpen:false,filterYear:null,alertFilter:null,alertIds:[],renderLimit:50
 };
 function setState(u){Object.assign(S,u);render()}
 
@@ -2419,36 +2486,6 @@ function getMonth(r){return S.statusFilter==='Fechados'?negToMonth(r):(r.mes1||'
 function esc(s){var x=String(s||'');x=x.replace(/&/g,'&amp;');x=x.replace(/</g,'&lt;');x=x.replace(/>/g,'&gt;');x=x.replace(/"/g,'&quot;');return x}
 function logoSVG(px,idn){idn='lg_'+(idn||'x');return`<svg width="${px}" height="${px}" viewBox="0 0 64 64" fill="none" aria-hidden="true" style="display:block"><defs><linearGradient id="${idn}" x1="0" y1="0" x2="64" y2="64"><stop offset="0" stop-color="#16386B"/><stop offset="1" stop-color="#0B1E3C"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#${idn})"/><path d="M4,50 L15,50 L28,14 L17,14 Z" fill="#1B5FA8"/><path d="M20,50 L31,50 L44,14 L33,14 Z" fill="#3E9BE0"/><path d="M36,50 L47,50 L60,14 L49,14 Z" fill="#E0242C"/></svg>`;}
 
-function renderCard(r){return`
-  <div class="card" data-action="open-detail" data-id="${r.id}">
-    <div class="card-accent card-accent-${esc(r.status)}"></div>
-    <div class="card-body">
-      <div class="card-header">
-        <span class="card-name">${I.user} ${esc(r.id_cliente||'—')}</span>
-        <span class="card-status s-${esc(r.status)}">${esc(r.status)}</span>
-      </div>
-      <div class="card-rows">
-        ${r.model?`<div class="card-row">${I.car}<span>${esc(r.model)} · ${esc(r.version||'')}</span></div>`:''}
-        ${r.mat||r.chas?`<div class="card-row">${I.plate}<span>${r.mat?`<b style="font-family:ui-monospace,monospace;letter-spacing:.5px">${esc(r.mat)}</b>`:''} ${r.chas?`<span style="opacity:.5">· ${esc(r.chas)}</span>`:''}</span></div>`:''}
-        ${r.enc?`<div class="card-row">${I.hash}<span>Enc: <b>${esc(r.enc)}</b></span></div>`:''}
-        ${r.biz?`<div class="card-row">${I.hash}<span>Biz: <b>${esc(r.biz)}</b></span></div>`:''}
-        <div class="card-row">${I.cal}<span>${fmtDate(r.neg)}</span>${r.mes1?`<span style="opacity:.5">· ${esc(r.mes1)}</span>`:''}</div>
-        <div class="card-row">${I.user}<span>${esc(vendName(r.vendedor_id)||'—')}</span></div>
-        ${r.pvp?`<div class="card-row">${I.money}<span><b>${Number(r.pvp).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:0})} €</b></span></div>`:''}
-        ${r.fin?`<div class="card-row">${I.money}<span>${esc(r.fin)}</span></div>`:''}
-        ${r.col_198?`<div class="card-row">${I.note}<span>198: ${esc(r.col_198)}</span></div>`:''}
-        ${r.obs?`<div class="card-row">${I.note}<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px">${esc(r.obs)}</span></div>`:''}
-      </div>
-      ${(r.bev||r.xev||r.gar)?`<div class="card-tags">
-        ${r.bev?'<span class="tag tag-bev">BEV</span>':''}
-        ${r.xev&&!r.bev?'<span class="tag tag-xev">xEV</span>':''}
-        ${r.gar?`<span class="tag tag-gar">${esc(r.gar)}</span>`:''}
-        ${r.type?`<span class="tag tag-sm">${esc(r.type)}</span>`:''}
-      </div>`:''}
-      ${(()=>{const acts=[];if(r.bev&&!r.cme)acts.push(`<button class="card-act card-act-cme" data-action="confirm-cme" data-id="${r.id}" title="Confirmar CME">🟠 <span>CME</span></button>`);return acts.length?`<div class="card-acts">${acts.join('')}</div>`:''})()}
-    </div>
-  </div>`}
-
 function vMesesDe(arr,fn){const m=[...new Set(arr.map(fn).filter(Boolean))].sort();return m;}
 function vBarraMes(meses,sel,acao){
   return`<div class="v-mesbar"><span class="v-meslbl">Mês</span>
@@ -2811,114 +2848,172 @@ function renderEventoVend(){
   </div></div>`;
 }
 
-function renderList(){
-  const f=filtered(),c=statusCounts(),months=availableMonths();
-  const af=(S.monthFilter.length>0?1:0)+(S.bevFilter!=='all'?1:0)+(S.xevFilter!=='all'?1:0);
-  const subLabels={'Retail:novas':'Retail · Novas','Retail:usadas':'Retail · Usadas','Carteira:novas':'Carteira · Novas','Carteira:usadas':'Carteira · Usadas'};const curLabel=S.alertFilter?'⚠️ Alertas':S.statusFilter==='all'?'Todos':(subLabels[S.statusFilter]||S.statusFilter);
-  const alerts=calcAlerts(recsInContext());
-  const alertTotal=alerts.reduce((a,x)=>a+x.count,0);
-  let alertsHtml='';
-  if(alerts.length){
-    alertsHtml='<div style="border-top:1px solid rgba(255,255,255,.08);margin:8px 0"></div>';
-    alertsHtml+='<div style="padding:8px 20px 4px;display:flex;align-items:center;justify-content:space-between">';
-    alertsHtml+='<span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px">Alertas</span>';
-    alertsHtml+='<span style="font-size:10px;font-weight:700;background:var(--orange);color:#fff;padding:2px 8px;border-radius:10px">'+alertTotal+'</span></div>';
-    alerts.forEach(function(a){
-      alertsHtml+='<div class="sidebar-item sidebar-alert '+(S.alertFilter===a.id?'active':'')+'" data-action="alert-filter" data-alert="'+a.id+'" data-ids="'+a.ids.join(',')+'">';
-      alertsHtml+='<span style="font-size:12px">'+a.icon+'</span>';
-      alertsHtml+='<span style="font-size:11px;line-height:1.3">'+a.label+'</span></div>';
-    });
-  }
-  return`
-  <div class="app-layout">
-  <div class="m-overlay ${S.sidebarOpen?'show':''}" data-action="toggle-sidebar"></div>
+// ---- Vista do vendedor: navegação limpa (Hoje · Negócios · Clientes · O meu mês · Ferramentas) ----
+function vGrupoDe(sf){sf=String(sf||'');if(['Funil','Quente','Morno','Frio'].includes(sf))return'Funil';if(sf.startsWith('Carteira'))return'Carteira';if(sf.startsWith('Retail'))return'Retail';return sf;}
+function vNavItem(o){return`<div class="vnav-item ${o.on?'on':''}" data-action="${o.act}"${o.status?` data-status="${o.status}"`:''}${o.id!=null?` data-id="${o.id}"`:''}><span class="vnav-ic">${o.ic}</span><span class="vnav-lb">${o.lb}</span>${o.badge?`<span class="vnav-badge">${o.badge}</span>`:(o.n!=null&&o.n!==''?`<span class="vnav-n">${o.n}</span>`:'')}</div>`;}
+function vPendentes(){const al=calcAlerts(recsInContext());const eot=eotMeus().filter(eotPrecisaAcao).length;
+  const grupos=al.filter(a=>!String(a.id).startsWith('funil_')).length+(eot?1:0)+(vEntregasSemana().length?1:0);
+  const contactar=recsInContext().filter(r=>FUNIL.includes(r.status)&&funilAtrasado(r)).length;
+  return{al,eot,grupos,contactar,total:grupos+contactar};}
+function vEntregasSemana(){const h=new Date();h.setHours(0,0,0,0);const lim=new Date(h);lim.setDate(lim.getDate()+7);
+  return recsInContext().filter(r=>{if(r.status!=='Carteira')return false;const e=(typeof entOf==='function'?entOf(r.id):null)||{};if(!e.data_entrega)return false;const d=new Date(String(e.data_entrega).slice(0,10)+'T00:00:00');return d>=h&&d<=lim;});}
+function vDiasDesde(iso){if(!iso)return null;return Math.floor((Date.now()-new Date(iso).getTime())/864e5);}
+function vHoje(){
+  const recs=recsInContext();const ym=curYM();
+  const nomeP=String((isAdmin()&&S.viewVendedor?vendName(S.viewVendedor):(S.me&&S.me.nome))||'').trim().split(/\s+/)[0]||'';
+  const hojeTxt=new Date().toLocaleDateString('pt-PT',{weekday:'long',day:'numeric',month:'long'});
+  const ret=recs.filter(r=>r.status==='Retail'&&retailYM(r)===ym);
+  const retN=ret.filter(r=>r.type!=='MU').length,retU=ret.length-retN;
+  const cart=recs.filter(r=>r.status==='Carteira');const cartMes=cart.filter(r=>r.mes1&&r.mes1<=ym).length;
+  const fun=recs.filter(r=>FUNIL.includes(r.status));
+  const nQ=fun.filter(r=>r.status==='Quente').length,nM=fun.filter(r=>r.status==='Morno').length,nF=fun.filter(r=>r.status==='Frio').length;
+  const coms=ret.filter(comElegivel).map(comissaoDe);const comTot=coms.reduce((a,c)=>a+(c.valor||0),0);const semMg=coms.filter(c=>c.valor==null).length;
+  const fE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:0})+' €';
+  const P=vPendentes();
+  const tarefas=P.al.filter(a=>!String(a.id).startsWith('funil_'));
+  const entSem=vEntregasSemana();
+  const contactar=fun.filter(funilAtrasado).sort((a,b)=>String(a.alert_date||a.status_updated_at||'').localeCompare(String(b.alert_date||b.status_updated_at||'')));
+  const kpi=(act,status,k,v,sub,cor)=>`<div class="vh-kpi" data-action="${act}"${status?` data-status="${status}"`:''}><div class="vh-k">${k}</div><div class="vh-v" ${cor?`style="color:${cor}"`:''}>${v}</div><div class="vh-s">${sub}</div></div>`;
+  const linhaT=(act,attrs,ic,txt,cls)=>`<div class="vh-row ${cls||''}" data-action="${act}" ${attrs||''}><span class="vh-ic">${ic}</span><span class="vh-txt">${txt}</span><span class="vh-chev">›</span></div>`;
+  const tRows=[
+    ...tarefas.map(a=>linhaT('alert-filter',`data-alert="${a.id}" data-ids="${a.ids.join(',')}"`,a.icon,esc(a.label))),
+    P.eot?linhaT('go-veot','','🔁',`<b>${P.eot}</b> EOT${P.eot!==1?'s':''} a precisar de contacto`):'',
+    entSem.length?linhaT('go-ventregas','','🚚',`<b>${entSem.length}</b> entrega${entSem.length!==1?'s':''} nos próximos 7 dias`):''
+  ].filter(Boolean);
+  const cRow=r=>{const desde=r.alert_date?('desde '+fmtDate(r.alert_date)):(r.status_updated_at?('sem mexer há '+vDiasDesde(r.status_updated_at)+' d'):'');
+    const tel=r.contacto?String(r.contacto).trim():'';
+    return`<div class="vh-crow" data-action="open-detail" data-id="${r.id}">
+      <span class="card-status s-${esc(r.status)}">${esc(r.status)}</span>
+      <span class="vh-cnome"><b>${esc(r.id_cliente||'—')}</b><small>${esc([r.model,r.version].filter(Boolean).join(' '))}${desde?' · '+esc(desde):''}</small></span>
+      ${tel?`<a class="vh-tel" href="tel:${esc(tel.replace(/\s/g,''))}" onclick="event.stopPropagation()">📞 ${esc(tel)}</a>`:''}
+    </div>`;};
+  const evs=(typeof eventosAtivos==='function'&&!isAdmin())?eventosAtivos():[];
+  return`<div class="vh">
+    <div class="vh-hello">Olá${nomeP?', '+esc(nomeP):''} <span>${esc(hojeTxt)}</span></div>
+    <div class="vh-kpis">
+      ${kpi('sidebar-filter','Retail','Retail este mês',ret.length,`${retN} novas · ${retU} usadas`,'var(--green)')}
+      ${kpi('sidebar-filter','Carteira','Carteira',cart.length,cartMes?`<b style="color:var(--amber)">${cartMes}</b> para entregar até este mês`:'nada para este mês','var(--blue)')}
+      ${kpi('sidebar-filter','Funil','Funil',fun.length,`<span style="color:var(--red)">${nQ} quentes</span> · ${nM} mornos · ${nF} frios`)}
+      ${!isAdmin()?kpi('go-vcom','','Comissão do mês',fE(comTot),semMg?`${semMg} à espera de margem`:'estimativa do retail do mês'):''}
+    </div>
+    ${evs.map(ev=>`<div class="vh-ev" data-action="go-evento" data-id="${ev.id}">🎟️ <b>${esc(ev.nome)}</b> — inscreve os teus clientes <span class="vh-chev">›</span></div>`).join('')}
+    <div class="vh-sec"><span>A tratar</span>${tRows.length?`<span class="vh-cnt">${tRows.length}</span>`:''}</div>
+    <div class="vh-box">${tRows.length?tRows.join(''):'<div class="vh-ok">✓ Nada pendente nos teus negócios.</div>'}</div>
+    <div class="vh-sec"><span>Para contactar hoje</span>${contactar.length?`<span class="vh-cnt red">${contactar.length}</span>`:''}</div>
+    <div class="vh-box">${contactar.length?contactar.slice(0,12).map(cRow).join('')+(contactar.length>12?`<div class="vh-mais" data-action="sidebar-filter" data-status="Funil">Ver o funil todo (${contactar.length-12} mais) ›</div>`:''):'<div class="vh-ok">✓ Ninguém em atraso no funil.</div>'}</div>
+  </div>`;
+}
+function vSidebarHTML(A){
+  const c=statusCounts();const P=vPendentes();const nFun=(c['Quente']||0)+(c['Morno']||0)+(c['Frio']||0);const vend=!isAdmin();
+  const nav=`<div class="sidebar-nav vnav">
+      ${vNavItem({act:'sidebar-filter',status:'_hoje',ic:'🏠',lb:'Hoje',on:A==='_hoje',badge:P.total||''})}
+      <div class="vnav-sec">Negócios</div>
+      ${vNavItem({act:'sidebar-filter',status:'Funil',ic:'🔻',lb:'Funil',n:nFun,on:A==='Funil'})}
+      ${vNavItem({act:'sidebar-filter',status:'Carteira',ic:'📦',lb:'Carteira',n:c['Carteira']||0,on:A==='Carteira'})}
+      ${vNavItem({act:'sidebar-filter',status:'Retail',ic:'✅',lb:'Retail',n:c['Retail']||0,on:A==='Retail'})}
+      ${vNavItem({act:'sidebar-filter',status:'Perdido',ic:'✕',lb:'Perdidos',n:c['Perdido']||0,on:A==='Perdido'})}
+      <div class="vnav-sec">Clientes</div>
+      ${vNavItem({act:'go-veot',ic:'🔁',lb:'EOTs',on:A==='veot',n:eotMeus().filter(x=>x.no_mapa!==false&&!EOT_FECHO.includes(x.fase)).length||'',badge:P.eot||''})}
+      ${vend?`<div class="vnav-sec">O meu mês</div>
+      ${vNavItem({act:'go-ventregas',ic:'🚚',lb:'Entregas',on:A==='ventregas',n:c['Carteira']||0})}
+      ${vNavItem({act:'go-vcom',ic:'💶',lb:'Comissões',on:A==='vcom'})}
+      <div class="vnav-sec">Ferramentas</div>
+      ${vNavItem({act:'go-ficha',ic:'🧮',lb:'Ficha de margem',on:A==='ficha'})}
+      ${vNavItem({act:'go-stock-vend',ic:'🏍️',lb:'Stock usadas / demos',on:A==='stockvend'})}
+      ${vNavItem({act:'go-escala',ic:'📅',lb:'Escala',on:A==='escala'})}
+      ${(eventosAtivos()||[]).map(evA=>vNavItem({act:'go-evento',id:evA.id,on:A==='evento'&&S.eventoSel===evA.id,ic:'🎟️',lb:esc(evA.nome),n:(S.inscricoes||[]).filter(i=>i.evento_id===evA.id).length})).join('')}`:''}
+    </div>`;
+  return`<div class="m-overlay ${S.sidebarOpen?'show':''}" data-action="toggle-sidebar"></div>
   <div class="sidebar ${S.sidebarOpen?'':'closed'}">
     <div class="sidebar-inner">
     <div class="sidebar-header">
       <div class="sidebar-logo">
         <div class="sidebar-logo-icon">${logoSVG(36,'vend')}</div>
         <div><div class="sidebar-logo-text">Bimby Motorrad</div>
-        <div class="sidebar-logo-sub">Pipeline de vendas</div></div>
+        <div class="sidebar-logo-sub">${isAdmin()?'Pipeline de vendas':esc((S.me&&S.me.nome)||'Vendedor')}</div></div>
       </div>
     </div>
     ${isAdmin()?renderViewSelector():''}
-    <div class="sidebar-nav">
-      <div class="sidebar-item ${S.statusFilter==='all'?'active':''}" data-action="sidebar-filter" data-status="all">
-        <span class="sdot" style="background:var(--orange)"></span>Todos<span class="scount">${recsInContext().length}</span>
-      </div>
-      <div class="sidebar-item ${S.statusFilter==='Retail'?'active':''}" data-action="sidebar-filter" data-status="Retail">
-        <span class="sdot" style="background:var(--green)"></span>Retail<span class="scount">${c['Retail']||0}</span>
-      </div>
-      <div style="padding-left:32px">
-        <div class="sidebar-item ${S.statusFilter==='Retail:novas'?'active':''}" data-action="sidebar-filter" data-status="Retail:novas" style="padding:7px 20px;font-size:12px">
-          <span class="sdot" style="background:var(--blue);width:6px;height:6px"></span>Novas (MN+MD)<span class="scount">${recsInContext().filter(r=>r.status==='Retail'&&(r.type==='MN'||r.type==='MD')).length}</span>
-        </div>
-        <div class="sidebar-item ${S.statusFilter==='Retail:usadas'?'active':''}" data-action="sidebar-filter" data-status="Retail:usadas" style="padding:7px 20px;font-size:12px">
-          <span class="sdot" style="background:var(--amber);width:6px;height:6px"></span>Usadas (MU)<span class="scount">${recsInContext().filter(r=>r.status==='Retail'&&r.type==='MU').length}</span>
-        </div>
-      </div>
-      <div class="sidebar-item ${S.statusFilter==='Carteira'?'active':''}" data-action="sidebar-filter" data-status="Carteira">
-        <span class="sdot" style="background:var(--blue)"></span>Carteira<span class="scount">${c['Carteira']||0}</span>
-      </div>
-      <div style="padding-left:32px">
-        <div class="sidebar-item ${S.statusFilter==='Carteira:novas'?'active':''}" data-action="sidebar-filter" data-status="Carteira:novas" style="padding:7px 20px;font-size:12px">
-          <span class="sdot" style="background:var(--blue);width:6px;height:6px"></span>Novas (MN+MD)<span class="scount">${recsInContext().filter(r=>r.status==='Carteira'&&(r.type==='MN'||r.type==='MD')).length}</span>
-        </div>
-        <div class="sidebar-item ${S.statusFilter==='Carteira:usadas'?'active':''}" data-action="sidebar-filter" data-status="Carteira:usadas" style="padding:7px 20px;font-size:12px">
-          <span class="sdot" style="background:var(--amber);width:6px;height:6px"></span>Usadas (MU)<span class="scount">${recsInContext().filter(r=>r.status==='Carteira'&&r.type==='MU').length}</span>
-        </div>
-      </div>
-      <div class="sidebar-item ${S.statusFilter==='Funil'?'active':''}" data-action="sidebar-filter" data-status="Funil">
-        <span class="sdot" style="background:var(--red)"></span>Funil<span class="scount">${(c['Quente']||0)+(c['Morno']||0)+(c['Frio']||0)}</span>
-      </div>
-      <div style="padding-left:32px">
-        <div class="sidebar-item ${S.statusFilter==='Quente'?'active':''}" data-action="sidebar-filter" data-status="Quente" style="padding:7px 20px;font-size:12px">
-          <span class="sdot" style="background:var(--red);width:6px;height:6px"></span>Quente<span class="scount">${c['Quente']||0}</span>
-        </div>
-        <div class="sidebar-item ${S.statusFilter==='Morno'?'active':''}" data-action="sidebar-filter" data-status="Morno" style="padding:7px 20px;font-size:12px">
-          <span class="sdot" style="background:var(--amber);width:6px;height:6px"></span>Morno<span class="scount">${c['Morno']||0}</span>
-        </div>
-        <div class="sidebar-item ${S.statusFilter==='Frio'?'active':''}" data-action="sidebar-filter" data-status="Frio" style="padding:7px 20px;font-size:12px">
-          <span class="sdot" style="background:var(--slate);width:6px;height:6px"></span>Frio<span class="scount">${c['Frio']||0}</span>
-        </div>
-      </div>
-      <div style="border-top:1px solid rgba(255,255,255,.08);margin:8px 0"></div>
-      <div class="sidebar-item ${S.statusFilter==='Fechados'?'active':''}" data-action="sidebar-filter" data-status="Fechados">
-        <span class="sdot" style="background:#22c55e"></span>Negócios Fechados<span class="scount">${(c['Retail']||0)+(c['Carteira']||0)}</span>
-      </div>
-      ${!isAdmin()?`
-      <div style="border-top:1px solid rgba(255,255,255,.08);margin:8px 0"></div>
-      <div class="sidebar-item" data-action="go-ficha">🧮&nbsp;&nbsp;Ficha de Margem</div>
-      <div class="sidebar-item" data-action="go-ventregas">📦&nbsp;&nbsp;As minhas entregas<span class="scount">${(S.records||[]).filter(r=>r.status==='Carteira').length}</span></div>
-      <div class="sidebar-item" data-action="go-vcom">💶&nbsp;&nbsp;Comissões</div>
-      <div class="sidebar-item" data-action="go-veot">🔁&nbsp;&nbsp;EOTs (contratos a terminar)${(()=>{const n=eotMeus().filter(eotPrecisaAcao).length;return n?`<span class="scount" style="background:var(--red);color:#fff">${n}</span>`:'';})()}</div>
-      <div class="sidebar-item" data-action="go-stock-vend">🏍️&nbsp;&nbsp;Stock Usadas / Demos</div>
-      <div class="sidebar-item" data-action="go-escala">📅&nbsp;&nbsp;Escala</div>
-      ${(()=>{const ativos=eventosAtivos();if(!ativos.length)return'';return ativos.map(evA=>{const n=(S.inscricoes||[]).filter(i=>i.evento_id===evA.id).length;return`<div class="sidebar-item sidebar-evento" data-action="go-evento" data-id="${evA.id}"><span>🎟️&nbsp;&nbsp;${esc(evA.nome)}</span><span class="scount" style="background:var(--orange);color:#fff">${n}</span></div>`;}).join('');})()}`:''}
-      ${alertsHtml}
+    ${nav}
+    <div class="vnav-foot">
+      <button class="vnav-fb" data-action="go-password" title="Alterar password">🔑 Password</button>
+      <button class="vnav-fb" data-action="logout">Sair</button>
+      <button class="vnav-fb vnav-close" data-action="toggle-sidebar" title="Fechar menu">✕</button>
     </div>
-    <div class="sidebar-close" data-action="toggle-sidebar">Fechar ✕</div>
     </div>
-  </div>
+  </div>`;
+}
+function vBottomNav(A){
+  const P=vPendentes();
+  const mob=(ic,lb,act,status,on,badge)=>`<button class="vbn-i ${on?'on':''}" data-action="${act}"${status?` data-status="${status}"`:''}><span class="vbn-ic">${ic}${badge?`<i>${badge}</i>`:''}</span><span>${lb}</span></button>`;
+  const outro=!['_hoje','Funil','Carteira','veot'].includes(A);
+  return`<nav class="vbn">
+    ${mob('🏠','Hoje','sidebar-filter','_hoje',A==='_hoje',P.total>0?(P.total>99?'99+':P.total):'')}
+    ${mob('🔻','Funil','sidebar-filter','Funil',A==='Funil')}
+    ${mob('📦','Carteira','sidebar-filter','Carteira',A==='Carteira')}
+    ${mob('🔁','EOTs','go-veot','',A==='veot',P.eot||'')}
+    ${mob('☰','Mais','open-sidebar','',outro)}
+  </nav>`;
+}
+// Páginas do vendedor (Entregas, Comissões, EOTs, Stock, Ficha, Escala, Evento) passam a ter o mesmo menu
+const V_SHELL={ventregas:'ventregas',vcom:'vcom',veot:'veot',stockvend:'stockvend',ficha:'ficha',escala:'escala',evento:'evento'};
+function vEnvolver(html,A){
+  if(isAdmin()||typeof html!=='string')return html;
+  const m=html.match(/^\s*<div class="app-layout">\s*<div class="main-panel" style="width:100%">/);
+  if(!m)return html;
+  let body=html.slice(m[0].length);
+  body=body.replace(/<button class="hdr-back" data-action="[^"]*">←<\/button>/,'<button class="hamburger" data-action="open-sidebar"><span></span><span></span><span></span></button>');
+  // atalhos repetidos no cabeçalho saem: estão no menu
+  body=body.replace(/<button class="hdr-btn" data-action="(go-vcom|go-ventregas|go-password|logout)"[^>]*>[\s\S]*?<\/button>/g,'');
+  return'<div class="app-layout">'+vSidebarHTML(A)+'<div class="main-panel">'+vBottomNav(A)+body;
+}
+function renderList(){
+  if(!S.statusFilter||S.statusFilter==='all')S.statusFilter='_hoje';
+  const sf=S.statusFilter;const grp=vGrupoDe(sf);
+  const emHoje=sf==='_hoje'&&!S.alertFilter;
+  const procura=emHoje&&String(S.search||'').trim();
+  const f=procura?recsInContext().filter(r=>['id_cliente','model','version','mat','obs','biz','enc','contacto'].some(k=>String(r[k]||'').toLowerCase().includes(String(S.search).toLowerCase()))):filtered();
+  const c=statusCounts();
+  const af=(S.monthFilter.length>0?1:0)+(S.bevFilter!=='all'?1:0)+(S.xevFilter!=='all'?1:0);
+  const titulos={_hoje:'Hoje',all:'Todos',Funil:'Funil',Quente:'Funil · Quente',Morno:'Funil · Morno',Frio:'Funil · Frio',Carteira:'Carteira','Carteira:novas':'Carteira · Novas','Carteira:usadas':'Carteira · Usadas',Retail:'Retail','Retail:novas':'Retail · Novas','Retail:usadas':'Retail · Usadas',Perdido:'Perdidos',Fechados:'Negócios fechados'};
+  const alertaAtual=S.alertFilter?(calcAlerts(recsInContext()).find(a=>a.id===S.alertFilter)||{}).label:null;
+  const curLabel=S.alertFilter?('⚠️ '+(alertaAtual||'Alerta')):(titulos[sf]||sf);
+  const P=vPendentes();
+  const nFun=(c['Quente']||0)+(c['Morno']||0)+(c['Frio']||0);
+  const vend=!isAdmin();
+  const chipsDef=grp==='Funil'?[['Funil','Todos',nFun],['Quente','Quente',c['Quente']||0],['Morno','Morno',c['Morno']||0],['Frio','Frio',c['Frio']||0]]
+    :grp==='Carteira'?[['Carteira','Todas',c['Carteira']||0],['Carteira:novas','Novas (MN+MD)',recsInContext().filter(r=>r.status==='Carteira'&&r.type!=='MU').length],['Carteira:usadas','Usadas (MU)',recsInContext().filter(r=>r.status==='Carteira'&&r.type==='MU').length]]
+    :grp==='Retail'?[['Retail','Todas',c['Retail']||0],['Retail:novas','Novas (MN+MD)',recsInContext().filter(r=>r.status==='Retail'&&r.type!=='MU').length],['Retail:usadas','Usadas (MU)',recsInContext().filter(r=>r.status==='Retail'&&r.type==='MU').length]]:null;
+  const chips=chipsDef&&!S.alertFilter?`<div class="vchips">${chipsDef.map(([k,l,n])=>`<button class="vchip ${sf===k?'on':''}" data-action="sidebar-filter" data-status="${k}">${l} <span>${n}</span></button>`).join('')}</div>`:'';
+  const agrupar=grp==='Retail'||sf==='Fechados'||sf==='Perdido';
+  const lista=f.length===0?`<div class="empty">${procura?'Nada encontrado.':'Nenhum registo aqui.'}</div>`:
+    agrupar?groupByMonth(f).map(g=>`
+        <div class="month-group"><span class="month-group-label">${esc(g.month)}</span><span class="month-group-count">${g.records.length}</span><div class="month-group-line"></div></div>
+        <div class="cards">${g.records.map(r=>renderCard(r)).join('')}</div>`).join(''):
+      (()=>{const lim=S.renderLimit||50;const shown=f.slice(0,lim);let html=`<div class="cards">${shown.map(r=>renderCard(r)).join('')}</div>`;if(f.length>lim)html+=`<div style="padding:8px 16px 20px"><button class="btn btn-outline btn-block" data-action="load-more">Carregar mais (${f.length-lim} restantes)</button></div>`;return html})();
+  const _A=S.alertFilter?'_hoje':(['Funil','Carteira','Retail'].includes(grp)?grp:sf);
+  return`
+  <div class="app-layout">
+${vSidebarHTML(_A)}
   <div class="main-panel">
   <div class="hdr">
     <button class="hamburger" data-action="open-sidebar"><span></span><span></span><span></span></button>
     <div class="hdr-accent"></div>
     <div class="hdr-title">${esc(curLabel)}</div>
-    <div class="hdr-sub">${f.length} de ${recsInContext().length}</div>
-    ${!isAdmin()?`<button class="hdr-btn" data-action="go-ficha">🧮 Ficha</button><button class="hdr-btn" data-action="go-ventregas">📦 Entregas</button><button class="hdr-btn" data-action="go-vcom">💶 Comissões</button><button class="hdr-btn" data-action="go-veot">🔁 EOTs${(()=>{const n=eotMeus().filter(eotPrecisaAcao).length;return n?' ('+n+')':'';})()}</button><button class="hdr-btn" data-action="go-stock-vend">🏍️ Stock</button><button class="hdr-btn" data-action="go-escala">📅 Escala</button>`:''}
-    <button class="hdr-btn" data-action="refresh" ${S.loading?'disabled':''}>${S.loading?'…':'↻'}</button>
-    <button class="hdr-btn" data-action="go-password" title="Alterar password">🔑</button>
-    <button class="hdr-btn" data-action="logout">Sair</button>
+    ${emHoje&&!procura?'':`<div class="hdr-sub">${f.length}${emHoje?' encontrados':' de '+recsInContext().length}</div>`}
+    ${S.alertFilter?`<button class="hdr-btn" data-action="sidebar-filter" data-status="_hoje">✕ Fechar alerta</button>`:''}
+    <button class="hdr-btn" data-action="refresh" ${S.loading?'disabled':''} title="Atualizar">${S.loading?'…':'↻'}</button>
   </div>
   <div class="content">
-    <div class="search-wrap"><input class="search-input" id="f-search" placeholder="Pesquisar cliente, modelo, matrícula..." value="${esc(S.search)}"></div>
-    <div style="padding:10px 16px 0;display:flex;gap:8px;align-items:center">
-      <button class="pill2 ${S.filtersOpen?'active':''}" data-action="toggle-filters" style="display:flex;align-items:center;gap:4px">☰ Filtros${af?` (${af})`:''}</button>
+    <div class="search-wrap"><input class="search-input" id="f-search" placeholder="${emHoje?'Procurar em todos os teus negócios…':'Pesquisar cliente, modelo, matrícula...'}" value="${esc(S.search)}"></div>
+    ${emHoje&&!procura?vHoje():`
+    ${chips}
+    ${emHoje?'':`<div class="vfilt-bar">
+      <button class="pill2 ${S.filtersOpen?'active':''}" data-action="toggle-filters" style="display:flex;align-items:center;gap:4px">⏱ Período${af?` (${af})`:''}</button>
       ${S.monthFilter.length>0?`<span style="font-size:12px;font-weight:600;color:var(--orange)">${S.monthFilter.length===1?S.monthFilter[0]:S.monthFilter.length+' meses'}</span>`:''}
       ${S.bevFilter==='1'?`<span style="font-size:11px;font-weight:700;color:var(--blue);background:var(--blue-bg);padding:2px 7px;border-radius:6px">BEV</span>`:''}
       ${S.xevFilter==='1'?`<span style="font-size:11px;font-weight:700;color:var(--green);background:var(--green-bg);padding:2px 7px;border-radius:6px">xEV</span>`:''}
-    </div>
+    </div>`}
     ${S.filtersOpen?(()=>{
       const years=availableYears();
       const selYear=S.filterYear||years[0]||'2026';
@@ -2954,21 +3049,33 @@ function renderList(){
       </div>`;
     })():''}
     ${S.error?`<div class="error" style="margin:8px 16px">${esc(S.error)}</div>`:''}
-    ${f.length===0?'<div class="empty">Nenhum registo encontrado.</div>':
-      S.statusFilter==='Fechados'?groupByMonth(f).map(g=>`
-        <div class="month-group">
-          <span class="month-group-label">${esc(g.month)}</span>
-          <span class="month-group-count">${g.records.length}</span>
-          <div class="month-group-line"></div>
-        </div>
-        <div class="cards">${g.records.map(r=>renderCard(r)).join('')}</div>
-      `).join(''):
-      (()=>{const lim=S.renderLimit||50;const shown=f.slice(0,lim);let html=`<div class="cards">${shown.map(r=>renderCard(r)).join('')}</div>`;if(f.length>lim)html+=`<div style="padding:8px 16px 20px"><button class="btn btn-outline btn-block" data-action="load-more">Carregar mais (${f.length-lim} restantes)</button></div>`;return html})()
-    }
-    ${S.statusFilter==='Carteira'&&f.length>0&&f.length<=(S.renderLimit||50)?`<div style="padding:12px 16px 24px"><button class="btn btn-dark btn-block" data-action="share-carteira">📤 Partilhar Carteira (${f.length})</button></div>`:''}
+    ${lista}
+    ${sf==='Carteira'&&f.length>0&&f.length<=(S.renderLimit||50)?`<div style="padding:12px 16px 24px"><button class="btn btn-dark btn-block" data-action="share-carteira">📤 Partilhar Carteira (${f.length})</button></div>`:''}`}
   </div>
-  <button class="fab" data-action="open-add">+</button>
+  <button class="fab" data-action="open-add" title="Novo negócio">+</button>
+  ${vBottomNav(_A)}
   </div></div>`}
+
+function renderCard(r){
+  const empresa=isAdmin()&&!S.viewVendedor;
+  const pvp=r.pvp?Number(r.pvp).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:0})+' €':'';
+  const atras=funilAtrasado(r);
+  const meta=[r.neg?fmtDate(r.neg):'',r.mes1?('mês '+r.mes1):'',r.enc?('Enc '+r.enc):'',r.biz?('Biz '+r.biz):'',empresa?(vendName(r.vendedor_id)||''):''].filter(Boolean);
+  return`
+  <div class="card vcard ${atras?'vcard-atras':''}" data-action="open-detail" data-id="${r.id}">
+    <div class="card-accent card-accent-${esc(r.status)}"></div>
+    <div class="vcard-b">
+      <div class="vcard-top">
+        <span class="vcard-nome">${esc(r.id_cliente||'—')}</span>
+        ${pvp?`<span class="vcard-pvp">${pvp}</span>`:''}
+        <span class="card-status s-${esc(r.status)}">${esc(r.status)}</span>
+      </div>
+      <div class="vcard-mod">${r.type?`<span class="tag tag-sm">${esc(r.type)}</span>`:''}<span>${esc([r.model,r.version].filter(Boolean).join(' ')||'sem modelo')}</span>${r.mat?`<b class="vcard-mat">${esc(r.mat)}</b>`:''}${r.bev?'<span class="tag tag-bev">BEV</span>':(r.xev?'<span class="tag tag-xev">xEV</span>':'')}${r.gar?`<span class="tag tag-gar">${esc(r.gar)}</span>`:''}</div>
+      <div class="vcard-meta">${meta.map(esc).join(' · ')}${atras?` <span class="vcard-al">⚠️ contactar${r.alert_date?' · '+esc(String(fmtDate(r.alert_date)).slice(0,5)):''}</span>`:''}</div>
+      ${r.obs?`<div class="vcard-obs">${esc(r.obs)}</div>`:''}
+      ${r.bev&&!r.cme?`<div class="card-acts"><button class="card-act card-act-cme" data-action="confirm-cme" data-id="${r.id}" title="Confirmar CME">🟠 <span>CME</span></button></div>`:''}
+    </div>
+  </div>`}
 
 function origemVeiculo(r){if(!r)return'—';if(r.type==='MU')return'Usada';if(r.type==='MD')return'DEMO';if(r.stock==='Sim')return'Stock';if(r.enc)return'Encomenda';return'—';}
 function textoMatricula(r){r=r||{};return['*Pedido de matrícula*','NIF: '+(r.nif||'—'),'CC: '+(r.cc||'—'),'Nome: '+(r.id_cliente||'—'),'Chassis/VIN: '+(r.chas||'—'),'Nº Bizagi: '+(r.biz||'—')].join('\n');}
@@ -3405,7 +3512,7 @@ function eotView(){
 }
 
 // ---- Vista do vendedor ----
-function eotMeus(){return (S.eot||[]).filter(x=>!isVendedor()||(S.me&&x.responsavel_id===S.me.id));}
+function eotMeus(){return (S.eot||[]).filter(x=>isAdmin()?(!S.viewVendedor||x.responsavel_id===S.viewVendedor):(S.me&&x.responsavel_id===S.me.id));}
 function renderMinhasEot(){
   const meus=eotMeus().slice().sort((a,b)=>String(a.data_fim||'9').localeCompare(String(b.data_fim||'9')));
   const filt=S.vEotF||'abertos';
@@ -4268,6 +4375,15 @@ function EXPORT_FOLHAS(){
       {c:'obs',l:'Observações'},{c:'obs_gestor',l:'Obs. chefe'},
       {c:'status_updated_at',l:'Status atualizado',f:dt},
       {c:'created_at',l:'Criado',f:dt},{c:'updated_at',l:'Atualizado',f:dt},{c:'updated_by',l:'Atualizado por',f:nome},
+    ]},
+    {nome:'EOTs',path:'/eot_contratos?select=*&order=data_fim.asc',cols:[
+      {c:'contrato',l:'Contrato'},{c:'tipo',l:'Tipo'},{c:'cliente',l:'Cliente'},{c:'contacto_nome',l:'Contacto'},{c:'telefone',l:'Telefone'},{c:'telemovel',l:'Telemóvel'},
+      {c:'data_fim',l:'Data fim',f:d},{c:'prazo',l:'Prazo'},{c:'prestacao',l:'Prestação'},{c:'kms',l:'Km contratados'},{c:'matricula',l:'Matrícula'},{c:'modelo',l:'Modelo'},
+      {c:'seguro',l:'Seguro'},{c:'manutencao',l:'Manutenção'},{c:'residual',l:'Valor residual'},{c:'despesas',l:'Despesas finais'},{c:'total',l:'Total a pagar'},
+      {c:'concessionario',l:'Concessionário'},{c:'conc_resp',l:'Conc. responsável'},{c:'vendedor_origem',l:'Vendedor original'},
+      {c:'responsavel_id',l:'Responsável',f:nome},{c:'fase',l:'Fase'},{c:'temperatura',l:'Temperatura'},{c:'proxima_acao',l:'Próxima ação'},{c:'proxima_data',l:'Data próx. ação',f:d},
+      {c:'notas',l:'Notas'},{c:'negocio_id',l:'Negócio ID'},{c:'no_mapa',l:'No mapa',f:sn},{c:'saiu_em',l:'Saiu do mapa',f:dt},
+      {c:'criado_em',l:'Criado',f:dt},{c:'ultima_import',l:'Última importação',f:dt},{c:'updated_at',l:'Atualizado',f:dt},
     ]},
     {nome:'Stock Usadas',path:'/stock_usadas?select=*&order=id.asc',cols:[
       {c:'id',l:'ID'},{c:'categoria',l:'Categoria'},{c:'modelo',l:'Modelo'},{c:'matricula',l:'Matrícula'},
@@ -5969,7 +6085,7 @@ function render(){
   const ce=app.querySelector('.content'),st=ce?ce.scrollTop:0,ps=app.dataset.screen||'';
   const screens={loading:'<div class="content"><div class="center-screen"><p style="color:var(--text3)">A carregar...</p></div></div>',login:renderLogin,list:renderList,detail:renderDetail,edit:renderEdit,dashboard:renderDashboard,escala:renderEscala,password:renderPassword,ventregas:renderMinhasEntregas,vcom:renderMinhasComissoes,semacesso:renderSemAcesso,ficha:renderFichaMargem,secretaria:renderSecretaria,assessor:renderAssessor,stockvend:renderStockVend,evento:renderEventoVend,veot:renderMinhasEot};
   const fn=screens[S.screen];
-  app.innerHTML=typeof fn==='function'?fn():fn;
+  app.innerHTML=typeof fn==='function'?(V_SHELL[S.screen]&&S.me&&!isAdmin()?vEnvolver(fn(),V_SHELL[S.screen]):fn()):fn;
   app.dataset.screen=S.screen;
   if(ps===S.screen){const nc=app.querySelector('.content');if(nc)nc.scrollTop=st}
   bindEvents();
@@ -6096,6 +6212,7 @@ function bindEvents(){
   app.onclick=function(e){
     const el=e.target.closest('[data-action]');if(!el)return;
     const a=el.dataset.action;
+    if(window.innerWidth<=700&&S.sidebarOpen&&el.closest('.sidebar')&&!['toggle-vsel','toggle-sidebar','open-sidebar'].includes(a))S.sidebarOpen=false;
     switch(a){
       case'login':{const em=document.getElementById('f-email')?.value?.trim(),pw=document.getElementById('f-pw')?.value;if(!em||!pw){setState({error:'Preenche email e password.'});return}setState({loading:true,error:''});supabaseAuth(em,pw).then(r=>{S.token=r.access_token;return afterAuth()}).catch(e=>setState({error:e.message,loading:false}));break}
       case'go-password':setState({screen:'password',pwErr:'',pwMsg:''});break;
@@ -6196,7 +6313,7 @@ function bindEvents(){
       case'go-ventregas':setState({screen:'ventregas'});break;
       case'v-mes-chip':setState({vMes:el.dataset.m});break;
       case'go-vcom':setState({screen:'vcom'});break;
-      case'go-veot':setState({screen:'veot',sidebarOpen:false});loadEot().then(()=>render());break;
+      case'go-veot':setState({screen:'veot'});loadEot().then(()=>render());break;
       case'v-eot-f':setState({vEotF:el.dataset.f});break;
       case'leads-tab':setState({leadsTab:el.dataset.t});if(el.dataset.t==='eot')loadEot().then(()=>render());break;
       case'eot-confirmar':eotConfirmar();break;
@@ -6268,7 +6385,7 @@ function bindEvents(){
       case'toggle-sidebar':setState({sidebarOpen:!S.sidebarOpen});break;
       case'close-sidebar':setState({sidebarOpen:false});break;
       case'load-more':setState({renderLimit:(S.renderLimit||50)+50});break;
-      case'sidebar-filter':setState({statusFilter:el.dataset.status,monthFilter:[],bevFilter:'all',xevFilter:'all',alertFilter:null,alertIds:[],renderLimit:50});break;
+      case'sidebar-filter':setState({screen:'list',selected:null,search:'',statusFilter:el.dataset.status,monthFilter:[],bevFilter:'all',xevFilter:'all',alertFilter:null,alertIds:[],renderLimit:50});break;
       case'alert-filter':{const id=el.dataset.alert;const ids=el.dataset.ids.split(',').map(Number);if(S.alertFilter===id)setState({alertFilter:null,alertIds:[],statusFilter:'all'});else setState({alertFilter:id,alertIds:ids,statusFilter:'_alert'});break}
       case'filter':setState({statusFilter:el.dataset.status,monthFilter:[],bevFilter:'all',xevFilter:'all'});break;
       case'filter-month':{const m=el.dataset.month;const cur=[...S.monthFilter];const i=cur.indexOf(m);if(i>=0)cur.splice(i,1);else cur.push(m);setState({monthFilter:cur});break}
@@ -6342,7 +6459,7 @@ function bindEvents(){
 
 function collectFormData(){document.querySelectorAll('input[data-field],select[data-field],textarea[data-field]').forEach(el=>{const k=el.dataset.field;let v=el.value;if(el.dataset.fmt==='month'&&v)v=v.replace('-','/');S.form[k]=v})}
 
-function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes(),loadTransicoes(),loadNorma(),loadFichasIdx(),loadEot()]):(isVendedor()?Promise.all([loadTeam(),loadEventos(),loadInscricoes(),loadInscricoesAll(),loadMargens(),loadEntregas(),loadEquipamento(),loadFichasIdx(),loadEot()]):(S.me&&S.me.role==='secretario'?Promise.all([loadTeam(),loadEntregas()]):(S.me&&S.me.role==='assessor'?Promise.all([loadTeam(),loadEquipamento()]):Promise.all([loadTeam()]))));return extra}).then(function(){return loadRecords()}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:ecraInicial(),loading:false})})}
+function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes(),loadTransicoes(),loadNorma(),loadFichasIdx(),loadEot()]):(isVendedor()?Promise.all([loadTeam(),loadEventos(),loadInscricoes(),loadInscricoesAll(),loadMargens(),loadEntregas(),loadEquipamento(),loadFichasIdx(),loadEot()]):(S.me&&S.me.role==='secretario'?Promise.all([loadTeam(),loadEntregas()]):(S.me&&S.me.role==='assessor'?Promise.all([loadTeam(),loadEquipamento()]):Promise.all([loadTeam()]))));return extra}).then(function(){return loadRecords()}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:ecraInicial(),loading:false,statusFilter:isAdmin()?S.statusFilter:'_hoje'})})}
 (function(){
   S.screen='loading';render();
   // Link de recuperacao do Supabase: #access_token=...&type=recovery
