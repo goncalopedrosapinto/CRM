@@ -3040,7 +3040,7 @@ function seqParse(rows){
   if(hi<0)throw new Error('Não encontrei o cabeçalho ("Ref. Peça" e "Descrição Peça"). É o mapa "Stock de Peças - Detalhe"?');
   const H=(rows[hi]||[]).map(eotNorm);const col=n=>H.indexOf(n);
   const C={polo:col('polo'),loja:col('ponto venda'),marca:col('marca peca'),fam:col('familia peca'),sub:col('sub-familia peca'),qual:col('qualidade de stock no polo'),
-    antig:col('antig - ult. saida'),ults:col('ult. saida stock'),pav:H.findIndex(h=>/preco caetano aveiro|preco aveiro/.test(h)),vsite:H.findIndex(h=>/venda site|preco site/.test(h)),ref:col('ref. peca'),desc:col('descricao peca'),qtd:col('qtd stock'),cst:col('cst stock'),proc:col('procura media mensal'),dsc:col('% desconto s/ pvp')};
+    antig:col('antig - ult. saida'),ults:col('ult. saida stock'),pav:H.findIndex(h=>/^pvp$|^pvp c\/ ?iva$|preco caetano aveiro|preco aveiro/.test(h)),vsite:H.findIndex(h=>/venda site|preco site/.test(h)),ref:col('ref. peca'),desc:col('descricao peca'),qtd:col('qtd stock'),cst:col('cst stock'),proc:col('procura media mensal'),dsc:col('% desconto s/ pvp')};
   const falta=['loja','ref','desc','qtd','cst'].filter(k=>C[k]<0);
   if(falta.length)throw new Error('Faltam colunas no ficheiro: '+falta.join(', '));
   const g=(r,k)=>C[k]>=0?r[C[k]]:null;const linhas=[];
@@ -3191,14 +3191,14 @@ function seqNome(x){const si=seqSi(x);return(si&&si.nome_site)||x.descricao||x.r
 const SEQ_TAM_ORD=['XXS','XS','S','M','L','XL','2XL','XXL','3XL','XXXL','4XL','5XL'];
 function seqTamKey(t){t=String(t||'').toUpperCase().trim();const i=SEQ_TAM_ORD.indexOf(t.replace(/\s*\(.*\)/,''));if(i>=0)return 100+i;const n=parseFloat(t.replace(/^W/,''));return isFinite(n)?n:999;}
 function seqPrecos(x){const si=seqSi(x)||{};const pvp=si.pvp!=null?Number(si.pvp):null;const av=si.preco_aveiro!=null?Number(si.preco_aveiro):pvp;const site=si.venda_site!=null?Number(si.venda_site):null;
-  const max=(pvp!=null&&x.desc_max!=null)?Math.round(pvp*(1-x.desc_max)*100)/100:null;return{pvp,av,site,max,origem:si.preco_aveiro_origem||null};}
+  const max=(av!=null&&x.desc_max!=null)?Math.round(av*(1-x.desc_max)*100)/100:null;return{pvp,av,site,max,origem:si.preco_aveiro_origem||null};}
 function seqComA(x,ci,qtd,campanha){if(ci==null)return null;const l={qtd:qtd||1,venda:Math.round(ci/(1+SEQ_IVA)*100)/100,custo:Number(x.custo_unit)||0,campanha:campanha||null};return{si:l.venda,margem:eqMargem(l),com:eqComissao(l)};}
 function seqCalc(x,V){const qtd=Math.max(1,parseInt(V.qtd,10)||1);const ci=numPT(V.preco);if(ci==null||!x)return null;const c=seqComA(x,ci,qtd,V.campanha);return Object.assign({qtd,ci},c);}
 function seqCalcHTML(x,V){const fE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';const c=seqCalc(x,V);const P=seqPrecos(x);
   if(!c)return'<span class="seq-calc-v">Escolhe um preço acima ou escreve o preço ao cliente.</span>';
   const alertas=[];if(c.margem<0)alertas.push('abaixo do custo');if(P.max!=null&&c.ci<P.max-0.01)alertas.push(`desconto acima do máximo (${Math.round(x.desc_max*100)}%)`);
   if(P.site!=null&&c.ci>P.site+0.01)alertas.push('acima do preço do site');
-  return`<span>s/IVA <b>${fE(c.si)}</b>${c.qtd>1?' × '+c.qtd:''}</span>${P.pvp?`<span>Desconto <b>${Math.round((1-c.ci/P.pvp)*100)}%</b></span>`:''}<span>Margem <b class="${c.margem<0?'neg':''}">${fE(c.margem)}</b></span><span class="seq-com">Comissão <b class="${c.com<0?'neg':''}">${fE(c.com)}</b></span>${alertas.length?`<span class="neg">⚠️ ${alertas.join(' · ')}</span>`:''}`;}
+  return`<span>s/IVA <b>${fE(c.si)}</b>${c.qtd>1?' × '+c.qtd:''}</span>${P.av?`<span>Desconto s/ PVP <b>${Math.round((1-c.ci/P.av)*100)}%</b></span>`:''}<span>Margem <b class="${c.margem<0?'neg':''}">${fE(c.margem)}</b></span><span class="seq-com">Comissão <b class="${c.com<0?'neg':''}">${fE(c.com)}</b></span>${alertas.length?`<span class="neg">⚠️ ${alertas.join(' · ')}</span>`:''}`;}
 function seqCalcAtualizar(){const x=(S.stockEq||[]).find(y=>String(y.id)===String(S.seqVender));const el=document.getElementById('seq-calc');if(el)el.innerHTML=seqCalcHTML(x,S.seqVenda||{});}
 async function seqRegistar(){
   const x=(S.stockEq||[]).find(y=>String(y.id)===String(S.seqVender));if(!x)return;
@@ -3260,7 +3260,7 @@ function stockEqView(){
     const btn=(lb,v)=>v==null?'':`<button class="seq-pbtn ${numPT(V.preco)!=null&&Math.abs(numPT(V.preco)-v)<0.01?'on':''}" data-action="seq-preco-set" data-v="${v}">${lb}<b>${fE(v)}</b><small>${(()=>{const c=seqComA(x,v,1,V.campanha);return c?'comissão '+fE(c.com):'';})()}</small></button>`;
     return`<div class="seq-form">
       <div class="seq-avender">A vender: <span class="sec-mono">${esc(x.ref)}</span>${si.tamanho?' · <b>Tamanho '+esc(si.tamanho)+'</b>':''} · ${Number(x.qtd)||0} em stock em ${esc(seqLojaCurta(x.ponto_venda))}${g.L.length>1?' <span class="seq-orig">(escolhe outra referência na lista acima)</span>':''}</div>
-      <div class="seq-pbtns">${btn('Preço Caetano Aveiro',Pz.av)}${btn('Venda site',Pz.site)}${btn(`Desconto máx. ${x.desc_max!=null?Math.round(x.desc_max*100)+'%':''}`,Pz.max)}</div>
+      <div class="seq-pbtns">${btn('PVP',Pz.av)}${btn('Venda site',Pz.site)}${btn(`Desconto máx. ${x.desc_max!=null?Math.round(x.desc_max*100)+'%':''}`,Pz.max)}</div>
       <div class="seq-form-g">
         ${isAdmin()?`<label>Vendido por<select class="norma-inp" data-seq-v="vendedor_id"><option value="">— escolher —</option>${pessoas.map(p=>`<option value="${p.id}" ${V.vendedor_id===p.id?'selected':''}>${esc(p.nome||'?')}${p.role==='assessor'?' (assessor)':''}</option>`).join('')}</select></label>`:''}
         <label>Preço ao cliente (c/IVA, por unidade)<input class="norma-inp" data-seq-v="preco" inputmode="decimal" value="${esc(V.preco||'')}" placeholder="Ex: 289,00" id="seq-preco"></label>
@@ -3276,7 +3276,7 @@ function stockEqView(){
         <button class="btn btn-dark btn-sm" data-action="seq-vender" data-id="">Cancelar</button>
         ${si.url?`<a class="seq-link" href="${esc(si.url)}" target="_blank" rel="noopener">Ver no site ↗</a>`:''}
       </div>
-      ${isAdmin()?`<div class="seq-admp">Preço Caetano Aveiro desta referência (c/IVA): <input class="norma-inp" id="seq-pav-${esc(x.ref)}" value="${Pz.av!=null?String(Pz.av).replace('.',','):''}" style="width:100px"> <button class="btn btn-dark btn-sm" data-action="seq-pav" data-ref="${esc(x.ref)}">Gravar</button> <span class="seq-orig">origem: ${esc({manual:'escrito por ti',excel:'Excel',site:'PVP do site'}[Pz.origem]||'—')}</span>${Pz.origem==='manual'?` <button class="btn btn-dark btn-sm" data-action="seq-pav-repor" data-ref="${esc(x.ref)}">Repor do site</button>`:''}</div>`:''}
+      ${isAdmin()?`<div class="seq-admp">PVP desta referência (c/IVA): <input class="norma-inp" id="seq-pav-${esc(x.ref)}" value="${Pz.av!=null?String(Pz.av).replace('.',','):''}" style="width:100px"> <button class="btn btn-dark btn-sm" data-action="seq-pav" data-ref="${esc(x.ref)}">Gravar</button> <span class="seq-orig">origem: ${esc({manual:'escrito por ti',excel:'Excel',site:'site'}[Pz.origem]||'—')}</span>${Pz.origem==='manual'?` <button class="btn btn-dark btn-sm" data-action="seq-pav-repor" data-ref="${esc(x.ref)}">Repor do site</button>`:''}</div>`:''}
       <div class="seq-nota">Ref. <span class="sec-mono">${esc(x.ref)}</span>${si.tamanho?' · tamanho '+esc(si.tamanho):''} · ${Number(x.qtd)||0} em stock em ${esc(seqLojaCurta(x.ponto_venda))}. Comissão = 20% da margem (preço s/IVA − custo do mapa).${si.dress_code?' Artigo de <b>Dress Code</b>.':''}${si.outlet?' Está no <b>Outlet</b> do site.':''}</div>
     </div>`;};
   const grupo=g=>{const aberto=g.L.find(x=>String(x.id)===String(S.seqVender));const x0=g.L[0];const si=g.si||{};
@@ -3291,8 +3291,8 @@ function stockEqView(){
         ${seqQuemPode()?`<button class="btn ${aberto?'btn-dark':'btn-orange'} btn-sm seq-vbtn" data-action="seq-vender" data-id="${aberto?'':x0.id}">${aberto?'Fechar':'Vender'}</button>`:''}
       </div>
       <div class="seq-refs">
-        <div class="seq-rh ${F.loja?'':'rede'}"><span>Referência</span><span>Observação</span>${F.loja?'':'<span>Loja</span>'}<span class="r">Stock</span><span class="r">Caetano Aveiro</span><span class="r">Venda site</span></div>
-        ${g.L.map(y=>{const sy=seqSi(y)||{};const Py=seqPrecos(y);const on=aberto&&String(y.id)===String(aberto.id);const dsy=(Py.pvp&&Py.site!=null&&Py.site<Py.pvp)?Math.round((1-Py.site/Py.pvp)*100):0;
+        <div class="seq-rh ${F.loja?'':'rede'}"><span>Referência</span><span>Observação</span>${F.loja?'':'<span>Loja</span>'}<span class="r">Stock</span><span class="r">PVP</span><span class="r">Venda site</span></div>
+        ${g.L.map(y=>{const sy=seqSi(y)||{};const Py=seqPrecos(y);const on=aberto&&String(y.id)===String(aberto.id);const dsy=(Py.av&&Py.site!=null&&Py.site<Py.av)?Math.round((1-Py.site/Py.av)*100):0;
           return`<div class="seq-rl ${on?'on':''} ${F.loja?'':'rede'}" ${seqQuemPode()?`data-action="seq-vender" data-id="${on?'':y.id}" title="Clica para vender esta referência"`:''}>
             <span class="sec-mono seq-rref">${esc(y.ref)}</span>
             <span class="seq-robs">${sy.tamanho?'Tamanho '+esc(sy.tamanho):(g.si||sy.site_em?'<i>sem tamanho no site</i>':'<i>—</i>')}</span>
@@ -3320,7 +3320,7 @@ function stockEqView(){
       <div class="eot-prev-g">
         <div><b>${P.linhas.length}</b> referências com stock · ${P.linhas.reduce((a,l)=>a+(Number(l.qtd)||0),0)} peças</div>
         ${[...new Set(P.linhas.map(l=>l.ponto_venda))].map(lj=>`<div>${esc(seqLojaCurta(lj))}: <b>${P.linhas.filter(l=>l.ponto_venda===lj).length}</b> referências</div>`).join('')}
-        ${P.temPrecoAv||P.temVendaSite?`<div class="ok">O Excel traz ${[P.temPrecoAv?'"Preço Caetano Aveiro"':'',P.temVendaSite?'"Venda site"':''].filter(Boolean).join(' e ')} — esses valores ganham ao site.</div>`:''}
+        ${P.temPrecoAv||P.temVendaSite?`<div class="ok">O Excel traz ${[P.temPrecoAv?'"PVP"':'',P.temVendaSite?'"Venda site"':''].filter(Boolean).join(' e ')} — esses valores ganham ao site.</div>`:''}
         <div class="mut">Depois de gravar, a plataforma cruza cada referência com lifestyle.caetano.pt (preço, tamanho e categoria). O mapa anterior é substituído; as vendas já registadas e os preços que escreveste à mão não mudam.</div>
       </div>
       <div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-orange btn-sm" data-action="seq-confirmar" ${S.seqBusy?'disabled':''}>${S.seqBusy?'A gravar…':'Confirmar e substituir'}</button><button class="btn btn-dark btn-sm" data-action="seq-cancelar">Cancelar</button></div>
@@ -3337,7 +3337,7 @@ function stockEqView(){
     <div class="seq-res"><b>${G.length}</b> artigo${G.length!==1?'s':''} · ${arr.length} referências · ${pecas} peça${pecas!==1?'s':''}</div>
     <div class="seq-list">${G.slice(0,lim).map(grupo).join('')||'<div class="gpp-empty">Nada com estes filtros.</div>'}</div>
     ${G.length>lim?`<div style="padding:10px 0"><button class="btn btn-outline btn-block" data-action="seq-mais">Mostrar mais (${G.length-lim})</button></div>`:''}
-    <div class="seq-nota" style="margin-top:12px">Cada artigo junta os vários tamanhos (o site diz qual é o tamanho de cada referência). <b>Caetano Aveiro</b> é o PVP do site, salvo se o Excel trouxer outro preço ou se o chefe o tiver alterado. O stock é o do dia do mapa — confirma antes de prometer ao cliente.</div>`:''}
+    <div class="seq-nota" style="margin-top:12px">Cada artigo junta os vários tamanhos (o site diz qual é o tamanho de cada referência). O <b>PVP</b> vem do site, salvo se o Excel trouxer outro PVP ou se o chefe o tiver alterado. O stock é o do dia do mapa — confirma antes de prometer ao cliente.</div>`:''}
   </div>`;
 }
 function renderStockEqVend(){
@@ -4875,7 +4875,7 @@ function EXPORT_FOLHAS(){
       {c:'created_at',l:'Criado',f:dt},{c:'updated_at',l:'Atualizado',f:dt},{c:'updated_by',l:'Atualizado por',f:nome},
     ]},
     {nome:'Preços por referência',path:'/precos_ref?select=*&order=ref.asc',cols:[
-      {c:'ref',l:'Referência'},{c:'nome_site',l:'Nome no site'},{c:'tamanho',l:'Tamanho'},{c:'preco_aveiro',l:'Preço Caetano Aveiro'},{c:'preco_aveiro_origem',l:'Origem do preço'},
+      {c:'ref',l:'Referência'},{c:'nome_site',l:'Nome no site'},{c:'tamanho',l:'Tamanho'},{c:'preco_aveiro',l:'PVP'},{c:'preco_aveiro_origem',l:'Origem do preço'},
       {c:'pvp',l:'PVP (site)'},{c:'venda_site',l:'Venda site'},{c:'no_site',l:'Está no site',f:sn},{c:'site_stock',l:'Stock online',f:sn},{c:'lifestyle',l:'Lifestyle (site)',f:sn},
       {c:'outlet',l:'Outlet',f:sn},{c:'dress_code',l:'Dress Code',f:sn},{c:'categorias',l:'Categorias site'},{c:'url',l:'Link'},{c:'site_em',l:'Consultado em',f:dt},
     ]},
