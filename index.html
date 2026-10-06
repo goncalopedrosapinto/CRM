@@ -1447,6 +1447,17 @@ html,body{overflow-x:hidden;max-width:100vw}
 .seq-pct-in input:focus{outline:2px solid var(--orange-light);border-color:var(--orange)}
 .seq-pct-in b{font-size:15px}
 .seq-pbtn .neg{color:var(--red);font-weight:700}
+.eotd{margin:0 16px 14px}
+.eotd-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px;font-size:13px}.eotd-h span{font-size:12px;color:var(--text3)}
+.eotd-tbl th.r,.eotd-tbl td.r{text-align:right}
+.eotd-tbl td small{color:var(--text3);font-size:11px;margin-left:2px}
+.eotd-row{cursor:pointer}.eotd-row:hover td{background:var(--surface2)}.eotd-row.on td{background:var(--orange-bg)}
+.eotd-sem td{color:var(--text2)}
+.eotd-bar{display:inline-block;width:90px;height:7px;border-radius:4px;background:var(--bg3);vertical-align:middle;margin-right:8px;overflow:hidden}.eotd-bar span{display:block;height:100%;border-radius:4px}
+.eotd-tag{font-size:10.5px;font-weight:800;border-radius:6px;padding:2px 7px;white-space:nowrap}
+.eotd-tag.ok{background:var(--green-bg);color:var(--green)}.eotd-tag.mais{background:var(--amber-bg);color:#92600a}.eotd-tag.menos{background:var(--blue-bg);color:var(--blue)}
+.eotd-av{margin-top:8px;background:var(--amber-bg);color:#92600a;border-radius:var(--r);padding:8px 12px;font-size:12.5px;font-weight:600}
+.eotd-nota{font-size:11.5px;color:var(--text3);margin-top:6px}
 </style>
 </head>
 <body>
@@ -3942,6 +3953,43 @@ function eotSelHTML(x,campo,ops,vazio){return`<select class="lc-sel eot-sel" dat
 function eotTelHTML(x){const t=[x.telemovel,x.telefone].filter(Boolean);return t.length?t.map(n=>`<a class="eot-tel" href="tel:${esc(String(n).replace(/\s/g,''))}">${esc(n)}</a>`).join(' '):'<span style="color:var(--text3)">sem telefone</span>';}
 const EOT_SQL_AVISO=`<div class="mg-aviso">⚠️ A tabela <b>eot_contratos</b> ainda não existe ou não tens acesso. Corre o SQL dos EOTs no Supabase e recarrega.</div>`;
 
+// Distribuição dos EOTs por vendedor — para ver se a atribuição está equilibrada (quantidade E qualidade)
+function eotDistribuicao(ativos,vend,sel){
+  if(!ativos.length||!vend.length)return'';
+  const fE0=n=>Number(n||0).toLocaleString('pt-PT',{maximumFractionDigits:0})+' €';
+  const linha=L=>{const d=x=>eotDias(x);return{n:L.length,u90:L.filter(x=>{const v=d(x);return v!=null&&v<=90;}).length,u180:L.filter(x=>{const v=d(x);return v!=null&&v>90&&v<=180;}).length,
+    res:L.reduce((a,x)=>a+(Number(x.residual)||0),0),cont:L.filter(x=>(x.fase||'Por contactar')!=='Por contactar').length,ganhos:L.filter(x=>x.fase==='Renovado'||x.fase==='Retomado').length};};
+  const porV=vend.map(p=>({p,...linha(ativos.filter(x=>x.responsavel_id===p.id))}));
+  const sem=linha(ativos.filter(x=>!x.responsavel_id));
+  const atrib=porV.reduce((a,r)=>a+r.n,0);const resT=porV.reduce((a,r)=>a+r.res,0);const u180T=porV.reduce((a,r)=>a+r.u90+r.u180,0);
+  const media=atrib/vend.length;const maxN=Math.max(1,...porV.map(r=>r.n));
+  const tag=r=>{if(!atrib)return'';const dif=r.n-media;const tol=Math.max(1,media*0.15);
+    if(Math.abs(dif)<=tol)return'<span class="eotd-tag ok">equilibrado</span>';
+    return`<span class="eotd-tag ${dif>0?'mais':'menos'}">${dif>0?'+':''}${Math.round(dif)} vs média</span>`;};
+  const pct=(v,t)=>t?Math.round(v/t*100)+'%':'—';
+  const row=r=>`<tr class="eotd-row ${sel===r.p.id?'on':''}" data-action="eot-resp-f" data-v="${sel===r.p.id?'':r.p.id}" title="Filtrar por ${esc(r.p.nome||'')}">
+      <td>${vendTag(r.p.id)}</td>
+      <td><div class="eotd-bar"><span style="width:${Math.round(r.n/maxN*100)}%;background:${corVend(r.p.id)}"></span></div><b>${r.n}</b> <small>${pct(r.n,atrib)}</small></td>
+      <td class="r">${r.u90}</td><td class="r">${r.u180}</td>
+      <td class="r">${fE0(r.res)} <small>${pct(r.res,resT)}</small></td>
+      <td class="r">${r.n?Math.round(r.cont/r.n*100)+'%':'—'} <small>${r.cont}/${r.n}</small></td>
+      <td class="r">${r.ganhos}</td>
+      <td>${tag(r)}</td></tr>`;
+  // aviso de desequilíbrio na qualidade (urgentes e valor), não só na quantidade
+  const avisos=[];
+  porV.forEach(r=>{if(atrib&&resT>0){const qn=r.n/atrib,qr=r.res/resT;if(qr-qn>0.15)avisos.push(`${esc((r.p.nome||'').split(' ')[0])} tem ${pct(r.n,atrib)} dos contratos mas ${pct(r.res,resT)} do valor residual`);}
+    if(u180T>=4){const q=(r.u90+r.u180)/u180T;if(q-1/vend.length>0.2)avisos.push(`${esc((r.p.nome||'').split(' ')[0])} tem ${pct(r.u90+r.u180,u180T)} dos contratos a terminar nos próximos 6 meses`);}});
+  return`<div class="eotd">
+    <div class="eotd-h"><b>Distribuição por vendedor</b><span>${atrib} atribuídos · média ${media.toLocaleString('pt-PT',{maximumFractionDigits:1})} por vendedor${sem.n?` · <b style="color:var(--red)">${sem.n} por atribuir</b>`:''}</span></div>
+    <div class="gpp-card" style="overflow-x:auto;margin:0"><table class="gpp-ltable eotd-tbl" data-no-tools="1">
+      <thead><tr><th>Vendedor</th><th>Atribuídos</th><th class="r">≤ 90 d</th><th class="r">91–180 d</th><th class="r">Valor residual</th><th class="r">Contactados</th><th class="r">Renov./Retom.</th><th>Equilíbrio</th></tr></thead>
+      <tbody>${porV.map(row).join('')}
+      ${sem.n?`<tr class="eotd-row eotd-sem ${sel==='_sem'?'on':''}" data-action="eot-resp-f" data-v="${sel==='_sem'?'':'_sem'}"><td><i>Por atribuir</i></td><td><b>${sem.n}</b></td><td class="r">${sem.u90}</td><td class="r">${sem.u180}</td><td class="r">${fE0(sem.res)}</td><td class="r">—</td><td class="r">—</td><td></td></tr>`:''}
+      </tbody></table></div>
+    ${avisos.length?`<div class="eotd-av">⚖️ ${avisos.join(' · ')}</div>`:''}
+    <div class="eotd-nota">Conta só os contratos que estão no mapa. Clica numa linha para filtrar. Equilibrado = até ±15% da média; olha também para o valor residual e para os urgentes — quantidade igual não é o mesmo que oportunidades iguais.</div>
+  </div>`;
+}
 // ---- Vista do chefe (dentro de Leads) ----
 function eotView(){
   const F=S.eotF||{};
@@ -3964,6 +4012,7 @@ function eotView(){
   arr=arr.slice().sort((a,b)=>String(a.data_fim||'9').localeCompare(String(b.data_fim||'9')));
   S.eotFiltrados=arr.map(x=>String(x.contrato));
   const semRespFilt=arr.filter(x=>!x.responsavel_id).length;
+  const distHTML=eotDistribuicao(ativos,vend,F.resp);
   const sel=(id,val,ops)=>`<select class="gpp-mes-sel" data-eot-filtro="${id}">${ops.map(([v,l])=>`<option value="${esc(v)}" ${String(val||'')===v?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
   const P=S.eotPrev;
   const prev=P?`<div class="gpp-card eot-prev">
@@ -4018,6 +4067,7 @@ function eotView(){
       <div class="mg-card"><div class="mg-k">Por atribuir</div><div class="mg-v" style="color:${kSemResp?'var(--red)':'inherit'}">${kSemResp}</div></div>
       <div class="mg-card"><div class="mg-k">Renovados / Retomados</div><div class="mg-v" style="color:var(--green)">${kGanhos}</div></div>
     </div>
+    ${distHTML}
     ${kSaiu?`<div class="mg-aviso">⇥ <b>${kSaiu}</b> contrato${kSaiu!==1?'s':''} saíram do mapa sem fase final — vê em "Saíram do mapa" e marca Renovado / Retomado / Liquidado / Perdido.</div>`:''}
     <div class="eot-filtros">
       ${sel('resp',F.resp,[['','Todos os responsáveis'],['_sem','— Por atribuir —'],...vend.map(p=>[p.id,p.nome||'?'])])}
@@ -6876,6 +6926,7 @@ function bindEvents(){
       case'eot-confirmar':eotConfirmar();break;
       case'eot-cancelar':setState({eotPrev:null,eotErrImp:''});break;
       case'eot-negocio':eotCriarNegocio(el.dataset.c);break;
+      case'eot-resp-f':{const F=Object.assign({},S.eotF||{});F.resp=el.dataset.v||'';setState({eotF:F,eotMsg:''});break;}
       case'stock-assumir':stockMudarEstado(el.dataset.id,'A negociar',true);break;
       case'stock-largar':stockMudarEstado(el.dataset.id,'Disponível',false);break;
       case'escala-open':{if(!isAdmin())break;setState({escalaPicker:{dia:el.dataset.dia,estado:el.dataset.estado}});break}
