@@ -1368,6 +1368,40 @@ html,body{overflow-x:hidden;max-width:100vw}
 .sec-ve{padding:0!important}
 .sec-nota{font-size:12px;color:var(--text3);margin-top:16px}
 @media(max-width:700px){.sec-wrap{padding:12px 12px 24px}.sec-kpis{grid-template-columns:1fr 1fr}.sec-kpis .sec-kpi:last-child{grid-column:1/-1}.sec-q{min-width:100%;order:3}.sec-quem{display:none}}
+/* ---- Stock Equipamento & Lifestyle ---- */
+.seq-wrap{padding:14px 20px 28px}
+.seq-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.seq-tit{font-size:18px;font-weight:800;letter-spacing:-.3px}
+.seq-sub{font-size:12px;color:var(--text3);margin-top:2px}
+.seq-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.seq-sel{border:1px solid var(--border2);background:var(--surface);border-radius:var(--r);padding:8px 10px;font-size:13px;font-family:inherit;font-weight:600;color:var(--text)}
+.seq-res{font-size:12.5px;color:var(--text2);margin:12px 0 8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seq-list{display:flex;flex-direction:column;gap:6px}
+.seq-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);box-shadow:var(--elev1);overflow:hidden}
+.seq-item.on{border-color:var(--orange);box-shadow:0 0 0 2px var(--orange-light)}
+.seq-row{display:grid;grid-template-columns:1fr 56px 220px 86px;gap:12px;align-items:center;padding:10px 14px}
+.seq-desc{font-size:13.5px;font-weight:700;color:var(--text)}
+.seq-meta{font-size:11.5px;color:var(--text3);margin-top:2px}
+.seq-qtd{text-align:center;line-height:1.1}.seq-qtd b{font-size:18px;display:block}.seq-qtd span{font-size:10px;color:var(--text3)}
+.seq-tags{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.seq-est{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.seq-d{display:inline-block;font-size:11px;font-weight:800;border-radius:6px;padding:2px 7px;white-space:nowrap}
+.seq-d10{background:var(--surface2);color:var(--text2)}.seq-d20{background:var(--blue-bg);color:var(--blue)}.seq-d40{background:var(--amber-bg);color:#92600a}.seq-d50{background:var(--red-bg);color:var(--red)}
+.seq-e{font-size:10px;font-weight:800;border-radius:5px;padding:1px 6px;text-transform:uppercase;letter-spacing:.3px}
+.seq-e-vivo{background:var(--green-bg);color:var(--green)}.seq-e-mor{background:var(--amber-bg);color:#92600a}.seq-e-morto{background:#e5e7eb;color:#4b5563}.seq-e-an{background:var(--purple-bg);color:var(--purple)}
+.seq-ant{font-size:11px;color:var(--text3)}
+.seq-vbtn{justify-self:end}
+.seq-form{border-top:1px dashed var(--border2);padding:12px 14px 14px;background:var(--bg)}
+.seq-form-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.seq-form-g label{display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--text3);font-weight:600}
+.seq-form-g .norma-inp{width:100%}
+.seq-calc{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-top:10px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);font-size:13px;color:var(--text2)}
+.seq-calc b{color:var(--text)}.seq-calc .neg,.seq-calc b.neg{color:var(--red)}
+.seq-com b{color:var(--green);font-size:15px}
+.seq-calc-v{color:var(--text3)}
+.seq-nota{font-size:11.5px;color:var(--text3);margin-top:8px}
+@media(max-width:700px){.seq-wrap{padding:12px 12px 24px}.seq-row{grid-template-columns:1fr 46px;row-gap:6px}.seq-tags{grid-column:1/2}.seq-vbtn{grid-column:2/3;grid-row:2}.seq-q{min-width:100%}}
+.as-tabs{display:flex;gap:2px;margin:10px 16px 0}
 </style>
 </head>
 <body>
@@ -1611,11 +1645,18 @@ function renderAssessor(){
   const totM=L.reduce((a,l)=>a+eqMargem(l),0);
   const aberto=S.eqColarAberto===vid;
   const hoje=new Date().toISOString().slice(0,10);
+  const asTabs=`<div class="sec-tabs as-tabs"><button class="sec-tab ${S.asTab!=='stock'?'on':''}" data-action="as-tab" data-t="vendas">🧾 As minhas vendas</button><button class="sec-tab ${S.asTab==='stock'?'on':''}" data-action="as-tab" data-t="stock">🧥 Stock equipamento &amp; lifestyle</button></div>`;
+  if(S.asTab==='stock')return`<div class="app-layout"><div class="main-panel" style="width:100%">
+    <div class="hdr"><div class="hdr-accent"></div><div class="hdr-title">${S.asTab==='stock'?'Stock Equipamento &amp; Lifestyle':'As minhas vendas de equipamento'}</div>
+      <span class="sec-quem">${esc(me.nome||'')}</span>
+      <button class="hdr-btn" data-action="go-password">🔑</button><button class="hdr-btn" data-action="logout">Sair</button></div>
+    <div class="content">${asTabs}${stockEqView()}</div></div></div>`;
   return`<div class="app-layout"><div class="main-panel" style="width:100%">
     <div class="hdr"><div class="hdr-accent"></div><div class="hdr-title">As minhas vendas de equipamento</div>
       <span class="sec-quem">${esc(me.nome||'')}</span>
       <button class="hdr-btn" data-action="go-password">🔑</button><button class="hdr-btn" data-action="logout">Sair</button></div>
     <div class="content"><div style="padding:12px 0">
+      ${asTabs}
       <div class="v-mesbar"><span class="v-meslbl">Mês</span><select class="gpp-mes-sel" data-action="as-mes-sel">${meses.slice().reverse().map(m=>`<option value="${m}" ${m===sel?'selected':''}>${esc(m)}</option>`).join('')}</select></div>
       <div class="lc-cards">
         <div class="mg-card"><div class="mg-k">Linhas</div><div class="mg-v">${L.length}</div></div>
@@ -2937,6 +2978,206 @@ function renderEventoVend(){
 }
 
 // ---- Vista do vendedor: navegação limpa (Hoje · Negócios · Clientes · O meu mês · Ferramentas) ----
+// ---- Stock de Equipamento & Lifestyle (mapa de peças do DMS, carregado pelo chefe) ----
+const SEQ_CATS=[['capacetes','Capacetes'],['casacos','Casacos e fatos'],['calcas','Calças'],['botas','Botas e calçado'],['luvas','Luvas'],['protecao','Proteção e técnico'],['outros','Outros']];
+const SEQ_IVA=0.23;
+function seqCatLabel(k){if(k==='lifestyle')return'Lifestyle';const c=SEQ_CATS.find(x=>x[0]===k);return c?c[1]:'Outros';}
+function seqCategoria(sub,desc,marca){
+  const d=eotNorm(desc),s=eotNorm(sub);
+  if(eotNorm(marca)==='bmw')return'lifestyle';
+  if(/\b(bone|cap|gorro|mochila|longsleeve|polo|hoodie|sweat|sweatshirt|t-shirt|tshirt|camisola|caneta|caneca|oculos|cinto|porta-chaves|chaveiro|bandana|softshell|de desporto|make life a ride|chapeu|toalha|guarda-chuva|garrafa|carteira|pulseira)\b/.test(d))return'lifestyle';
+  if(s==='capacetes'||/^capacete/.test(d))return'capacetes';
+  if(s==='blusoes'||/^(casaco|blusao|colete|fato)/.test(d))return'casacos';
+  if(s==='calcas'||/^calca/.test(d))return'calcas';
+  if(s==='botas'||/^(botas?|sapatilhas|stiefel)\b/.test(d))return'botas';
+  if(s==='luvas'||/^luvas?\b/.test(d))return'luvas';
+  if(/^(protetor|cinta|passa-montanhas|connectedride|easy|meias|roupa interior|camisola interior|airbag)/.test(d))return'protecao';
+  return'outros';
+}
+function seqData8(v){if(v==null||v==='')return null;const s=String(typeof v==='number'?Math.round(v):v).trim();const m=s.match(/^(\d{4})(\d{2})(\d{2})$/);if(m)return m[1]+'-'+m[2]+'-'+m[3];return eotData(v);}
+function seqParse(rows){
+  let hi=-1;
+  for(let i=0;i<Math.min(rows.length,30);i++){const n=(rows[i]||[]).map(eotNorm);if(n.includes('ref. peca')&&n.includes('descricao peca')){hi=i;break;}}
+  if(hi<0)throw new Error('Não encontrei o cabeçalho ("Ref. Peça" e "Descrição Peça"). É o mapa "Stock de Peças - Detalhe"?');
+  const H=(rows[hi]||[]).map(eotNorm);const col=n=>H.indexOf(n);
+  const C={polo:col('polo'),loja:col('ponto venda'),marca:col('marca peca'),fam:col('familia peca'),sub:col('sub-familia peca'),qual:col('qualidade de stock no polo'),
+    antig:col('antig - ult. saida'),ults:col('ult. saida stock'),ref:col('ref. peca'),desc:col('descricao peca'),qtd:col('qtd stock'),cst:col('cst stock'),proc:col('procura media mensal'),dsc:col('% desconto s/ pvp')};
+  const falta=['loja','ref','desc','qtd','cst'].filter(k=>C[k]<0);
+  if(falta.length)throw new Error('Faltam colunas no ficheiro: '+falta.join(', '));
+  const g=(r,k)=>C[k]>=0?r[C[k]]:null;const linhas=[];
+  for(let i=hi+1;i<rows.length;i++){
+    const r=rows[i]||[];const ref=eotTxt(g(r,'ref'));const qtd=eotNum(g(r,'qtd'));
+    if(!ref||!qtd||qtd<=0)continue;
+    const cst=eotNum(g(r,'cst'));let dsc=eotNum(g(r,'dsc'));if(dsc!=null&&dsc>1)dsc=dsc/100;
+    const desc=eotTxt(g(r,'desc'));
+    linhas.push({ponto_venda:eotTxt(g(r,'loja')),polo:eotTxt(g(r,'polo')),ref:String(ref).replace(/\.0+$/,''),descricao:desc,marca:eotTxt(g(r,'marca')),
+      familia:eotTxt(g(r,'fam')),subfamilia:eotTxt(g(r,'sub')),categoria:seqCategoria(g(r,'sub'),desc,g(r,'marca')),qualidade:eotTxt(g(r,'qual')),
+      antig_saida:eotTxt(g(r,'antig')),ult_saida:seqData8(g(r,'ults')),qtd,custo_total:cst,custo_unit:cst!=null?Math.round(cst/qtd*100)/100:null,
+      procura:eotNum(g(r,'proc')),desc_max:dsc});
+  }
+  return linhas;
+}
+async function apiTodos(path){let all=[],off=0;const sep=path.includes('?')?'&':'?';for(;;){const d=await supabaseApi('GET',`${path}${sep}limit=1000&offset=${off}`);all=all.concat(d||[]);if(!d||d.length<1000)break;off+=1000;}return all;}
+async function loadStockEq(){
+  try{const all=await apiTodos('/stock_equip?select=*&order=id.asc');const lotes=[...new Set(all.map(x=>x.lote))].sort();const ult=lotes[lotes.length-1];
+    S.stockEq=all.filter(x=>x.lote===ult);S.stockEqErr='';}
+  catch(e){S.stockEq=[];S.stockEqErr=(e&&e.message)||'erro';}
+  S.stockEqLoaded=true;
+}
+function seqGarantirCarga(){if(!S.stockEqLoaded&&!S._seqLoading){S._seqLoading=true;Promise.all([loadStockEq(),isAdmin()&&!(S.assessores||[]).length?loadAssessores():null]).then(()=>{S._seqLoading=false;render();});}}
+async function seqFicheiro(f){
+  if(!f)return;
+  setState({seqBusy:true,seqErrImp:'',seqMsg:'',seqPrev:null});
+  try{
+    const X=await eotCarregarXLSX();const buf=await f.arrayBuffer();
+    const wb=X.read(new Uint8Array(buf),{type:'array',cellDates:true});
+    const ws=wb.Sheets[wb.SheetNames[0]];const rows=X.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
+    const linhas=seqParse(rows);
+    if(!linhas.length)throw new Error('Não encontrei artigos com stock no ficheiro.');
+    setState({seqBusy:false,seqPrev:{nome:f.name,linhas}});
+  }catch(e){setState({seqBusy:false,seqErrImp:(e&&e.message)||String(e)});}
+}
+async function seqInserir(lote){
+  const h={'apikey':S.config.key,'Authorization':`Bearer ${S.token}`,'Content-Type':'application/json','Prefer':'return=minimal'};
+  let r=await fetch(`${S.config.url}/rest/v1/stock_equip`,{method:'POST',headers:h,body:JSON.stringify(lote)});
+  if(r.status===401){const nt=await refreshSession();if(nt){S.token=nt;h.Authorization=`Bearer ${nt}`;r=await fetch(`${S.config.url}/rest/v1/stock_equip`,{method:'POST',headers:h,body:JSON.stringify(lote)});}}
+  if(!r.ok)throw new Error(await r.text());
+}
+async function seqConfirmar(){
+  const P=S.seqPrev;if(!P)return;
+  setState({seqBusy:true,seqErrImp:''});
+  const lote=new Date().toISOString();
+  try{
+    const corpo=P.linhas.map(l=>Object.assign({lote},l));
+    for(let i=0;i<corpo.length;i+=500)await seqInserir(corpo.slice(i,i+500));
+    // só apaga o mapa antigo depois de o novo estar todo gravado
+    await supabaseApi('DELETE','/stock_equip?lote=neq.'+encodeURIComponent(lote));
+    await loadStockEq();
+    setState({seqBusy:false,seqPrev:null,seqMsg:`Stock atualizado: ${P.linhas.length} artigos.`});
+  }catch(e){setState({seqBusy:false,seqErrImp:'Erro ao gravar: '+((e&&e.message)||e)});}
+}
+function seqLojaCurta(l){return String(l||'').replace(/^\d+\s*-\s*/,'').replace(/^Lisboa - /,'').trim()||'—';}
+function seqLojaPadrao(){const lojas=[...new Set((S.stockEq||[]).map(x=>x.ponto_venda).filter(Boolean))];return lojas.find(l=>/aveiro/i.test(l))||'';}
+function seqDescHTML(x){if(x.desc_max==null)return'';const p=Math.round(x.desc_max*100);const c=p>=50?'seq-d50':(p>=40?'seq-d40':(p>=20?'seq-d20':'seq-d10'));return`<span class="seq-d ${c}" title="Desconto máximo sobre o PVP">até −${p}%</span>`;}
+function seqEstadoHTML(x){const q=String(x.qualidade||'');const c={Vivo:'seq-e-vivo',Moribundo:'seq-e-mor',Morto:'seq-e-morto',Analisar:'seq-e-an'}[q]||'seq-e-an';
+  const t=String(x.antig_saida||'').replace(/^Últ\. Saída /,'última saída ').replace(/^Sem Movimento de Saída$/,'nunca vendeu');return`<span class="seq-e ${c}" title="${esc(x.antig_saida||'')}">${esc(q||'—')}</span>${t?`<span class="seq-ant">${esc(t)}</span>`:''}`;}
+function seqQuemPode(){return isAdmin()||isVendedor()||(S.me&&S.me.role==='assessor');}
+function seqCalc(x,V){
+  const qtd=Math.max(1,parseInt(V.qtd,10)||1);const ci=numPT(V.preco);
+  if(ci==null||!x)return null;
+  const si=Math.round(ci/(1+SEQ_IVA)*100)/100;
+  const l={qtd,venda:si,custo:Number(x.custo_unit)||0,campanha:V.campanha||null};
+  return{qtd,si,margem:eqMargem(l),com:eqComissao(l),total:Math.round(eqVendaEf(l)*qtd*(1+SEQ_IVA)*100)/100};
+}
+function seqCalcHTML(x,V){const fE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';const c=seqCalc(x,V);
+  if(!c)return'<span class="seq-calc-v">Escreve o preço ao cliente para ver a comissão.</span>';
+  return`<span>s/IVA <b>${fE(c.si)}</b>${c.qtd>1?' × '+c.qtd:''}</span><span>Margem <b class="${c.margem<0?'neg':''}">${fE(c.margem)}</b></span><span class="seq-com">Comissão <b class="${c.com<0?'neg':''}">${fE(c.com)}</b></span>${c.margem<0?'<span class="neg">⚠️ abaixo do custo</span>':''}`;}
+function seqCalcAtualizar(){const x=(S.stockEq||[]).find(y=>String(y.id)===String(S.seqVender));const el=document.getElementById('seq-calc');if(el)el.innerHTML=seqCalcHTML(x,S.seqVenda||{});}
+async function seqRegistar(){
+  const x=(S.stockEq||[]).find(y=>String(y.id)===String(S.seqVender));if(!x)return;
+  const V=S.seqVenda||{};const c=seqCalc(x,V);
+  if(!c){alert('Indica o preço ao cliente (c/IVA).');return;}
+  if(c.qtd>Number(x.qtd||0)&&!confirm(`O stock indica ${x.qtd} unidade(s). Registar ${c.qtd} mesmo assim?`))return;
+  if(c.margem<0&&!confirm('A venda fica abaixo do custo (comissão negativa). Registar mesmo assim?'))return;
+  const vid=isAdmin()?V.vendedor_id:(S.me&&S.me.id);
+  if(!vid){alert('Escolhe quem fez a venda.');return;}
+  const fora=!/aveiro/i.test(x.ponto_venda||'');
+  const body={vendedor_id:vid,data:V.data||new Date().toISOString().slice(0,10),wip:V.wip||null,fatura:V.fatura||null,artigo:x.ref,
+    descricao:(x.descricao||'')+(fora?' · stock '+seqLojaCurta(x.ponto_venda):''),qtd:c.qtd,custo:Number(x.custo_unit)||0,venda:c.si,campanha:V.campanha||null};
+  setState({seqBusy:true});
+  try{await supabaseApi('POST','/equipamento',body);await loadEquipamento();
+    const fE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+    setState({seqBusy:false,seqVender:null,seqVenda:null,seqMsg:`Venda registada: ${x.descricao||x.ref} — comissão ${fE(c.com)}${isAdmin()?' para '+vendName(vid):''}. Já aparece nas Comissões.`});}
+  catch(e){setState({seqBusy:false});alert('Erro ao registar: '+((e&&e.message)||e)+(String(e&&e.message).includes('row-level')?'\n\nFalta correr o SQL do stock de equipamento no Supabase.':''));}
+}
+function stockEqView(){
+  seqGarantirCarga();
+  const F=Object.assign({tab:'equip',cat:'',loja:null,q:'',ord:'desc'},S.seqF||{});
+  if(F.loja==null)F.loja=seqLojaPadrao();
+  const todos=S.stockEq||[];
+  const lojas=[...new Set(todos.map(x=>x.ponto_venda).filter(Boolean))].sort((a,b)=>(/aveiro/i.test(b)?1:0)-(/aveiro/i.test(a)?1:0)||a.localeCompare(b));
+  const daLoja=todos.filter(x=>!F.loja||x.ponto_venda===F.loja);
+  const nEq=daLoja.filter(x=>x.categoria!=='lifestyle').length,nLs=daLoja.length-nEq;
+  let arr=daLoja.filter(x=>F.tab==='lifestyle'?x.categoria==='lifestyle':x.categoria!=='lifestyle');
+  const porCat={};arr.forEach(x=>{porCat[x.categoria]=(porCat[x.categoria]||0)+1;});
+  if(F.tab!=='lifestyle'&&F.cat)arr=arr.filter(x=>x.categoria===F.cat);
+  const q=eotNorm(F.q);if(q)arr=arr.filter(x=>eotNorm([x.descricao,x.ref,x.subfamilia].join(' ')).includes(q));
+  const ordAnt={'Sem Movimento de Saída':9,'Últ. Saída há mais de 3 anos':8,'Últ. Saída de 2 a 3 anos':7,'Últ. Saída de 1 a 2 anos':6,'Últ. Saída de 6 meses a 1 ano':5,'Últ. Saída de 3 a 6 meses':4,'Últ. Saída até 3 meses':3};
+  arr=arr.slice().sort(F.ord==='alfa'?((a,b)=>String(a.descricao||'').localeCompare(String(b.descricao||''),'pt')):
+    F.ord==='parado'?((a,b)=>(ordAnt[b.antig_saida]||0)-(ordAnt[a.antig_saida]||0)||String(a.descricao||'').localeCompare(String(b.descricao||''),'pt')):
+    ((a,b)=>(Number(b.desc_max)||0)-(Number(a.desc_max)||0)||String(a.descricao||'').localeCompare(String(b.descricao||''),'pt')));
+  const pecas=arr.reduce((a,x)=>a+(Number(x.qtd)||0),0);
+  const oport=arr.filter(x=>(Number(x.desc_max)||0)>=0.4).length;
+  const ult=todos.map(x=>x.importado_em).filter(Boolean).sort().pop();
+  const lim=S.seqLim||80;
+  const P=S.seqPrev;
+  const pessoas=[...(S.team||[]).filter(p=>p.role==='vendedor'),...(S.assessores||[])];
+  const V=S.seqVenda||{};
+  const form=x=>`<div class="seq-form">
+      <div class="seq-form-g">
+        ${isAdmin()?`<label>Vendido por<select class="norma-inp" data-seq-v="vendedor_id"><option value="">— escolher —</option>${pessoas.map(p=>`<option value="${p.id}" ${V.vendedor_id===p.id?'selected':''}>${esc(p.nome||'?')}${p.role==='assessor'?' (assessor)':''}</option>`).join('')}</select></label>`:''}
+        <label>Data<input type="date" class="norma-inp" data-seq-v="data" value="${esc(V.data||new Date().toISOString().slice(0,10))}"></label>
+        <label>Qtd<input type="number" min="1" step="1" class="norma-inp" data-seq-v="qtd" value="${esc(V.qtd||1)}"></label>
+        <label>Preço ao cliente (c/IVA, por unidade)<input class="norma-inp" data-seq-v="preco" inputmode="decimal" value="${esc(V.preco||'')}" placeholder="Ex: 289,00" id="seq-preco"></label>
+        <label>Campanha<select class="norma-inp" data-seq-v="campanha">${EQ_CAMP.map(o=>`<option value="${o[0]}" ${(V.campanha||'')===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></label>
+        <label>Fatura<input class="norma-inp" data-seq-v="fatura" value="${esc(V.fatura||'')}" placeholder="opcional"></label>
+        <label>WIP/OR<input class="norma-inp" data-seq-v="wip" value="${esc(V.wip||'')}" placeholder="opcional"></label>
+      </div>
+      <div class="seq-calc" id="seq-calc">${seqCalcHTML(x,V)}</div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn btn-orange btn-sm" data-action="seq-registar" ${S.seqBusy?'disabled':''}>${S.seqBusy?'A registar…':'✓ Registar venda'}</button>
+        <button class="btn btn-dark btn-sm" data-action="seq-vender" data-id="">Cancelar</button>
+      </div>
+      <div class="seq-nota">A comissão é 20% da margem (preço s/IVA − custo). O custo vem do mapa de stock.${x.desc_max!=null?` Desconto máximo autorizado neste artigo: <b>${Math.round(x.desc_max*100)}%</b> sobre o PVP.`:''}</div>
+    </div>`;
+  const item=x=>{const aberto=String(S.seqVender)===String(x.id);return`<div class="seq-item ${aberto?'on':''}">
+      <div class="seq-row">
+        <div class="seq-main"><div class="seq-desc">${esc(x.descricao||'—')}</div>
+          <div class="seq-meta"><span class="sec-mono">${esc(x.ref)}</span> · ${esc(seqCatLabel(x.categoria))}${!F.loja?` · <b>${esc(seqLojaCurta(x.ponto_venda))}</b>`:''}</div></div>
+        <div class="seq-qtd"><b>${Number(x.qtd)||0}</b><span>un.</span></div>
+        <div class="seq-tags">${seqDescHTML(x)}<div class="seq-est">${seqEstadoHTML(x)}</div></div>
+        ${seqQuemPode()?`<button class="btn ${aberto?'btn-dark':'btn-orange'} btn-sm seq-vbtn" data-action="seq-vender" data-id="${aberto?'':x.id}">${aberto?'Fechar':'Vender'}</button>`:''}
+      </div>
+      ${aberto?form(x):''}
+    </div>`;};
+  return`<div class="seq-wrap">
+    <div class="seq-head">
+      <div><div class="seq-tit">Stock Equipamento &amp; Lifestyle</div><div class="seq-sub">${ult?'Mapa de '+esc(new Date(ult).toLocaleDateString('pt-PT')):'Sem mapa carregado'} · ${todos.length} artigos em ${lojas.length} loja${lojas.length!==1?'s':''}</div></div>
+      ${isAdmin()?`<label class="btn btn-orange btn-sm" style="cursor:pointer;margin:0">${S.seqBusy&&!P?'A ler…':'📥 Carregar mapa de stock (Excel)'}<input type="file" id="seq-file" accept=".xls,.xlsx" style="display:none"></label>`:''}
+    </div>
+    ${S.stockEqErr?`<div class="mg-aviso">⚠️ A tabela <b>stock_equip</b> ainda não existe ou não tens acesso. ${isAdmin()?'Corre o SQL do stock de equipamento no Supabase e recarrega.':'Fala com o chefe de vendas.'}</div>`:''}
+    ${S.seqErrImp?`<div class="error" style="margin-bottom:10px">${esc(S.seqErrImp)}</div>`:''}
+    ${S.seqMsg?`<div class="lead-ok" style="margin-bottom:10px">✓ ${esc(S.seqMsg)}</div>`:''}
+    ${P?`<div class="gpp-card eot-prev" style="margin:0 0 14px">
+      <div class="vd-form-t">📄 ${esc(P.nome)} — confirmar</div>
+      <div class="eot-prev-g">
+        <div><b>${P.linhas.length}</b> artigos com stock · ${P.linhas.reduce((a,l)=>a+(Number(l.qtd)||0),0)} peças</div>
+        ${[...new Set(P.linhas.map(l=>l.ponto_venda))].map(lj=>`<div>${esc(seqLojaCurta(lj))}: <b>${P.linhas.filter(l=>l.ponto_venda===lj).length}</b> artigos</div>`).join('')}
+        <div>Lifestyle: <b>${P.linhas.filter(l=>l.categoria==='lifestyle').length}</b> · Equipamento: <b>${P.linhas.filter(l=>l.categoria!=='lifestyle').length}</b></div>
+        <div class="mut">O mapa anterior é substituído por este. As vendas já registadas não mudam.</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-orange btn-sm" data-action="seq-confirmar" ${S.seqBusy?'disabled':''}>${S.seqBusy?'A gravar…':'Confirmar e substituir'}</button><button class="btn btn-dark btn-sm" data-action="seq-cancelar">Cancelar</button></div>
+    </div>`:''}
+    ${!todos.length&&!S.stockEqErr?`<div class="gpp-empty">${S._seqLoading?'A carregar…':'Ainda não há mapa de stock.'+(isAdmin()?' Carrega o Excel "Stock de Peças - Detalhe".':'')}</div>`:todos.length?`
+    <div class="seq-bar">
+      <div class="sec-tabs2"><button class="sec-tab2 ${F.tab!=='lifestyle'?'on':''}" data-action="seq-f" data-k="tab" data-v="equip">🧥 Equipamento <span>${nEq}</span></button><button class="sec-tab2 ${F.tab==='lifestyle'?'on':''}" data-action="seq-f" data-k="tab" data-v="lifestyle">👕 Stock Lifestyle <span>${nLs}</span></button></div>
+      <select class="seq-sel" data-seq-f="loja"><option value="" ${!F.loja?'selected':''}>Toda a rede</option>${lojas.map(l=>`<option value="${esc(l)}" ${F.loja===l?'selected':''}>${esc(seqLojaCurta(l))}</option>`).join('')}</select>
+      <select class="seq-sel" data-seq-f="ord"><option value="desc" ${F.ord==='desc'?'selected':''}>Maior desconto primeiro</option><option value="parado" ${F.ord==='parado'?'selected':''}>Mais parado primeiro</option><option value="alfa" ${F.ord==='alfa'?'selected':''}>A → Z</option></select>
+      <input class="sec-q" id="seq-q" placeholder="🔍 Procurar artigo, referência, tamanho…" value="${esc(F.q||'')}">
+    </div>
+    ${F.tab!=='lifestyle'?`<div class="vchips" style="padding:8px 0 0"><button class="vchip ${!F.cat?'on':''}" data-action="seq-f" data-k="cat" data-v="">Tudo <span>${Object.values(porCat).reduce((a,b)=>a+b,0)}</span></button>${SEQ_CATS.filter(([k])=>porCat[k]).map(([k,l])=>`<button class="vchip ${F.cat===k?'on':''}" data-action="seq-f" data-k="cat" data-v="${k}">${l} <span>${porCat[k]}</span></button>`).join('')}</div>`:''}
+    <div class="seq-res"><b>${arr.length}</b> artigo${arr.length!==1?'s':''} · ${pecas} peça${pecas!==1?'s':''}${oport?` · <span class="seq-d seq-d40">${oport} com desconto até −40% ou mais</span>`:''}</div>
+    <div class="seq-list">${arr.slice(0,lim).map(item).join('')||'<div class="gpp-empty">Nada com estes filtros.</div>'}</div>
+    ${arr.length>lim?`<div style="padding:10px 0"><button class="btn btn-outline btn-block" data-action="seq-mais">Mostrar mais (${arr.length-lim})</button></div>`:''}
+    <div class="seq-nota" style="margin-top:12px">Os <b>descontos máximos</b> vêm do mapa: artigos parados há mais tempo podem ser vendidos com mais desconto — são os mais fáceis de fechar. O stock é o do dia do mapa; confirma a disponibilidade antes de prometer ao cliente, sobretudo noutras lojas.</div>`:''}
+  </div>`;
+}
+function renderStockEqVend(){
+  return`<div class="app-layout"><div class="main-panel" style="width:100%">
+  <div class="hdr"><button class="hdr-back" data-action="back-to-list">←</button><div class="hdr-accent"></div><div class="hdr-title">Stock Equipamento &amp; Lifestyle</div></div>
+  <div class="content">${stockEqView()}</div></div></div>`;
+}
+
 function vGrupoDe(sf){sf=String(sf||'');if(['Funil','Quente','Morno','Frio'].includes(sf))return'Funil';if(sf.startsWith('Carteira'))return'Carteira';if(sf.startsWith('Retail'))return'Retail';return sf;}
 function vNavItem(o){return`<div class="vnav-item ${o.on?'on':''}" data-action="${o.act}"${o.status?` data-status="${o.status}"`:''}${o.id!=null?` data-id="${o.id}"`:''}><span class="vnav-ic">${o.ic}</span><span class="vnav-lb">${o.lb}</span>${o.badge?`<span class="vnav-badge">${o.badge}</span>`:(o.n!=null&&o.n!==''?`<span class="vnav-n">${o.n}</span>`:'')}</div>`;}
 function vPendentes(){const al=calcAlerts(recsInContext());const eot=eotMeus().filter(eotPrecisaAcao).length;
@@ -3007,6 +3248,7 @@ function vSidebarHTML(A){
       ${vNavItem({act:'go-vcom',ic:'💶',lb:'Comissões',on:A==='vcom'})}
       <div class="vnav-sec">Ferramentas</div>
       ${vNavItem({act:'go-ficha',ic:'🧮',lb:'Ficha de margem',on:A==='ficha'})}
+      ${vNavItem({act:'go-vstockeq',ic:'🧥',lb:'Stock equipamento / lifestyle',on:A==='vstockeq'})}
       ${vNavItem({act:'go-stock-vend',ic:'🏍️',lb:'Stock usadas / demos',on:A==='stockvend'})}
       ${vNavItem({act:'go-escala',ic:'📅',lb:'Escala',on:A==='escala'})}
       ${(eventosAtivos()||[]).map(evA=>vNavItem({act:'go-evento',id:evA.id,on:A==='evento'&&S.eventoSel===evA.id,ic:'🎟️',lb:esc(evA.nome),n:(S.inscricoes||[]).filter(i=>i.evento_id===evA.id).length})).join('')}`:''}
@@ -3044,7 +3286,7 @@ function vBottomNav(A){
   </nav>`;
 }
 // Páginas do vendedor (Entregas, Comissões, EOTs, Stock, Ficha, Escala, Evento) passam a ter o mesmo menu
-const V_SHELL={ventregas:'ventregas',vcom:'vcom',veot:'veot',stockvend:'stockvend',ficha:'ficha',escala:'escala',evento:'evento'};
+const V_SHELL={vstockeq:'vstockeq',ventregas:'ventregas',vcom:'vcom',veot:'veot',stockvend:'stockvend',ficha:'ficha',escala:'escala',evento:'evento'};
 function vEnvolver(html,A){
   if(isAdmin()||typeof html!=='string')return html;
   const m=html.match(/^\s*<div class="app-layout">\s*<div class="main-panel" style="width:100%">/);
@@ -4464,6 +4706,12 @@ function EXPORT_FOLHAS(){
       {c:'status_updated_at',l:'Status atualizado',f:dt},
       {c:'created_at',l:'Criado',f:dt},{c:'updated_at',l:'Atualizado',f:dt},{c:'updated_by',l:'Atualizado por',f:nome},
     ]},
+    {nome:'Stock Equipamento',path:'/stock_equip?select=*&order=ponto_venda.asc,descricao.asc',cols:[
+      {c:'ponto_venda',l:'Loja'},{c:'polo',l:'Polo'},{c:'ref',l:'Referência'},{c:'descricao',l:'Descrição'},{c:'categoria',l:'Categoria',f:v=>seqCatLabel(v)},
+      {c:'marca',l:'Marca'},{c:'familia',l:'Família'},{c:'subfamilia',l:'Sub-família'},{c:'qualidade',l:'Qualidade stock'},{c:'antig_saida',l:'Antiguidade última saída'},
+      {c:'ult_saida',l:'Última saída',f:d},{c:'qtd',l:'Qtd'},{c:'custo_unit',l:'Custo unitário'},{c:'custo_total',l:'Custo total'},{c:'procura',l:'Procura média mensal'},
+      {c:'desc_max',l:'Desconto máx. s/ PVP',f:v=>v==null?'':Math.round(v*100)+'%'},{c:'importado_em',l:'Mapa de',f:dt},
+    ]},
     {nome:'EOTs',path:'/eot_contratos?select=*&order=data_fim.asc',cols:[
       {c:'contrato',l:'Contrato'},{c:'tipo',l:'Tipo'},{c:'cliente',l:'Cliente'},{c:'contacto_nome',l:'Contacto'},{c:'telefone',l:'Telefone'},{c:'telemovel',l:'Telemóvel'},
       {c:'data_fim',l:'Data fim',f:d},{c:'prazo',l:'Prazo'},{c:'prestacao',l:'Prestação'},{c:'kms',l:'Km contratados'},{c:'matricula',l:'Matrícula'},{c:'modelo',l:'Modelo'},
@@ -4573,7 +4821,7 @@ async function exportarExcelTudo(){
     const dfn=defs[i];
     setState({exportBusy:true,exportMsg:`A carregar ${dfn.nome} (${i+1}/${defs.length})…`});
     let dados=null,erro=null;
-    try{ dados=await supabaseApi('GET',dfn.path); }
+    try{ dados=await apiTodos(dfn.path); }
     catch(e){ erro=(e&&e.message)?String(e.message).slice(0,180):'erro'; }
     if(erro){
       erros.push(dfn.nome);
@@ -4740,6 +4988,7 @@ function renderDashboard(){
     ['escala','📅','Escala'],
     ['comissoes','💰','Resumo Comissões'],
     ['evento','🎟️','Evento'],
+    ['stockeq','🧥','Stock Equipamento'],
     ['ficha','🧮','Ficha de Margem'],
     ['trimestre','📐','Controlo trimestral'],
     ['exportar','⬇️','Exportar'],
@@ -4747,7 +4996,7 @@ function renderDashboard(){
   const NAV_GRUPOS=[
     ['Diário',['home','atratar']],
     ['Negócio',['funil','leads','vendas']],
-    ['Recursos',['usadas','demos','evento','escala']],
+    ['Recursos',['usadas','stockeq','demos','evento','escala']],
     ['Ferramentas',['ficha','comissoesg','exportar']]
   ];
   const secLabel=(()=>{const g=grupoDe(sec);const t=(TOPICOS.find(t=>t[0]===sec)||[,,'Home'])[2];return g?GRUPOS_SEC[g].lb+' · '+t:t;})();
@@ -6142,6 +6391,7 @@ function renderDashboard(){
   else if(sec==='ficha')body=renderFichaMargem();
   else if(sec==='entregas')body=entregasView();
   else if(sec==='leads')body=leadsView();
+  else if(sec==='stockeq')body=stockEqView();
   else if(sec==='margem')body=margemView();
   else if(sec==='premios')body=premiosView();
   else if(sec==='perdidos')body=perdidosView();
@@ -6171,7 +6421,7 @@ function renderDashboard(){
 function render(){
   const app=document.getElementById('app');
   const ce=app.querySelector('.content'),st=ce?ce.scrollTop:0,ps=app.dataset.screen||'';
-  const screens={loading:'<div class="content"><div class="center-screen"><p style="color:var(--text3)">A carregar...</p></div></div>',login:renderLogin,list:renderList,detail:renderDetail,edit:renderEdit,dashboard:renderDashboard,escala:renderEscala,password:renderPassword,ventregas:renderMinhasEntregas,vcom:renderMinhasComissoes,semacesso:renderSemAcesso,ficha:renderFichaMargem,secretaria:renderSecretaria,assessor:renderAssessor,stockvend:renderStockVend,evento:renderEventoVend,veot:renderMinhasEot};
+  const screens={loading:'<div class="content"><div class="center-screen"><p style="color:var(--text3)">A carregar...</p></div></div>',login:renderLogin,list:renderList,detail:renderDetail,edit:renderEdit,dashboard:renderDashboard,escala:renderEscala,password:renderPassword,ventregas:renderMinhasEntregas,vcom:renderMinhasComissoes,semacesso:renderSemAcesso,ficha:renderFichaMargem,secretaria:renderSecretaria,assessor:renderAssessor,stockvend:renderStockVend,evento:renderEventoVend,veot:renderMinhasEot,vstockeq:renderStockEqVend};
   const fn=screens[S.screen];
   app.innerHTML=typeof fn==='function'?(V_SHELL[S.screen]&&S.me&&!isAdmin()?vEnvolver(fn(),V_SHELL[S.screen]):fn()):fn;
   app.dataset.screen=S.screen;
@@ -6185,6 +6435,8 @@ function bindEvents(){
   app.oninput=function(e){
     const el=e.target;
     if(el.dataset&&el.dataset.tblQ){const k=el.dataset.tblQ;S.tblQ=Object.assign({},S.tblQ||{},{[k]:el.value});const tb=tblPorChave(k);if(tb)tblFiltrar(tb,el.value);return;}
+    if(el.id==='seq-q'){const F=Object.assign({},S.seqF||{});F.q=el.value;S.seqF=F;S.seqLim=80;const p=el.selectionStart;render();const n=document.getElementById('seq-q');if(n){n.focus();n.setSelectionRange(p,p);}return;}
+    if(el.dataset&&el.dataset.seqV){S.seqVenda=Object.assign({},S.seqVenda||{},{[el.dataset.seqV]:el.value});seqCalcAtualizar();return;}
     if(el.id==='sec-q'){S.secQ=el.value;const p=el.selectionStart;render();const n=document.getElementById('sec-q');if(n){n.focus();n.setSelectionRange(p,p);}return;}
     if(el.id==='retail-mat-search'){
       S.retailMat=el.value;
@@ -6233,6 +6485,9 @@ function bindEvents(){
     if(el.dataset&&el.dataset.pmK){savePremioMes(el.dataset.pmMes,el.dataset.pmK,el.value);return;}
     if(el.dataset&&el.dataset.mrgId){saveMargem(el.dataset.mrgId,el.value);return;}
     if(el.dataset&&el.dataset.entId){const v=el.value;saveEntrega(el.dataset.entId,{[el.dataset.entF]:(v===''?null:v)});return;}
+    if(el.id==='seq-file'){const f=el.files&&el.files[0];el.value='';seqFicheiro(f);return;}
+    if(el.dataset&&el.dataset.seqF){const F=Object.assign({},S.seqF||{});F[el.dataset.seqF]=el.value;setState({seqF:F,seqLim:80,seqVender:null});return;}
+    if(el.dataset&&el.dataset.seqV){S.seqVenda=Object.assign({},S.seqVenda||{},{[el.dataset.seqV]:el.value});seqCalcAtualizar();return;}
     if(el.id==='eot-file'){const f=el.files&&el.files[0];el.value='';eotFicheiro(f);return;}
     if(el.id==='eot-lote'){eotAtribuirLote(el.value);return;}
     if(el.dataset&&el.dataset.eotFiltro){const k=el.dataset.eotFiltro;const F=Object.assign({},S.eotF||{});F[k]=k==='saiu'?el.value==='1':el.value;setState({eotF:F,eotMsg:''});return;}
@@ -6368,6 +6623,14 @@ function bindEvents(){
       case'sec-tab':setState({secTab:el.dataset.t,secAberto:null});break;
       case'sec-mes-nav':{const ms=secMesesDisp();const cur=(S.secMes&&ms.includes(S.secMes))?S.secMes:curYM();const i=ms.indexOf(cur)+Number(el.dataset.d);if(i>=0&&i<ms.length)setState({secMes:ms[i],secAberto:null});break;}
       case'sec-csv':secCSV();break;
+      case'go-vstockeq':setState({screen:'vstockeq',seqMsg:''});break;
+      case'seq-f':{const F=Object.assign({},S.seqF||{});F[el.dataset.k]=el.dataset.v;if(el.dataset.k==='tab')F.cat='';setState({seqF:F,seqLim:80,seqVender:null});break;}
+      case'seq-vender':{const id=el.dataset.id||null;setState({seqVender:id,seqVenda:id?{data:new Date().toISOString().slice(0,10),qtd:1}:null,seqMsg:''});if(id){const p=document.getElementById('seq-preco');if(p)p.focus();}break;}
+      case'seq-registar':seqRegistar();break;
+      case'seq-confirmar':seqConfirmar();break;
+      case'seq-cancelar':setState({seqPrev:null,seqErrImp:''});break;
+      case'seq-mais':setState({seqLim:(S.seqLim||80)+80});break;
+      case'as-tab':setState({asTab:el.dataset.t});break;
       case'sec-toggle':setState({secAberto:String(S.secAberto)===String(el.dataset.id)?null:el.dataset.id});break;
       case'eq-add':eqAdd(el.dataset.vid);break;
       case'eq-del':eqDel(el.dataset.id);break;
