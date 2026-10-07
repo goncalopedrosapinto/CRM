@@ -1805,6 +1805,16 @@ a{color:var(--blue)}
   .app-layout.rail-open .gpp-foot .gpp-sair{flex:1;width:auto}
   .app-layout.rail-open .gpp-foot .gpp-sair span{display:inline}
 }
+
+/* venda fora do stock */
+.seq-head{gap:10px;flex-wrap:wrap}
+.seqf-abrir{gap:6px}
+.seq-fora{padding:14px 16px;margin:0 0 14px;border-left:3px solid var(--orange)}
+.seqf-h{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}
+.seqf-t{font-size:15px;font-weight:700}.seqf-s{font-size:12.5px;color:var(--text2);margin-top:2px;max-width:620px}
+.seqf-w2{grid-column:span 2}
+.seqf-stw{margin:-2px 0 8px}.seqf-st{font-size:12.5px;color:var(--text2)}.seqf-st.ok{color:var(--green)}
+@media(max-width:700px){.seqf-w2{grid-column:auto}.seqf-abrir{width:100%}.seqf-abrir span{display:inline}}
 </style>
 </head>
 <body>
@@ -3687,6 +3697,107 @@ async function seqRegistar(){
     setState({seqBusy:false,seqVender:null,seqVenda:null,seqMsg:`Venda registada: ${body.descricao} — comissão ${fE(c.com)}${isAdmin()?' para '+vendName(vid):''}. Já aparece nas Comissões.`});}
   catch(e){setState({seqBusy:false});alert('Erro ao registar: '+((e&&e.message)||e)+(String(e&&e.message).includes('row-level')?'\n\nFalta correr o SQL do stock de equipamento no Supabase.':''));}
 }
+// ===== Venda de equipamento FORA DO STOCK (artigo que não está no mapa) =====
+function seqForaAbrir(){
+  const q=String((S.seqF||{}).q||'').trim();const pareceRef=/^[0-9A-Z]{8,14}$/i.test(q);
+  S.seqFora={qtd:1,data:new Date().toISOString().slice(0,10),ref:pareceRef?q.toUpperCase():'',campanha:''};S.seqVender=null;S.seqMsg='';render();
+  if(pareceRef)seqForaRef(q);
+  setTimeout(()=>{const el=document.getElementById(pareceRef?'seqf-preco':'seqf-ref');if(el)el.focus();},30);
+}
+function seqForaCalc(F){
+  F=F||{};const ci=numPT(F.preco);if(ci==null)return null;
+  const qtd=Math.max(1,parseInt(F.qtd,10)||1);const pvp=numPT(F.pvp);const custo=numPT(F.custo);
+  const l={qtd,venda:Math.round(ci/(1+SEQ_IVA)*100)/100,custo:custo||0,campanha:F.campanha||null};
+  return{qtd,ci,si:l.venda,pvp,custo,semCusto:custo==null,margem:eqMargem(l),com:eqComissao(l),desc:pvp?(1-ci/pvp):null};
+}
+function seqForaCalcHTML(F){
+  const fE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+  const c=seqForaCalc(F);
+  if(!c)return'<span class="seq-calc-v">Escreve o preço ao cliente (ou usa o PVP / “Vender com %”).</span>';
+  const parts=[`<span>s/IVA <b>${fE(c.si)}</b>${c.qtd>1?' × '+c.qtd:''}</span>`];
+  if(c.desc!=null)parts.push(`<span>${c.desc>=0?'Desconto':'Acima do'} s/ PVP <b>${Math.abs(Math.round(c.desc*1000)/10).toLocaleString('pt-PT')}%</b></span>`);
+  if(c.semCusto)parts.push('<span class="neg">Falta o custo — sem custo não há margem nem comissão.</span>');
+  else{parts.push(`<span>Margem <b class="${c.margem<0?'neg':''}">${fE(c.margem)}</b></span>`);parts.push(`<span class="seq-com">Comissão <b class="${c.com<0?'neg':''}">${fE(c.com)}</b></span>`);if(c.margem<0)parts.push('<span class="neg">⚠️ abaixo do custo</span>');}
+  return parts.join('');
+}
+function seqForaAtualizarCalc(){const el=document.getElementById('seqf-calc');if(el)el.innerHTML=seqForaCalcHTML(S.seqFora);}
+function seqForaInput(el){
+  const k=el.dataset.seqf;const F=Object.assign({},S.seqFora||{});F[k]=el.value;
+  const pvp=numPT(F.pvp);
+  if(k==='pct'){const p=parseFloat(String(el.value).replace(',','.'));if(pvp&&isFinite(p)){const pr=Math.round(pvp*(1-Math.min(100,Math.max(0,p))/100)*100)/100;F.preco=String(pr).replace('.',',');const i=document.getElementById('seqf-preco');if(i)i.value=F.preco;}}
+  else if(k==='preco'||k==='pvp'){const ci=numPT(F.preco);const pi=document.getElementById('seqf-pct');if(pvp&&ci!=null){F.pct=String(Math.round((1-ci/pvp)*1000)/10);if(pi&&document.activeElement!==pi)pi.value=F.pct;}}
+  S.seqFora=F;seqForaAtualizarCalc();
+}
+async function seqForaRef(v){
+  const ref=String(v||'').trim().toUpperCase();const F=Object.assign({},S.seqFora||{},{ref});
+  if(!ref){F._site=null;S.seqFora=F;render();return;}
+  const emStock=(S.stockEq||[]).filter(x=>String(x.ref).toUpperCase()===ref);
+  F._emStock=emStock.length?emStock.map(x=>seqLojaCurta(x.ponto_venda)+' ('+(Number(x.qtd)||0)+')').join(', '):'';
+  const pre=(S.precosRef||{})[ref];
+  const aplicar=s=>{if(!s)return;if(!F.descricao&&s.nome_site)F.descricao=s.nome_site;if(!F.tamanho&&s.tamanho)F.tamanho=s.tamanho;
+    const p=s.preco_aveiro!=null?s.preco_aveiro:s.pvp;if(p!=null&&!F.pvp)F.pvp=String(p).replace('.',',');F._vsite=s.venda_site!=null?Number(s.venda_site):null;F._url=s.url||null;};
+  if(pre&&pre.no_site!==false&&(pre.nome_site||pre.pvp!=null)){aplicar(pre);F._site='ok';S.seqFora=F;render();return;}
+  F._site='busca';S.seqFora=F;render();
+  try{const d=await siteConsultar([ref]);const s=d&&d[ref];
+    const G=Object.assign({},S.seqFora||{});if(String(G.ref)!==ref)return;
+    if(s){Object.assign(F,G);aplicar({nome_site:s.nome_site,tamanho:seqTamCor(s),pvp:s.pvp,venda_site:s.venda_site,url:s.url});F._site='ok';}
+    else{Object.assign(F,G);F._site='nao';}
+    S.seqFora=F;render();
+  }catch(e){const G=Object.assign({},S.seqFora||{});G._site='erro';S.seqFora=G;render();}
+}
+async function seqForaRegistar(){
+  const F=S.seqFora||{};const c=seqForaCalc(F);
+  if(!String(F.descricao||'').trim()&&!String(F.ref||'').trim()){alert('Indica a referência ou a descrição do artigo.');return;}
+  if(!c){alert('Indica o preço ao cliente (c/IVA).');return;}
+  if(c.semCusto){alert('Indica o custo unitário (s/IVA). Sem custo não dá para calcular a margem nem a comissão.');return;}
+  if(c.margem<0&&!confirm('A venda fica abaixo do custo (comissão negativa). Registar mesmo assim?'))return;
+  const vid=isAdmin()?F.vendedor_id:(S.me&&S.me.id);
+  if(!vid){alert('Escolhe quem fez a venda.');return;}
+  const desc=(String(F.descricao||'').trim()||String(F.ref).trim())+(String(F.tamanho||'').trim()?' · T. '+String(F.tamanho).trim():'')+' · fora do stock';
+  const body={vendedor_id:vid,data:F.data||new Date().toISOString().slice(0,10),wip:F.wip||null,fatura:F.fatura||null,artigo:String(F.ref||'').trim()||null,
+    descricao:desc,qtd:c.qtd,custo:c.custo,venda:c.si,campanha:F.campanha||null};
+  setState({seqBusy:true});
+  try{await supabaseApi('POST','/equipamento',body);await loadEquipamento();
+    const fE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+    setState({seqBusy:false,seqFora:null,seqMsg:`Venda registada (fora do stock): ${desc} — comissão ${fE(c.com)}${isAdmin()?' para '+vendName(vid):''}. Já aparece nas Comissões.`});}
+  catch(e){setState({seqBusy:false});alert('Erro ao registar: '+((e&&e.message)||e));}
+}
+function seqForaHTML(){
+  const F=S.seqFora;if(!F)return'';
+  const fE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+  const pessoas=[...(S.team||[]).filter(p=>p.role==='vendedor'),...(S.assessores||[])];
+  const pvp=numPT(F.pvp);const ci=numPT(F.preco);
+  const btn=(lb,v)=>v==null?'':`<button class="seq-pbtn ${ci!=null&&Math.abs(ci-v)<0.01?'on':''}" data-action="seqf-preco-set" data-v="${v}">${lb}<b>${fE(v)}</b></button>`;
+  const estado={busca:'<span class="seqf-st">A procurar no site…</span>',ok:`<span class="seqf-st ok">✓ Encontrada no site${F._url?` · <a href="${esc(F._url)}" target="_blank" rel="noopener">ver ↗</a>`:''}</span>`,nao:'<span class="seqf-st">Não está no site — preenche à mão.</span>',erro:'<span class="seqf-st">Não consegui consultar o site — preenche à mão.</span>'}[F._site]||'';
+  return`<div class="gpp-card seq-fora" id="seq-fora">
+    <div class="seqf-h"><div><div class="seqf-t">Venda fora do stock</div><div class="seqf-s">Para artigos que não estão no mapa (encomendados, vindos de outra loja, etc.). Conta para as comissões como as outras vendas.</div></div>
+      <button class="btn btn-dark btn-sm" data-action="seqf-fechar">Cancelar</button></div>
+    ${F._emStock?`<div class="mg-aviso" style="margin:0 0 10px">Esta referência está no mapa de stock: ${esc(F._emStock)}. Se for essa peça, usa o “Vender” do artigo para o stock ficar certo.</div>`:''}
+    <div class="seq-form-g">
+      <label>Referência<input class="norma-inp sec-mono" id="seqf-ref" data-seqf="ref" value="${esc(F.ref||'')}" placeholder="Ex: 76228526108" autocomplete="off"></label>
+      <label class="seqf-w2">Descrição do artigo<input class="norma-inp" data-seqf="descricao" value="${esc(F.descricao||'')}" placeholder="Ex: Botas Pillon Air"></label>
+      <label>Tamanho<input class="norma-inp" data-seqf="tamanho" value="${esc(F.tamanho||'')}" placeholder="opcional"></label>
+    </div>
+    ${estado?`<div class="seqf-stw">${estado}</div>`:''}
+    <div class="seq-pbtns">${btn('PVP',pvp)}${btn('Venda site',F._vsite!=null?F._vsite:null)}<div class="seq-pbtn seq-pct ${F.pct!=null&&F.pct!==''?'on':''}"><span>Vender com %</span><div class="seq-pct-in"><input id="seqf-pct" data-seqf="pct" type="number" min="0" max="100" step="0.5" inputmode="decimal" value="${esc(F.pct||'')}" placeholder="0" ${pvp?'':'disabled title="Escreve o PVP primeiro"'}><b>%</b></div><small>desconto sobre o PVP</small></div></div>
+    <div class="seq-form-g">
+      ${isAdmin()?`<label>Vendido por<select class="norma-inp" data-seqf="vendedor_id"><option value="">— escolher —</option>${pessoas.map(p=>`<option value="${p.id}" ${String(F.vendedor_id)===String(p.id)?'selected':''}>${esc(p.nome||'?')}${p.role==='assessor'?' (assessor)':''}</option>`).join('')}</select></label>`:''}
+      <label>PVP (c/IVA, por unidade)<input class="norma-inp" data-seqf="pvp" inputmode="decimal" value="${esc(F.pvp||'')}" placeholder="Ex: 189,00"></label>
+      <label>Preço ao cliente (c/IVA, por unidade)<input class="norma-inp" id="seqf-preco" data-seqf="preco" inputmode="decimal" value="${esc(F.preco||'')}" placeholder="Ex: 170,00"></label>
+      <label>Custo unitário (s/IVA)<input class="norma-inp" data-seqf="custo" inputmode="decimal" value="${esc(F.custo||'')}" placeholder="obrigatório"></label>
+      <label>Qtd<input type="number" min="1" step="1" class="norma-inp" data-seqf="qtd" value="${esc(F.qtd||1)}"></label>
+      <label>Data<input type="date" class="norma-inp" data-seqf="data" value="${esc(F.data||'')}"></label>
+      <label>Campanha<select class="norma-inp" data-seqf="campanha">${EQ_CAMP.map(o=>`<option value="${o[0]}" ${(F.campanha||'')===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></label>
+      <label>Fatura<input class="norma-inp" data-seqf="fatura" value="${esc(F.fatura||'')}" placeholder="opcional"></label>
+      <label>WIP/OR<input class="norma-inp" data-seqf="wip" value="${esc(F.wip||'')}" placeholder="opcional"></label>
+    </div>
+    <div class="seq-calc" id="seqf-calc">${seqForaCalcHTML(F)}</div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-orange btn-sm" data-action="seqf-registar" ${S.seqBusy?'disabled':''}>${S.seqBusy?'A registar…':'✓ Registar venda'}</button>
+    </div>
+    <div class="seq-nota">Comissão = 20% da margem (preço s/IVA − custo). Na lista de Comissões a linha aparece marcada “fora do stock”.</div>
+  </div>`;
+}
 function seqGrupos(arr,rede){
   const m=new Map();
   arr.forEach(x=>{const si=seqSi(x);const k=(si&&si.parent?'p'+si.parent:'d'+eotNorm(x.descricao))+(rede?'':'|'+x.ponto_venda);
@@ -3777,6 +3888,7 @@ function stockEqView(){
   return`<div class="seq-wrap">
     <div class="seq-head">
       <div><div class="seq-tit">Stock Equipamento &amp; Lifestyle</div><div class="seq-sub">${ult?'Mapa de '+esc(new Date(ult).toLocaleDateString('pt-PT')):'Sem mapa carregado'} · ${todos.length} referências em ${lojas.length} loja${lojas.length!==1?'s':''}${siteUlt?` · site cruzado a ${esc(new Date(siteUlt).toLocaleDateString('pt-PT'))} (${comSite} no site)`:''}</div></div>
+      ${seqQuemPode()&&!S.seqFora?`<button class="btn btn-outline btn-sm seqf-abrir" data-action="seqf-abrir">${ico('plus','ic-sm')}<span>Venda fora do stock</span></button>`:''}
       ${isAdmin()?`<div style="display:flex;gap:8px;flex-wrap:wrap">
         ${todos.length?`<button class="btn btn-dark btn-sm" data-action="seq-site" ${S.seqSiteBusy?'disabled':''}>${S.seqSiteBusy?'A cruzar…':'🔄 Atualizar preços do site'}</button>`:''}
         <label class="btn btn-orange btn-sm" style="cursor:pointer;margin:0">${S.seqBusy&&!P?'A ler…':'📥 Carregar mapa de stock (Excel)'}<input type="file" id="seq-file" accept=".xls,.xlsx" style="display:none"></label></div>`:''}
@@ -3785,6 +3897,7 @@ function stockEqView(){
     ${S.seqSiteProg?`<div class="seq-prog">⏳ ${esc(S.seqSiteProg)}</div>`:''}
     ${S.seqErrImp?`<div class="error" style="margin-bottom:10px">${esc(S.seqErrImp)}</div>`:''}
     ${S.seqMsg?`<div class="lead-ok" style="margin-bottom:10px">✓ ${esc(S.seqMsg)}</div>`:''}
+    ${seqForaHTML()}
     ${P?`<div class="gpp-card eot-prev" style="margin:0 0 14px">
       <div class="vd-form-t">📄 ${esc(P.nome)} — confirmar</div>
       <div class="eot-prev-g">
@@ -3805,7 +3918,7 @@ function stockEqView(){
     </div>
     ${F.tab!=='lifestyle'?`<div class="vchips" style="padding:8px 0 0"><button class="vchip ${!F.cat?'on':''}" data-action="seq-f" data-k="cat" data-v="">Tudo <span>${Object.values(porCat).reduce((a,b)=>a+b,0)}</span></button>${SEQ_CATS.filter(([k])=>porCat[k]).map(([k,l])=>`<button class="vchip ${F.cat===k?'on':''}" data-action="seq-f" data-k="cat" data-v="${k}">${l} <span>${porCat[k]}</span></button>`).join('')}</div>`:''}
     <div class="seq-res"><b>${G.length}</b> artigo${G.length!==1?'s':''} · ${arr.length} referências · ${pecas} peça${pecas!==1?'s':''}</div>
-    <div class="seq-list">${G.slice(0,lim).map(grupo).join('')||'<div class="gpp-empty">Nada com estes filtros.</div>'}</div>
+    <div class="seq-list">${G.slice(0,lim).map(grupo).join('')||`<div class="gpp-empty">Nada com estes filtros.${seqQuemPode()&&!S.seqFora&&F.q?' <button class="btn btn-orange btn-sm" data-action="seqf-abrir" style="margin-left:8px">Vender fora do stock</button>':''}</div>`}</div>
     ${G.length>lim?`<div style="padding:10px 0"><button class="btn btn-outline btn-block" data-action="seq-mais">Mostrar mais (${G.length-lim})</button></div>`:''}
     <div class="seq-nota" style="margin-top:12px">Cada artigo junta os vários tamanhos (o site diz qual é o tamanho de cada referência). O <b>PVP</b> vem do site, salvo se o Excel trouxer outro PVP ou se o chefe o tiver alterado. O stock é o do dia do mapa — confirma antes de prometer ao cliente.</div>`:''}
   </div>`;
@@ -7168,6 +7281,8 @@ function bindEvents(){
     if(el.dataset&&el.dataset.tblQ){const k=el.dataset.tblQ;S.tblQ=Object.assign({},S.tblQ||{},{[k]:el.value});const tb=tblPorChave(k);if(tb)tblFiltrar(tb,el.value);return;}
     if(el.id==='seq-q'){const F=Object.assign({},S.seqF||{});F.q=el.value;S.seqF=F;S.seqLim=80;const p=el.selectionStart;render();const n=document.getElementById('seq-q');if(n){n.focus();n.setSelectionRange(p,p);}return;}
     if(el.id==='seq-pct'){seqPctInput(el);return;}
+    if(el.dataset&&el.dataset.seqf&&el.dataset.seqf!=='ref'){seqForaInput(el);return;}
+    if(el.dataset&&el.dataset.seqf==='ref'){S.seqFora=Object.assign({},S.seqFora||{},{ref:el.value});return;}
     if(el.dataset&&el.dataset.seqV){S.seqVenda=Object.assign({},S.seqVenda||{},{[el.dataset.seqV]:el.value});if(el.dataset.seqV==='preco')seqPctSincronizar();if(el.dataset.seqV==='campanha'){const x=(S.stockEq||[]).find(y=>String(y.id)===String(S.seqVender));const r=document.getElementById('seq-pct-res');if(x&&r)r.innerHTML=seqPctRes(x,seqPctDe(x,S.seqVenda),S.seqVenda);}seqCalcAtualizar();return;}
     if(el.id==='sec-q'){S.secQ=el.value;const p=el.selectionStart;render();const n=document.getElementById('sec-q');if(n){n.focus();n.setSelectionRange(p,p);}return;}
     if(el.id==='retail-mat-search'){
@@ -7207,6 +7322,8 @@ function bindEvents(){
   };
   app.onchange=function(e){
     const el=e.target;
+    if(el.dataset&&el.dataset.seqf==='ref'){const v=el.value;if(String(v).trim().toUpperCase()===String((S.seqFora||{})._refFeita||''))return;S.seqFora=Object.assign({},S.seqFora||{},{_refFeita:String(v).trim().toUpperCase()});setTimeout(()=>seqForaRef(v),0);return;}
+    if(el.dataset&&el.dataset.seqf){seqForaInput(el);return;}
     if(el.dataset&&el.dataset.depId){const id=el.dataset.depId,v=el.value;saveStockField(id,'dep_manual',(v===''||v==null)?null:Number(v));return;}
     if(el.dataset&&el.dataset.pedMotivo){const sel=Object.assign({},S.pedAutSel||{});sel[String(el.dataset.pedMotivo)]=el.value;setState({pedAutSel:sel});return;}
     if(el.dataset&&el.dataset.prepId){const v=el.value;saveStockField(el.dataset.prepId,el.dataset.prepF,(v===''||v==null)?null:Number(v));return;}
@@ -7368,6 +7485,10 @@ function bindEvents(){
       case'seq-pav':{const i=document.getElementById('seq-pav-'+el.dataset.ref);seqPrecoManual(el.dataset.ref,i?i.value:'');break;}
       case'seq-pav-repor':seqPrecoManual(el.dataset.ref,'');break;
       case'seq-registar':seqRegistar();break;
+      case'seqf-abrir':seqForaAbrir();break;
+      case'seqf-fechar':setState({seqFora:null});break;
+      case'seqf-registar':seqForaRegistar();break;
+      case'seqf-preco-set':{const F=Object.assign({},S.seqFora||{});const v=Number(el.dataset.v);F.preco=String(v).replace('.',',');const pvp=numPT(F.pvp);F.pct=pvp?String(Math.round((1-v/pvp)*1000)/10):'';setState({seqFora:F});break;}
       case'seq-confirmar':seqConfirmar();break;
       case'seq-cancelar':setState({seqPrev:null,seqErrImp:''});break;
       case'seq-mais':setState({seqLim:(S.seqLim||60)+60});break;
