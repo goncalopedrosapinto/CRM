@@ -1487,6 +1487,12 @@ html,body{overflow-x:hidden;max-width:100vw}
   .fm-tbl tr.fm-dest{background:var(--bg3);border-top:2px solid var(--text);border-bottom:2px solid var(--text)}
   .fm-tbl tr.fm-big{background:var(--text)}
 }
+.vmeses{display:flex;gap:6px;padding:12px 16px 0;overflow-x:auto;scrollbar-width:thin}
+.vmes{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:1px;min-width:62px;border:1px solid var(--border2);background:var(--surface);border-radius:10px;padding:7px 10px;font-size:13px;font-weight:800;color:var(--text);cursor:pointer;font-family:inherit}
+.vmes span{font-size:11px;font-weight:600;color:var(--text3)}
+.vmes.cur{border-color:var(--orange)}
+.vmes.atras{color:var(--red)}
+.vmes.on{background:var(--orange);border-color:var(--orange);color:#fff}.vmes.on span{color:rgba(255,255,255,.8)}
 </style>
 </head>
 <body>
@@ -3535,22 +3541,41 @@ function renderList(){
   const sf=S.statusFilter;const grp=vGrupoDe(sf);
   const emHoje=sf==='_hoje'&&!S.alertFilter;
   const procura=emHoje&&String(S.search||'').trim();
-  const f=procura?recsInContext().filter(r=>['id_cliente','model','version','mat','obs','biz','enc','contacto'].some(k=>String(r[k]||'').toLowerCase().includes(String(S.search).toLowerCase()))):filtered();
+  const f0=procura?recsInContext().filter(r=>['id_cliente','model','version','mat','obs','biz','enc','contacto'].some(k=>String(r[k]||'').toLowerCase().includes(String(S.search).toLowerCase()))):filtered();
+  // Carteira e Retail: o filtro principal é o MÊS (entrega prevista / mês do 298); o secundário é Novas/Usadas
+  const mesMode=(grp==='Carteira'||grp==='Retail')&&!S.alertFilter&&!procura;
+  const mesDe=grp==='Retail'?(r=>retailYM(r)):(r=>r.mes1||null);
+  const mesLbl=m=>{const pz=String(m).split('/');return (MONTH_NAMES[(+pz[1])-1]||pz[1])+' '+String(pz[0]).slice(2);};
+  let mesSel=null,mesBar='';
+  if(mesMode){
+    const base=recsInContext().filter(r=>r.status===grp);
+    const ms=[...new Set(base.map(mesDe).filter(Boolean))].sort();
+    const cur=curYM();
+    const def=ms.includes(cur)?cur:(grp==='Carteira'?(ms.find(m=>m>=cur)||ms[ms.length-1]):ms[ms.length-1]);
+    mesSel=(S.vMesSel||{})[grp];if(mesSel!=='all'&&!ms.includes(mesSel))mesSel=def||'all';
+    const ordem=grp==='Retail'?ms.slice().reverse():ms;
+    const cnt=m=>base.filter(r=>mesDe(r)===m).length;
+    mesBar=`<div class="vmeses">${ordem.map(m=>`<button class="vmes ${m===mesSel?'on':''} ${m===cur?'cur':''} ${grp==='Carteira'&&m<cur?'atras':''}" data-action="v-mes-sel" data-g="${grp}" data-m="${m}" title="${grp==='Carteira'?'Entrega prevista':'Mês do retail (298)'}">${mesLbl(m)}<span>${cnt(m)}</span></button>`).join('')}<button class="vmes ${mesSel==='all'?'on':''}" data-action="v-mes-sel" data-g="${grp}" data-m="all">Todos<span>${base.length}</span></button></div>`;
+  }
+  const inMes=r=>!mesMode||mesSel==='all'||mesDe(r)===mesSel;
+  const f=f0.filter(inMes);
   const c=statusCounts();
   const af=(S.monthFilter.length>0?1:0)+(S.bevFilter!=='all'?1:0)+(S.xevFilter!=='all'?1:0);
   const titulos={_hoje:'Hoje',all:'Todos',Funil:'Funil',Quente:'Funil · Quente',Morno:'Funil · Morno',Frio:'Funil · Frio',Carteira:'Carteira','Carteira:novas':'Carteira · Novas','Carteira:usadas':'Carteira · Usadas',Retail:'Retail','Retail:novas':'Retail · Novas','Retail:usadas':'Retail · Usadas',Perdido:'Perdidos',Fechados:'Negócios fechados'};
   const alertaAtual=S.alertFilter?(calcAlerts(recsInContext()).find(a=>a.id===S.alertFilter)||{}).label:null;
-  const curLabel=S.alertFilter?('⚠️ '+(alertaAtual||'Alerta')):(titulos[sf]||sf);
+  const curLabel=S.alertFilter?('⚠️ '+(alertaAtual||'Alerta')):((titulos[sf]||sf)+(mesMode&&mesSel&&mesSel!=='all'?' · '+mesLbl(mesSel):''));
   const P=vPendentes();
   const nFun=(c['Quente']||0)+(c['Morno']||0)+(c['Frio']||0);
   const vend=!isAdmin();
   const chipsDef=grp==='Funil'?[['Funil','Todos',nFun],['Quente','Quente',c['Quente']||0],['Morno','Morno',c['Morno']||0],['Frio','Frio',c['Frio']||0]]
-    :grp==='Carteira'?[['Carteira','Todas',c['Carteira']||0],['Carteira:novas','Novas (MN+MD)',recsInContext().filter(r=>r.status==='Carteira'&&r.type!=='MU').length],['Carteira:usadas','Usadas (MU)',recsInContext().filter(r=>r.status==='Carteira'&&r.type==='MU').length]]
-    :grp==='Retail'?[['Retail','Todas',c['Retail']||0],['Retail:novas','Novas (MN+MD)',recsInContext().filter(r=>r.status==='Retail'&&r.type!=='MU').length],['Retail:usadas','Usadas (MU)',recsInContext().filter(r=>r.status==='Retail'&&r.type==='MU').length]]:null;
+    :(grp==='Carteira'||grp==='Retail')?(()=>{const nG=fn=>recsInContext().filter(r=>r.status===grp&&inMes(r)&&fn(r)).length;
+      return[[grp,'Todas',nG(()=>true)],[grp+':novas','Novas (MN+MD)',nG(r=>r.type!=='MU')],[grp+':usadas','Usadas (MU)',nG(r=>r.type==='MU')]];})():null;
   const chips=chipsDef&&!S.alertFilter?`<div class="vchips">${chipsDef.map(([k,l,n])=>`<button class="vchip ${sf===k?'on':''}" data-action="sidebar-filter" data-status="${k}">${l} <span>${n}</span></button>`).join('')}</div>`:'';
-  const agrupar=grp==='Retail'||sf==='Fechados'||sf==='Perdido';
-  const lista=f.length===0?`<div class="empty">${procura?'Nada encontrado.':'Nenhum registo aqui.'}</div>`:
-    agrupar?groupByMonth(f).map(g=>`
+  const agrupar=(mesMode&&mesSel==='all')||(!mesMode&&grp==='Retail')||sf==='Fechados'||sf==='Perdido';
+  const grupos=(mesMode&&mesSel==='all')?(()=>{const m={};f.forEach(r=>{const k=mesDe(r)||'Sem mês';(m[k]=m[k]||[]).push(r);});return Object.keys(m).sort((a,b)=>grp==='Retail'?b.localeCompare(a):a.localeCompare(b)).map(k=>({month:k==='Sem mês'?(grp==='Retail'?'Sem data 298':'Sem mês de entrega'):mesLbl(k),records:m[k]}));})():null;
+  if(mesMode&&mesSel!=='all')f.sort(grp==='Retail'?((a,b)=>String(b.col_298||'').localeCompare(String(a.col_298||''))):((a,b)=>String(a.id_cliente||'').localeCompare(String(b.id_cliente||''),'pt')));
+  const lista=f.length===0?`<div class="empty">${procura?'Nada encontrado.':(mesMode&&mesSel!=='all'?'Nada neste mês.':'Nenhum registo aqui.')}</div>`:
+    agrupar?(grupos||groupByMonth(f)).map(g=>`
         <div class="month-group"><span class="month-group-label">${esc(g.month)}</span><span class="month-group-count">${g.records.length}</span><div class="month-group-line"></div></div>
         <div class="cards">${g.records.map(r=>renderCard(r)).join('')}</div>`).join(''):
       (()=>{const lim=S.renderLimit||50;const shown=f.slice(0,lim);let html=`<div class="cards">${shown.map(r=>renderCard(r)).join('')}</div>`;if(f.length>lim)html+=`<div style="padding:8px 16px 20px"><button class="btn btn-outline btn-block" data-action="load-more">Carregar mais (${f.length-lim} restantes)</button></div>`;return html})();
@@ -3570,8 +3595,9 @@ ${vSidebarHTML(_A)}
   <div class="content">
     <div class="search-wrap"><input class="search-input" id="f-search" placeholder="${emHoje?'Procurar em todos os teus negócios…':'Pesquisar cliente, modelo, matrícula...'}" value="${esc(S.search)}"></div>
     ${emHoje&&!procura?vHoje():`
+    ${mesBar}
     ${chips}
-    ${emHoje?'':`<div class="vfilt-bar">
+    ${emHoje||mesMode?'':`<div class="vfilt-bar">
       <button class="pill2 ${S.filtersOpen?'active':''}" data-action="toggle-filters" style="display:flex;align-items:center;gap:4px">⏱ Período${af?` (${af})`:''}</button>
       ${S.monthFilter.length>0?`<span style="font-size:12px;font-weight:600;color:var(--orange)">${S.monthFilter.length===1?S.monthFilter[0]:S.monthFilter.length+' meses'}</span>`:''}
       ${S.bevFilter==='1'?`<span style="font-size:11px;font-weight:700;color:var(--blue);background:var(--blue-bg);padding:2px 7px;border-radius:6px">BEV</span>`:''}
@@ -6951,6 +6977,7 @@ function bindEvents(){
       case'go-vcom':setState({screen:'vcom'});break;
       case'go-veot':setState({screen:'veot'});loadEot().then(()=>render());break;
       case'v-eot-f':setState({vEotF:el.dataset.f});break;
+      case'v-mes-sel':setState({vMesSel:Object.assign({},S.vMesSel||{},{[el.dataset.g]:el.dataset.m}),renderLimit:50});break;
       case'leads-tab':setState({leadsTab:el.dataset.t});if(el.dataset.t==='eot')loadEot().then(()=>render());break;
       case'eot-confirmar':eotConfirmar();break;
       case'eot-cancelar':setState({eotPrev:null,eotErrImp:''});break;
