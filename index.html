@@ -1776,6 +1776,35 @@ a{color:var(--blue)}
 :root[data-theme="dark"] .norma-ok{background:var(--green-bg);border-color:#1C4A30;color:var(--green)}
 @media(max-width:700px){.fm-kpis{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.fm-kpis .kpi-c{padding:6px 8px;border-radius:var(--r)}.fm-kpis .kpi-k{font-size:10.5px}.fm-kpis .kpi-v{font-size:13.5px}.hdr-btn[data-action="fm-pdf"] span{display:none}.hdr-btn[data-action="fm-pdf"]{width:44px;padding:0}}
 .fm-kpis .kpi-k{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* --- ronda 2 --- */
+.stock-ano{display:inline-flex;align-items:center;height:20px;padding:0 7px;margin-left:6px;border-radius:var(--rp);background:var(--slate-bg);color:var(--text2);font-size:12px;font-weight:700;vertical-align:2px;font-variant-numeric:tabular-nums}
+/* inputs numéricos: sem setas (roubavam espaço ao valor) */
+.stock-num,.stock-kms-inp,.fm-tbl input[type=number]{-moz-appearance:textfield;appearance:textfield}
+.stock-num::-webkit-inner-spin-button,.stock-num::-webkit-outer-spin-button,.stock-kms-inp::-webkit-inner-spin-button,.stock-kms-inp::-webkit-outer-spin-button,.fm-tbl input[type=number]::-webkit-inner-spin-button,.fm-tbl input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+/* Ficha de margem: caixas com largura para o valor inteiro */
+.fm-tbl .stock-eurwrap{display:inline-block;max-width:none;vertical-align:middle}
+.fm-tbl .stock-inp{box-sizing:border-box;border:1px solid var(--border2);border-radius:6px;background:var(--surface);color:var(--text);font-variant-numeric:tabular-nums}
+.fm-tbl .fm-v .stock-inp{width:150px;max-width:none;padding:6px 24px 6px 8px!important;font-size:14px}
+.fm-tbl .fm-pct{width:84px!important;max-width:84px!important;padding:6px 22px 6px 6px!important}
+.fm-dest .fm-v .stock-inp{width:164px}
+@media(max-width:700px){
+  .fm-tbl .fm-v .stock-inp{width:136px;font-size:16px}
+  .fm-dest .fm-v .stock-inp{width:150px;font-size:16px}
+  .fm-tbl .fm-pct{width:76px!important;max-width:76px!important;font-size:16px}
+}
+/* Chefe: Tema / Password / Sair no fundo do menu lateral */
+.gpp-foot{display:flex;gap:6px;padding:12px 14px calc(var(--safe-b) + 12px);border-top:1px solid rgba(255,255,255,.07);flex-shrink:0}
+.gpp-foot .gpp-sair{flex:1}
+@media(max-width:700px){.gpp-foot{display:none}}
+@media(min-width:701px) and (max-width:1100px){
+  .gpp-foot{flex-direction:column;align-items:center;padding:10px 0 calc(var(--safe-b) + 10px)}
+  .gpp-foot .vnav-fb{flex:0 0 44px;width:44px}
+  .gpp-foot .gpp-sair span{display:none}
+  .app-layout.rail-open .gpp-foot{flex-direction:row;padding:12px 14px}
+  .app-layout.rail-open .gpp-foot .gpp-sair{flex:1;width:auto}
+  .app-layout.rail-open .gpp-foot .gpp-sair span{display:inline}
+}
 </style>
 </head>
 <body>
@@ -3197,7 +3226,6 @@ function renderMinhasComissoes(){
   <div class="hdr">
     <button class="hdr-back" data-action="back-to-list">←</button><div class="hdr-accent"></div>
     <div class="hdr-title">As minhas comissões</div>
-    <button class="hdr-btn" data-action="go-ventregas">📦 Entregas</button>
   </div>
   <div class="content"><div style="padding:12px 0">
       ${vBarraMes(meses,sel,'v-mescom-sel')}
@@ -3217,13 +3245,13 @@ function renderStockVend(){
   // Fonte conforme o separador: usadas do stock, demos da norma
   let lista;
   if(cat==='demo'){
-    lista=(S.normaPub||[]).filter(m=>m.estado!=='Em falta').map(m=>({id:m.id,tipo:'demo',modelo:m.modelo,matricula:m.matricula,kms:m.kms,estado:m.estado,tem_seguro:m.tem_seguro}));
+    lista=(S.normaPub||[]).filter(m=>m.estado!=='Em falta').map(m=>({id:m.id,tipo:'demo',ano:m.data_matricula?String(m.data_matricula).slice(0,4):null,modelo:m.modelo,matricula:m.matricula,kms:m.kms,estado:m.estado,tem_seguro:m.tem_seguro}));
   }else{
-    lista=(S.stock||[]).filter(m=>(m.categoria||'usada')==='usada'&&m.estado!=='Vendida').map(m=>({id:m.id,tipo:'usada',modelo:m.modelo,matricula:m.matricula,kms:m.kms,estado:m.estado,tem_seguro:m.tem_seguro,maxterauto:m.maxterauto,valor_anunciado:m.valor_anunciado,valor_campanha:m.valor_campanha,valor_min:m.valor_min}));
+    lista=(S.stock||[]).filter(m=>(m.categoria||'usada')==='usada'&&m.estado!=='Vendida').map(m=>({id:m.id,tipo:'usada',ano:m.ano||null,modelo:m.modelo,matricula:m.matricula,kms:m.kms,estado:m.estado,tem_seguro:m.tem_seguro,maxterauto:m.maxterauto,valor_anunciado:m.valor_anunciado,valor_campanha:m.valor_campanha,valor_min:m.valor_min}));
   }
   const card=m=>`<div class="stock-card" style="border-left:4px solid ${estadoCor[m.estado]||'var(--border2)'}">
     <div class="stock-card-top">
-      <span style="flex:1;font-size:15px;font-weight:700">${esc(m.modelo||'')}</span>
+      <span style="flex:1;font-size:15px;font-weight:700">${esc(m.modelo||'')}${m.ano?` <span class="stock-ano" title="${m.tipo==='demo'?'Ano da matrícula':'Ano'}">${esc(m.ano)}</span>`:''}</span>
       ${(()=>{const anun=m.valor_anunciado!=null?fmtP(m.valor_anunciado):null;const camp=m.valor_campanha!=null?fmtP(m.valor_campanha):null;if(!anun&&!camp)return'';if(camp&&anun)return`<div class="stock-preco"><span class="stock-preco-old">${anun}</span><span class="stock-preco-now">${camp}</span></div>`;return`<div class="stock-preco"><span class="stock-preco-now">${camp||anun}</span></div>`;})()}
     </div>
     <div style="margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
@@ -3791,7 +3819,7 @@ function renderStockEqVend(){
 function vGrupoDe(sf){sf=String(sf||'');if(['Funil','Quente','Morno','Frio'].includes(sf))return'Funil';if(sf.startsWith('Carteira'))return'Carteira';if(sf.startsWith('Retail'))return'Retail';return sf;}
 function vNavItem(o){return`<div class="vnav-item ${o.on?'on':''}" data-action="${o.act}"${o.status?` data-status="${o.status}"`:''}${o.id!=null?` data-id="${o.id}"`:''}><span class="vnav-ic">${icE(o.ic)}</span><span class="vnav-lb">${o.lb}</span>${o.badge?`<span class="vnav-badge">${o.badge}</span>`:(o.n!=null&&o.n!==''?`<span class="vnav-n">${o.n}</span>`:'')}</div>`;}
 function vPendentes(){const al=calcAlerts(recsInContext());const eot=eotMeus().filter(eotPrecisaAcao).length;
-  const grupos=al.filter(a=>!String(a.id).startsWith('funil_')).length+(eot?1:0)+(vEntregasSemana().length?1:0);
+  const grupos=al.filter(a=>!String(a.id).startsWith('funil_')).length+(eot?1:0);
   const contactar=recsInContext().filter(r=>FUNIL.includes(r.status)&&funilAtrasado(r)).length;
   return{al,eot,grupos,contactar,total:grupos+contactar};}
 function vEntregasSemana(){const h=new Date();h.setHours(0,0,0,0);const lim=new Date(h);lim.setDate(lim.getDate()+7);
@@ -3810,14 +3838,12 @@ function vHoje(){
   const fE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:0})+' €';
   const P=vPendentes();
   const tarefas=P.al.filter(a=>!String(a.id).startsWith('funil_'));
-  const entSem=vEntregasSemana();
   const contactar=fun.filter(funilAtrasado).sort((a,b)=>String(a.alert_date||a.status_updated_at||'').localeCompare(String(b.alert_date||b.status_updated_at||'')));
   const kpi=(act,status,k,v,sub,cor)=>`<div class="vh-kpi" data-action="${act}"${status?` data-status="${status}"`:''}><div class="vh-k">${k}</div><div class="vh-v" ${cor?`style="color:${cor}"`:''}>${v}</div><div class="vh-s">${sub}</div></div>`;
   const linhaT=(act,attrs,ic,txt,cls)=>`<div class="vh-row ${cls||''}" data-action="${act}" ${attrs||''} role="button" tabindex="0">${alertaTag(ic)}<span class="vh-txt">${txt}</span><span class="vh-chev">${ico('chevr','ic-sm')}</span></div>`;
   const tRows=[
     ...tarefas.map(a=>linhaT('alert-filter',`data-alert="${a.id}" data-ids="${a.ids.join(',')}"`,a.id,esc(a.label))),
     P.eot?linhaT('go-veot','','eot',`<b>${P.eot}</b> EOT${P.eot!==1?'s':''} a precisar de contacto`):'',
-    entSem.length?linhaT('go-ventregas','','ent',`<b>${entSem.length}</b> entrega${entSem.length!==1?'s':''} nos próximos 7 dias`):''
   ].filter(Boolean);
   const cRow=r=>{const desde=r.alert_date?('desde '+fmtDate(r.alert_date)):(r.status_updated_at?('sem mexer há '+vDiasDesde(r.status_updated_at)+' d'):'');
     const tel=r.contacto?String(r.contacto).trim():'';
@@ -3854,7 +3880,6 @@ function vSidebarHTML(A){
       <div class="vnav-sec">Clientes</div>
       ${vNavItem({act:'go-veot',ic:'🔁',lb:'EOTs',on:A==='veot',n:eotMeus().filter(x=>x.no_mapa!==false&&!EOT_FECHO.includes(x.fase)).length||'',badge:P.eot||''})}
       ${vend?`<div class="vnav-sec">O meu mês</div>
-      ${vNavItem({act:'go-ventregas',ic:'🚚',lb:'Entregas',on:A==='ventregas',n:c['Carteira']||0})}
       ${vNavItem({act:'go-vcom',ic:'💶',lb:'Comissões',on:A==='vcom'})}
       <div class="vnav-sec">Ferramentas</div>
       ${vNavItem({act:'go-ficha',ic:'🧮',lb:'Ficha de margem',on:A==='ficha'})}
@@ -5763,7 +5788,6 @@ function renderDashboard(){
     <div class="hdr-accent"></div>
     <div class="hdr-title">${esc(secLabel)}</div>
     <button class="hdr-btn hdr-ic" data-action="refresh" ${S.loading?'disabled':''} aria-label="Atualizar" title="Atualizar">${S.loading?'…':ico('refresh')}</button>
-    ${contaHTML()}
   </div>`;
 
   // ---- Seletor de mês (usado em Home, Carteira, Retail) ----
@@ -7110,7 +7134,11 @@ function renderDashboard(){
   return`
   <div class="app-layout ${S.gppSideOff?'side-off':''} ${S.railAberto?'rail-open':''}">
   <div class="rail-bd" data-action="gpp-toggle-side"></div>
-  <div class="gpp-side"><button class="rail-exp" data-action="gpp-toggle-side" aria-label="Abrir menu" title="Abrir menu">${ico('menu')}</button>${renderViewSelector()}${nav}</div>
+  <div class="gpp-side"><button class="rail-exp" data-action="gpp-toggle-side" aria-label="Abrir menu" title="Abrir menu">${ico('menu')}</button>${renderViewSelector()}${nav}<div class="gpp-foot">
+    <button class="vnav-fb" data-action="tema-toggle" title="${temaAtual()==='escuro'?'Tema claro':'Tema escuro'}" aria-label="${temaAtual()==='escuro'?'Tema claro':'Tema escuro'}">${ico(temaAtual()==='escuro'?'sun':'moon')}</button>
+    <button class="vnav-fb" data-action="go-password" title="Alterar password" aria-label="Alterar password">${ico('key')}</button>
+    <button class="vnav-fb gpp-sair" data-action="logout" title="Sair">${ico('logout')}<span>Sair</span></button>
+  </div></div>
   <div class="main-panel" style="width:100%">
   ${header}
   <div class="content">${secTabs}${body}</div>
@@ -7123,6 +7151,7 @@ function render(){
   const app=document.getElementById('app');
   const ce=app.querySelector('.content'),st=ce?ce.scrollTop:0,ps=app.dataset.screen||'';
   const screens={loading:'<div class="content"><div class="center-screen"><p style="color:var(--text3)">A carregar...</p></div></div>',login:renderLogin,list:renderList,detail:renderDetail,edit:renderEdit,dashboard:renderDashboard,escala:renderEscala,password:renderPassword,ventregas:renderMinhasEntregas,vcom:renderMinhasComissoes,semacesso:renderSemAcesso,ficha:renderFichaMargem,secretaria:renderSecretaria,assessor:renderAssessor,stockvend:renderStockVend,evento:renderEventoVend,veot:renderMinhasEot,vstockeq:renderStockEqVend};
+  if(S.screen==='ventregas'&&S.me&&!isAdmin())S.screen='list';
   const fn=screens[S.screen];
   app.innerHTML=typeof fn==='function'?(V_SHELL[S.screen]&&S.me&&!isAdmin()?vEnvolver(fn(),V_SHELL[S.screen]):fn()):fn;
   app.dataset.screen=S.screen;
@@ -7376,7 +7405,7 @@ function bindEvents(){
       case'evento-del':delEvento(parseInt(el.dataset.id));break;
       case'export-inscricoes':exportInscricoes();break;
       case'back-from-stock':setState({screen:'list'});break;
-      case'go-ventregas':setState({screen:'ventregas'});break;
+      case'go-ventregas':setState({screen:isAdmin()?'ventregas':'list'});break;
       case'v-mes-chip':setState({vMes:el.dataset.m});break;
       case'go-vcom':setState({screen:'vcom'});break;
       case'go-veot':setState({screen:'veot'});loadEot().then(()=>render());break;
