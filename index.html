@@ -1815,6 +1815,59 @@ a{color:var(--blue)}
 .seqf-w2{grid-column:span 2}
 .seqf-stw{margin:-2px 0 8px}.seqf-st{font-size:12.5px;color:var(--text2)}.seqf-st.ok{color:var(--green)}
 @media(max-width:700px){.seqf-w2{grid-column:auto}.seqf-abrir{width:100%}.seqf-abrir span{display:inline}}
+
+.fin-ctx{font-size:15px;font-weight:700}
+.fin-sub{font-size:11.5px;color:var(--text3);margin-top:2px}
+.sec-top .sec-ro{margin-left:auto;display:inline-flex;align-items:center;gap:4px}
+
+/* ===== Ficha da EOT ===== */
+.eot-click{cursor:pointer}
+.eot-click:hover td{background:var(--surface2)}
+.eot-chev{text-align:right;color:var(--text3);white-space:nowrap}
+.eot-trunc{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.neg{color:var(--red)}
+.atag-ok{background:var(--green-bg);color:var(--green)}.atag-mut{background:var(--slate-bg);color:var(--text3)}
+.atag{min-width:0}
+.eot-card.eot-click:hover{border-color:var(--border2);box-shadow:var(--elev2)}
+.eot-cmini{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:8px;font-size:12.5px;color:var(--text2)}
+.eot-cmini .eot-chev{margin-left:auto}
+.eotm-bd{position:fixed;inset:0;z-index:300;background:rgba(11,18,32,.45);animation:fadeIn .15s ease}
+.eotm{position:fixed;z-index:310;left:50%;top:50%;transform:translate(-50%,-50%);width:min(880px,calc(100vw - 32px));max-height:calc(100vh - 48px);display:flex;flex-direction:column;background:var(--surface);border-radius:var(--r3);box-shadow:0 24px 64px rgba(0,0,0,.3);overflow:hidden}
+.eotm-h{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border)}
+.eotm-ht{flex:1;min-width:0}.eotm-tit{font-size:19px;font-weight:700;color:var(--blue)}.eotm-sub{font-size:13px;color:var(--text2);margin-top:3px}
+.eotm-x{width:40px;height:40px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;color:var(--text)}
+.eotm-x:hover{background:var(--surface2)}
+.eotm-body{flex:1;overflow-y:auto;padding:14px 20px 18px;-webkit-overflow-scrolling:touch}
+.eotm-kpis{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--text2);padding:10px 12px;background:var(--surface2);border-radius:var(--r)}
+.eotm-kpis b{color:var(--text)}
+.eotm-sec{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text3);margin:16px 0 8px}
+.eotm-g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 12px}
+.eotm-f{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:var(--text3);min-width:0}
+.eotm-f .norma-inp{width:100%;font-weight:500;color:var(--text)}
+.eotm-f textarea.norma-inp{resize:vertical;min-height:44px}
+.eotm-w2{grid-column:span 2}
+.eotm-ro{font-size:14px;font-weight:500;color:var(--text);padding:6px 0;overflow-wrap:anywhere}
+.eotm-det{margin-top:14px;border:1px solid var(--border);border-radius:var(--r2);padding:10px 12px}
+.eotm-det summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--text);min-height:28px;display:flex;align-items:center}
+.eotm-det[open] summary{margin-bottom:10px}
+.eotm-com{display:flex;gap:8px;align-items:flex-end}
+.eotm-com textarea{flex:1;resize:vertical;min-height:44px}
+.eoth{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.eoth-it{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px}
+.eoth-it.comentario{background:var(--surface);border-left:3px solid var(--blue)}
+.eoth-it.sistema{opacity:.8}
+.eoth-q{font-size:12.5px;color:var(--blue);font-variant-numeric:tabular-nums}
+.eoth-t{font-size:14px;color:var(--text);margin-top:3px;overflow-wrap:anywhere}
+.eoth-v{font-size:13px;color:var(--text3);padding:6px 0}
+.eotm-foot{display:flex;gap:10px;align-items:center;padding:12px 20px calc(12px + var(--safe-b));border-top:1px solid var(--border);background:var(--surface)}
+@media(max-width:700px){
+  .eotm{left:0;top:auto;bottom:0;transform:none;width:100%;max-height:92vh;border-radius:var(--r3) var(--r3) 0 0}
+  .eotm-g{grid-template-columns:1fr 1fr}
+  .eotm-w2{grid-column:1/-1}
+  .eotm-h{padding:14px 16px}.eotm-body{padding:12px 16px 16px}.eotm-foot{padding:10px 16px calc(10px + var(--safe-b))}
+  .eotm-com{flex-direction:column;align-items:stretch}
+  .eotm-f .norma-inp{font-size:16px}
+}
 </style>
 </head>
 <body>
@@ -1880,7 +1933,7 @@ const ICO={
 function ico(n,cls){const p=ICO[n];if(!p)return'';return`<svg class="ic${cls?' '+cls:''}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${p}</svg>`;}
 const EMO_IC={'🏠':'home','📋':'inbox','✅':'check','🔻':'filter','📦':'package','🔁':'repeat','☰':'more','🎯':'target','🏍️':'bike','🏍':'bike','🧥':'shirt','⭐':'star','🎟️':'ticket','🎟':'ticket','📅':'calendar','🧮':'calc','💰':'coins','💶':'coins','⬇️':'download','⬇':'download','🚚':'truck','✕':'xcircle','❌':'xcircle','🔑':'key','🚪':'logout','🤝':'store','📉':'trend','🏁':'flag','❤️':'heart','🏆':'trophy','⚠️':'alert','📐':'chart','🧾':'receipt','🔒':'lock'};
 document.addEventListener('keydown',e=>{const t=e.target;if((e.key==='Enter'||e.key===' ')&&t&&t.matches&&t.matches('div[data-action][tabindex],span[data-action][tabindex],tr[data-action][tabindex]')){e.preventDefault();t.click();}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&typeof S!=='undefined'&&(S.contaAberto||S.gppMais)){S.contaAberto=false;S.gppMais=false;render();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&typeof S!=='undefined'&&S.eotAberto){eotFechar();return;}if(e.key==='Escape'&&typeof S!=='undefined'&&(S.contaAberto||S.gppMais)){S.contaAberto=false;S.gppMais=false;render();}});
 function icE(x){const n=EMO_IC[x];return n?ico(n):x;}
 // ---- Tema (claro / escuro) ----
 function temaAtual(){try{return localStorage.getItem('bm_tema')||'claro'}catch(e){return'claro'}}
@@ -1893,7 +1946,7 @@ function contaHTML(extra){
   return`<div class="conta">
     <button class="conta-btn" data-action="conta-toggle" aria-haspopup="menu" aria-expanded="${ab}" title="Conta"><span class="conta-av">${esc(iniciais(me.nome))}</span><span class="conta-nm">${esc(String(me.nome||'').split(' ')[0])}</span>${ico('chevd','ic-sm')}</button>
     ${ab?`<div class="conta-bd" data-action="conta-fechar"></div><div class="conta-menu" role="menu">
-      <div class="conta-quem"><b>${esc(me.nome||'')}</b><span>${esc({admin:'Chefe de Vendas',vendedor:'Vendedor',secretario:'Secretaria comercial',assessor:'Assessor de serviço'}[me.role]||'')}</span></div>
+      <div class="conta-quem"><b>${esc(me.nome||'')}</b><span>${esc({admin:'Chefe de Vendas',vendedor:'Vendedor',secretario:'Secretaria comercial',assessor:'Assessor de serviço',financeiro:'Financeiro'}[me.role]||'')}</span></div>
       ${extra||''}
       <button class="conta-it" role="menuitem" data-action="tema-toggle">${ico(esc_?'sun':'moon')}<span>${esc_?'Tema claro':'Tema escuro'}</span></button>
       <button class="conta-it" role="menuitem" data-action="go-password">${ico('key')}<span>Alterar password</span></button>
@@ -2022,7 +2075,7 @@ async function loadMe(){const uid=jwtSub(S.token);if(!uid)throw new Error('Token
 function isAdmin(){return S.me&&S.me.role==='admin'}
 function isVendedor(){return S.me&&S.me.role==='vendedor'}
 const ROLE_LBL={admin:'Chefe de Vendas',vendedor:'Vendedor',assessor:'Assessor de Serviço',secretario:'Secretário Comercial'};
-function ecraInicial(){const r=S.me&&S.me.role;return r==='admin'?'dashboard':(r==='vendedor'?'list':(r==='secretario'?'secretaria':(r==='assessor'?'assessor':'semacesso')));}
+function ecraInicial(){const r=S.me&&S.me.role;return r==='admin'?'dashboard':(r==='vendedor'?'list':(r==='secretario'?'secretaria':(r==='assessor'?'assessor':(r==='financeiro'?'financeiro':'semacesso'))));}
 // ---- Secretaria comercial: Retail, Carteira e Entregas — só leitura ----
 function secMesesDisp(){const m=new Set([curYM()]);(S.records||[]).forEach(r=>{if(r.status==='Retail'&&retailYM(r))m.add(retailYM(r));if(r.status==='Carteira'&&r.mes1)m.add(r.mes1);});return [...m].sort();}
 function secDetalhe(r,cols){
@@ -2627,6 +2680,63 @@ function triPDF(){
   w.document.open();w.document.write(html);w.document.close();w.focus();
   setTimeout(()=>{try{w.print();}catch(e){}},350);
 }
+// ===== Utilizador Financeiro: só EOTs, só leitura =====
+function isFinanceiro(){return S.me&&S.me.role==='financeiro';}
+function renderFinanceiro(){
+  const F=Object.assign({prazo:'',fase:'',resp:'',mapa:'1'},S.finF||{});
+  const fE=n=>n==null?'—':Number(n).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+  const fD=v=>v?String(v).slice(0,10).split('-').reverse().join('/'):'—';
+  const todos=S.eot||[];
+  const noMapa=todos.filter(x=>x.no_mapa!==false);
+  let L=F.mapa==='1'?noMapa:todos.slice();
+  const dd=x=>eotDias(x);
+  if(F.prazo==='90')L=L.filter(x=>{const d=dd(x);return d!=null&&d>=0&&d<=90;});
+  else if(F.prazo==='180')L=L.filter(x=>{const d=dd(x);return d!=null&&d>90&&d<=180;});
+  else if(F.prazo==='mais')L=L.filter(x=>{const d=dd(x);return d!=null&&d>180;});
+  else if(F.prazo==='fim')L=L.filter(x=>{const d=dd(x);return d!=null&&d<0;});
+  if(F.fase)L=L.filter(x=>(x.fase||'Por contactar')===F.fase);
+  if(F.resp==='_sem')L=L.filter(x=>!x.responsavel_id);else if(F.resp)L=L.filter(x=>String(x.responsavel_id)===F.resp);
+  L.sort((a,b)=>String(a.data_fim||'9999').localeCompare(String(b.data_fim||'9999')));
+  const n90=noMapa.filter(x=>{const d=dd(x);return d!=null&&d>=0&&d<=90;}).length;
+  const n180=noMapa.filter(x=>{const d=dd(x);return d!=null&&d>90&&d<=180;}).length;
+  const resT=L.reduce((a,x)=>a+(Number(x.residual)||0),0);
+  const fechados=noMapa.filter(x=>EOT_FECHO.includes(x.fase)).length;
+  const resps=[...new Set(todos.map(x=>x.responsavel_id).filter(Boolean))];
+  const sel=(k,opts)=>`<select class="seq-sel" data-fin-f="${k}" aria-label="${k}">${opts.map(([v,l])=>`<option value="${esc(v)}" ${String(F[k])===String(v)?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
+  const linhas=L.map(x=>`<tr class="gpp-lrow2 eot-click" data-action="eot-abrir" data-c="${esc(x.contrato)}" tabindex="0" title="Abrir ficha da EOT">
+      <td><b>${esc(x.cliente||'—')}</b><div class="fin-sub">${esc(x.contrato||'')}${x.tipo?' · '+esc(x.tipo):''}</div></td>
+      <td>${esc(x.modelo||'—')}${x.matricula?`<div class="fin-sub">${esc(x.matricula)}</div>`:''}</td>
+      <td>${fD(x.data_fim)}<div class="fin-sub">${eotDiasHTML(x)}</div></td>
+      <td style="text-align:right"><b>${fE(x.residual)}</b></td>
+      <td>${eotFaseHTML(x)}${x.no_mapa===false?'<div class="fin-sub">saiu do mapa</div>':''}</td>
+      <td>${x.responsavel_id?vendTag(x.responsavel_id):'<span style="color:var(--text3)">por atribuir</span>'}</td>
+      <td class="eot-chev">${ico('chevr','ic-sm')}</td>
+    </tr>`).join('');
+  return`<div class="app-layout"><div class="main-panel" style="width:100%">
+    <div class="hdr"><div class="hdr-accent"></div><div class="hdr-title">EOTs · contratos a terminar</div>
+      <button class="hdr-btn hdr-ic" data-action="refresh" title="Atualizar" aria-label="Atualizar">${ico('refresh')}</button>
+      ${contaHTML()}</div>
+    <div class="content"><div class="sec-wrap">
+      <div class="sec-top"><span class="fin-ctx">BMW Motorrad · Aveiro</span><span class="sec-ro">Clica num contrato para ver, editar e comentar</span></div>
+      ${S.eotErr?`<div class="mg-aviso">Não consegui ler as EOTs (${esc(S.eotErr)}). Fala com o chefe de vendas.</div>`:''}
+      <div class="kpi-strip" style="margin:0 0 14px">
+        <div class="kpi-c"><span class="kpi-k">No mapa</span><span class="kpi-v">${noMapa.length}</span><span class="kpi-s">${fechados} fechado${fechados!==1?'s':''}</span></div>
+        <div class="kpi-c"><span class="kpi-k">Terminam em ≤ 90 dias</span><span class="kpi-v ${n90?'neg':''}">${n90}</span><span class="kpi-s">no mapa</span></div>
+        <div class="kpi-c"><span class="kpi-k">91–180 dias</span><span class="kpi-v ${n180?'warn':''}">${n180}</span><span class="kpi-s">no mapa</span></div>
+        <div class="kpi-c"><span class="kpi-k">Residual (lista abaixo)</span><span class="kpi-v">${fE(resT)}</span><span class="kpi-s">${L.length} contrato${L.length!==1?'s':''}</span></div>
+      </div>
+      <div class="seq-bar" style="margin-bottom:10px">
+        ${sel('prazo',[['','Todos os prazos'],['90','≤ 90 dias'],['180','91–180 dias'],['mais','> 180 dias'],['fim','Já terminaram']])}
+        ${sel('fase',[['','Todas as fases'],...EOT_FASES.map(f=>[f,f])])}
+        ${sel('resp',[['','Todos os responsáveis'],['_sem','Por atribuir'],...resps.map(id=>[id,vendName(id)||'?'])])}
+        ${sel('mapa',[['1','Só no mapa atual'],['','Incluir os que saíram do mapa']])}
+      </div>
+      ${L.length?`<div class="gpp-card" style="overflow-x:auto"><table class="gpp-ltable fin-tbl">
+        <thead><tr><th>Cliente</th><th>Mota</th><th>Fim</th><th style="text-align:right">Residual</th><th>Fase</th><th>Responsável</th><th></th></tr></thead>
+        <tbody>${linhas}</tbody></table></div>`:vazioHTML('inboxEmpty',todos.length?'Nada com estes filtros':'Ainda não há EOTs carregadas',todos.length?'Muda os filtros acima.':'O mapa é carregado pelo chefe de vendas.')}
+      <div class="sec-nota">Contratos BMW Motorrad de Aveiro (inclui BMW Bank com concessionário responsável Aveiro), ordenados pela data de fim. Atualizado quando o chefe de vendas carrega o mapa.</div>
+    </div></div></div></div>`;
+}
 function renderSemAcesso(){
   const r=(S.me&&S.me.role)||'';
   return`<div class="app-layout"><div class="main-panel" style="width:100%">
@@ -2896,7 +3006,7 @@ function recsOf(vid){return S.records.filter(r=>r.vendedor_id===vid)}
 function statsFor(recs){const ym=curYM();const fech=recs.filter(r=>(r.status==='Retail'||r.status==='Carteira')&&negYM(r)===ym);const funil=recs.filter(r=>FUNIL.includes(r.status));const bev=fech.filter(r=>r.bev).length;const fechTotal=recs.filter(r=>r.status==='Retail'||r.status==='Carteira').length;const perdidos=recs.filter(r=>r.status==='Perdido').length;return{fechados:fech.length,funil:funil.length,bev,fechTotal,perdidos,alerts:calcAlerts(recs)}}
 function lastUpdateDays(recs){let m=0;recs.forEach(r=>{const t=new Date(r.updated_at||r.status_updated_at||r.created_at||0).getTime();if(t>m)m=t});if(!m)return null;return Math.floor((Date.now()-m)/86400000)}
 function lastUpdateDaysR(r){const t=new Date(r.updated_at||r.status_updated_at||r.created_at||0).getTime();if(!t)return 999;return Math.floor((Date.now()-t)/86400000)}
-async function loadRecords(){setState({loading:true,error:''});try{const _rl=S.me&&S.me.role;const d=_rl==='secretario'?await supabaseApi('GET','/negocios_secretaria?select=*&order=neg.desc.nullslast'):(_rl==='assessor'?[]:await supabaseApi('GET','/baviera_control?select=*&order=neg.desc.nullslast'));setState({records:d,loading:false})}catch(e){setState({error:'Erro: '+e.message,loading:false})}}
+async function loadRecords(){setState({loading:true,error:''});try{const _rl=S.me&&S.me.role;const d=_rl==='secretario'?await supabaseApi('GET','/negocios_secretaria?select=*&order=neg.desc.nullslast'):((_rl==='assessor'||_rl==='financeiro')?[]:await supabaseApi('GET','/baviera_control?select=*&order=neg.desc.nullslast'));setState({records:d,loading:false})}catch(e){setState({error:'Erro: '+e.message,loading:false})}}
 async function saveLead(){
   const f=S.leadForm||{};
   if(!f.campanha||!String(f.campanha).trim()){setState({leadErr:'Indica a campanha / lote.'});return;}
@@ -4559,6 +4669,97 @@ function eotDistribuicao(ativos,vend,sel){
   </div>`;
 }
 // ---- Vista do chefe (dentro de Leads) ----
+// ===== Ficha da EOT (janela): detalhe, edição, comentários e histórico =====
+const EOT_CAMPOS={cliente:'Cliente',contacto_nome:'Contacto',telemovel:'Telemóvel',telefone:'Telefone',tipo:'Tipo de contrato',modelo:'Modelo',matricula:'Matrícula',kms:'Km contratados',
+  data_fim:'Data de fim',prazo:'Prazo (meses)',prestacao:'Prestação',residual:'Valor residual',despesas:'Despesas finais',total:'Total a pagar',seguro:'Seguro',manutencao:'Manutenção',
+  concessionario:'Concessionário',conc_resp:'Conc. responsável',vendedor_origem:'Vendedor original',no_mapa:'No mapa',
+  responsavel_id:'Responsável',fase:'Fase',temperatura:'Temperatura',proxima_acao:'Próxima ação',proxima_data:'Data da próxima ação',notas:'Notas',negocio_id:'Negócio no funil'};
+const EOT_NUM=['prazo','prestacao','residual','despesas','total'],EOT_DATA=['data_fim','proxima_data'];
+const EOT_GRP_CONTRATO=['cliente','contacto_nome','telemovel','telefone','tipo','modelo','matricula','kms','data_fim','prazo','prestacao','residual','despesas','total','seguro','manutencao','concessionario','conc_resp','vendedor_origem','no_mapa'];
+const EOT_GRP_ACOMP=['responsavel_id','fase','temperatura','proxima_acao','proxima_data','notas'];
+const EOT_ROLE_LB={admin:'Chefe de Vendas',vendedor:'Vendedor',financeiro:'Financeiro',secretario:'Secretaria',assessor:'Assessor'};
+function eotPodeTudo(){return isAdmin()||isFinanceiro();}
+function eotPodeCampo(k){if(eotPodeTudo())return true;return ['fase','temperatura','proxima_acao','proxima_data','notas'].includes(k);}
+function eotAbrir(c){S.eotAberto=String(c);S.eotEd={};S.eotCom='';render();loadEotHist(c);}
+function eotFechar(force){if(!force&&S.eotEd&&Object.keys(eotPatch()).length&&!confirm('Tens alterações por guardar. Fechar sem guardar?'))return;S.eotAberto=null;S.eotEd={};S.eotCom='';render();}
+async function loadEotHist(c){
+  c=String(c);S.eotHistLoad=c;S.eotHistErr='';render();
+  try{const d=await supabaseApi('GET','/eot_historico?contrato=eq.'+encodeURIComponent(c)+'&select=*&order=criado_em.desc,id.desc');S.eotHist=Object.assign({},S.eotHist||{},{[c]:d||[]});}
+  catch(e){S.eotHistErr=/eot_historico|relation|42P01|schema cache/i.test(String(e&&e.message))?'O histórico ainda não está ativo (falta correr o SQL eot_historico.sql).':('Não consegui ler o histórico: '+((e&&e.message)||e));}
+  S.eotHistLoad=null;render();
+}
+function eotValNorm(k,v){if(v==null||v==='')return null;if(k==='no_mapa')return v===true||v==='true';if(EOT_NUM.includes(k)){const n=numPT(v);return n==null?null:n;}if(EOT_DATA.includes(k))return String(v).slice(0,10);return String(v).trim()===''?null:String(v).trim();}
+function eotPatch(){const x=(S.eot||[]).find(y=>String(y.contrato)===String(S.eotAberto));if(!x)return{};const p={};
+  Object.entries(S.eotEd||{}).forEach(([k,v])=>{if(!eotPodeCampo(k))return;const nv=eotValNorm(k,v),ov=eotValNorm(k,x[k]);if(String(nv)!==String(ov))p[k]=nv;});return p;}
+async function eotModalGuardar(){
+  const c=S.eotAberto;const p=eotPatch();
+  if(!Object.keys(p).length){toast('Nada para guardar');return;}
+  await eotGuardar(c,p);S.eotEd={};await loadEotHist(c);
+}
+async function eotComentar(){
+  const c=S.eotAberto;const t=String(S.eotCom||'').trim();if(!t)return;
+  try{await supabaseApi('POST','/eot_historico',{contrato:c,tipo:'comentario',texto:t});S.eotCom='';await loadEotHist(c);}
+  catch(e){alert('Erro ao gravar o comentário: '+((e&&e.message)||e)+(/eot_historico|42P01|schema cache/i.test(String(e&&e.message))?'\n\nFalta correr o SQL eot_historico.sql no Supabase.':''));}
+}
+function eotHistValor(k,v){if(v==null||v==='')return'(vazio)';if(k==='responsavel_id')return vendName(v)||'?';if(k==='no_mapa')return String(v)==='true'?'Sim':'Não';if(EOT_DATA.includes(k))return eotDataPT(v);if(['prestacao','residual','despesas','total'].includes(k))return eotEur(v);return String(v);}
+function eotHistHTML(h){
+  const d=new Date(h.criado_em);const p=n=>String(n).padStart(2,'0');
+  const quando=isNaN(d)?'':`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+  const quem=h.tipo==='sistema'?'Importação do mapa':`${esc(h.autor_nome||'?')}${h.autor_role?` (${esc(EOT_ROLE_LB[h.autor_role]||h.autor_role)})`:''}`;
+  const txt=h.tipo==='comentario'?`<span class="eoth-com">${esc(h.texto||'').replace(/\n/g,'<br>')}</span>`:
+    `alterou <b>${esc(EOT_CAMPOS[h.campo]||h.campo)}</b>: ${esc(eotHistValor(h.campo,h.valor_antes))} → <b>${esc(eotHistValor(h.campo,h.valor_depois))}</b>`;
+  return`<div class="eoth-it ${h.tipo}"><div class="eoth-q">${esc(quando)}${h.tipo==='comentario'?' · comentário':''}</div><div class="eoth-t">${quem}: ${txt}</div></div>`;
+}
+function eotCampoHTML(x,k){
+  const ed=S.eotEd||{};const v=(k in ed)?ed[k]:x[k];const pode=eotPodeCampo(k);const lb=EOT_CAMPOS[k]||k;const wide=['notas','proxima_acao'].includes(k)?' eotm-w2':'';
+  if(!pode){let t='—';if(v!=null&&v!==''){t=eotHistValor(k,v);}
+    if((k==='telemovel'||k==='telefone')&&v)t=`<a class="eot-tel" href="tel:${esc(String(v).replace(/\s/g,''))}">${esc(v)}</a>`;else t=esc(t);
+    return`<div class="eotm-f${wide}"><span>${esc(lb)}</span><div class="eotm-ro">${t}</div></div>`;}
+  let inp;
+  if(k==='responsavel_id'){const vend=(S.team||[]).filter(p=>p.role==='vendedor');inp=`<select class="norma-inp" data-eotm="${k}"><option value="">— por atribuir —</option>${vend.map(p=>`<option value="${p.id}" ${String(v||'')===String(p.id)?'selected':''}>${esc(p.nome||'?')}</option>`).join('')}</select>`;}
+  else if(k==='fase')inp=`<select class="norma-inp" data-eotm="${k}">${EOT_FASES.map(o=>`<option ${String(v||'Por contactar')===o?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+  else if(k==='temperatura')inp=`<select class="norma-inp" data-eotm="${k}"><option value="">—</option>${EOT_TEMP.map(o=>`<option ${String(v||'')===o?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+  else if(k==='no_mapa')inp=`<select class="norma-inp" data-eotm="${k}"><option value="true" ${String(v)!=='false'?'selected':''}>Sim</option><option value="false" ${String(v)==='false'?'selected':''}>Não</option></select>`;
+  else if(k==='notas')inp=`<textarea class="norma-inp" rows="2" data-eotm="${k}">${esc(v||'')}</textarea>`;
+  else if(EOT_DATA.includes(k))inp=`<input type="date" class="norma-inp" data-eotm="${k}" value="${v?esc(String(v).slice(0,10)):''}">`;
+  else if(EOT_NUM.includes(k))inp=`<input class="norma-inp" inputmode="decimal" data-eotm="${k}" value="${v==null?'':esc(String(v).replace('.',','))}">`;
+  else inp=`<input class="norma-inp" data-eotm="${k}" value="${esc(v||'')}">`;
+  return`<label class="eotm-f${wide}"><span>${esc(lb)}</span>${inp}</label>`;
+}
+function eotModalHTML(){
+  const x=(S.eot||[]).find(y=>String(y.contrato)===String(S.eotAberto));if(!x)return'';
+  const H=(S.eotHist||{})[String(x.contrato)];
+  const neg=x.negocio_id?(S.records||[]).find(r=>String(r.id)===String(x.negocio_id)):null;
+  const negBtn=isFinanceiro()?'':(neg?`<button class="btn btn-outline btn-sm" data-action="${isAdmin()?'open-record-from-dash':'open-detail'}" data-id="${neg.id}">Ver negócio no funil (${esc(neg.status||'')})</button>`:(x.responsavel_id?`<button class="btn btn-outline btn-sm" data-action="eot-negocio" data-c="${esc(x.contrato)}">＋ Criar negócio no funil</button>`:''));
+  const nAlt=Object.keys(eotPatch()).length;
+  return`<div class="eotm-bd" data-action="eotm-fechar"></div>
+  <div class="eotm" role="dialog" aria-modal="true" aria-label="EOT ${esc(x.contrato)}">
+    <div class="eotm-h">
+      <div class="eotm-ht"><div class="eotm-tit">EOT: ${esc(x.contrato)}</div><div class="eotm-sub"><b>${esc(x.cliente||'—')}</b> · ${esc(x.modelo||'')}${x.matricula?' · '+esc(x.matricula):''} · fim ${eotDataPT(x.data_fim)} ${eotDiasHTML(x)}</div></div>
+      <button class="eotm-x" data-action="eotm-fechar" aria-label="Fechar">${ico('x')}</button>
+    </div>
+    <div class="eotm-body">
+      <div class="eotm-kpis"><span>Prestação <b>${eotEur(x.prestacao)}</b></span><span>Residual <b>${eotEur(x.residual)}</b></span><span>Total a pagar <b>${eotEur(x.total)}</b></span><span>Fase <b>${esc(x.fase||'Por contactar')}</b></span><span>Responsável <b>${x.responsavel_id?esc(vendName(x.responsavel_id)||'?'):'por atribuir'}</b></span></div>
+      <div class="eotm-sec">Acompanhamento</div>
+      <div class="eotm-g">${EOT_GRP_ACOMP.map(k=>eotCampoHTML(x,k)).join('')}</div>
+      ${negBtn?`<div style="margin:8px 0 2px">${negBtn}</div>`:''}
+      <details class="eotm-det" ${S.eotDetAberto?'open':''} data-eot-det="1"><summary>Dados do contrato${eotPodeTudo()?' (editáveis)':' (só leitura)'} · telefone, prazo, prestação, residual…</summary>
+        <div class="eotm-g">${EOT_GRP_CONTRATO.map(k=>eotCampoHTML(x,k)).join('')}</div>
+      </details>
+      <div class="eotm-sec">Comentários e histórico</div>
+      <div class="eotm-com"><textarea class="norma-inp" id="eotm-com" rows="2" placeholder="Escreve um comentário (fica registado com o teu nome e a hora)">${esc(S.eotCom||'')}</textarea><button class="btn btn-dark btn-sm" data-action="eotm-comentar">Comentar</button></div>
+      ${S.eotHistErr?`<div class="mg-aviso" style="margin:8px 0">${esc(S.eotHistErr)}</div>`:''}
+      <div class="eoth">${S.eotHistLoad===String(x.contrato)&&!H?'<div class="eoth-v">A carregar…</div>':(H&&H.length?H.map(eotHistHTML).join(''):(S.eotHistErr?'':'<div class="eoth-v">Ainda sem registos. As alterações e comentários a partir de agora ficam aqui.</div>'))}</div>
+    </div>
+    <div class="eotm-foot">
+      <button class="btn btn-orange" data-action="eotm-guardar" id="eotm-guardar">Guardar${nAlt?` (${nAlt})`:''}</button>
+      <button class="btn btn-ghost" data-action="eotm-fechar">Cancelar</button>
+    </div>
+  </div>`;
+}
+function eotModalInput(el){const k=el.dataset.eotm;S.eotEd=Object.assign({},S.eotEd||{},{[k]:el.value});const b=document.getElementById('eotm-guardar');if(b){const n=Object.keys(eotPatch()).length;b.textContent='Guardar'+(n?` (${n})`:'');}}
+function eotFaseHTML(x){const f=x.fase||'Por contactar';const c=f==='Por contactar'?'neu':(['Renovado','Retomado'].includes(f)?'ok':(['Liquidado','Perdido'].includes(f)?'mut':'mn'));return`<span class="atag atag-${c==='ok'?'ok':c}">${esc(f)}</span>`;}
+function eotProxHTML(x){if(!x.proxima_data&&!x.proxima_acao)return'<span style="color:var(--text3)">—</span>';const at=x.proxima_data&&String(x.proxima_data).slice(0,10)<=new Date().toISOString().slice(0,10)&&!EOT_FECHO.includes(x.fase);return`${x.proxima_data?`<b class="${at?'neg':''}">${eotDataPT(x.proxima_data)}</b>`:''}${x.proxima_acao?`<div class="eot-sub eot-trunc">${esc(x.proxima_acao)}</div>`:''}`;}
 function eotView(){
   const F=S.eotF||{};
   const todos=S.eot||[];
@@ -4599,23 +4800,16 @@ function eotView(){
         <button class="btn btn-dark btn-sm" data-action="eot-cancelar">Cancelar</button>
       </div>
     </div>`:'';
-  const linha=x=>{
-    const neg=x.negocio_id?(S.records||[]).find(r=>String(r.id)===String(x.negocio_id)):null;
-    return`<tr class="gpp-lrow2 ${eotPrecisaAcao(x)?'eot-row-acao':''}">
-      <td><b>${esc(x.cliente||'—')}</b><div class="eot-sub">${eotTelHTML(x)}</div></td>
-      <td>${esc(x.modelo||'')}<div class="eot-sub">${esc(x.matricula||'')} · ${esc(x.tipo||'')}</div></td>
+  const linha=x=>`<tr class="gpp-lrow2 eot-click ${eotPrecisaAcao(x)?'eot-row-acao':''}" data-action="eot-abrir" data-c="${esc(x.contrato)}" tabindex="0" title="Abrir ficha da EOT">
+      <td><b>${esc(x.cliente||'—')}</b><div class="eot-sub">${esc(x.contrato)}${x.tipo?' · '+esc(x.tipo):''}</div></td>
+      <td>${esc(x.modelo||'')}<div class="eot-sub">${esc(x.matricula||'')}</div></td>
       <td>${eotDataPT(x.data_fim)}<div class="eot-sub">${eotDiasHTML(x)}</div></td>
-      <td style="text-align:right">${eotEur(x.prestacao)}</td>
       <td style="text-align:right">${eotEur(x.residual)}</td>
-      <td><select class="lc-sel ${x.responsavel_id?'':'lc-sel-vazio'}" data-eot-c="${esc(x.contrato)}" data-eot-f="responsavel_id"><option value="">— por atribuir —</option>${vend.map(p=>`<option value="${p.id}" ${x.responsavel_id===p.id?'selected':''}>${esc(p.nome||'?')}</option>`).join('')}</select>
-        <div class="eot-sub" title="Vendedor que fez o contrato">orig.: ${esc(x.vendedor_origem||'—')}</div></td>
-      <td>${eotSelHTML(x,'fase',EOT_FASES)}</td>
-      <td>${eotSelHTML(x,'temperatura',EOT_TEMP,'—')}</td>
-      <td><input class="lc-sel eot-inp" data-eot-c="${esc(x.contrato)}" data-eot-f="proxima_acao" value="${esc(x.proxima_acao||'')}" placeholder="próxima ação">
-        <input type="date" class="lc-sel ${x.proxima_data&&String(x.proxima_data).slice(0,10)<=new Date().toISOString().slice(0,10)&&!EOT_FECHO.includes(x.fase)?'lc-atras':''}" data-eot-c="${esc(x.contrato)}" data-eot-f="proxima_data" value="${x.proxima_data?esc(String(x.proxima_data).slice(0,10)):''}"></td>
-      <td><input class="lc-sel eot-inp eot-notas" data-eot-c="${esc(x.contrato)}" data-eot-f="notas" value="${esc(x.notas||'')}" placeholder="notas"></td>
-      <td>${neg?`<span class="lc-b lc-go gpp-lclick" data-action="open-record-from-dash" data-id="${neg.id}">${esc(neg.status||'funil')}</span>`:(x.responsavel_id?`<button class="btn btn-dark btn-sm" data-action="eot-negocio" data-c="${esc(x.contrato)}" title="Cria um negócio no funil do responsável">＋ Funil</button>`:'')}</td>
-    </tr>`;};
+      <td>${x.responsavel_id?vendTag(x.responsavel_id):'<span class="neg">por atribuir</span>'}</td>
+      <td>${eotFaseHTML(x)}${x.temperatura?`<div class="eot-sub">${esc(x.temperatura)}</div>`:''}</td>
+      <td>${eotProxHTML(x)}</td>
+      <td class="eot-chev">${x.negocio_id?'<span class="eot-sub">no funil</span> ':''}${ico('chevr','ic-sm')}</td>
+    </tr>`;
   return`<div class="gpp-tot-head" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
       <span>EOTs · contratos a terminar (BMW Motorrad · Aveiro)</span>
       <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -4647,8 +4841,8 @@ function eotView(){
     </div>
     ${!todos.length&&!S.eotErr?`<div class="gpp-empty">Ainda não há contratos. Carrega o mapa de terminações (o .xls que descarregas).</div>`:
     `<div class="gpp-card" style="margin:0 16px 20px;overflow-x:auto"><table class="gpp-ltable eot-tbl">
-      <thead><tr><th>Cliente</th><th>Mota</th><th>Fim</th><th style="text-align:right">Prestação</th><th style="text-align:right">Residual</th><th>Responsável</th><th>Fase</th><th>Temp.</th><th>Próxima ação</th><th>Notas</th><th>Funil</th></tr></thead>
-      <tbody>${arr.map(linha).join('')||'<tr><td colspan="11" style="text-align:center;color:var(--text3);padding:18px">Nada com estes filtros.</td></tr>'}</tbody></table></div>`}
+      <thead><tr><th>Cliente</th><th>Mota</th><th>Fim</th><th style="text-align:right">Residual</th><th>Responsável</th><th>Fase</th><th>Próx. contacto</th><th></th></tr></thead>
+      <tbody>${arr.map(linha).join('')||'<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:18px">Nada com estes filtros.</td></tr>'}</tbody></table></div>`}
     <div class="gpp-pend-desc" style="margin:0 16px 16px">Só entram contratos <b>BMW Motorrad</b> com concessionário de <b>Aveiro</b> (ou BMW Bank com concessionário responsável de Aveiro). Cada novo carregamento atualiza <b>apenas os dados do banco</b> — responsável, fase, temperatura, próxima ação e notas ficam como estão. Contratos que deixam de vir no ficheiro passam a "Saíram do mapa" (nunca são apagados). O vendedor só vê os contratos que lhe atribuíres, e as notas são partilhadas com ele.</div>`;
 }
 
@@ -4659,24 +4853,14 @@ function renderMinhasEot(){
   const filt=S.vEotF||'abertos';
   const lista=meus.filter(x=>filt==='todos'?true:(filt==='acao'?eotPrecisaAcao(x):(x.no_mapa!==false&&!EOT_FECHO.includes(x.fase))));
   const nAcao=meus.filter(eotPrecisaAcao).length;
-  const card=x=>{const neg=x.negocio_id?(S.records||[]).find(r=>String(r.id)===String(x.negocio_id)):null;
-    return`<div class="ve-card eot-card ${eotPrecisaAcao(x)?'eot-card-acao':''}">
+  const card=x=>`<div class="ve-card eot-card eot-click ${eotPrecisaAcao(x)?'eot-card-acao':''}" data-action="eot-abrir" data-c="${esc(x.contrato)}" tabindex="0" role="button">
       <div class="ve-top">
         <div class="ve-cli"><b>${esc(x.cliente||'—')}</b>${x.temperatura?` <span class="v-tipo">${esc(x.temperatura)}</span>`:''}</div>
-        <div class="ve-dt">📅 ${eotDataPT(x.data_fim)} ${eotDiasHTML(x)}</div>
+        <div class="ve-dt">${eotDataPT(x.data_fim)} ${eotDiasHTML(x)}</div>
       </div>
-      <div class="ve-mod">${esc(x.modelo||'')}${x.matricula?` · <b>${esc(x.matricula)}</b>`:''} · ${esc(x.tipo||'')}${x.no_mapa===false?' · <span style="color:var(--red)">saiu do mapa</span>':''}</div>
-      <div class="eot-v-num"><span>Prestação <b>${eotEur(x.prestacao)}</b></span><span>Residual <b>${eotEur(x.residual)}</b></span><span>Total a pagar <b>${eotEur(x.total)}</b></span></div>
-      <div class="eot-v-num"><span>📞 ${eotTelHTML(x)}</span>${x.contacto_nome?`<span>Contacto: ${esc(x.contacto_nome)}</span>`:''}<span style="color:var(--text3)">Contrato ${esc(x.contrato)} · feito por ${esc(x.vendedor_origem||'—')}</span></div>
-      <div class="eot-v-ed">
-        <label>Fase ${eotSelHTML(x,'fase',EOT_FASES)}</label>
-        <label>Temperatura ${eotSelHTML(x,'temperatura',EOT_TEMP,'—')}</label>
-        <label>Próxima ação <input class="lc-sel eot-inp" data-eot-c="${esc(x.contrato)}" data-eot-f="proxima_acao" value="${esc(x.proxima_acao||'')}" placeholder="Ex: ligar para propor retoma"></label>
-        <label>Data <input type="date" class="lc-sel" data-eot-c="${esc(x.contrato)}" data-eot-f="proxima_data" value="${x.proxima_data?esc(String(x.proxima_data).slice(0,10)):''}"></label>
-        <label style="grid-column:1/-1">Notas <input class="lc-sel eot-inp" data-eot-c="${esc(x.contrato)}" data-eot-f="notas" value="${esc(x.notas||'')}" placeholder="O que o cliente disse"></label>
-      </div>
-      <div style="margin-top:8px">${neg?`<button class="btn btn-dark btn-sm" data-action="open-detail" data-id="${neg.id}">Ver negócio no funil (${esc(neg.status||'')})</button>`:`<button class="btn btn-orange btn-sm" data-action="eot-negocio" data-c="${esc(x.contrato)}">➜ Criar negócio no meu funil</button>`}</div>
-    </div>`;};
+      <div class="ve-mod">${esc(x.modelo||'')}${x.matricula?` · <b>${esc(x.matricula)}</b>`:''}${x.no_mapa===false?' · <span style="color:var(--red)">saiu do mapa</span>':''}</div>
+      <div class="eot-cmini">${eotFaseHTML(x)}<span>Residual <b>${eotEur(x.residual)}</b></span>${x.proxima_data?`<span>Próx.: ${eotProxHTML(x)}</span>`:''}<span class="eot-chev">${ico('chevr','ic-sm')}</span></div>
+    </div>`;
   const chip=(k,l)=>`<button class="ve-mes ${filt===k?'on':''}" data-action="v-eot-f" data-f="${k}">${l}</button>`;
   return`
   <div class="app-layout"><div class="main-panel" style="width:100%">
@@ -4803,7 +4987,7 @@ function tblCSV(k){
   document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(url),2000);
 }
 function tblAplicar(){
-  if(!['dashboard','secretaria','assessor'].includes(S.screen))return;
+  if(!['dashboard','secretaria','assessor','financeiro'].includes(S.screen))return;
   const tabs=document.querySelectorAll('.main-panel table.gpp-ltable');
   [...tabs].forEach((tb,idx)=>{
     const k=(S.screen==='dashboard'?(S.gppSec||''):(S.screen+'-'+(S.secTab||'')))+':'+idx;tb.dataset.tk=k;
@@ -5552,6 +5736,10 @@ function EXPORT_FOLHAS(){
       {c:'responsavel_id',l:'Responsável',f:nome},{c:'fase',l:'Fase'},{c:'temperatura',l:'Temperatura'},{c:'proxima_acao',l:'Próxima ação'},{c:'proxima_data',l:'Data próx. ação',f:d},
       {c:'notas',l:'Notas'},{c:'negocio_id',l:'Negócio ID'},{c:'no_mapa',l:'No mapa',f:sn},{c:'saiu_em',l:'Saiu do mapa',f:dt},
       {c:'criado_em',l:'Criado',f:dt},{c:'ultima_import',l:'Última importação',f:dt},{c:'updated_at',l:'Atualizado',f:dt},
+    ]},
+    {nome:'EOTs histórico',path:'/eot_historico?select=*&order=criado_em.asc,id.asc',cols:[
+      {c:'contrato',l:'Contrato'},{c:'criado_em',l:'Quando',f:dt},{c:'autor_nome',l:'Quem'},{c:'autor_role',l:'Papel'},{c:'tipo',l:'Tipo'},
+      {c:'campo',l:'Campo',f:v=>v?(EOT_CAMPOS[v]||v):''},{c:'valor_antes',l:'Antes'},{c:'valor_depois',l:'Depois'},{c:'texto',l:'Comentário'},
     ]},
     {nome:'Stock Usadas',path:'/stock_usadas?select=*&order=id.asc',cols:[
       {c:'id',l:'ID'},{c:'categoria',l:'Categoria'},{c:'modelo',l:'Modelo'},{c:'matricula',l:'Matrícula'},
@@ -7263,10 +7451,12 @@ function renderDashboard(){
 function render(){
   const app=document.getElementById('app');
   const ce=app.querySelector('.content'),st=ce?ce.scrollTop:0,ps=app.dataset.screen||'';
-  const screens={loading:'<div class="content"><div class="center-screen"><p style="color:var(--text3)">A carregar...</p></div></div>',login:renderLogin,list:renderList,detail:renderDetail,edit:renderEdit,dashboard:renderDashboard,escala:renderEscala,password:renderPassword,ventregas:renderMinhasEntregas,vcom:renderMinhasComissoes,semacesso:renderSemAcesso,ficha:renderFichaMargem,secretaria:renderSecretaria,assessor:renderAssessor,stockvend:renderStockVend,evento:renderEventoVend,veot:renderMinhasEot,vstockeq:renderStockEqVend};
+  const screens={loading:'<div class="content"><div class="center-screen"><p style="color:var(--text3)">A carregar...</p></div></div>',login:renderLogin,financeiro:renderFinanceiro,list:renderList,detail:renderDetail,edit:renderEdit,dashboard:renderDashboard,escala:renderEscala,password:renderPassword,ventregas:renderMinhasEntregas,vcom:renderMinhasComissoes,semacesso:renderSemAcesso,ficha:renderFichaMargem,secretaria:renderSecretaria,assessor:renderAssessor,stockvend:renderStockVend,evento:renderEventoVend,veot:renderMinhasEot,vstockeq:renderStockEqVend};
   if(S.screen==='ventregas'&&S.me&&!isAdmin())S.screen='list';
   const fn=screens[S.screen];
-  app.innerHTML=typeof fn==='function'?(V_SHELL[S.screen]&&S.me&&!isAdmin()?vEnvolver(fn(),V_SHELL[S.screen]):fn()):fn;
+  const mb=app.querySelector('.eotm-body'),mst=mb?mb.scrollTop:0;
+  app.innerHTML=(typeof fn==='function'?(V_SHELL[S.screen]&&S.me&&!isAdmin()?vEnvolver(fn(),V_SHELL[S.screen]):fn()):fn)+(S.eotAberto&&S.me?eotModalHTML():'');
+  if(mb&&S.eotAberto){const nb=app.querySelector('.eotm-body');if(nb)nb.scrollTop=mst;}
   app.dataset.screen=S.screen;
   if(ps===S.screen){const nc=app.querySelector('.content');if(nc)nc.scrollTop=st}
   bindEvents();
@@ -7281,6 +7471,8 @@ function bindEvents(){
     if(el.dataset&&el.dataset.tblQ){const k=el.dataset.tblQ;S.tblQ=Object.assign({},S.tblQ||{},{[k]:el.value});const tb=tblPorChave(k);if(tb)tblFiltrar(tb,el.value);return;}
     if(el.id==='seq-q'){const F=Object.assign({},S.seqF||{});F.q=el.value;S.seqF=F;S.seqLim=80;const p=el.selectionStart;render();const n=document.getElementById('seq-q');if(n){n.focus();n.setSelectionRange(p,p);}return;}
     if(el.id==='seq-pct'){seqPctInput(el);return;}
+    if(el.dataset&&el.dataset.eotm){eotModalInput(el);return;}
+    if(el.id==='eotm-com'){S.eotCom=el.value;return;}
     if(el.dataset&&el.dataset.seqf&&el.dataset.seqf!=='ref'){seqForaInput(el);return;}
     if(el.dataset&&el.dataset.seqf==='ref'){S.seqFora=Object.assign({},S.seqFora||{},{ref:el.value});return;}
     if(el.dataset&&el.dataset.seqV){S.seqVenda=Object.assign({},S.seqVenda||{},{[el.dataset.seqV]:el.value});if(el.dataset.seqV==='preco')seqPctSincronizar();if(el.dataset.seqV==='campanha'){const x=(S.stockEq||[]).find(y=>String(y.id)===String(S.seqVender));const r=document.getElementById('seq-pct-res');if(x&&r)r.innerHTML=seqPctRes(x,seqPctDe(x,S.seqVenda),S.seqVenda);}seqCalcAtualizar();return;}
@@ -7322,6 +7514,8 @@ function bindEvents(){
   };
   app.onchange=function(e){
     const el=e.target;
+    if(el.dataset&&el.dataset.eotm){eotModalInput(el);return;}
+    if(el.dataset&&el.dataset.finF){S.finF=Object.assign({},S.finF||{},{[el.dataset.finF]:el.value});render();return;}
     if(el.dataset&&el.dataset.seqf==='ref'){const v=el.value;if(String(v).trim().toUpperCase()===String((S.seqFora||{})._refFeita||''))return;S.seqFora=Object.assign({},S.seqFora||{},{_refFeita:String(v).trim().toUpperCase()});setTimeout(()=>seqForaRef(v),0);return;}
     if(el.dataset&&el.dataset.seqf){seqForaInput(el);return;}
     if(el.dataset&&el.dataset.depId){const id=el.dataset.depId,v=el.value;saveStockField(id,'dep_manual',(v===''||v==null)?null:Number(v));return;}
@@ -7403,10 +7597,12 @@ function bindEvents(){
     }
   };
   app.onclick=function(e){
+    {const sm=e.target.closest&&e.target.closest('.eotm-det>summary');if(sm){setTimeout(()=>{const d=sm.parentElement;S.eotDetAberto=!!(d&&d.open);},0);}}
     const el=e.target.closest('[data-action]');if(!el)return;
     const a=el.dataset.action;
     if(window.innerWidth<=700&&S.sidebarOpen&&el.closest('.sidebar')&&!['toggle-vsel','toggle-sidebar','open-sidebar'].includes(a))S.sidebarOpen=false;
     if(S.contaAberto&&a!=='conta-toggle')S.contaAberto=false;
+    if(S.eotAberto&&['open-detail','open-record-from-dash','logout'].includes(a)){S.eotAberto=null;S.eotEd={};}
     if(S.railAberto&&a!=='gpp-toggle-side'&&a!=='toggle-vsel'&&!(el.closest('.gpp-nav-search')))S.railAberto=false;
     switch(a){
       case'conta-toggle':setState({contaAberto:!S.contaAberto});break;
@@ -7486,6 +7682,10 @@ function bindEvents(){
       case'seq-pav-repor':seqPrecoManual(el.dataset.ref,'');break;
       case'seq-registar':seqRegistar();break;
       case'seqf-abrir':seqForaAbrir();break;
+      case'eot-abrir':eotAbrir(el.dataset.c);break;
+      case'eotm-fechar':eotFechar();break;
+      case'eotm-guardar':eotModalGuardar();break;
+      case'eotm-comentar':eotComentar();break;
       case'seqf-fechar':setState({seqFora:null});break;
       case'seqf-registar':seqForaRegistar();break;
       case'seqf-preco-set':{const F=Object.assign({},S.seqFora||{});const v=Number(el.dataset.v);F.preco=String(v).replace('.',',');const pvp=numPT(F.pvp);F.pct=pvp?String(Math.round((1-v/pvp)*1000)/10):'';setState({seqFora:F});break;}
@@ -7598,7 +7798,7 @@ function bindEvents(){
       case'view-vendedor':{const id=el.dataset.id||null;setState({viewVendedor:id,screen:'list',vselOpen:false,statusFilter:'all',alertFilter:null,alertIds:[],search:'',monthFilter:[],renderLimit:50});break}
       case'save-nps':{e.stopPropagation();const vid=el.dataset.id;const gi=s=>{const x=document.querySelector(`[${s}="${vid}"]`);return x&&x.value!==''?parseFloat(x.value):null};const patch={num_inqueritos:gi('data-nps-inq')||0,nps:gi('data-nps-nps'),csi:gi('data-nps-csi')};el.textContent='\u2026';saveNps(vid,patch).then(()=>render()).catch(err=>{alert('Erro: '+err.message);render()});break}
       case'save-objetivo':{e.stopPropagation();const vid=el.dataset.id;const inp=document.querySelector(`[data-obj-input="${vid}"]`);const val=parseInt(inp&&inp.value?inp.value:'0')||0;el.textContent='\u2026';saveObjetivo(vid,val).then(()=>render()).catch(err=>{alert('Erro: '+err.message);render()});break}
-      case'refresh':{const p=isAdmin()?Promise.all([loadObjetivos(),loadObjEquipa(),loadTeam(),loadNps(),loadEot()]):(isVendedor()?loadEot():Promise.resolve());p.then(()=>Promise.all([recarregarEvento(),loadRecords()]));break}
+      case'refresh':{const p=isAdmin()?Promise.all([loadObjetivos(),loadObjEquipa(),loadTeam(),loadNps(),loadEot()]):((isVendedor()||isFinanceiro())?loadEot():Promise.resolve());p.then(()=>Promise.all([recarregarEvento(),loadRecords()]));break}
       case'open-sidebar':setState({sidebarOpen:!S.sidebarOpen});break;
       case'toggle-sidebar':setState({sidebarOpen:!S.sidebarOpen});break;
       case'close-sidebar':setState({sidebarOpen:false});break;
@@ -7677,7 +7877,7 @@ function bindEvents(){
 
 function collectFormData(){document.querySelectorAll('input[data-field],select[data-field],textarea[data-field]').forEach(el=>{const k=el.dataset.field;let v=el.value;if(el.dataset.fmt==='month'&&v)v=v.replace('-','/');S.form[k]=v})}
 
-function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes(),loadTransicoes(),loadNorma(),loadFichasIdx(),loadEot()]):(isVendedor()?Promise.all([loadTeam(),loadEventos(),loadInscricoes(),loadInscricoesAll(),loadMargens(),loadEntregas(),loadEquipamento(),loadFichasIdx(),loadEot()]):(S.me&&S.me.role==='secretario'?Promise.all([loadTeam(),loadEntregas()]):(S.me&&S.me.role==='assessor'?Promise.all([loadTeam(),loadEquipamento()]):Promise.all([loadTeam()]))));return extra}).then(function(){return loadRecords()}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:ecraInicial(),loading:false,statusFilter:isAdmin()?S.statusFilter:'_hoje'})})}
+function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes(),loadTransicoes(),loadNorma(),loadFichasIdx(),loadEot()]):(isVendedor()?Promise.all([loadTeam(),loadEventos(),loadInscricoes(),loadInscricoesAll(),loadMargens(),loadEntregas(),loadEquipamento(),loadFichasIdx(),loadEot()]):(S.me&&S.me.role==='secretario'?Promise.all([loadTeam(),loadEntregas()]):(S.me&&S.me.role==='assessor'?Promise.all([loadTeam(),loadEquipamento()]):(S.me&&S.me.role==='financeiro'?Promise.all([loadTeam(),loadEot()]):Promise.all([loadTeam()])))));return extra}).then(function(){return loadRecords()}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:ecraInicial(),loading:false,statusFilter:isAdmin()?S.statusFilter:'_hoje'})})}
 (function(){
   S.screen='loading';render();
   // Link de recuperacao do Supabase: #access_token=...&type=recovery
