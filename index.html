@@ -1868,6 +1868,43 @@ a{color:var(--blue)}
   .eotm-com{flex-direction:column;align-items:stretch}
   .eotm-f .norma-inp{font-size:16px}
 }
+
+.vcard-recont{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px dashed var(--border2);font-size:12.5px;color:var(--text3)}
+.vcard-recont.due{color:var(--amber);font-weight:600}
+.rc-b{min-height:32px;padding:0 10px;border-radius:var(--r);border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:12px;font-weight:700}
+.rc-b.on{background:var(--orange);border-color:var(--orange);color:#fff}
+.vcard-recont .rc-b:first-of-type{margin-left:auto}
+@media(max-width:700px){.rc-b{min-height:40px}}
+
+/* ===== Criação rápida ===== */
+.qf{padding:14px 16px 32px;max-width:760px}
+.qf-sec{font-size:12.5px;font-weight:700;color:var(--text2);margin:14px 0 8px}.qf-sec:first-of-type{margin-top:2px}
+.qf i,.qf-f i{color:var(--red);font-style:normal}
+.qf-chips{display:flex;gap:8px;flex-wrap:wrap}
+.qf-chip{min-height:44px;padding:0 16px;border-radius:var(--rp);border:1px solid var(--border2);background:var(--surface);font-size:14px;font-weight:600;color:var(--text)}
+.qf-chip.on{background:var(--text);border-color:var(--text);color:var(--surface)}
+.qf-chip.on.qf-st-Quente{background:var(--red);border-color:var(--red);color:#fff}
+.qf-chip.on.qf-st-Morno{background:var(--amber);border-color:var(--amber);color:#fff}
+.qf-chip.on.qf-st-Frio{background:var(--slate);border-color:var(--slate);color:#fff}
+.qf-chip.on.qf-st-Carteira{background:var(--blue);border-color:var(--blue);color:#fff}
+.qf-chip.on.qf-st-Retail{background:var(--green);border-color:var(--green);color:#fff}
+.qf-hint{font-size:12.5px;color:var(--text3);margin-top:6px}
+.qf-g{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.qf-f{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:var(--text2);min-width:0}
+.qf-w2{grid-column:1/-1}
+.qf-mais{display:flex;align-items:center;gap:8px;width:100%;margin-top:14px;min-height:44px;padding:0 14px;border:1px dashed var(--border2);border-radius:var(--r2);color:var(--text2);font-size:13px;font-weight:600;text-align:left}
+.qf-mais:hover{background:var(--surface2);color:var(--text)}
+@media(max-width:700px){.qf-g{grid-template-columns:1fr}}
+/* ===== Comentários do negócio ===== */
+.neg-hist{margin:12px 16px;padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);box-shadow:var(--elev1)}
+.neg-hist-h{display:flex;align-items:center;gap:8px;justify-content:space-between;font-size:14px;font-weight:700;margin-bottom:10px}
+.neg-hist-h>span:first-child{display:inline-flex;align-items:center;gap:6px}
+.neg-hist-n{font-size:12px;font-weight:500;color:var(--text3)}
+.neg-chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none}
+.neg-chips::-webkit-scrollbar{display:none}
+.neg-chips .vchip{flex-shrink:0}
+.vh-sec .btn-ghost{font-size:12px}
+.coms-chefe{margin:0 16px 8px}
 </style>
 </head>
 <body>
@@ -1965,7 +2002,7 @@ function toast(msg,tipo){
 // ---- Datas curtas "Out 26" ----
 const MES_CURTO_T=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 function ymCurto(ym){const m=String(ym||'').match(/^(\d{4})[\/-](\d{2})/);return m?MES_CURTO_T[+m[2]-1]+' '+m[1].slice(2):String(ym||'');}
-const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av'],biz:['Bizagi','md'],entrega_risco:['Atraso','al'],sem_chassis:['Chassis','av'],atrasadas:['Atraso','al'],sem_pvp:['PVP','av'],eot:['EOT','neu'],ent:['Entrega','mn']};
+const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av'],biz:['Bizagi','md'],entrega_risco:['Atraso','al'],sem_chassis:['Chassis','av'],atrasadas:['Atraso','al'],sem_pvp:['PVP','av'],eot:['EOT','neu'],ent:['Entrega','mn'],recont:['Re-contactar','av']};
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 const STATUSES=['Retail','Carteira','Quente','Morno','Frio','Perdido'];
@@ -1973,7 +2010,7 @@ const SDOT={Retail:'var(--green)',Carteira:'var(--blue)',Quente:'var(--red)',Mor
 const MOTIVOS_PERDA=['Preço','Concorrência','Prazo de entrega','Financiamento','Retoma','Desistência','Adiado','Outro'];
 const TYPES=['MN','MD','MU'],ORIGINS=['','Cliente','Recom.','Stand','Evento','Lead'],PROFILES=['','Particular','Empresa','Protocolo','Estado'],GAR_PERIODOS=['1 ano','2 anos','3 anos','4 anos','5 anos'],FINS=['','PP','Fext','Fint'];
 const FIELD_GROUPS=[
-  {g:'INFO',fields:[{k:'status',l:'Status',t:'select',o:STATUSES},{k:'motivo_perda',l:'Motivo da Perda',t:'select',o:MOTIVOS_PERDA,show:'perdido'},{k:'alert_date',l:'Alertar no dia (sugerido — podes mudar)',t:'date',show:'funil'}]},
+  {g:'INFO',fields:[{k:'status',l:'Status',t:'select',o:STATUSES},{k:'motivo_perda',l:'Motivo da Perda',t:'select',o:MOTIVOS_PERDA,show:'perdido'},{k:'recontactar_em',l:'Re-contactar a partir de (6 meses depois de perdido)',t:'date',show:'perdido'},{k:'alert_date',l:'Alertar no dia (sugerido — podes mudar)',t:'date',show:'funil'}]},
   {g:'Identificação',fields:[{k:'id_cliente',l:'Cliente',t:'text'},{k:'local',l:'Código Postal',t:'text'},{k:'nif',l:'NIF',t:'text'},{k:'morada',l:'Morada',t:'text'},{k:'cc',l:'CC',t:'text'},{k:'email',l:'Email',t:'text'},{k:'contacto',l:'Contacto',t:'text'}]},
   {g:'Negócio',fields:[{k:'neg',l:'Data Negócio',t:'date'},{k:'mes1',l:'Mês Referência',t:'month'},{k:'type',l:'Tipo',t:'select',o:TYPES},{k:'pvp',l:'PVP (€)',t:'number'},{k:'origin',l:'Origem',t:'select',o:ORIGINS},{k:'lead_webapp',l:'Nº Lead (WebApp)',t:'text',show:'lead'},{k:'campanha',l:'Campanha / lote (ex: P6 08/26)',t:'text',show:'lead'},{k:'profile',l:'Perfil',t:'select',o:PROFILES},{k:'retoma',l:'Retoma?',t:'select',o:['Não','Sim']},{k:'retoma_modelo',l:'Modelo da Retoma',t:'text',show:'retoma'},{k:'retoma_mat',l:'Matrícula da Retoma',t:'text',show:'retoma'},{k:'biz',l:'Bizagi',t:'text'},{k:'fin',l:'Financiamento',t:'select',o:FINS}]},
   {g:'Viatura',fields:[{k:'stock_id',l:'Mota do Stock (modelo · matrícula)',t:'stockpick',show:'stockpick'},{k:'model',l:'Modelo',t:'text'},{k:'version',l:'Versão',t:'text'},{k:'stock',l:'Em Stock?',t:'select',o:['Não','Sim']},{k:'enc',l:'Encomenda',t:'text'},{k:'chas',l:'Chassis',t:'text'},{k:'mat',l:'Matrícula',t:'text'},{k:'gar',l:'Garantia?',t:'select',o:['Não','Sim']},{k:'gar_periodo',l:'Período de Garantia',t:'select',o:GAR_PERIODOS,show:'garantia'}]},
@@ -3101,6 +3138,10 @@ async function saveVendaDireta(){
   }catch(e){setState({loading:false,vdErr:'Erro ao gravar: '+(e.message||e)});}
 }
 async function saveRecord(){
+  if(!S.selected){
+    if(!S.form.status){setState({error:'Escolhe em que fase está o negócio (Quente, Morno, Frio, Carteira ou Retail).',loading:false});return;}
+    if(!String(S.form.id_cliente||'').trim()){setState({error:'Escreve o nome do cliente.',loading:false});return;}
+  }
   // Validação: não deixa marcar Perdido sem dizer porquê
   if(S.form.status==='Perdido'&&!S.form.motivo_perda){
     setState({error:'Indica o motivo da perda antes de guardar. Sem motivo, não é possível perceber onde estamos a perder negócio.',loading:false,openGroups:Object.assign({},S.openGroups,{INFO:true})});
@@ -3109,7 +3150,7 @@ async function saveRecord(){
   if((S.form.type==='MU'||S.form.type==='MD')&&!S.form.stock_id&&(S.form.status==='Retail'||S.form.status==='Carteira')){
     if(!confirm('Esta venda de usada/demo não tem a Mota do Stock associada.\n\nSem isso não consegues ver a margem real nem o stock fica marcado como vendido.\n\nGravar mesmo assim?'))return;
   }
-  setState({loading:true,error:''});try{const b={...S.form};['neg','dmat','col_298','alert_date'].forEach(k=>{if(!b[k])b[k]=null});['qor','xev','bev','m_flag','csc','cme'].forEach(k=>{b[k]=b[k]?parseInt(b[k]):null});b.pvp=b.pvp?parseFloat(b.pvp):null;b.stock_id=b.stock_id?parseInt(b.stock_id):null;if(!isAdmin())delete b.obs_gestor;delete b.id;delete b.created_at;delete b.updated_at;delete b.updated_by;if(!S.selected&&isAdmin())b.vendedor_id=S.viewVendedor||S.me.id;if(S.selected){if(b.status!==S.selected.status)b.status_updated_at=new Date().toISOString();delete b.status_updated_at_keep;await supabaseApi('PATCH',`/baviera_control?id=eq.${S.selected.id}`,b)}else{b.status_updated_at=new Date().toISOString();const _novo=await supabaseApi('POST','/baviera_control',b);if(S.fmRascunho&&Array.isArray(_novo)&&_novo[0]&&_novo[0].id)await fmLigarAoNovo(_novo[0].id);}await syncStockComNegocio(b.stock_id,b.status);await loadRecords();setState({screen:'list',selected:null,loading:false})}catch(e){setState({error:'Erro ao guardar: '+e.message,loading:false})}}
+  setState({loading:true,error:''});try{const b={...S.form};['neg','dmat','col_298','alert_date','recontactar_em'].forEach(k=>{if(!b[k])b[k]=null});if(b.recontactar_em==null||(S.selected&&String(b.recontactar_em)===String(S.selected.recontactar_em||'')))delete b.recontactar_em;['qor','xev','bev','m_flag','csc','cme'].forEach(k=>{b[k]=b[k]?parseInt(b[k]):null});b.pvp=b.pvp?parseFloat(b.pvp):null;b.stock_id=b.stock_id?parseInt(b.stock_id):null;if(!isAdmin())delete b.obs_gestor;delete b.id;delete b.created_at;delete b.updated_at;delete b.updated_by;if(!S.selected&&isAdmin())b.vendedor_id=S.viewVendedor||S.me.id;if(S.selected){if(b.status!==S.selected.status)b.status_updated_at=new Date().toISOString();delete b.status_updated_at_keep;await supabaseApi('PATCH',`/baviera_control?id=eq.${S.selected.id}`,b)}else{b.status_updated_at=new Date().toISOString();const _novo=await supabaseApi('POST','/baviera_control',b);if(S.fmRascunho&&Array.isArray(_novo)&&_novo[0]&&_novo[0].id)await fmLigarAoNovo(_novo[0].id);}await syncStockComNegocio(b.stock_id,b.status);await loadRecords();setState({screen:'list',selected:null,loading:false})}catch(e){setState({error:'Erro ao guardar: '+e.message,loading:false})}}
 async function syncStockComNegocio(stockId,status){
   // Estado da mota acompanha o negocio: funil=A negociar; carteira/retail=Vendida; perdido=Disponivel
   if(!stockId)return;
@@ -3143,6 +3184,7 @@ function filtered(){
   else if(S.statusFilter==='Retail:usadas'){if(r.status!=='Retail'||r.type!=='MU')return false}
   else if(S.statusFilter==='Carteira:novas'){if(r.status!=='Carteira'||!(r.type==='MN'||r.type==='MD'))return false}
   else if(S.statusFilter==='Carteira:usadas'){if(r.status!=='Carteira'||r.type!=='MU')return false}
+  else if(S.statusFilter==='Perdido:recont'){if(!recontDue(r))return false}
   else if(S.statusFilter!=='all'&&r.status!==S.statusFilter)return false;
   if(S.monthFilter.length>0&&!S.monthFilter.includes(getMonth(r)))return false;if(S.bevFilter!=='all'&&!r.bev)return false;if(S.xevFilter!=='all'&&!r.xev)return false;if(S.search){const s=S.search.toLowerCase();return['id_cliente','model','version','mat','obs','biz','enc'].some(k=>(r[k]||'').toLowerCase().includes(s))}return true})}
 function availableMonths(){let recs=recsInContext();if(S.statusFilter==='Funil')recs=recs.filter(r=>FUNIL.includes(r.status));else if(S.statusFilter==='Fechados')recs=recs.filter(r=>r.status==='Retail'||r.status==='Carteira');else if(S.statusFilter.includes(':')){const[st,tp]=S.statusFilter.split(':');recs=recs.filter(r=>r.status===st&&(tp==='novas'?(r.type==='MN'||r.type==='MD'):r.type==='MU'))}else if(S.statusFilter!=='all')recs=recs.filter(r=>r.status===S.statusFilter);const m=[...new Set(recs.map(r=>getMonth(r)).filter(Boolean))];m.sort((a,b)=>b.localeCompare(a));return m}
@@ -3767,13 +3809,13 @@ const SEQ_TAM_ORD=['XXS','XS','S','M','L','XL','2XL','XXL','3XL','XXXL','4XL','5
 function seqTamKey(t){t=String(t||'').toUpperCase().trim();const i=SEQ_TAM_ORD.indexOf(t.replace(/\s*\(.*\)/,''));if(i>=0)return 100+i;const n=parseFloat(t.replace(/^W/,''));return isFinite(n)?n:999;}
 function seqPrecos(x){const si=seqSi(x)||{};const pvp=si.pvp!=null?Number(si.pvp):null;const av=si.preco_aveiro!=null?Number(si.preco_aveiro):pvp;const site=si.venda_site!=null?Number(si.venda_site):null;
   const max=(av!=null&&x.desc_max!=null)?Math.round(av*(1-x.desc_max)*100)/100:null;return{pvp,av,site,max,origem:si.preco_aveiro_origem||null};}
-function seqComA(x,ci,qtd,campanha){if(ci==null)return null;const l={qtd:qtd||1,venda:Math.round(ci/(1+SEQ_IVA)*100)/100,custo:Number(x.custo_unit)||0,campanha:campanha||null};return{si:l.venda,margem:eqMargem(l),com:eqComissao(l)};}
+function seqComA(x,ci,qtd,campanha){if(ci==null)return null;const l={qtd:qtd||1,venda:Math.round(ci/(1+SEQ_IVA)*100)/100,custo:Number(x.custo_unit)||0,campanha:campanha||null,estado_stock:x.qualidade||null};return{si:l.venda,margem:eqMargem(l),com:eqComissao(l)};}
 function seqCalc(x,V){const qtd=Math.max(1,parseInt(V.qtd,10)||1);const ci=numPT(V.preco);if(ci==null||!x)return null;const c=seqComA(x,ci,qtd,V.campanha);return Object.assign({qtd,ci},c);}
 function seqCalcHTML(x,V){const fE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';const c=seqCalc(x,V);const P=seqPrecos(x);
   if(!c)return'<span class="seq-calc-v">Escolhe um preço acima ou escreve o preço ao cliente.</span>';
-  const alertas=[];if(c.margem<0)alertas.push('abaixo do custo');if(P.max!=null&&c.ci<P.max-0.01)alertas.push(`desconto acima do máximo (${Math.round(x.desc_max*100)}%)`);
+  const alertas=[];if(c.margem<0&&!eqEstadoNorm(x.qualidade))alertas.push('abaixo do custo');if(P.max!=null&&c.ci<P.max-0.01)alertas.push(`desconto acima do máximo (${Math.round(x.desc_max*100)}%)`);
   if(P.site!=null&&c.ci>P.site+0.01)alertas.push('acima do preço do site');
-  return`<span>s/IVA <b>${fE(c.si)}</b>${c.qtd>1?' × '+c.qtd:''}</span>${P.av?`<span>Desconto s/ PVP <b>${Math.round((1-c.ci/P.av)*100)}%</b></span>`:''}<span>Margem <b class="${c.margem<0?'neg':''}">${fE(c.margem)}</b></span><span class="seq-com">Comissão <b class="${c.com<0?'neg':''}">${fE(c.com)}</b></span>${alertas.length?`<span class="neg">⚠️ ${alertas.join(' · ')}</span>`:''}`;}
+  return`<span>s/IVA <b>${fE(c.si)}</b>${c.qtd>1?' × '+c.qtd:''}</span>${P.av?`<span>Desconto s/ PVP <b>${Math.round((1-c.ci/P.av)*100)}%</b></span>`:''}<span>Margem <b class="${c.margem<0?'neg':''}">${fE(c.margem)}</b></span><span class="seq-com">Comissão <b class="${c.com<0?'neg':''}">${fE(c.com)}</b>${eqEstadoNorm(x.qualidade)?` <small>(${eqEstadoNorm(x.qualidade)==='morto'?'20%':'10%'} do faturado)</small>`:''}</span>${alertas.length?`<span class="neg">⚠️ ${alertas.join(' · ')}</span>`:''}`;}
 function seqPctDe(x,V){const P=seqPrecos(x);const ci=numPT(V.preco);if(V.pct!=null&&V.pct!=='')return String(V.pct);if(ci==null||!P.av)return'';return String(Math.round((1-ci/P.av)*1000)/10);}
 function seqPctRes(x,pv,V){const P=seqPrecos(x);const fE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
   if(P.av==null)return'sem PVP';const p=parseFloat(String(pv).replace(',','.'));if(!isFinite(p))return'desconto sobre o PVP';
@@ -3799,12 +3841,13 @@ async function seqRegistar(){
   const V=S.seqVenda||{};const c=seqCalc(x,V);
   if(!c){alert('Indica o preço ao cliente (c/IVA).');return;}
   if(c.qtd>Number(x.qtd||0)&&!confirm(`O stock indica ${x.qtd} unidade(s). Registar ${c.qtd} mesmo assim?`))return;
-  if(c.margem<0&&!confirm('A venda fica abaixo do custo (comissão negativa). Registar mesmo assim?'))return;
+  if(c.com<0&&!confirm('A venda fica abaixo do custo (comissão negativa). Registar mesmo assim?'))return;
   const vid=isAdmin()?V.vendedor_id:(S.me&&S.me.id);
   if(!vid){alert('Escolhe quem fez a venda.');return;}
   const si=seqSi(x)||{};const fora=!/aveiro/i.test(x.ponto_venda||'');
   const body={vendedor_id:vid,data:V.data||new Date().toISOString().slice(0,10),wip:V.wip||null,fatura:V.fatura||null,artigo:x.ref,
     descricao:seqNome(x)+(si.tamanho?' · T. '+si.tamanho:'')+(fora?' · stock '+seqLojaCurta(x.ponto_venda):''),qtd:c.qtd,custo:Number(x.custo_unit)||0,venda:c.si,campanha:V.campanha||null};
+  if(eqEstadoNorm(x.qualidade))body.estado_stock=x.qualidade;
   setState({seqBusy:true});
   try{await supabaseApi('POST','/equipamento',body);await loadEquipamento();
     const fE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
@@ -3972,7 +4015,7 @@ function stockEqView(){
         ${si.url?`<a class="seq-link" href="${esc(si.url)}" target="_blank" rel="noopener">Ver no site ↗</a>`:''}
       </div>
       ${isAdmin()?`<div class="seq-admp">PVP desta referência (c/IVA): <input class="norma-inp" id="seq-pav-${esc(x.ref)}" value="${Pz.av!=null?String(Pz.av).replace('.',','):''}" style="width:100px"> <button class="btn btn-dark btn-sm" data-action="seq-pav" data-ref="${esc(x.ref)}">Gravar</button> <span class="seq-orig">origem: ${esc({manual:'escrito por ti',excel:'Excel',site:'site'}[Pz.origem]||'—')}</span>${Pz.origem==='manual'?` <button class="btn btn-dark btn-sm" data-action="seq-pav-repor" data-ref="${esc(x.ref)}">Repor do site</button>`:''}</div>`:''}
-      <div class="seq-nota">Ref. <span class="sec-mono">${esc(x.ref)}</span>${si.tamanho?' · tamanho '+esc(si.tamanho):''} · ${Number(x.qtd)||0} em stock em ${esc(seqLojaCurta(x.ponto_venda))}. Comissão = 20% da margem (preço s/IVA − custo do mapa).${si.dress_code?' Artigo de <b>Dress Code</b>.':''}${si.outlet?' Está no <b>Outlet</b> do site.':''}</div>
+      <div class="seq-nota">Ref. <span class="sec-mono">${esc(x.ref)}</span>${si.tamanho?' · tamanho '+esc(si.tamanho):''} · ${Number(x.qtd)||0} em stock em ${esc(seqLojaCurta(x.ponto_venda))}. Comissão: <b>${esc(eqRegraTxt(x.qualidade))}</b>${eqEstadoNorm(x.qualidade)?'':' (preço s/IVA − custo do mapa)'}.${si.dress_code?' Artigo de <b>Dress Code</b>.':''}${si.outlet?' Está no <b>Outlet</b> do site.':''}</div>
     </div>`;};
   const grupo=g=>{const aberto=g.L.find(x=>String(x.id)===String(S.seqVender));const x0=g.L[0];const si=g.si||{};
     const tams=g.L.map(y=>{const t=(seqSi(y)||{}).tamanho;return`<button class="seq-tam ${aberto&&String(y.id)===String(aberto.id)?'on':''}" data-action="seq-vender" data-id="${y.id}" title="Ref. ${esc(y.ref)}">${t?esc(t):'<span class="sec-mono">'+esc(y.ref.slice(-5))+'</span>'}${!F.loja?' · '+esc(seqLojaCurta(y.ponto_venda)):''} <small>${Number(y.qtd)||0}</small></button>`;}).join('');
@@ -4043,12 +4086,26 @@ function renderStockEqVend(){
   <div class="content">${stockEqView()}</div></div></div>`;
 }
 
-function vGrupoDe(sf){sf=String(sf||'');if(['Funil','Quente','Morno','Frio'].includes(sf))return'Funil';if(sf.startsWith('Carteira'))return'Carteira';if(sf.startsWith('Retail'))return'Retail';return sf;}
+function vGrupoDe(sf){sf=String(sf||'');if(['Funil','Quente','Morno','Frio'].includes(sf))return'Funil';if(sf.startsWith('Carteira'))return'Carteira';if(sf.startsWith('Retail'))return'Retail';if(sf.startsWith('Perdido'))return'Perdido';return sf;}
 function vNavItem(o){return`<div class="vnav-item ${o.on?'on':''}" data-action="${o.act}"${o.status?` data-status="${o.status}"`:''}${o.id!=null?` data-id="${o.id}"`:''}><span class="vnav-ic">${icE(o.ic)}</span><span class="vnav-lb">${o.lb}</span>${o.badge?`<span class="vnav-badge">${o.badge}</span>`:(o.n!=null&&o.n!==''?`<span class="vnav-n">${o.n}</span>`:'')}</div>`;}
+// ---- Perdidos: re-contactar 6 meses depois de passar a Perdido ----
+function recontData(r){if(!r||r.status!=='Perdido')return null;if(r.recontactar_em)return String(r.recontactar_em).slice(0,10);
+  const b=r.status_updated_at||r.updated_at||r.created_at;if(!b)return null;const d=new Date(b);if(isNaN(d))return null;d.setMonth(d.getMonth()+6);return d.toISOString().slice(0,10);}
+function recontDue(r){const d=recontData(r);return !!d&&d<=new Date().toISOString().slice(0,10);}
+function recontLista(){return recsInContext().filter(recontDue);}
+function mais6Meses(){const d=new Date();d.setMonth(d.getMonth()+6);return d.toISOString().slice(0,10);}
+async function recontReabrir(id){const r=(S.records||[]).find(x=>String(x.id)===String(id));if(!r)return;
+  if(!confirm(`Reabrir "${r.id_cliente||'este negócio'}" no funil como Frio, para contactar hoje?`))return;
+  const hoje=new Date().toISOString().slice(0,10);
+  try{await supabaseApi('PATCH',`/baviera_control?id=eq.${id}`,{status:'Frio',status_updated_at:new Date().toISOString(),alert_date:hoje});await loadRecords();}catch(e){alert('Erro: '+e.message);}}
+async function recontAdiar(id){
+  try{await supabaseApi('PATCH',`/baviera_control?id=eq.${id}`,{recontactar_em:mais6Meses()});await loadRecords();}
+  catch(e){alert('Erro: '+e.message+(/recontactar_em/.test(String(e.message))?'\n\nFalta correr o SQL melhorias_negocios.sql no Supabase.':''));}}
 function vPendentes(){const al=calcAlerts(recsInContext());const eot=eotMeus().filter(eotPrecisaAcao).length;
-  const grupos=al.filter(a=>!String(a.id).startsWith('funil_')).length+(eot?1:0);
+  const recont=recontLista().length;
+  const grupos=al.filter(a=>!String(a.id).startsWith('funil_')).length+(eot?1:0)+(recont?1:0);
   const contactar=recsInContext().filter(r=>FUNIL.includes(r.status)&&funilAtrasado(r)).length;
-  return{al,eot,grupos,contactar,total:grupos+contactar};}
+  return{al,eot,recont,grupos,contactar,total:grupos+contactar};}
 function vEntregasSemana(){const h=new Date();h.setHours(0,0,0,0);const lim=new Date(h);lim.setDate(lim.getDate()+7);
   return recsInContext().filter(r=>{if(r.status!=='Carteira')return false;const e=(typeof entOf==='function'?entOf(r.id):null)||{};if(!e.data_entrega)return false;const d=new Date(String(e.data_entrega).slice(0,10)+'T00:00:00');return d>=h&&d<=lim;});}
 function vDiasDesde(iso){if(!iso)return null;return Math.floor((Date.now()-new Date(iso).getTime())/864e5);}
@@ -4070,6 +4127,7 @@ function vHoje(){
   const linhaT=(act,attrs,ic,txt,cls)=>`<div class="vh-row ${cls||''}" data-action="${act}" ${attrs||''} role="button" tabindex="0">${alertaTag(ic)}<span class="vh-txt">${txt}</span><span class="vh-chev">${ico('chevr','ic-sm')}</span></div>`;
   const tRows=[
     ...tarefas.map(a=>linhaT('alert-filter',`data-alert="${a.id}" data-ids="${a.ids.join(',')}"`,a.id,esc(a.label))),
+    P.recont?linhaT('sidebar-filter','data-status="Perdido:recont"','recont',`<b>${P.recont}</b> perdido${P.recont!==1?'s':''} para re-contactar (6 meses)`):'',
     P.eot?linhaT('go-veot','','eot',`<b>${P.eot}</b> EOT${P.eot!==1?'s':''} a precisar de contacto`):'',
   ].filter(Boolean);
   const cRow=r=>{const desde=r.alert_date?('desde '+fmtDate(r.alert_date)):(r.status_updated_at?('sem mexer há '+vDiasDesde(r.status_updated_at)+' d'):'');
@@ -4089,6 +4147,7 @@ function vHoje(){
       ${!isAdmin()?kpi('go-vcom','','Comissão do mês',fE(comTot),semMg?`${semMg} à espera de margem`:'estimativa do retail do mês'):''}
     </div>
     ${evs.map(ev=>`<div class="vh-ev" data-action="go-evento" data-id="${ev.id}">🎟️ <b>${esc(ev.nome)}</b> — inscreve os teus clientes <span class="vh-chev">›</span></div>`).join('')}
+    ${comsRecentesHTML('Comentários novos nos teus negócios')}
     <div class="vh-sec"><span>A tratar</span>${tRows.length?`<span class="vh-cnt">${tRows.length}</span>`:''}</div>
     <div class="vh-box">${tRows.length?tRows.join(''):'<div class="vh-ok">✓ Nada pendente nos teus negócios.</div>'}</div>
     <div class="vh-sec"><span>Para contactar hoje</span>${contactar.length?`<span class="vh-cnt red">${contactar.length}</span>`:''}</div>
@@ -4188,17 +4247,19 @@ function renderList(){
   const f=f0.filter(inMes);
   const c=statusCounts();
   const af=(S.monthFilter.length>0?1:0)+(S.bevFilter!=='all'?1:0)+(S.xevFilter!=='all'?1:0);
-  const titulos={_hoje:'Hoje',all:'Todos',Funil:'Funil',Quente:'Funil · Quente',Morno:'Funil · Morno',Frio:'Funil · Frio',Carteira:'Carteira','Carteira:novas':'Carteira · Novas','Carteira:usadas':'Carteira · Usadas',Retail:'Retail','Retail:novas':'Retail · Novas','Retail:usadas':'Retail · Usadas',Perdido:'Perdidos',Fechados:'Negócios fechados'};
+  const titulos={'Perdido:recont':'Perdidos · A re-contactar',_hoje:'Hoje',all:'Todos',Funil:'Funil',Quente:'Funil · Quente',Morno:'Funil · Morno',Frio:'Funil · Frio',Carteira:'Carteira','Carteira:novas':'Carteira · Novas','Carteira:usadas':'Carteira · Usadas',Retail:'Retail','Retail:novas':'Retail · Novas','Retail:usadas':'Retail · Usadas',Perdido:'Perdidos',Fechados:'Negócios fechados'};
   const alertaAtual=S.alertFilter?(calcAlerts(recsInContext()).find(a=>a.id===S.alertFilter)||{}).label:null;
   const curLabel=S.alertFilter?('⚠️ '+(alertaAtual||'Alerta')):((titulos[sf]||sf)+(mesMode&&mesSel&&mesSel!=='all'?' · '+mesLbl(mesSel):''));
   const P=vPendentes();
   const nFun=(c['Quente']||0)+(c['Morno']||0)+(c['Frio']||0);
   const vend=!isAdmin();
   const chipsDef=grp==='Funil'?[['Funil','Todos',nFun],['Quente','Quente',c['Quente']||0],['Morno','Morno',c['Morno']||0],['Frio','Frio',c['Frio']||0]]
+    :grp==='Perdido'?[['Perdido','Todos',c['Perdido']||0],['Perdido:recont','A re-contactar',recontLista().length]]
     :(grp==='Carteira'||grp==='Retail')?(()=>{const nG=fn=>recsInContext().filter(r=>r.status===grp&&inMes(r)&&fn(r)).length;
       return[[grp,'Todas',nG(()=>true)],[grp+':novas','Novas (MN+MD)',nG(r=>r.type!=='MU')],[grp+':usadas','Usadas (MU)',nG(r=>r.type==='MU')]];})():null;
   const chips=chipsDef&&!S.alertFilter?`<div class="vchips">${chipsDef.map(([k,l,n])=>`<button class="vchip ${sf===k?'on':''}" data-action="sidebar-filter" data-status="${k}">${l} <span>${n}</span></button>`).join('')}</div>`:'';
   const agrupar=(mesMode&&mesSel==='all')||(!mesMode&&grp==='Retail')||sf==='Fechados'||sf==='Perdido';
+  if(sf==='Perdido:recont')f.sort((a,b)=>String(recontData(a)).localeCompare(String(recontData(b))));
   const grupos=(mesMode&&mesSel==='all')?(()=>{const m={};f.forEach(r=>{const k=mesDe(r)||'Sem mês';(m[k]=m[k]||[]).push(r);});return Object.keys(m).sort((a,b)=>grp==='Retail'?b.localeCompare(a):a.localeCompare(b)).map(k=>({month:k==='Sem mês'?(grp==='Retail'?'Sem data 298':'Sem mês de entrega'):mesLbl(k),records:m[k]}));})():null;
   if(mesMode&&mesSel!=='all')f.sort(grp==='Retail'?((a,b)=>String(b.col_298||'').localeCompare(String(a.col_298||''))):((a,b)=>String(a.id_cliente||'').localeCompare(String(b.id_cliente||''),'pt')));
   const lista=f.length===0?(procura?vazioHTML('search','Nada encontrado','Experimenta outro nome, modelo ou matrícula.'):(mesMode&&mesSel!=='all'?vazioHTML('calendar','Nada neste mês','Escolhe outro mês ou “Todos”.'):vazioHTML('inboxEmpty','Nenhum registo aqui'))):
@@ -4289,6 +4350,7 @@ function renderCard(r){
       <div class="vcard-mod">${r.type?`<span class="tag tag-sm">${esc(r.type)}</span>`:''}<span>${esc([r.model,r.version].filter(Boolean).join(' ')||'sem modelo')}</span>${r.mat?`<b class="vcard-mat">${esc(r.mat)}</b>`:''}${r.bev?'<span class="tag tag-bev">BEV</span>':(r.xev?'<span class="tag tag-xev">xEV</span>':'')}${r.gar?`<span class="tag tag-gar">${esc(r.gar)}</span>`:''}</div>
       <div class="vcard-meta">${meta.map(esc).join(' · ')}${atras?` <span class="vcard-al">⚠️ contactar${r.alert_date?' · '+esc(String(fmtDate(r.alert_date)).slice(0,5)):''}</span>`:''}</div>
       ${r.obs?`<div class="vcard-obs">${esc(r.obs)}</div>`:''}
+      ${r.status==='Perdido'&&recontData(r)?(recontDue(r)?`<div class="vcard-recont due">${ico('repeat','ic-sm')}<span>Re-contactar · desde ${esc(fmtDate(recontData(r)))}</span>${r.vendedor_id===(S.me&&S.me.id)||isAdmin()?`<button class="rc-b on" data-action="recont-reabrir" data-id="${r.id}">Reabrir no funil</button><button class="rc-b" data-action="recont-adiar" data-id="${r.id}" title="Volta a lembrar daqui a 6 meses">Adiar 6 meses</button>`:''}</div>`:`<div class="vcard-recont">${ico('repeat','ic-sm')}<span>Re-contactar a partir de ${esc(fmtDate(recontData(r)))}</span></div>`):''}
       ${r.bev&&!r.cme?`<div class="card-acts"><button class="card-act card-act-cme" data-action="confirm-cme" data-id="${r.id}" title="Confirmar CME">🟠 <span>CME</span></button></div>`:''}
     </div>
   </div>`}
@@ -4466,7 +4528,13 @@ const EQ_CAMP=[['','Normal','#94A3B8'],['dress','Dress Code','#EAB308'],['artmes
 function eqCampInfo(k){return EQ_CAMP.find(c=>c[0]===(k||''))||EQ_CAMP[0];}
 function eqVendaEf(l){const v=Number(l.venda)||0;return l.campanha==='artmes'?v*(1-EQ_ARTMES):v;}
 function eqMargem(l){return (eqVendaEf(l)-(Number(l.custo)||0))*(Number(l.qtd)||0);}
-function eqComissao(l){return eqMargem(l)*EQ_PCT;}
+// Comissão do equipamento: stock MORTO = 20% do faturado s/IVA · MORIBUNDO = 10% do faturado s/IVA · resto = 20% da margem
+const EQ_PCT_MORTO=0.20,EQ_PCT_MORIBUNDO=0.10;
+function eqEstadoNorm(e){e=String(e||'').trim().toLowerCase();return e==='morto'?'morto':(e==='moribundo'?'moribundo':'');}
+function eqFaturado(l){return eqVendaEf(l)*(Number(l.qtd)||0);}
+function eqComissao(l){const e=eqEstadoNorm(l.estado_stock);if(e==='morto')return eqFaturado(l)*EQ_PCT_MORTO;if(e==='moribundo')return eqFaturado(l)*EQ_PCT_MORIBUNDO;return eqMargem(l)*EQ_PCT;}
+function eqRegraTxt(e){e=eqEstadoNorm(e);return e==='morto'?'stock morto · 20% do faturado s/IVA':(e==='moribundo'?'stock moribundo · 10% do faturado s/IVA':'20% da margem');}
+async function eqEstado(id,v){try{await supabaseApi('PATCH','/equipamento?id=eq.'+id,{estado_stock:v||null});const l=(S.equip||[]).find(x=>String(x.id)===String(id));if(l)l.estado_stock=v||null;render();}catch(e){alert('Erro: '+e.message+(/estado_stock/.test(String(e.message))?'\n\nFalta correr o SQL melhorias_negocios.sql no Supabase.':''));}}
 function eqYM(l){return l&&l.data?String(l.data).slice(0,7).replace('-','/'):null;}
 function eqDe(vid,incluiYM){return (S.equip||[]).filter(l=>String(l.vendedor_id)===String(vid)&&incluiYM(eqYM(l)));}
 function numPT(x){if(x==null)return null;let s=String(x).replace(/[€\s\u00a0]/g,'');if(!s||s==='-')return null;if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');const n=parseFloat(s);return isFinite(n)?n:null;}
@@ -5059,10 +5127,11 @@ function renderDetail(){
         <span class="section-arrow ${S.openGroups[g.g]?'open':''}">›</span>
       </div>
       ${S.openGroups[g.g]?`<div class="section-body"><div class="detail-grid ${g.g==='Flags'?'flags':''}">
-        ${g.fields.map(fd=>`<div><div class="detail-label">${esc(fd.l)}</div><div class="detail-value">${fd.t==='toggle'?(r[fd.k]?'<span style="color:var(--green)">✓ Sim</span>':'<span style="color:var(--text3)">✗ Não</span>'):fd.t==='date'?fmtDate(r[fd.k]):esc(r[fd.k])||'<span style="color:var(--text4)">—</span>'}</div></div>`).join('')}
+        ${g.fields.map(fd=>`<div><div class="detail-label">${esc(fd.l)}</div><div class="detail-value">${fd.t==='toggle'?(r[fd.k]?'<span style="color:var(--green)">✓ Sim</span>':'<span style="color:var(--text3)">✗ Não</span>'):fd.t==='date'?fmtDate(fd.k==='recontactar_em'?recontData(r):r[fd.k]):esc(r[fd.k])||'<span style="color:var(--text4)">—</span>'}</div></div>`).join('')}
       </div></div>`:''}
     </div>`).join('')}
     ${S.confirmDelete?`<div class="confirm-bar"><p>Apagar este registo?</p><button class="btn btn-sm" data-action="confirm-delete" ${S.loading?'disabled':''} style="background:var(--red);color:#fff">${S.loading?'…':'Sim'}</button><button class="btn btn-outline btn-sm" data-action="cancel-delete">Não</button></div>`:''}
+    ${negHistHTML(r)}
     ${(()=>{if(!comElegivel(r)&&r.type!=='MD')return'';const c=comissaoDe(r);const m=margemDe(r.id);const fE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
       return`<div class="cm-ficha"><div class="cm-ficha-h">💶 Comissão</div><div class="cm-ficha-g">
         <div><div class="detail-label">Margem libertada</div><div class="detail-value">${r.type==='MD'?'<span class="cm-na">n/a (demo)</span>':(isAdmin()?`<div class="stock-eurwrap"><input class="stock-inp stock-num" data-mrg-id="${r.id}" type="number" step="0.01" value="${m!=null?m:''}" placeholder="—"><span class="stock-eur2">€</span></div>`:(m!=null?fE(m):'<span class="cm-na">por lançar</span>'))}</div></div>
@@ -5109,17 +5178,92 @@ function renderVendedorSelect(k){
     ${nomes.map(n=>`<option value="${esc(n)}" ${cur===n?'selected':''}>${esc(n)}</option>`).join('')}
   </select>`}
 
+// ===== Negócios: comentários + histórico de alterações (registado pela base de dados) =====
+const NEG_EXTRA_LB={vendedor_id:'Vendedor',stock_id:'Mota do stock',venda_direta:'Venda a comerciante',automatricula:'Automatrícula',valor_entrada:'Valor de entrada',cme_confirmed:'CME confirmado',alert_days:'Dias de alerta',resp:'Responsável (texto)',status_mota:'Status da mota'};
+function negCampoLb(k){const f=ALL_FIELDS.find(x=>x.k===k);return (f&&f.l)||NEG_EXTRA_LB[k]||k;}
+function negValor(k,v){if(v==null||v==='')return'(vazio)';if(k==='vendedor_id')return vendName(v)||'?';
+  if(v==='true'||v===true)return'Sim';if(v==='false'||v===false)return'Não';const f=ALL_FIELDS.find(x=>x.k===k);
+  if(f&&f.t==='toggle')return String(v)==='1'?'Sim':'Não';if((f&&f.t==='date')||/^\d{4}-\d{2}-\d{2}$/.test(String(v)))return fmtDate(String(v).slice(0,10));
+  if(k==='pvp'||k==='valor_entrada')return Number(v).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:2})+' €';const t=String(v);return t.length>140?t.slice(0,140)+'…':t;}
+async function loadNegHist(id){id=String(id);S.negHistErr='';
+  try{const d=await supabaseApi('GET','/negocio_historico?negocio_id=eq.'+encodeURIComponent(id)+'&select=*&order=criado_em.desc,id.desc');S.negHist=Object.assign({},S.negHist||{},{[id]:d||[]});}
+  catch(e){S.negHist=Object.assign({},S.negHist||{},{[id]:[]});S.negHistErr=/negocio_historico|42P01|schema cache/i.test(String(e&&e.message))?'Os comentários ainda não estão ativos (falta correr o SQL melhorias_negocios.sql).':('Não consegui ler o histórico: '+((e&&e.message)||e));}
+  render();}
+async function negComentar(id){const t=String(S.negCom||'').trim();if(!t)return;
+  try{await supabaseApi('POST','/negocio_historico',{negocio_id:Number(id),tipo:'comentario',texto:t});S.negCom='';await loadNegHist(id);}
+  catch(e){alert('Erro ao gravar o comentário: '+((e&&e.message)||e));}}
+function negHistItem(h){const d=new Date(h.criado_em);const p=n=>String(n).padStart(2,'0');
+  const quando=isNaN(d)?'':`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  const quem=`${esc(h.autor_nome||'?')}${h.autor_role?` (${esc(EOT_ROLE_LB[h.autor_role]||h.autor_role)})`:''}`;
+  const txt=h.tipo==='comentario'?`<span class="eoth-com">${esc(h.texto||'').replace(/\n/g,'<br>')}</span>`:(h.tipo==='criacao'?esc(h.texto||'criou o negócio'):
+    `alterou <b>${esc(negCampoLb(h.campo))}</b>: ${esc(negValor(h.campo,h.valor_antes))} → <b>${esc(negValor(h.campo,h.valor_depois))}</b>`);
+  return`<div class="eoth-it ${h.tipo==='criacao'?'sistema':h.tipo}"><div class="eoth-q">${esc(quando)}${h.tipo==='comentario'?' · comentário':''}</div><div class="eoth-t">${quem}: ${txt}</div></div>`;}
+const NEG_COM_RAPIDOS=['Liguei — não atendeu','Falei com o cliente','Enviei proposta','Marcou test-ride','Aguarda financiamento','Pediu para ligar mais tarde','Vem ao stand'];
+function negHistHTML(r){
+  const id=String(r.id);const H=(S.negHist||{})[id];
+  if(!H&&S.negHistReq!==id){S.negHistReq=id;setTimeout(()=>loadNegHist(id),0);}
+  const mostrar=S.negHistTudo===id?H:(H||[]).slice(0,6);
+  const nAlt=(H||[]).filter(h=>h.tipo!=='comentario').length,nCom=(H||[]).filter(h=>h.tipo==='comentario').length;
+  return`<div class="neg-hist">
+    <div class="neg-hist-h"><span>${ico('inbox','ic-sm')} Comentários e histórico</span>${H?`<span class="neg-hist-n">${nCom} comentário${nCom!==1?'s':''} · ${nAlt} alteraç${nAlt!==1?'ões':'ão'}</span>`:''}</div>
+    <div class="neg-chips">${NEG_COM_RAPIDOS.map(t=>`<button class="vchip" data-action="neg-com-chip" data-t="${esc(t)}">${esc(t)}</button>`).join('')}</div>
+    <div class="eotm-com"><textarea class="norma-inp" id="neg-com" rows="2" placeholder="Escreve um comentário — fica registado com o teu nome e a hora${isAdmin()?' (o vendedor vê)':' (o chefe vê)'}">${esc(S.negCom||'')}</textarea><button class="btn btn-dark btn-sm" data-action="neg-comentar" data-id="${id}">Comentar</button></div>
+    ${S.negHistErr?`<div class="mg-aviso" style="margin:8px 0 0">${esc(S.negHistErr)}</div>`:''}
+    <div class="eoth">${!H?'<div class="eoth-v">A carregar…</div>':(mostrar.length?mostrar.map(negHistItem).join(''):(S.negHistErr?'':'<div class="eoth-v">Ainda sem registos. A partir de agora, cada alteração e comentário fica aqui.</div>'))}</div>
+    ${H&&H.length>6&&S.negHistTudo!==id?`<button class="btn btn-ghost btn-sm" data-action="neg-hist-tudo" data-id="${id}">Ver tudo (${H.length})</button>`:''}
+  </div>`;}
+// Comentários recentes de outras pessoas nos meus negócios (vendedor) / na equipa (chefe)
+async function loadComsRecentes(){if(!S.me)return;const desde=new Date(Date.now()-10*864e5).toISOString();
+  try{const d=await supabaseApi('GET','/negocio_historico?tipo=eq.comentario&autor_id=neq.'+S.me.id+'&criado_em=gte.'+encodeURIComponent(desde)+'&select=id,negocio_id,autor_nome,autor_role,texto,criado_em&order=criado_em.desc&limit=30');S.comsRec=d||[];}
+  catch(e){S.comsRec=[];}}
+function comsVistos(){try{return JSON.parse(localStorage.getItem('bm_coms_vistos_'+(S.me&&S.me.id))||'[]')}catch(e){return[]}}
+function comsMarcar(ids){try{const v=new Set(comsVistos());ids.forEach(i=>v.add(String(i)));localStorage.setItem('bm_coms_vistos_'+(S.me&&S.me.id),JSON.stringify([...v].slice(-300)));}catch(e){}}
+function comsNovos(){const v=new Set(comsVistos());return (S.comsRec||[]).filter(c=>!v.has(String(c.id))&&(S.records||[]).some(r=>String(r.id)===String(c.negocio_id)));}
+function comsRecentesHTML(titulo){const L=comsNovos();if(!L.length)return'';
+  const cli=id=>{const r=(S.records||[]).find(x=>String(x.id)===String(id));return r?(r.id_cliente||'negócio'):'negócio';};
+  return`<div class="vh-sec"><span>${esc(titulo||'Comentários novos')}</span><span class="vh-cnt">${L.length}</span><button class="btn btn-ghost btn-sm" data-action="coms-vistos" style="margin-left:auto">Marcar como vistos</button></div>
+  <div class="vh-box">${L.slice(0,8).map(c=>`<div class="vh-row" data-action="${isAdmin()?'open-record-from-dash':'open-detail'}" data-id="${c.negocio_id}" data-com="${c.id}" role="button" tabindex="0"><span class="atag atag-mn">${esc(String(c.autor_nome||'?').split(' ')[0])}</span><span class="vh-txt"><b>${esc(cli(c.negocio_id))}</b> — ${esc(String(c.texto||'').slice(0,110))}</span><span class="vh-chev">${ico('chevr','ic-sm')}</span></div>`).join('')}</div>`;}
+// ===== Criação rápida de negócio =====
+function qfChip(k,v,lb){return`<button class="qf-chip ${String(S.form[k]||'')===v?'on':''} ${k==='status'?'qf-st-'+v:''}" data-action="qf-set" data-k="${k}" data-v="${v}">${lb||v}</button>`;}
+function renderEditRapido(){
+  const F=S.form||{};const st=F.status||'';const fun=FUNIL.includes(st);const cart=st==='Carteira'||st==='Retail';const usada=F.type==='MD'||F.type==='MU';
+  const inp=(k,lb,ph,tipo)=>`<label class="qf-f"><span>${lb}</span><input class="field-input" ${tipo?`type="${tipo}"`:'type="text"'} data-field="${k}" ${tipo==='month'?'data-fmt="month"':''} value="${esc(tipo==='month'?String(F[k]||'').replace('/','-'):(F[k]||''))}" placeholder="${ph||''}"></label>`;
+  return`<div class="qf">
+    ${S.error?`<div class="error" style="margin:0 0 12px">${esc(S.error)}</div>`:''}
+    <div class="qf-sec">Em que fase está? <i>*</i></div>
+    <div class="qf-chips">${['Quente','Morno','Frio','Carteira','Retail'].map(v=>qfChip('status',v)).join('')}</div>
+    <div class="qf-hint">${fun?'Funil — fica a lembrar-te de contactar na data abaixo.':(st==='Carteira'?'Vendida, ainda por entregar.':(st==='Retail'?'Já entregue (298 feito).':'Quente / Morno / Frio = funil · Carteira = vendida por entregar · Retail = entregue'))}</div>
+    <div class="qf-sec">Tipo de mota</div>
+    <div class="qf-chips">${qfChip('type','MN','Nova · MN')}${qfChip('type','MD','Demo · MD')}${qfChip('type','MU','Usada · MU')}</div>
+    <div class="qf-g">
+      ${inp('id_cliente','Nome do cliente <i>*</i>','Ex: Ana Matos')}
+      ${inp('contacto','Contacto','Telemóvel ou email','tel')}
+      ${inp('model','Modelo','Ex: R 1300 GS')}
+      ${inp('version','Versão','opcional')}
+      <label class="qf-f"><span>Origem</span><select class="field-input" data-field="origin"><option value="">—</option>${ORIGINS.filter(Boolean).map(o=>`<option ${F.origin===o?'selected':''}>${esc(o)}</option>`).join('')}</select></label>
+      ${F.origin==='Lead'?inp('lead_webapp','Nº Lead (WebApp)',''):''}
+      ${fun?inp('alert_date','Contactar no dia','', 'date'):''}
+      ${cart?inp('mes1','Mês de entrega','', 'month'):''}
+      ${cart?inp('pvp','PVP (€)','Ex: 21500','number'):''}
+      ${st==='Retail'?inp('col_298','Data do 298','', 'date'):''}
+      ${usada?`<div class="qf-f qf-w2"><span>Mota do stock</span>${renderStockPick()}</div>`:''}
+      <label class="qf-f qf-w2"><span>Observações</span><textarea class="field-input" data-field="obs" rows="3" placeholder="O que o cliente procura, retoma, prazos…">${esc(F.obs||'')}</textarea></label>
+    </div>
+    <button class="qf-mais" data-action="qf-completo">${ico('plus','ic-sm')} Mais detalhes — NIF, morada, encomenda, Bizagi, financiamento, retoma…</button>
+    <button class="btn btn-orange btn-block" data-action="save-record" ${S.loading?'disabled':''} style="margin-top:14px">${S.loading?'A guardar…':'Guardar negócio'}</button>
+  </div>`;
+}
 function renderEdit(){
-  const isNew=!S.selected;
+  const isNew=!S.selected;const rapido=isNew&&!S.formCompleto;
   return`
   <div class="app-layout"><div class="main-panel" style="width:100%">
   <div class="hdr">
     <button class="hdr-back" data-action="back-from-edit">←</button>
     <div class="hdr-accent"></div>
-    <div class="hdr-title" style="font-size:14px">${isNew?'Novo Registo':'Editar'}</div>
+    <div class="hdr-title" style="font-size:14px">${isNew?'Novo negócio':'Editar'}</div>
     <button class="btn btn-orange btn-sm" data-action="save-record" ${S.loading?'disabled':''}>${S.loading?'…':'Guardar'}</button>
   </div>
-  <div class="content">
+  <div class="content">${rapido?renderEditRapido():`
     ${S.error?`<div class="error" style="margin:12px 16px 0">${esc(S.error)}</div>`:''}
     <button class="btn fm-btn-neg ${isNew?(S.fmRascunho?'tem':''):((S.fichasIdx||{})[String(S.selected&&S.selected.id)]?'tem':'')}" style="margin:12px 16px 0;width:calc(100% - 32px)" data-action="fm-negocio" data-id="${isNew?'novo':(S.selected&&S.selected.id)}">🧮 Ficha de margem ${isNew?(S.fmRascunho?'<span>· preenchida, liga-se ao gravar</span>':'<span>· preencher</span>'):((S.fichasIdx||{})[String(S.selected&&S.selected.id)]?'<span>· guardada</span>':'<span>· criar</span>')}</button>
     ${FIELD_GROUPS.map(g=>`<div class="section" style="margin-top:${g===FIELD_GROUPS[0]?'10px':'0'}">
@@ -5142,7 +5286,7 @@ function renderEdit(){
         }</div>`).join('')}`}
       </div>`:''}
     </div>`).join('')}
-    <div style="padding:8px 16px 32px"><button class="btn btn-orange btn-block" data-action="save-record" ${S.loading?'disabled':''}>${S.loading?'A guardar...':'Guardar Registo'}</button></div>
+    <div style="padding:8px 16px 32px"><button class="btn btn-orange btn-block" data-action="save-record" ${S.loading?'disabled':''}>${S.loading?'A guardar...':'Guardar Registo'}</button></div>`}
   </div>
   </div></div>`}
 
@@ -5528,7 +5672,7 @@ function exportComissoes(){
     const sub=meus.map(comissaoDe).reduce((a,c)=>a+(c.valor||0),0);
     rows.push([mes,(p.nome||'')+' — SUBTOTAL MOTAS','','','','','','',n2(sub)].map(esc2).join(';'));
     const _eq=(S.equip||[]).filter(l=>String(l.vendedor_id)===String(p.id)&&perInclui(eqYM(l)));
-    _eq.forEach(l=>rows.push([mes,p.nome||'','',l.descricao||l.artigo||'','Equipamento',eqCampInfo(l.campanha)[1],n2(eqMargem(l)),'20% da margem',n2(eqComissao(l))].map(esc2).join(';')));
+    _eq.forEach(l=>rows.push([mes,p.nome||'','',l.descricao||l.artigo||'','Equipamento',eqCampInfo(l.campanha)[1],n2(eqMargem(l)),eqRegraTxt(l.estado_stock),n2(eqComissao(l))].map(esc2).join(';')));
     const _eqs=_eq.reduce((a,l)=>a+eqComissao(l),0);
     rows.push([mes,(p.nome||'')+' — SUBTOTAL EQUIPAMENTO','','','','','','',n2(_eqs)].map(esc2).join(';'));
     rows.push([mes,(p.nome||'')+' — TOTAL','','','','','','',n2(sub+_eqs)].map(esc2).join(';'));
@@ -6169,7 +6313,7 @@ function renderDashboard(){
       +(_mxU.length?`<div class="home-act"><div class="home-act-h" data-action="gpp-sec" data-s="stock"><span class="home-act-ic">🔴</span><span class="home-act-lb"><b>${_mxU.length}</b> usada${_mxU.length!==1?'s':''} vendida${_mxU.length!==1?'s':''} ainda no Maxterauto — ${esc(_mxL(_mxU,m=>m.matricula||m.modelo))}</span><span class="gpp-alerta-arrow">›</span></div></div>`:'')
       +(_mxD.length?`<div class="home-act"><div class="home-act-h" data-action="gpp-sec" data-s="demos"><span class="home-act-ic">🔴</span><span class="home-act-lb"><b>${_mxD.length}</b> demo${_mxD.length!==1?'s':''} vendida${_mxD.length!==1?'s':''} ainda no Maxterauto — ${esc(_mxL(_mxD,n=>n.matricula||n.modelo))}</span><span class="gpp-alerta-arrow">›</span></div></div>`:'')
       +`</div>`:'';
-    S._acoesHtml=mxHtml+acoesHtml;
+    S._acoesHtml=mxHtml+acoesHtml+(comsNovos().length?`<div class="coms-chefe">${comsRecentesHTML('Comentários da equipa')}</div>`:'');
     return ritmoHtml+inatHtml+'<div style="height:16px"></div>';
   }
   function tabelaResumo(){
@@ -7193,12 +7337,12 @@ function renderDashboard(){
       const aberto=S.eqColarAberto===String(p.id);
       const hoje=new Date().toISOString().slice(0,10);
       return`<div class="eq-box">
-        <div class="eq-h"><span>🧥 Equipamento · <b>${L.length}</b> linha${L.length!==1?'s':''} · <b style="color:${sub<0?'var(--red)':'var(--green)'}">${fmtE(sub)}</b> <span class="eq-regra">20% da margem</span></span>
+        <div class="eq-h"><span>🧥 Equipamento · <b>${L.length}</b> linha${L.length!==1?'s':''} · <b style="color:${sub<0?'var(--red)':'var(--green)'}">${fmtE(sub)}</b> <span class="eq-regra">20% da margem · morto 20% / moribundo 10% do faturado</span></span>
           <button class="btn btn-dark btn-sm" data-action="eq-colar-toggle" data-vid="${p.id}">📋 Colar do Excel</button></div>
         ${aberto?`<div class="eq-paste"><textarea id="eq-paste-${p.id}" placeholder="No Excel, seleciona as linhas da coluna Data até ao Preço de venda (podes incluir o cabeçalho e o total — são ignorados) e cola aqui."></textarea>
           <div style="display:flex;gap:8px;margin-top:6px"><button class="btn btn-orange btn-sm" data-action="eq-colar" data-vid="${p.id}">Importar</button><button class="btn btn-dark btn-sm" data-action="eq-colar-toggle" data-vid="${p.id}">Cancelar</button></div></div>`:''}
-        ${L.length?`<div style="overflow-x:auto"><table class="gpp-ltable eq-tbl"><thead><tr><th>Data</th><th>WIP/OR</th><th>Fatura</th><th>Artigo</th><th>Descrição</th><th style="text-align:right">Qtd</th><th style="text-align:right">Custo</th><th style="text-align:right">Venda</th><th>Campanha</th><th style="text-align:right">Margem</th><th style="text-align:right">Comissão</th><th></th></tr></thead>
-          <tbody>${L.map(l=>{const ci=eqCampInfo(l.campanha);const c=eqComissao(l);return`<tr style="box-shadow:inset 4px 0 0 ${ci[2]}"><td>${esc(String(l.data||'').split('-').reverse().join('/'))}</td><td>${esc(l.wip||'')}</td><td>${esc(l.fatura||'')}</td><td>${esc(l.artigo||'')}</td><td>${esc(l.descricao||'')}</td><td style="text-align:right">${esc(String(l.qtd))}</td><td style="text-align:right">${fmtE(l.custo)}</td><td style="text-align:right">${fmtE(l.venda)}${l.campanha==='artmes'?`<div class="eq-real">real ${fmtE(eqVendaEf(l))}</div>`:''}</td><td><select class="eq-camp" data-eq-camp="${l.id}">${EQ_CAMP.map(o=>`<option value="${o[0]}" ${(l.campanha||'')===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></td><td style="text-align:right">${fmtE(eqMargem(l))}</td><td style="text-align:right;font-weight:800;color:${c<0?'var(--red)':'var(--green)'}">${fmtE(c)}</td><td><button class="pr-del" data-action="eq-del" data-id="${l.id}" title="Apagar">✕</button></td></tr>`;}).join('')}</tbody></table></div>`:''}
+        ${L.length?`<div style="overflow-x:auto"><table class="gpp-ltable eq-tbl"><thead><tr><th>Data</th><th>WIP/OR</th><th>Fatura</th><th>Artigo</th><th>Descrição</th><th style="text-align:right">Qtd</th><th style="text-align:right">Custo</th><th style="text-align:right">Venda</th><th>Campanha</th><th>Stock</th><th style="text-align:right">Margem</th><th style="text-align:right">Comissão</th><th></th></tr></thead>
+          <tbody>${L.map(l=>{const ci=eqCampInfo(l.campanha);const c=eqComissao(l);return`<tr style="box-shadow:inset 4px 0 0 ${ci[2]}"><td>${esc(String(l.data||'').split('-').reverse().join('/'))}</td><td>${esc(l.wip||'')}</td><td>${esc(l.fatura||'')}</td><td>${esc(l.artigo||'')}</td><td>${esc(l.descricao||'')}</td><td style="text-align:right">${esc(String(l.qtd))}</td><td style="text-align:right">${fmtE(l.custo)}</td><td style="text-align:right">${fmtE(l.venda)}${l.campanha==='artmes'?`<div class="eq-real">real ${fmtE(eqVendaEf(l))}</div>`:''}</td><td><select class="eq-camp" data-eq-camp="${l.id}">${EQ_CAMP.map(o=>`<option value="${o[0]}" ${(l.campanha||'')===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></td><td>${isAdmin()?`<select class="eq-camp" data-eq-est="${l.id}" title="Estado do stock quando foi vendido"><option value="" ${!eqEstadoNorm(l.estado_stock)?'selected':''}>Normal</option><option value="Moribundo" ${eqEstadoNorm(l.estado_stock)==='moribundo'?'selected':''}>Moribundo</option><option value="Morto" ${eqEstadoNorm(l.estado_stock)==='morto'?'selected':''}>Morto</option></select>`:esc(l.estado_stock||'—')}</td><td style="text-align:right">${fmtE(eqMargem(l))}</td><td style="text-align:right;font-weight:800;color:${c<0?'var(--red)':'var(--green)'}" title="${esc(eqRegraTxt(l.estado_stock))}">${fmtE(c)}${eqEstadoNorm(l.estado_stock)?`<div class="eq-real">${eqEstadoNorm(l.estado_stock)==='morto'?'20%':'10%'} do faturado</div>`:''}</td><td><button class="pr-del" data-action="eq-del" data-id="${l.id}" title="Apagar">✕</button></td></tr>`;}).join('')}</tbody></table></div>`:''}
         <div class="eq-add">
           <input class="norma-inp" id="eqn-data-${p.id}" type="date" value="${hoje}">
           <input class="norma-inp" id="eqn-wip-${p.id}" placeholder="WIP/OR" style="width:78px">
@@ -7256,7 +7400,7 @@ function renderDashboard(){
       <div class="kpi-strip">
         <div class="kpi-c"><span class="kpi-k">Total a pagar</span><span class="kpi-v pos">${fmtE(total+eqTotal)}</span><span class="kpi-s">${esc(perLbl)}</span></div>
         <div class="kpi-c"><span class="kpi-k">Motas</span><span class="kpi-v">${fmtE(total)}</span><span class="kpi-s">${elegiveis.length} retail</span></div>
-        <div class="kpi-c"><span class="kpi-k">Equipamento</span><span class="kpi-v">${fmtE(eqTotal)}</span><span class="kpi-s">${Math.round(EQ_PCT*100)}% da margem</span></div>
+        <div class="kpi-c"><span class="kpi-k">Equipamento</span><span class="kpi-v">${fmtE(eqTotal)}</span><span class="kpi-s">margem · morto/moribundo s/ faturado</span></div>
         <div class="kpi-c"><span class="kpi-k">Por lançar</span><span class="kpi-v ${porLancar?'warn':''}">${porLancar}</span><span class="kpi-s">${porLancar?'sem margem libertada':'tudo lançado'}</span></div>
       </div>
       ${pan}
@@ -7478,6 +7622,7 @@ function bindEvents(){
     if(el.id==='seq-pct'){seqPctInput(el);return;}
     if(el.dataset&&el.dataset.eotm){eotModalInput(el);return;}
     if(el.id==='eotm-com'){S.eotCom=el.value;return;}
+    if(el.id==='neg-com'){S.negCom=el.value;return;}
     if(el.dataset&&el.dataset.seqf&&el.dataset.seqf!=='ref'){seqForaInput(el);return;}
     if(el.dataset&&el.dataset.seqf==='ref'){S.seqFora=Object.assign({},S.seqFora||{},{ref:el.value});return;}
     if(el.dataset&&el.dataset.seqV){S.seqVenda=Object.assign({},S.seqVenda||{},{[el.dataset.seqV]:el.value});if(el.dataset.seqV==='preco')seqPctSincronizar();if(el.dataset.seqV==='campanha'){const x=(S.stockEq||[]).find(y=>String(y.id)===String(S.seqVender));const r=document.getElementById('seq-pct-res');if(x&&r)r.innerHTML=seqPctRes(x,seqPctDe(x,S.seqVenda),S.seqVenda);}seqCalcAtualizar();return;}
@@ -7530,6 +7675,7 @@ function bindEvents(){
     if(el.dataset&&el.dataset.triMes){saveObjEquipa(el.dataset.triMes,el.value,el.dataset.triTipo).then(()=>render());return;}
     if(el.dataset&&el.dataset.fm){fmSet(el.dataset.fm,el.value);return;}
     if(el.dataset&&el.dataset.eqCamp){eqCampanha(el.dataset.eqCamp,el.value);return;}
+    if(el.dataset&&el.dataset.eqEst){eqEstado(el.dataset.eqEst,el.value);return;}
     if(el.dataset&&el.dataset.pmK){savePremioMes(el.dataset.pmMes,el.dataset.pmK,el.value);return;}
     if(el.dataset&&el.dataset.mrgId){saveMargem(el.dataset.mrgId,el.value);return;}
     if(el.dataset&&el.dataset.entId){const v=el.value;saveEntrega(el.dataset.entId,{[el.dataset.entF]:(v===''?null:v)});return;}
@@ -7636,7 +7782,7 @@ function bindEvents(){
       case'dash-periodo':setState({dashPeriodo:el.dataset.p});break;
       case'dash-section':setState({dashSection:el.dataset.s,dashAlertOpen:null});break;
       case'dash-alert-toggle':setState({dashAlertOpen:S.dashAlertOpen===el.dataset.id?null:el.dataset.id});break;
-      case'open-record-from-dash':{const r=S.records.find(x=>String(x.id)===String(el.dataset.id));if(r)setState({selected:r,screen:'detail',gppMais:false,voltarGpp:S.gppSec||'home'});break}
+      case'open-record-from-dash':{const r=S.records.find(x=>String(x.id)===String(el.dataset.id));if(el.dataset.com)comsMarcar([el.dataset.com]);S.negCom='';S.negHistTudo=null;S.negHistReq=null;if(S.negHist)delete S.negHist[String(el.dataset.id)];if(r)setState({selected:r,screen:'detail',gppMais:false,voltarGpp:S.gppSec||'home'});break}
       case'export-csv':{if(!S.stockLoaded){loadStock().then(()=>exportCSV(true));}else exportCSV(true);break}
       case'export-csv-safe':{if(!S.stockLoaded){loadStock().then(()=>exportCSV(false));}else exportCSV(false);break}
       case'export-tudo':exportarTudo();break;
@@ -7805,11 +7951,19 @@ function bindEvents(){
       case'view-vendedor':{const id=el.dataset.id||null;setState({viewVendedor:id,screen:'list',vselOpen:false,statusFilter:'all',alertFilter:null,alertIds:[],search:'',monthFilter:[],renderLimit:50});break}
       case'save-nps':{e.stopPropagation();const vid=el.dataset.id;const gi=s=>{const x=document.querySelector(`[${s}="${vid}"]`);return x&&x.value!==''?parseFloat(x.value):null};const patch={num_inqueritos:gi('data-nps-inq')||0,nps:gi('data-nps-nps'),csi:gi('data-nps-csi')};el.textContent='\u2026';saveNps(vid,patch).then(()=>render()).catch(err=>{alert('Erro: '+err.message);render()});break}
       case'save-objetivo':{e.stopPropagation();const vid=el.dataset.id;const inp=document.querySelector(`[data-obj-input="${vid}"]`);const val=parseInt(inp&&inp.value?inp.value:'0')||0;el.textContent='\u2026';saveObjetivo(vid,val).then(()=>render()).catch(err=>{alert('Erro: '+err.message);render()});break}
-      case'refresh':{const p=isAdmin()?Promise.all([loadObjetivos(),loadObjEquipa(),loadTeam(),loadNps(),loadEot()]):((isVendedor()||isFinanceiro())?loadEot():Promise.resolve());p.then(()=>Promise.all([recarregarEvento(),loadRecords()]));break}
+      case'refresh':{if(isAdmin()||isVendedor())loadComsRecentes();const p=isAdmin()?Promise.all([loadObjetivos(),loadObjEquipa(),loadTeam(),loadNps(),loadEot()]):((isVendedor()||isFinanceiro())?loadEot():Promise.resolve());p.then(()=>Promise.all([recarregarEvento(),loadRecords()]));break}
       case'open-sidebar':setState({sidebarOpen:!S.sidebarOpen});break;
       case'toggle-sidebar':setState({sidebarOpen:!S.sidebarOpen});break;
       case'close-sidebar':setState({sidebarOpen:false});break;
       case'load-more':setState({renderLimit:(S.renderLimit||50)+50});break;
+      case'qf-set':{collectFormData();const k=el.dataset.k,v=el.dataset.v;S.form[k]=(S.form[k]===v&&k==='type')?'':v;if(k==='status'&&FUNIL.includes(v)&&!S.form.alert_date)S.form.alert_date=sugereAlerta(v);if(k==='status'&&v==='Carteira'&&!S.form.neg)S.form.neg=new Date().toISOString().slice(0,10);S.error='';render();break;}
+      case'qf-completo':collectFormData();S.formCompleto=true;setState({openGroups:Object.assign({},S.openGroups,{INFO:true,'Identificação':true,'Negócio':true,'Viatura':true,OBS:true})});break;
+      case'neg-comentar':negComentar(el.dataset.id);break;
+      case'neg-com-chip':{const t=el.dataset.t;const cur=String(S.negCom||'').trim();S.negCom=cur?cur+' — '+t:t;render();setTimeout(()=>{const x=document.getElementById('neg-com');if(x){x.focus();x.setSelectionRange(x.value.length,x.value.length);}},20);break;}
+      case'neg-hist-tudo':setState({negHistTudo:el.dataset.id});break;
+      case'coms-vistos':comsMarcar(comsNovos().map(c=>c.id));render();break;
+      case'recont-reabrir':recontReabrir(el.dataset.id);break;
+      case'recont-adiar':recontAdiar(el.dataset.id);break;
       case'sidebar-filter':setState({screen:'list',selected:null,search:'',statusFilter:el.dataset.status,monthFilter:[],bevFilter:'all',xevFilter:'all',alertFilter:null,alertIds:[],renderLimit:50});break;
       case'alert-filter':{const id=el.dataset.alert;const ids=el.dataset.ids.split(',').map(Number);if(S.alertFilter===id)setState({alertFilter:null,alertIds:[],statusFilter:'all'});else setState({alertFilter:id,alertIds:ids,statusFilter:'_alert'});break}
       case'filter':setState({statusFilter:el.dataset.status,monthFilter:[],bevFilter:'all',xevFilter:'all'});break;
@@ -7858,13 +8012,13 @@ function bindEvents(){
         });
         break;
       }
-      case'open-detail':{const id=parseInt(el.dataset.id),r=S.records.find(x=>x.id===id);if(r)setState({selected:r,screen:'detail',confirmDelete:false,openGroups:{INFO:true},voltarGpp:null});break}
+      case'open-detail':{const id=parseInt(el.dataset.id),r=S.records.find(x=>x.id===id);if(el.dataset.com)comsMarcar([el.dataset.com]);S.negCom='';S.negHistTudo=null;S.negHistReq=null;if(S.negHist)delete S.negHist[String(id)];if(r)setState({selected:r,screen:'detail',confirmDelete:false,openGroups:{INFO:true},voltarGpp:null});break}
       case'back-to-list':{
         if(S.voltarGpp){const sec=S.voltarGpp;setState({screen:'dashboard',gppSec:sec,selected:null,voltarGpp:null});}
         else setState({screen:'list',selected:null});
         break;}
       case'open-edit':setState({form:recordToForm(S.selected||{}),screen:'edit',error:'',openGroups:{INFO:true}});break;
-      case'open-add':S.fmRascunho=null;setState({selected:null,form:emptyForm(),screen:'edit',error:'',openGroups:{INFO:true}});break;
+      case'open-add':S.fmRascunho=null;S.formCompleto=false;setState({selected:null,form:emptyForm(),screen:'edit',error:'',openGroups:{INFO:true}});break;
       case'back-from-edit':setState({screen:S.selected?'detail':'list',error:''});break;
       case'save-record':collectFormData();saveRecord();break;
       case'toggle-section':{const g=el.dataset.group;S.openGroups[g]=!S.openGroups[g];if(S.screen==='edit')collectFormData();render();break}
@@ -7884,7 +8038,7 @@ function bindEvents(){
 
 function collectFormData(){document.querySelectorAll('input[data-field],select[data-field],textarea[data-field]').forEach(el=>{const k=el.dataset.field;let v=el.value;if(el.dataset.fmt==='month'&&v)v=v.replace('-','/');S.form[k]=v})}
 
-function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes(),loadTransicoes(),loadNorma(),loadFichasIdx(),loadEot()]):(isVendedor()?Promise.all([loadTeam(),loadEventos(),loadInscricoes(),loadInscricoesAll(),loadMargens(),loadEntregas(),loadEquipamento(),loadFichasIdx(),loadEot()]):(S.me&&S.me.role==='secretario'?Promise.all([loadTeam(),loadEntregas(),...(isFinanceiro()?[loadEot()]:[])]):(S.me&&S.me.role==='assessor'?Promise.all([loadTeam(),loadEquipamento()]):(S.me&&S.me.role==='financeiro'?Promise.all([loadTeam(),loadEot()]):Promise.all([loadTeam()])))));return extra}).then(function(){return loadRecords()}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:ecraInicial(),loading:false,statusFilter:isAdmin()?S.statusFilter:'_hoje'})})}
+function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadComsRecentes(),loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes(),loadTransicoes(),loadNorma(),loadFichasIdx(),loadEot()]):(isVendedor()?Promise.all([loadComsRecentes(),loadTeam(),loadEventos(),loadInscricoes(),loadInscricoesAll(),loadMargens(),loadEntregas(),loadEquipamento(),loadFichasIdx(),loadEot()]):(S.me&&S.me.role==='secretario'?Promise.all([loadTeam(),loadEntregas(),...(isFinanceiro()?[loadEot()]:[])]):(S.me&&S.me.role==='assessor'?Promise.all([loadTeam(),loadEquipamento()]):(S.me&&S.me.role==='financeiro'?Promise.all([loadTeam(),loadEot()]):Promise.all([loadTeam()])))));return extra}).then(function(){return loadRecords()}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:ecraInicial(),loading:false,statusFilter:isAdmin()?S.statusFilter:'_hoje'})})}
 (function(){
   S.screen='loading';render();
   // Link de recuperacao do Supabase: #access_token=...&type=recovery
