@@ -1946,7 +1946,7 @@ function contaHTML(extra){
   return`<div class="conta">
     <button class="conta-btn" data-action="conta-toggle" aria-haspopup="menu" aria-expanded="${ab}" title="Conta"><span class="conta-av">${esc(iniciais(me.nome))}</span><span class="conta-nm">${esc(String(me.nome||'').split(' ')[0])}</span>${ico('chevd','ic-sm')}</button>
     ${ab?`<div class="conta-bd" data-action="conta-fechar"></div><div class="conta-menu" role="menu">
-      <div class="conta-quem"><b>${esc(me.nome||'')}</b><span>${esc({admin:'Chefe de Vendas',vendedor:'Vendedor',secretario:'Secretaria comercial',assessor:'Assessor de serviço',financeiro:'Financeiro'}[me.role]||'')}</span></div>
+      <div class="conta-quem"><b>${esc(me.nome||'')}</b><span>${esc(({admin:'Chefe de Vendas',vendedor:'Vendedor',secretario:'Secretaria comercial',assessor:'Assessor de serviço',financeiro:'Financeiro'}[me.role]||'')+(me.role!=='financeiro'&&me.financeiro===true?' · Financeiro':''))}</span></div>
       ${extra||''}
       <button class="conta-it" role="menuitem" data-action="tema-toggle">${ico(esc_?'sun':'moon')}<span>${esc_?'Tema claro':'Tema escuro'}</span></button>
       <button class="conta-it" role="menuitem" data-action="go-password">${ico('key')}<span>Alterar password</span></button>
@@ -2160,6 +2160,7 @@ function renderSecretaria(){
     <div class="hdr"><div class="hdr-accent"></div><div class="hdr-title">Secretaria comercial</div>
       <button class="hdr-btn hdr-ic" data-action="refresh" title="Atualizar" aria-label="Atualizar">${ico('refresh')}</button>
       ${contaHTML()}</div>
+    ${secFinTabs(S.screen==='financeiro'?'fin':'sec')}
     <div class="content"><div class="sec-wrap">
       <div class="sec-top">
         <div class="sec-mes">
@@ -2681,7 +2682,9 @@ function triPDF(){
   setTimeout(()=>{try{w.print();}catch(e){}},350);
 }
 // ===== Utilizador Financeiro: só EOTs, só leitura =====
-function isFinanceiro(){return S.me&&S.me.role==='financeiro';}
+function isFinanceiro(){return !!(S.me&&(S.me.role==='financeiro'||S.me.financeiro===true));}
+function secFinTabs(cur){if(!(S.me&&S.me.role==='secretario'&&isFinanceiro()))return'';
+  return`<nav class="top-tabs" aria-label="Áreas"><button class="top-tab ${cur==='sec'?'on':''}" data-action="go-sec">${ico('inbox')}<span>Secretaria comercial</span></button><button class="top-tab ${cur==='fin'?'on':''}" data-action="go-fin">${ico('repeat')}<span>EOTs</span></button></nav>`;}
 function renderFinanceiro(){
   const F=Object.assign({prazo:'',fase:'',resp:'',mapa:'1'},S.finF||{});
   const fE=n=>n==null?'—':Number(n).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
@@ -2716,6 +2719,7 @@ function renderFinanceiro(){
     <div class="hdr"><div class="hdr-accent"></div><div class="hdr-title">EOTs · contratos a terminar</div>
       <button class="hdr-btn hdr-ic" data-action="refresh" title="Atualizar" aria-label="Atualizar">${ico('refresh')}</button>
       ${contaHTML()}</div>
+    ${secFinTabs(S.screen==='financeiro'?'fin':'sec')}
     <div class="content"><div class="sec-wrap">
       <div class="sec-top"><span class="fin-ctx">BMW Motorrad · Aveiro</span><span class="sec-ro">Clica num contrato para ver, editar e comentar</span></div>
       ${S.eotErr?`<div class="mg-aviso">Não consegui ler as EOTs (${esc(S.eotErr)}). Fala com o chefe de vendas.</div>`:''}
@@ -7453,6 +7457,7 @@ function render(){
   const ce=app.querySelector('.content'),st=ce?ce.scrollTop:0,ps=app.dataset.screen||'';
   const screens={loading:'<div class="content"><div class="center-screen"><p style="color:var(--text3)">A carregar...</p></div></div>',login:renderLogin,financeiro:renderFinanceiro,list:renderList,detail:renderDetail,edit:renderEdit,dashboard:renderDashboard,escala:renderEscala,password:renderPassword,ventregas:renderMinhasEntregas,vcom:renderMinhasComissoes,semacesso:renderSemAcesso,ficha:renderFichaMargem,secretaria:renderSecretaria,assessor:renderAssessor,stockvend:renderStockVend,evento:renderEventoVend,veot:renderMinhasEot,vstockeq:renderStockEqVend};
   if(S.screen==='ventregas'&&S.me&&!isAdmin())S.screen='list';
+  if(S.screen==='financeiro'&&S.me&&!isFinanceiro())S.screen=ecraInicial();
   const fn=screens[S.screen];
   const mb=app.querySelector('.eotm-body'),mst=mb?mb.scrollTop:0;
   app.innerHTML=(typeof fn==='function'?(V_SHELL[S.screen]&&S.me&&!isAdmin()?vEnvolver(fn(),V_SHELL[S.screen]):fn()):fn)+(S.eotAberto&&S.me?eotModalHTML():'');
@@ -7682,6 +7687,8 @@ function bindEvents(){
       case'seq-pav-repor':seqPrecoManual(el.dataset.ref,'');break;
       case'seq-registar':seqRegistar();break;
       case'seqf-abrir':seqForaAbrir();break;
+      case'go-sec':setState({screen:'secretaria'});break;
+      case'go-fin':if(isFinanceiro())setState({screen:'financeiro'});break;
       case'eot-abrir':eotAbrir(el.dataset.c);break;
       case'eotm-fechar':eotFechar();break;
       case'eotm-guardar':eotModalGuardar();break;
@@ -7877,7 +7884,7 @@ function bindEvents(){
 
 function collectFormData(){document.querySelectorAll('input[data-field],select[data-field],textarea[data-field]').forEach(el=>{const k=el.dataset.field;let v=el.value;if(el.dataset.fmt==='month'&&v)v=v.replace('-','/');S.form[k]=v})}
 
-function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes(),loadTransicoes(),loadNorma(),loadFichasIdx(),loadEot()]):(isVendedor()?Promise.all([loadTeam(),loadEventos(),loadInscricoes(),loadInscricoesAll(),loadMargens(),loadEntregas(),loadEquipamento(),loadFichasIdx(),loadEot()]):(S.me&&S.me.role==='secretario'?Promise.all([loadTeam(),loadEntregas()]):(S.me&&S.me.role==='assessor'?Promise.all([loadTeam(),loadEquipamento()]):(S.me&&S.me.role==='financeiro'?Promise.all([loadTeam(),loadEot()]):Promise.all([loadTeam()])))));return extra}).then(function(){return loadRecords()}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:ecraInicial(),loading:false,statusFilter:isAdmin()?S.statusFilter:'_hoje'})})}
+function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes(),loadTransicoes(),loadNorma(),loadFichasIdx(),loadEot()]):(isVendedor()?Promise.all([loadTeam(),loadEventos(),loadInscricoes(),loadInscricoesAll(),loadMargens(),loadEntregas(),loadEquipamento(),loadFichasIdx(),loadEot()]):(S.me&&S.me.role==='secretario'?Promise.all([loadTeam(),loadEntregas(),...(isFinanceiro()?[loadEot()]:[])]):(S.me&&S.me.role==='assessor'?Promise.all([loadTeam(),loadEquipamento()]):(S.me&&S.me.role==='financeiro'?Promise.all([loadTeam(),loadEot()]):Promise.all([loadTeam()])))));return extra}).then(function(){return loadRecords()}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:ecraInicial(),loading:false,statusFilter:isAdmin()?S.statusFilter:'_hoje'})})}
 (function(){
   S.screen='loading';render();
   // Link de recuperacao do Supabase: #access_token=...&type=recovery
