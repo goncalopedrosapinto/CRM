@@ -1905,6 +1905,7 @@ a{color:var(--blue)}
 .neg-chips .vchip{flex-shrink:0}
 .vh-sec .btn-ghost{font-size:12px}
 .coms-chefe{margin:0 16px 8px}
+.en-grp{border-left:3px solid var(--blue)}.en-grp-usadas{border-left-color:var(--amber)}.en-grp-s{font-weight:500;color:var(--text3);font-size:12px;margin-left:6px}
 </style>
 </head>
 <body>
@@ -6146,7 +6147,8 @@ function renderDashboard(){
     ['funil','🔻','Funil'],
     ['fechados','🏁','Negócios Fechados'],
     ['saude','❤️','Saúde da equipa'],
-    ['leads','🎯','Leads / Campanhas'],
+    ['leads','🎯','Leads'],
+    ['eots','🔁','EOTs'],
     ['margem','💶','Margem Usadas'],
     ['premios','🏆','Os Meus Prémios'],
     ['perdidos','❌','Perdidos'],
@@ -6163,7 +6165,7 @@ function renderDashboard(){
   ];
   const NAV_GRUPOS=[
     ['Diário',['home','atratar']],
-    ['Negócio',['funil','leads','vendas']],
+    ['Negócio',['funil','leads','eots','vendas']],
     ['Recursos',['usadas','stockeq','demos','evento','escala']],
     ['Ferramentas',['ficha','comissoesg','exportar']]
   ];
@@ -6176,6 +6178,7 @@ function renderDashboard(){
   const badgeDe=id=>{
     if((id==='pendentes'||id==='atratar')&&nPend)return`<span class="gpp-nav-badge alert">${nPend}</span>`;
     if(id==='perdidos'&&nPerd)return`<span class="gpp-nav-badge">${nPerd}</span>`;
+    if(id==='eots'){const n=(S.eot||[]).filter(x=>x.no_mapa!==false&&!x.responsavel_id&&!EOT_FECHO.includes(x.fase)).length;if(n)return`<span class="gpp-nav-badge alert" title="EOTs por atribuir">${n}</span>`;}
     return'';
   };
   const _grp=grupoDe(sec);
@@ -6594,11 +6597,7 @@ function renderDashboard(){
       </div>
     </div>`;
   }
-  function leadsView(){
-    const _lt=`<div class="sec-tabs"><button class="sec-tab ${S.leadsTab!=='eot'?'on':''}" data-action="leads-tab" data-t="camp">Campanhas</button><button class="sec-tab ${S.leadsTab==='eot'?'on':''}" data-action="leads-tab" data-t="eot">EOTs${(()=>{const n=(S.eot||[]).filter(x=>x.no_mapa!==false&&!x.responsavel_id&&!EOT_FECHO.includes(x.fase)).length;return n?` <span class="sec-tab-n">${n}</span>`:'';})()}</button></div>`;
-    if(S.leadsTab==='eot')return _lt+eotView();
-    return _lt+leadsView0();
-  }
+  function leadsView(){return leadsView0();}
   function leadsView0(){
     const todas=recs.filter(r=>r.campanha&&String(r.campanha).trim());
     const camps=[...new Set(todas.map(r=>String(r.campanha).trim()))].sort().reverse();
@@ -6645,7 +6644,9 @@ function renderDashboard(){
   function entregasView(){
     const arr=recs.filter(r=>r.status==='Carteira'&&noPer(r.mes1))
       .map(r=>({r,p:entProgresso(r)}))
-      .sort((a,b)=>a.p.pct-b.p.pct||String(a.r.id_cliente||'').localeCompare(String(b.r.id_cliente||'')));
+      // ordem FIXA (não muda ao preencher): MN → MD → MU, depois mês de entrega, depois cliente
+      .sort((a,b)=>{const t=x=>({MN:0,MD:1,MU:2}[x.r.type]??3);return t(a)-t(b)||String(a.r.mes1||'').localeCompare(String(b.r.mes1||''))||String(a.r.id_cliente||'').localeCompare(String(b.r.id_cliente||''),'pt')||(a.r.id-b.r.id);});
+    const grpEnt=[['Novas · MN + MD',x=>x.r.type!=='MU','novas'],['Usadas · MU',x=>x.r.type==='MU','usadas']];
     const completos=arr.filter(x=>x.p.pct===100).length;
     const chip=(on,label,action,extra)=>`<button class="en-chip ${on?'on':''}" data-action="${action}" ${extra}>${on?'✓':'○'} ${label}</button>`;
     const cartao=({r,p})=>{
@@ -6681,8 +6682,8 @@ function renderDashboard(){
     return`${mesBar}
       <div class="gpp-tot-head">Entregas · ${esc(perLbl)} · <b>${arr.length}</b> em carteira${arr.length?` · <span style="color:var(--green)">${completos} prontas</span> · <span style="color:var(--amber)">${arr.length-completos} com pendentes</span>`:''}</div>
       ${S.entregasErr?`<div class="mg-aviso">⚠️ Não consegui ler a tabela de entregas (${esc(S.entregasErr)}). Se ainda não correste o SQL da tabela <b>entregas</b> no Supabase, é isso.</div>`:''}
-      ${arr.length===0?'<div class="gpp-empty">Sem negócios em carteira neste mês.</div>':`<div class="en-list">${arr.map(cartao).join('')}</div>`}
-      <div class="gpp-pend-desc" style="margin:0 16px 16px">Só para ti — os vendedores não veem isto. Ordenado do mais atrasado para o mais pronto. O Bizagi lê-se do próprio negócio; o FS só conta quando é financiado. Clica no nome para abrir o negócio.</div>`;
+      ${arr.length===0?'<div class="gpp-empty">Sem negócios em carteira neste mês.</div>':grpEnt.map(([lb,fn,cls])=>{const L=arr.filter(fn);if(!L.length)return'';const ok=L.filter(x=>x.p.pct===100).length;return`<div class="gpp-sub-h en-grp en-grp-${cls}">${lb} · <b>${L.length}</b> <span class="en-grp-s">${ok} pronta${ok!==1?'s':''}</span></div><div class="en-list">${L.map(cartao).join('')}</div>`;}).join('')}
+      <div class="gpp-pend-desc" style="margin:0 16px 16px">Só para ti — os vendedores não veem isto. Ordem fixa: MN e MD primeiro, depois MU; dentro de cada grupo por mês de entrega e cliente. O Bizagi lê-se do próprio negócio; o FS só conta quando é financiado. Clica no nome para abrir o negócio.</div>`;
   }
   function saudeEquipa(){
     const el=r=>!r.venda_direta&&!r.automatricula;
@@ -7564,6 +7565,7 @@ function renderDashboard(){
   else if(sec==='ficha')body=renderFichaMargem();
   else if(sec==='entregas')body=entregasView();
   else if(sec==='leads')body=leadsView();
+  else if(sec==='eots')body=eotView();
   else if(sec==='stockeq')body=stockEqView();
   else if(sec==='margem')body=margemView();
   else if(sec==='premios')body=premiosView();
@@ -7906,7 +7908,7 @@ function bindEvents(){
       case'retail-ord':{const o=el.dataset.o;if(S.retailOrd===o)setState({retailDir:S.retailDir==='asc'?'desc':'asc'});else setState({retailOrd:o,retailDir:'asc'});break;}
       case'gpp-mais':setState({gppMais:!S.gppMais});break;
       case'gpp-mais-close':setState({gppMais:false});break;
-      case'gpp-sec':{let s=el.dataset.s;if(GRUPOS_SEC[s])s=((S.gppTab||{})[s])||GRUPOS_SEC[s].tabs[0][0];{const _g=grupoDe(s);if(_g)S.gppTab=Object.assign({},S.gppTab||{},{[_g]:s});}S.gppBusca='';S.gppMais=false;if(s==='escala'){setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}else if(s==='stock'||s==='depreciacao'||s==='margem'){setState({gppSec:s,dashAlertOpen:null});if(!S.stockLoaded)loadStock().then(()=>render());}
+      case'gpp-sec':{let s=el.dataset.s;if(s==='eots')loadEot().then(()=>render());if(GRUPOS_SEC[s])s=((S.gppTab||{})[s])||GRUPOS_SEC[s].tabs[0][0];{const _g=grupoDe(s);if(_g)S.gppTab=Object.assign({},S.gppTab||{},{[_g]:s});}S.gppBusca='';S.gppMais=false;if(s==='escala'){setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}else if(s==='stock'||s==='depreciacao'||s==='margem'){setState({gppSec:s,dashAlertOpen:null});if(!S.stockLoaded)loadStock().then(()=>render());}
       else if(s==='premios'){setState({gppSec:s,dashAlertOpen:null});loadPremiosMes().then(()=>render());}
       else if(s==='entregas'){setState({gppSec:s,dashAlertOpen:null});loadEntregas().then(()=>render());}
       else if(s==='comissoes'){setState({gppSec:s,dashAlertOpen:null});Promise.all([loadMargens(),loadEquipamento(),loadAssessores()]).then(()=>render());}else if(s==='evento'){setState({gppSec:s,dashAlertOpen:null,eventoErr:''});const ev=eventoAtual();if(ev){S.eventoSel=ev.id;loadRanking(ev.id).then(()=>render());}}else if(s==='funil'){setState({gppSec:s,dashAlertOpen:null});loadTransicoes().then(()=>render());}else{setState({gppSec:s,dashAlertOpen:null});}break}
