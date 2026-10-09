@@ -1906,6 +1906,10 @@ a{color:var(--blue)}
 .vh-sec .btn-ghost{font-size:12px}
 .coms-chefe{margin:0 16px 8px}
 .en-grp{border-left:3px solid var(--blue)}.en-grp-usadas{border-left-color:var(--amber)}.en-grp-s{font-weight:500;color:var(--text3);font-size:12px;margin-left:6px}
+
+.nv-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--safe-b) + 20px);z-index:350;display:flex;align-items:center;gap:10px;max-width:calc(100vw - 24px);padding:8px 8px 8px 14px;border-radius:var(--r2);background:var(--text);color:var(--surface);font-size:13px;font-weight:600;box-shadow:var(--elev2)}
+.nv-bar .ic{flex-shrink:0}
+@media(max-width:700px){.nv-bar{bottom:calc(var(--safe-b) + 76px);flex-wrap:wrap;width:calc(100vw - 24px)}}
 </style>
 </head>
 <body>
@@ -2006,6 +2010,85 @@ function ymCurto(ym){const m=String(ym||'').match(/^(\d{4})[\/-](\d{2})/);return
 const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av'],biz:['Bizagi','md'],entrega_risco:['Atraso','al'],sem_chassis:['Chassis','av'],atrasadas:['Atraso','al'],sem_pvp:['PVP','av'],eot:['EOT','neu'],ent:['Entrega','mn'],recont:['Re-contactar','av']};
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
+// ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
+const APP_VERSION='2026-10-09-b';
+const AUTO_INTERVALO=60*60*1000;
+let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
+['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
+function aEscrever(){const a=document.activeElement;return !!(a&&a.closest&&a.closest('#app')&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));}
+// o que está "em aberto" e ainda não foi gravado
+function rascunhoAtual(){
+  if(!S.me)return null;
+  const r={uid:S.me.id,quando:Date.now(),screen:S.screen,gppSec:S.gppSec,statusFilter:S.statusFilter,selId:S.selected?S.selected.id:null,
+    scroll:(document.querySelector('#app .content')||{}).scrollTop||0};
+  if(S.screen==='edit'){try{collectFormData();}catch(e){}r.form=S.form;r.formCompleto=!!S.formCompleto;r.openGroups=S.openGroups;r.fmRascunho=S.fmRascunho||null;}
+  if(S.eotAberto){r.eotAberto=S.eotAberto;r.eotEd=S.eotEd||{};r.eotCom=S.eotCom||'';}
+  if(S.negCom)r.negCom=S.negCom;
+  if(S.seqFora)r.seqFora=S.seqFora;
+  return r;
+}
+function guardarRascunho(){try{const r=rascunhoAtual();if(r)sessionStorage.setItem('bm_aberto',JSON.stringify(r));}catch(e){}}
+function restaurarRascunho(){
+  let r=null;try{r=JSON.parse(sessionStorage.getItem('bm_aberto')||'null');sessionStorage.removeItem('bm_aberto');}catch(e){}
+  if(!r||!S.me||r.uid!==S.me.id||Date.now()-r.quando>12*3600*1000)return;
+  const sel=r.selId!=null?(S.records||[]).find(x=>String(x.id)===String(r.selId))||null:null;
+  const ok=['dashboard','list','detail','edit','veot','vstockeq','vcom','ficha','secretaria','assessor','financeiro','stockvend','escala'].includes(r.screen);
+  if(!ok)return;
+  if((r.screen==='detail'||(r.screen==='edit'&&r.selId!=null))&&!sel)return;
+  Object.assign(S,{screen:r.screen,gppSec:r.gppSec||S.gppSec,statusFilter:r.statusFilter||S.statusFilter,selected:sel});
+  if(r.screen==='edit'&&r.form){S.form=r.form;S.formCompleto=r.formCompleto;S.openGroups=r.openGroups||S.openGroups;if(r.fmRascunho)S.fmRascunho=r.fmRascunho;}
+  if(r.eotAberto&&(S.eot||[]).some(x=>String(x.contrato)===String(r.eotAberto))){S.eotAberto=r.eotAberto;S.eotEd=r.eotEd||{};S.eotCom=r.eotCom||'';loadEotHist(r.eotAberto);}
+  if(r.negCom)S.negCom=r.negCom;
+  if(r.seqFora)S.seqFora=r.seqFora;
+  render();
+  if(r.scroll){setTimeout(()=>{const c=document.querySelector('#app .content');if(c)c.scrollTop=r.scroll;},30);}
+  const tinha=r.form||r.eotAberto||r.negCom||r.seqFora;
+  toast(tinha?'Plataforma atualizada — o que tinhas em aberto continua aqui':'Plataforma atualizada');
+}
+window.addEventListener('pagehide',guardarRascunho);
+window.addEventListener('beforeunload',guardarRascunho);
+// atualiza os dados sem piscar o ecrã e sem tirar o que está a ser escrito
+async function atualizarDadosSilencioso(){
+  if(!S.me||!S.token)return;
+  const rl=S.me.role;const L=[];
+  if(isAdmin())L.push(loadObjetivos(),loadObjEquipa(),loadTeam(),loadNps(),loadEot(),loadEntregas(),loadMargens(),loadEquipamento(),loadComsRecentes());
+  else if(isVendedor())L.push(loadTeam(),loadEot(),loadEntregas(),loadMargens(),loadEquipamento(),loadComsRecentes());
+  else if(rl==='secretario')L.push(loadTeam(),loadEntregas(),...(isFinanceiro()?[loadEot()]:[]));
+  else if(rl==='assessor')L.push(loadTeam(),loadEquipamento());
+  else if(isFinanceiro())L.push(loadTeam(),loadEot());
+  try{
+    const rec=(rl==='assessor'||rl==='financeiro')?null:await supabaseApi('GET',rl==='secretario'?'/negocios_secretaria?select=*&order=neg.desc.nullslast':'/baviera_control?select=*&order=neg.desc.nullslast');
+    await Promise.all(L.map(p=>p&&p.catch?p.catch(()=>{}):p));
+    if(rec){S.records=rec;if(S.selected){const n=rec.find(x=>String(x.id)===String(S.selected.id));if(n)S.selected=n;}}
+  }catch(e){return;}
+  S._ultimaAtualizacao=new Date();
+  if(aEscrever()){S._renderPend=true;}else renderSeguro();
+}
+// render em segundo plano: guarda primeiro o que está escrito no formulário (ainda não gravado)
+function renderSeguro(){if(S.screen==='edit'){try{collectFormData();}catch(e){}}const ec=document.getElementById('eotm-com');if(ec)S.eotCom=ec.value;const nc=document.getElementById('neg-com');if(nc)S.negCom=nc.value;render();}
+document.addEventListener('focusout',()=>{if(S&&S._renderPend){setTimeout(()=>{if(!aEscrever()&&S._renderPend){S._renderPend=false;renderSeguro();}},150);}});
+function mostrarBarraVersao(){const app=document.getElementById('app');if(!app||app.querySelector('.nv-bar'))return;const d=document.createElement('div');d.innerHTML=novaVersaoHTML();if(d.firstElementChild)app.appendChild(d.firstElementChild);}
+// existe uma versão nova da plataforma publicada?
+async function verificarVersao(){
+  if(location.protocol==='file:')return null;
+  try{const r=await fetch(location.href.split('#')[0].split('?')[0]+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return null;
+    const t=await r.text();const m=t.match(/const APP_VERSION='([^']+)'/);return m&&m[1]!==APP_VERSION?m[1]:null;}catch(e){return null;}
+}
+function recarregarComRascunho(){guardarRascunho();location.reload();}
+async function cicloAutomatico(forcar){
+  if(!S.me||!S.token)return;
+  if(!forcar&&Date.now()-_ultimoAuto<AUTO_INTERVALO)return;
+  _ultimoAuto=Date.now();
+  const v=await verificarVersao();
+  if(v){_novaVersao=v;
+    const parado=document.hidden||Date.now()-_ultimaAtiv>3*60*1000;
+    if(parado&&!aEscrever()){recarregarComRascunho();return;}
+    mostrarBarraVersao();return;}
+  atualizarDadosSilencioso();
+}
+setInterval(()=>cicloAutomatico(false),5*60*1000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)cicloAutomatico(false);else if(_novaVersao&&!aEscrever())recarregarComRascunho();});
+function novaVersaoHTML(){return _novaVersao?`<div class="nv-bar" role="status">${ico('refresh','ic-sm')}<span>Há uma versão nova da plataforma. O que tens em aberto fica guardado.</span><button class="btn btn-orange btn-sm" data-action="nv-atualizar">Atualizar agora</button></div>`:'';}
 const STATUSES=['Retail','Carteira','Quente','Morno','Frio','Perdido'];
 const SDOT={Retail:'var(--green)',Carteira:'var(--blue)',Quente:'var(--red)',Morno:'var(--amber)',Frio:'var(--slate)',Matricula:'var(--purple)',Perdido:'#6b7280'};
 const MOTIVOS_PERDA=['Preço','Concorrência','Prazo de entrega','Financiamento','Retoma','Desistência','Adiado','Outro'];
@@ -4357,7 +4440,7 @@ function renderCard(r){
   </div>`}
 
 function origemVeiculo(r){if(!r)return'—';if(r.type==='MU')return'Usada';if(r.type==='MD')return'DEMO';if(r.stock==='Sim')return'Stock';if(r.enc)return'Encomenda';return'—';}
-function textoMatricula(r){r=r||{};return['*Pedido de matrícula*','NIF: '+(r.nif||'—'),'CC: '+(r.cc||'—'),'Nome: '+(r.id_cliente||'—'),'Chassis/VIN: '+(r.chas||'—'),'Nº Bizagi: '+(r.biz||'—')].join('\n');}
+function textoMatricula(r){r=r||{};return['*Pedido de matrícula*','NIF: '+(r.nif||'—'),'CC: '+(r.cc||'—'),'Nome: '+(r.id_cliente||'—'),'Chassis/Encomenda: '+(String(r.chas||'').trim()?String(r.chas).trim():(String(r.enc||'').trim()?String(r.enc).trim()+' (encomenda)':'—')),'Nº Bizagi: '+(r.biz||'—')].join('\n');}
 function tipoLabel(t){return{MN:'MN - Mota Nova',MD:'MD - Mota Demo',MU:'MU - Mota Usada'}[t]||(t||'—');}
 function textoVenda(r){r=r||{};const modelo=[r.model,r.version].filter(Boolean).join(' ')||'—';const ret=r.retoma==='Sim'?('Retoma'+(r.retoma_modelo?' '+r.retoma_modelo:'')+(r.retoma_mat?' ('+r.retoma_mat+')':'')):'Sem Retoma';return['*Comunicação de venda*','Modelo: '+modelo,'Tipo: '+tipoLabel(r.type),ret,'Pagamento: '+(r.fin||'—'),'Nome: '+(r.id_cliente||'—')].join('\n');}
   function pedAutLista(){
@@ -7606,7 +7689,7 @@ function render(){
   if(S.screen==='financeiro'&&S.me&&!isFinanceiro())S.screen=ecraInicial();
   const fn=screens[S.screen];
   const mb=app.querySelector('.eotm-body'),mst=mb?mb.scrollTop:0;
-  app.innerHTML=(typeof fn==='function'?(V_SHELL[S.screen]&&S.me&&!isAdmin()?vEnvolver(fn(),V_SHELL[S.screen]):fn()):fn)+(S.eotAberto&&S.me?eotModalHTML():'');
+  app.innerHTML=(typeof fn==='function'?(V_SHELL[S.screen]&&S.me&&!isAdmin()?vEnvolver(fn(),V_SHELL[S.screen]):fn()):fn)+(S.eotAberto&&S.me?eotModalHTML():'')+(S.me?novaVersaoHTML():'');
   if(mb&&S.eotAberto){const nb=app.querySelector('.eotm-body');if(nb)nb.scrollTop=mst;}
   app.dataset.screen=S.screen;
   if(ps===S.screen){const nc=app.querySelector('.content');if(nc)nc.scrollTop=st}
@@ -7835,6 +7918,7 @@ function bindEvents(){
       case'seq-pav-repor':seqPrecoManual(el.dataset.ref,'');break;
       case'seq-registar':seqRegistar();break;
       case'seqf-abrir':seqForaAbrir();break;
+      case'nv-atualizar':recarregarComRascunho();break;
       case'go-sec':setState({screen:'secretaria'});break;
       case'go-fin':if(isFinanceiro())setState({screen:'financeiro'});break;
       case'eot-abrir':eotAbrir(el.dataset.c);break;
@@ -8040,7 +8124,7 @@ function bindEvents(){
 
 function collectFormData(){document.querySelectorAll('input[data-field],select[data-field],textarea[data-field]').forEach(el=>{const k=el.dataset.field;let v=el.value;if(el.dataset.fmt==='month'&&v)v=v.replace('-','/');S.form[k]=v})}
 
-function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadComsRecentes(),loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes(),loadTransicoes(),loadNorma(),loadFichasIdx(),loadEot()]):(isVendedor()?Promise.all([loadComsRecentes(),loadTeam(),loadEventos(),loadInscricoes(),loadInscricoesAll(),loadMargens(),loadEntregas(),loadEquipamento(),loadFichasIdx(),loadEot()]):(S.me&&S.me.role==='secretario'?Promise.all([loadTeam(),loadEntregas(),...(isFinanceiro()?[loadEot()]:[])]):(S.me&&S.me.role==='assessor'?Promise.all([loadTeam(),loadEquipamento()]):(S.me&&S.me.role==='financeiro'?Promise.all([loadTeam(),loadEot()]):Promise.all([loadTeam()])))));return extra}).then(function(){return loadRecords()}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:ecraInicial(),loading:false,statusFilter:isAdmin()?S.statusFilter:'_hoje'})})}
+function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadComsRecentes(),loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes(),loadTransicoes(),loadNorma(),loadFichasIdx(),loadEot()]):(isVendedor()?Promise.all([loadComsRecentes(),loadTeam(),loadEventos(),loadInscricoes(),loadInscricoesAll(),loadMargens(),loadEntregas(),loadEquipamento(),loadFichasIdx(),loadEot()]):(S.me&&S.me.role==='secretario'?Promise.all([loadTeam(),loadEntregas(),...(isFinanceiro()?[loadEot()]:[])]):(S.me&&S.me.role==='assessor'?Promise.all([loadTeam(),loadEquipamento()]):(S.me&&S.me.role==='financeiro'?Promise.all([loadTeam(),loadEot()]):Promise.all([loadTeam()])))));return extra}).then(function(){return loadRecords()}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:ecraInicial(),loading:false,statusFilter:isAdmin()?S.statusFilter:'_hoje'});_ultimoAuto=Date.now();restaurarRascunho();})}
 (function(){
   S.screen='loading';render();
   // Link de recuperacao do Supabase: #access_token=...&type=recovery
