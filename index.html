@@ -2011,7 +2011,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-09-b';
+const APP_VERSION='2026-10-13-a';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -6486,13 +6486,14 @@ function renderDashboard(){
       <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}">${esc(r.id_cliente||'—')}${r.venda_direta?'<span class="vd-badge">🤝</span>':''}</td>
       <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}">${esc(r.model||'')} ${esc(r.version||'')}</td>
       <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}"><b>${esc(r.mat||'—')}</b></td>
+      ${comStatus?`<td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}">${String(r.enc||'').trim()?`<span class="sec-mono">${esc(String(r.enc).trim())}</span>`:'<span style="color:var(--text3)">—</span>'}</td>`:''}
       <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}"><span class="gpp-tipo-badge">${esc(r.type||'?')}</span></td>
       <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}">${vendTag(r.vendedor_id)}</td>
       ${comStatus?`<td class="st-cell"><input class="st-input" data-status-mota="${r.id}" value="${esc(r.status_mota||'')}" placeholder="—" title="Status atual da mota (ex: 150, 165, 190)"></td>`:''}
       <td class="gpp-obs-cell"><input class="gpp-obs-input" data-obs-gestor="${r.id}" value="${esc(r.obs_gestor||'')}" placeholder="Nota do chefe…"></td></tr>`;
     const bloco=(titulo,lista,cor)=>`
       <div class="gpp-sub-h" style="border-left:3px solid ${cor}">${titulo} · <b>${lista.length}</b></div>
-      ${lista.length?`<div class="gpp-card"><table class="gpp-ltable"><thead><tr><th>Cliente</th><th>Modelo</th><th>Matrícula</th><th>Tipo</th><th>Vendedor</th>${comStatus?'<th class="st-th">Status</th>':''}<th>Obs. Gestor</th></tr></thead><tbody>${lista.map(linha).join('')}</tbody></table></div>`:'<div class="gpp-empty">Sem registos.</div>'}`;
+      ${lista.length?`<div class="gpp-card"><table class="gpp-ltable"><thead><tr><th>Cliente</th><th>Modelo</th><th>Matrícula</th>${comStatus?'<th>Encomenda</th>':''}<th>Tipo</th><th>Vendedor</th>${comStatus?'<th class="st-th">Status</th>':''}<th>Obs. Gestor</th></tr></thead><tbody>${lista.map(linha).join('')}</tbody></table></div>`:'<div class="gpp-empty">Sem registos.</div>'}`;
     return`${mesBar}
       <div class="gpp-tot-head">${status} · ${esc(perLbl)} · <b>${arr.length}</b> mota${arr.length!==1?'s':''}</div>
       ${bloco('Novas (MN+MD)',novas,'var(--blue)')}
