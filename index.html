@@ -1925,6 +1925,13 @@ a{color:var(--blue)}
 .cf-pdfmenu small{font-size:11px;color:var(--text3)}
 .eq-camp[disabled]{opacity:.6;cursor:not-allowed}
 @media (max-width:760px){.cf-pdfmenu{left:0;right:auto;min-width:min(260px,calc(100vw - 32px))}}
+.mr-box{margin:12px 16px 4px;border:1px solid var(--border2);border-left:4px solid var(--orange);border-radius:12px;background:var(--surface);overflow:hidden}
+.mr-h{display:flex;flex-direction:column;gap:2px;padding:10px 14px;border-bottom:1px solid var(--border);font-size:14px}.mr-h small{color:var(--text3);font-size:12px}
+.mr-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--border)}.mr-row:last-child{border-bottom:0}
+.mr-txt{flex:1;min-width:220px;display:flex;flex-direction:column;gap:2px;font-size:13px}.mr-sub{color:var(--text2);font-size:12px}
+.mr-acts{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.mr-inp{width:150px;min-height:36px}
+.mr-nota{margin-top:6px;font-size:12px;color:var(--text2);background:var(--surface2);border-radius:8px;padding:6px 10px}.mr-nota.pend{background:var(--orange-bg);color:var(--orange2)}.mr-nota.ok{background:var(--green-bg);color:var(--green)}
+@media (max-width:760px){.mr-acts{width:100%}.mr-inp{flex:1}}
 .lemb-box{margin:12px 16px 4px;display:flex;flex-direction:column;gap:8px}
 .lemb-row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--red);border-radius:var(--r2);box-shadow:var(--elev1)}
 .lemb-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.lemb-txt b{font-size:14px}.lemb-txt span{font-size:12.5px;color:var(--text2)}
@@ -2030,7 +2037,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-14-b';
+const APP_VERSION='2026-10-14-c';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -2946,6 +2953,53 @@ function lembretesChefe(){
   if(!lembFeito('com',ym)&&!comFechado(comYM))out.push({k:'com',ym,alvo:comYM,tag:'Comissões',tit:`Tratar das comissões de ${ymLongo(comYM)}`,sub:`Dia ${LEMB_DIA}: em ${ymLongo(ym)} fecham-se as comissões de ${ymLongo(comYM)}.`});
   if(!lembFeito('esc',ym))out.push({k:'esc',ym,alvo:escYM,tag:'Escala',tit:`Tratar da escala de ${ymLongo(escYM)}`,sub:`Dia ${LEMB_DIA}: preparar a escala do próximo mês.`});
   return out;}
+// ---- Mês de referência: o vendedor propõe, o chefe valida (trigger bc_mes1_validacao no Supabase) ----
+function mrTxt(v){return /^\d{4}\/\d{2}$/.test(String(v||''))?ymCurto(v):'sem mês';}
+function mesRefLista(){if(!isAdmin())return[];
+  return (S.records||[]).filter(r=>r.status==='Carteira'&&(r.mes1_pedido||r.mes1_validado===false))
+    .sort((a,b)=>(b.mes1_pedido?1:0)-(a.mes1_pedido?1:0)||String(a.mes1||'').localeCompare(String(b.mes1||''))||String(a.id_cliente||'').localeCompare(String(b.id_cliente||''),'pt'));}
+function mesRefHTML(){const L=mesRefLista();if(!L.length)return'';
+  const dt=v=>{try{return new Date(v).toLocaleDateString('pt-PT',{day:'2-digit',month:'2-digit'});}catch(e){return'';}};
+  return`<div class="mr-box"><div class="mr-h"><span>Mês de referência a validar · <b>${L.length}</b></span><small>A tua previsão só muda quando confirmas. Podes acertar o mês antes de confirmar.</small></div>
+  ${L.map(r=>{const ped=!!r.mes1_pedido;const prop=ped?(/^\d{4}\/\d{2}$/.test(r.mes1_pedido)?r.mes1_pedido:''):(r.mes1||'');
+    return`<div class="mr-row"><span class="atag ${ped?'atag-al':''}">${ped?'Pedido':'Novo'}</span>
+      <div class="mr-txt"><div><b class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}">${esc(r.id_cliente||'—')}</b> · ${esc([r.model,r.version].filter(Boolean).join(' '))} <span class="gpp-tipo-badge">${esc(r.type||'?')}</span> · ${vendTag(r.vendedor_id)}</div>
+      <span class="mr-sub">${ped?`Pede mudar <b>${esc(mrTxt(r.mes1))}</b> → <b>${esc(mrTxt(r.mes1_pedido))}</b>${r.mes1_pedido_em?' · '+esc(dt(r.mes1_pedido_em)):''}`:(r.mes1?`Definiu <b>${esc(mrTxt(r.mes1))}</b> ao pôr em carteira`:'Está em carteira sem mês definido')}</span></div>
+      <div class="mr-acts"><input type="month" class="norma-inp mr-inp" id="mr-${r.id}" value="${esc(prop.replace('/','-'))}" aria-label="Mês de referência de ${esc(r.id_cliente||'')}">
+      <button class="btn btn-green btn-sm" data-action="mr-ok" data-id="${r.id}">${ped?'Aprovar':'Confirmar'}</button>
+      ${ped?`<button class="btn btn-outline btn-sm" data-action="mr-nao" data-id="${r.id}">Recusar</button>`:''}</div></div>`;}).join('')}</div>`;}
+function mrErro(e){alert('Erro: '+e.message+(/mes1_/.test(String(e.message))?'\n\nFalta correr o SQL mes_referencia_validacao.sql no Supabase.':''));}
+async function mrNota(id,txt){try{await supabaseApi('POST','/negocio_historico',{negocio_id:Number(id),tipo:'comentario',texto:txt});if(S.negHist)delete S.negHist[String(id)];}catch(e){}}
+async function mrConfirmar(id){
+  const r=(S.records||[]).find(x=>String(x.id)===String(id));if(!r)return;
+  const el=document.getElementById('mr-'+id);const v=el&&el.value?el.value.replace('-','/'):'';
+  if(!v){alert('Escolhe o mês de referência antes de confirmar.');return;}
+  const antes=r.mes1||null,ped=r.mes1_pedido||null;
+  const body={mes1_validado:true,mes1_pedido:null,mes1_pedido_em:null,mes1_pedido_por:null};if(v!==antes)body.mes1=v;
+  try{await supabaseApi('PATCH','/baviera_control?id=eq.'+id,body);Object.assign(r,body);
+    let txt='';
+    if(ped)txt=v===ped?`Mês de referência: pedido aprovado — passa para ${mrTxt(v)}.`:(v===antes?`Mês de referência: pedido de ${mrTxt(ped)} recusado — fica ${mrTxt(antes)}.`:`Mês de referência: o chefe definiu ${mrTxt(v)} (o pedido era ${mrTxt(ped)}).`);
+    else if(v!==antes)txt=`Mês de referência: o chefe definiu ${mrTxt(v)}${antes?' (estava '+mrTxt(antes)+')':''}.`;
+    if(txt)await mrNota(id,txt);
+    renderSeguro();setTimeout(()=>toast(`${r.id_cliente||'Negócio'}: mês ${mrTxt(v)} confirmado`),450);
+  }catch(e){mrErro(e);}
+}
+async function mrRecusar(id){
+  const r=(S.records||[]).find(x=>String(x.id)===String(id));if(!r||!r.mes1_pedido)return;
+  const ped=r.mes1_pedido;const body={mes1_validado:true,mes1_pedido:null,mes1_pedido_em:null,mes1_pedido_por:null};
+  try{await supabaseApi('PATCH','/baviera_control?id=eq.'+id,body);Object.assign(r,body);
+    await mrNota(id,`Mês de referência: pedido de ${mrTxt(ped)} recusado — fica ${mrTxt(r.mes1)}.`);
+    renderSeguro();setTimeout(()=>toast(`${r.id_cliente||'Negócio'}: fica ${mrTxt(r.mes1)}`),450);
+  }catch(e){mrErro(e);}
+}
+function mes1Nota(){const r=S.selected;
+  if(isAdmin())return(r&&r.mes1_pedido)?`<div class="mr-nota pend">⏳ ${esc(vendName(r.vendedor_id)||'O vendedor')} pediu <b>${esc(mrTxt(r.mes1_pedido))}</b> — se gravares outro mês aqui, fica esse e o pedido fecha.</div>`:'';
+  if(S.form.status!=='Carteira')return'';
+  if(!r||r.status!=='Carteira')return`<div class="mr-nota">Ao gravar em Carteira, o mês fica <b>por validar</b> pelo chefe.</div>`;
+  if(r.mes1_pedido)return`<div class="mr-nota pend">⏳ Pediste mudar para <b>${esc(mrTxt(r.mes1_pedido))}</b> — aguarda o chefe. Até lá conta <b>${esc(mrTxt(r.mes1))}</b>.</div>`;
+  if(r.mes1_validado===false)return`<div class="mr-nota">Por validar pelo chefe — ainda podes acertar.</div>`;
+  if(r.mes1_validado===true)return`<div class="mr-nota ok">✓ Validado pelo chefe. Se mudares, segue como <b>pedido de autorização</b>.</div>`;
+  return'';}
 function lembretesHTML(){const L=lembretesChefe();if(!L.length)return'';
   return`<div class="lemb-box">${L.map(l=>`<div class="lemb-row"><span class="atag atag-al">${esc(l.tag)}</span><div class="lemb-txt"><b>${esc(l.tit)}</b><span>${esc(l.sub)}</span></div>
     <button class="btn btn-orange btn-sm" data-action="lemb-abrir" data-k="${l.k}" data-alvo="${l.alvo}">Abrir</button><button class="btn btn-outline btn-sm" data-action="lemb-feito" data-k="${l.k}" data-ym="${l.ym}" title="Já tratei — não voltar a mostrar este mês">Feito</button></div>`).join('')}</div>`;}
@@ -3268,7 +3322,7 @@ async function saveRecord(){
   if((S.form.type==='MU'||S.form.type==='MD')&&!S.form.stock_id&&(S.form.status==='Retail'||S.form.status==='Carteira')){
     if(!confirm('Esta venda de usada/demo não tem a Mota do Stock associada.\n\nSem isso não consegues ver a margem real nem o stock fica marcado como vendido.\n\nGravar mesmo assim?'))return;
   }
-  setState({loading:true,error:''});try{const b={...S.form};['neg','dmat','col_298','alert_date','recontactar_em'].forEach(k=>{if(!b[k])b[k]=null});if(b.recontactar_em==null||(S.selected&&String(b.recontactar_em)===String(S.selected.recontactar_em||'')))delete b.recontactar_em;['qor','xev','bev','m_flag','csc','cme'].forEach(k=>{b[k]=b[k]?parseInt(b[k]):null});b.pvp=b.pvp?parseFloat(b.pvp):null;b.stock_id=b.stock_id?parseInt(b.stock_id):null;if(!isAdmin())delete b.obs_gestor;delete b.id;delete b.created_at;delete b.updated_at;delete b.updated_by;if(!S.selected&&isAdmin())b.vendedor_id=S.viewVendedor||S.me.id;if(S.selected){if(b.status!==S.selected.status)b.status_updated_at=new Date().toISOString();delete b.status_updated_at_keep;await supabaseApi('PATCH',`/baviera_control?id=eq.${S.selected.id}`,b)}else{b.status_updated_at=new Date().toISOString();const _novo=await supabaseApi('POST','/baviera_control',b);if(S.fmRascunho&&Array.isArray(_novo)&&_novo[0]&&_novo[0].id)await fmLigarAoNovo(_novo[0].id);}await syncStockComNegocio(b.stock_id,b.status);await loadRecords();setState({screen:'list',selected:null,loading:false})}catch(e){setState({error:'Erro ao guardar: '+e.message,loading:false})}}
+  setState({loading:true,error:''});try{const b={...S.form};['neg','dmat','col_298','alert_date','recontactar_em'].forEach(k=>{if(!b[k])b[k]=null});if(b.recontactar_em==null||(S.selected&&String(b.recontactar_em)===String(S.selected.recontactar_em||'')))delete b.recontactar_em;['qor','xev','bev','m_flag','csc','cme'].forEach(k=>{b[k]=b[k]?parseInt(b[k]):null});b.pvp=b.pvp?parseFloat(b.pvp):null;b.stock_id=b.stock_id?parseInt(b.stock_id):null;if(!isAdmin())delete b.obs_gestor;delete b.id;delete b.created_at;delete b.updated_at;delete b.updated_by;if(!S.selected&&isAdmin())b.vendedor_id=S.viewVendedor||S.me.id;S._avisoMes='';if(!isAdmin()&&b.status==='Carteira'){const _o=S.selected;if(!_o||_o.status!=='Carteira')S._avisoMes='Mês de entrega enviado ao chefe para validar';else if(_o.mes1&&_o.mes1_validado===true&&(b.mes1||'')!==(_o.mes1||''))S._avisoMes='Pedido enviado ao chefe: mudar para '+mrTxt(b.mes1)+' (até lá conta '+mrTxt(_o.mes1)+')';}if(S.selected){if(b.status!==S.selected.status)b.status_updated_at=new Date().toISOString();delete b.status_updated_at_keep;await supabaseApi('PATCH',`/baviera_control?id=eq.${S.selected.id}`,b)}else{b.status_updated_at=new Date().toISOString();const _novo=await supabaseApi('POST','/baviera_control',b);if(S.fmRascunho&&Array.isArray(_novo)&&_novo[0]&&_novo[0].id)await fmLigarAoNovo(_novo[0].id);}await syncStockComNegocio(b.stock_id,b.status);await loadRecords();setState({screen:'list',selected:null,loading:false});if(S._avisoMes){const _t=S._avisoMes;S._avisoMes='';setTimeout(()=>toast(_t),450);}}catch(e){setState({error:'Erro ao guardar: '+e.message,loading:false})}}
 async function syncStockComNegocio(stockId,status){
   // Estado da mota acompanha o negocio: funil=A negociar; carteira/retail=Vendida; perdido=Disponivel
   if(!stockId)return;
@@ -4455,7 +4509,7 @@ function renderCard(r){
   const empresa=isAdmin()&&!S.viewVendedor;
   const pvp=r.pvp?Number(r.pvp).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:0})+' €':'';
   const atras=funilAtrasado(r);
-  const meta=[r.neg?fmtDate(r.neg):'',r.mes1?('mês '+ymCurto(r.mes1)):'',r.enc?('Enc '+r.enc):'',r.biz?('Biz '+r.biz):'',empresa?(vendName(r.vendedor_id)||''):''].filter(Boolean);
+  const meta=[r.neg?fmtDate(r.neg):'',r.mes1?('mês '+ymCurto(r.mes1)):'',(r.status==='Carteira'&&r.mes1_pedido)?('⏳ pedido '+mrTxt(r.mes1_pedido)):((r.status==='Carteira'&&r.mes1_validado===false)?'mês por validar':''),r.enc?('Enc '+r.enc):'',r.biz?('Biz '+r.biz):'',empresa?(vendName(r.vendedor_id)||''):''].filter(Boolean);
   return`
   <div class="card vcard ${atras?'vcard-atras':''}" data-action="open-detail" data-id="${r.id}">
     <div class="card-accent card-accent-${esc(r.status)}"></div>
@@ -5310,7 +5364,7 @@ function renderVendedorSelect(k){
   </select>`}
 
 // ===== Negócios: comentários + histórico de alterações (registado pela base de dados) =====
-const NEG_EXTRA_LB={vendedor_id:'Vendedor',stock_id:'Mota do stock',venda_direta:'Venda a comerciante',automatricula:'Automatrícula',valor_entrada:'Valor de entrada',cme_confirmed:'CME confirmado',alert_days:'Dias de alerta',resp:'Responsável (texto)',status_mota:'Status da mota'};
+const NEG_EXTRA_LB={mes1_pedido:'Pedido de mês de referência',vendedor_id:'Vendedor',stock_id:'Mota do stock',venda_direta:'Venda a comerciante',automatricula:'Automatrícula',valor_entrada:'Valor de entrada',cme_confirmed:'CME confirmado',alert_days:'Dias de alerta',resp:'Responsável (texto)',status_mota:'Status da mota'};
 function negCampoLb(k){const f=ALL_FIELDS.find(x=>x.k===k);return (f&&f.l)||NEG_EXTRA_LB[k]||k;}
 function negValor(k,v){if(v==null||v==='')return'(vazio)';if(k==='vendedor_id')return vendName(v)||'?';
   if(v==='true'||v===true)return'Sim';if(v==='false'||v===false)return'Não';const f=ALL_FIELDS.find(x=>x.k===k);
@@ -5374,7 +5428,7 @@ function renderEditRapido(){
       <label class="qf-f"><span>Origem</span><select class="field-input" data-field="origin"><option value="">—</option>${ORIGINS.filter(Boolean).map(o=>`<option ${F.origin===o?'selected':''}>${esc(o)}</option>`).join('')}</select></label>
       ${F.origin==='Lead'?inp('lead_webapp','Nº Lead (WebApp)',''):''}
       ${fun?inp('alert_date','Contactar no dia','', 'date'):''}
-      ${cart?inp('mes1','Mês de entrega','', 'month'):''}
+      ${cart?inp('mes1','Mês de entrega','', 'month'):''}${cart&&!isAdmin()?'<div class="mr-nota qf-w2">O chefe valida o mês de entrega antes de entrar na previsão.</div>':''}
       ${cart?inp('pvp','PVP (€)','Ex: 21500','number'):''}
       ${st==='Retail'?inp('col_298','Data do 298','', 'date'):''}
       ${usada?`<div class="qf-f qf-w2"><span>Mota do stock</span>${renderStockPick()}</div>`:''}
@@ -5410,7 +5464,7 @@ function renderEdit(){
           fd.t==='stockpick'?renderStockPick():
           fd.t==='select'?`<select class="field-input" data-field="${fd.k}"><option value="">—</option>${(fd.o||[]).filter(Boolean).map(o=>`<option value="${esc(o)}" ${S.form[fd.k]===o?'selected':''}>${esc(o)}</option>`).join('')}</select>`:
           fd.t==='textarea'?`<textarea class="field-input" data-field="${fd.k}" rows="3">${esc(S.form[fd.k]||'')}</textarea>`:
-          fd.t==='month'?`<input class="field-input" type="month" data-field="${fd.k}" data-fmt="month" value="${esc((S.form[fd.k]||'').replace('/','-'))}">`:
+          fd.t==='month'?`<input class="field-input" type="month" data-field="${fd.k}" data-fmt="month" value="${esc((S.form[fd.k]||'').replace('/','-'))}">${fd.k==='mes1'?mes1Nota():''}`:
           fd.t==='date'?`<input class="field-input" type="date" data-field="${fd.k}" value="${esc(S.form[fd.k]||'')}">`:
           fd.t==='number'?`<input class="field-input" type="number" data-field="${fd.k}" value="${esc(S.form[fd.k]||'')}" placeholder="10" min="1" max="365">`:
           `<input class="field-input" type="text" data-field="${fd.k}" value="${esc(S.form[fd.k]||'')}">`
@@ -6316,7 +6370,7 @@ function renderDashboard(){
 
   const alertasNav=calcAlerts(recs);
   const nSem298=recs.filter(r=>r.status==='Retail'&&!r.col_298).length;
-  const nPend=alertasNav.filter(x=>!String(x.id).startsWith('funil_')).reduce((a,x)=>a+(x.count||0),0)+nSem298+lembretesChefe().length;
+  const nPend=alertasNav.filter(x=>!String(x.id).startsWith('funil_')).reduce((a,x)=>a+(x.count||0),0)+nSem298+lembretesChefe().length+mesRefLista().length;
   const nPerd=recs.filter(r=>r.status==='Perdido').length;
   const badgeDe=id=>{
     if((id==='pendentes'||id==='atratar')&&nPend)return`<span class="gpp-nav-badge alert">${nPend}</span>`;
@@ -7709,7 +7763,7 @@ function renderDashboard(){
           <td>${vendTag(r.vendedor_id)}</td></tr>`).join('')}</tbody>
       </table></div>`}`;
   }
-  else if(sec==='home')body=lembretesHTML()+mesBar+(recs.filter(r=>r.status==='Retail'&&!r.col_298).length?`${(()=>{const semData=recs.filter(r=>r.status==='Retail'&&!r.col_298);return`<div class="gpp-alerta ${S.dashAlertOpen==='sem298'?'open':''}"><div class="gpp-alerta-head" data-action="dash-alert-toggle" data-id="sem298"><span>⚠️</span><span><b>${semData.length}</b> mota${semData.length>1?'s':''} em Retail sem data 298 — não contam nos totais</span><span class="gpp-alerta-arrow">${S.dashAlertOpen==='sem298'?'▾':'▸'}</span></div>${S.dashAlertOpen==='sem298'?`<div class="gpp-alerta-lista">${semData.map(r=>`<div class="gpp-alerta-item" data-action="open-record-from-dash" data-id="${r.id}"><b>${esc(r.id_cliente||'(sem cliente)')}</b><span>${esc(r.model||'')} ${esc(r.version||'')}</span><span class="gpp-alerta-tipo">${esc(r.type||'?')}</span><span style="color:var(--text3)">${esc(vendName(r.vendedor_id)||'')}</span></div>`).join('')}</div>`:''}</div>`})()}`:'')+tabelaResumo()+homeAcoes();
+  else if(sec==='home')body=lembretesHTML()+mesRefHTML()+mesBar+(recs.filter(r=>r.status==='Retail'&&!r.col_298).length?`${(()=>{const semData=recs.filter(r=>r.status==='Retail'&&!r.col_298);return`<div class="gpp-alerta ${S.dashAlertOpen==='sem298'?'open':''}"><div class="gpp-alerta-head" data-action="dash-alert-toggle" data-id="sem298"><span>⚠️</span><span><b>${semData.length}</b> mota${semData.length>1?'s':''} em Retail sem data 298 — não contam nos totais</span><span class="gpp-alerta-arrow">${S.dashAlertOpen==='sem298'?'▾':'▸'}</span></div>${S.dashAlertOpen==='sem298'?`<div class="gpp-alerta-lista">${semData.map(r=>`<div class="gpp-alerta-item" data-action="open-record-from-dash" data-id="${r.id}"><b>${esc(r.id_cliente||'(sem cliente)')}</b><span>${esc(r.model||'')} ${esc(r.version||'')}</span><span class="gpp-alerta-tipo">${esc(r.type||'?')}</span><span style="color:var(--text3)">${esc(vendName(r.vendedor_id)||'')}</span></div>`).join('')}</div>`:''}</div>`})()}`:'')+tabelaResumo()+homeAcoes();
   else if(sec==='funil')body=funilView();
   else if(sec==='fechados')body=fechadosView();
   else if(sec==='saude')body=saudeEquipa();
@@ -7725,7 +7779,7 @@ function renderDashboard(){
   else if(sec==='carteira')body=carteiraChart()+listaEstado('Carteira',r=>r.mes1);
   else if(sec==='retail')body=retailView();
   else if(sec==='comercio')body=comercioView();
-  else if(sec==='pendentes')body=lembretesHTML()+acoesHoje()+pendentesView();
+  else if(sec==='pendentes')body=lembretesHTML()+mesRefHTML()+acoesHoje()+pendentesView();
   else if(sec==='stock')body=stockView('usada');
   else if(sec==='depreciacao')body=depreciacaoView();
   else if(sec==='demos')body=normaView();
@@ -7966,6 +8020,8 @@ function bindEvents(){
       case'export-comissoes-pdf':exportComissoesPDF(el.dataset.quem||'vend');S.pdfMenu=false;render();break;
       case'pdf-menu':setState({pdfMenu:!S.pdfMenu});break;
       case'com-fecho':comFechoToggle(el.dataset.ym);break;
+      case'mr-ok':mrConfirmar(el.dataset.id);break;
+      case'mr-nao':mrRecusar(el.dataset.id);break;
       case'tbl-sort':tblSortClick(el.dataset.tk,+el.dataset.col);break;
       case'tri-pdf':triPDF();break;
       case'tri-email-fechar':setState({triEmailPrev:false});break;
