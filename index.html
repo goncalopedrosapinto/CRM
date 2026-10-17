@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-17-b">
+<meta name="app-version" content="2026-10-17-c">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -2108,7 +2108,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-17-b';
+const APP_VERSION='2026-10-17-c';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -2284,7 +2284,7 @@ async function changePassword(atual,nova){
   return true;
 }
 async function supabaseApi(m,path,body,_retry){const h={'apikey':S.config.key,'Authorization':`Bearer ${S.token}`,'Content-Type':'application/json'};if(m==='POST'||m==='PATCH')h['Prefer']='return=representation';const o={method:m,headers:h};if(body)o.body=JSON.stringify(body);const r=await fetch(`${S.config.url}/rest/v1${path}`,o);if(r.status===401&&!_retry){const nt=await refreshSession();if(nt){S.token=nt;return supabaseApi(m,path,body,true)}}if(!r.ok){const e=await r.text();throw new Error(e)}const t=await r.text();if(m!=='GET'&&!_retry_silencio(path))toastGravado(m);return t?JSON.parse(t):null}
-function _retry_silencio(p){return /^\/(precos_ref|rpc\/inscricoes_ranking|comissoes_fecho)/.test(String(p||''));}
+function _retry_silencio(p){return /^\/(precos_ref|rpc\/inscricoes_ranking|comissoes_fecho|fichas_margem)/.test(String(p||''));}
 let _tgT=null;function toastGravado(m){clearTimeout(_tgT);_tgT=setTimeout(()=>{try{toast(m==='DELETE'?'Apagado':'Gravado')}catch(e){}},250);}
 const LINHA_LABELS={motorrad:'Motorrad',auto:'Equipa Teste'};
 const LINHA_ICONS={motorrad:'\u{1F3CD}',auto:'\u{1F697}'};
@@ -2586,7 +2586,12 @@ function fmGuardarNegocio(){
       if(Array.isArray(r)&&r.length===0)await supabaseApi('POST','/fichas_margem',Object.assign({negocio_id:Number(id)},body));
       S.fichasIdx=Object.assign({},S.fichasIdx||{},{[id]:body.updated_at});S.fmEstado='guardado';S.fmGravado=body.updated_at;
     }catch(e){S.fmEstado='erro ao guardar: '+erroTexto(e);}
-    if(S.screen==='ficha')render();
+    if(S.screen==='ficha'){
+      // se estiver a escrever num campo da ficha, não redesenha: só atualiza o estado "guardado"
+      const a=document.activeElement;
+      if(a&&a.dataset&&a.dataset.fm!=null){const st=document.getElementById('fm-estado');if(st)st.textContent=S.fmEstado;}
+      else renderPreservandoFoco();
+    }
   },600);
 }
 function fmVoltar(){
@@ -2669,7 +2674,25 @@ function fmSet(k,v){S.fm=Object.assign({},S.fm||{},{[k]:v});
   if(S.fmNeg==='novo')S.fmRascunho=S.fm;
   else if(S.fmNeg)fmGuardarNegocio();
   else{try{localStorage.setItem('bc_fm',JSON.stringify(S.fm));}catch(e){}}
-  render();}
+  // redesenha depois de o foco passar para o campo seguinte (Tab), e devolve-lhe o foco e o que lá estiver escrito
+  clearTimeout(_fmRT);_fmRT=setTimeout(renderPreservandoFoco,0);}
+let _fmRT=null;
+function renderPreservandoFoco(){
+  const a=document.activeElement;let snap=null;
+  if(a&&a.matches&&a.matches('input,select,textarea')){
+    const sel=a.dataset.fm!=null?'[data-fm="'+a.dataset.fm+'"]':(a.id?'#'+CSS.escape(a.id):(a.dataset.field?'[data-field="'+a.dataset.field+'"]':null));
+    if(sel){let ss=null,se=null;try{ss=a.selectionStart;se=a.selectionEnd;}catch(e){}snap={sel,val:a.value,ss,se};}
+  }
+  const sc=document.querySelector('.content');const top=sc?sc.scrollTop:0;
+  render();
+  const sc2=document.querySelector('.content');if(sc2)sc2.scrollTop=top;
+  if(snap){const n=document.querySelector(snap.sel);if(n){
+    if(n.value===snap.val){n.focus({preventScroll:true});
+      // ainda não escreveu nada neste campo: fica todo selecionado, como acontece ao entrar com Tab
+      if(snap.ss==null||(snap.ss===0&&snap.se===String(snap.val).length)){try{n.select();}catch(e){}}else{try{n.setSelectionRange(snap.ss,snap.se);}catch(e){}}}
+    else{n.focus({preventScroll:true});n.value='';n.value=snap.val;try{if(snap.ss!=null)n.setSelectionRange(snap.ss,snap.se);}catch(e){}}
+  }}
+}
 async function fmLimpar(){
   if(!confirm(S.fmNeg&&S.fmNeg!=='novo'?'Limpar a ficha deste negócio e começar do zero?':'Limpar a ficha?'))return;
   if(S.fmNeg==='novo'){S.fm=fmPrefill(S.form||{});S.fmRascunho=null;render();return;}
@@ -2707,7 +2730,7 @@ function renderFichaMargem(){
       <label>Pagamento<input class="norma-inp" data-fm="pagamento" value="${esc(fm.pagamento||'')}" placeholder="PP / Fint / Fext"></label>
       <label>Tipo<input class="norma-inp" data-fm="tipo" value="${esc(fm.tipo||'')}" placeholder="Particular / Empresa"></label>
     </div>
-    ${S.fmNeg?`<div class="fm-negbar">${S.fmNeg==='novo'?'📝 Rascunho do registo novo — fica ligada ao negócio quando carregares em <b>Guardar</b>.':`🔗 Ligada a este negócio · ${S.fmEstado?esc(S.fmEstado):(S.fmGravado?'guardada':'ainda sem alterações')} — guarda-se sozinha a cada alteração.`}${S.fmErro?` <span style="color:var(--red)">${esc(S.fmErro)}</span>`:''}</div>`:''}
+    ${S.fmNeg?`<div class="fm-negbar">${S.fmNeg==='novo'?'📝 Rascunho do registo novo — fica ligada ao negócio quando carregares em <b>Guardar</b>.':`🔗 Ligada a este negócio · <span id="fm-estado">${S.fmEstado?esc(S.fmEstado):(S.fmGravado?'guardada':'ainda sem alterações')}</span> — guarda-se sozinha a cada alteração.`}${S.fmErro?` <span style="color:var(--red)">${esc(S.fmErro)}</span>`:''}</div>`:''}
     <div class="kpi-strip fm-kpis" aria-label="Resumo da ficha">
       <div class="kpi-c"><span class="kpi-k">PVP</span><span class="kpi-v">${c.pvpDesc?fE0(c.pvpDesc):'—'}</span></div>
       <div class="kpi-c"><span class="kpi-k">Valor proposto</span><span class="kpi-v">${c.venda?fE0(c.venda):'—'}</span>${c.descCliPct!=null&&c.venda?`<span class="kpi-s">${c.descCliPct>=0?'desconto':'acima do PVP'} ${Math.abs(c.descCliPct*100).toLocaleString('pt-PT',{maximumFractionDigits:1})} %</span>`:''}</div>
