@@ -1,0 +1,3 @@
+# Migrações já corridas em produção (uma por linha). As outras são corridas pelos testes como "pendentes".
+2026-10-14_comissoes_fecho.sql
+2026-10-14_mes_referencia_validacao.sql

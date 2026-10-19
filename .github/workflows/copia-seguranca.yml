@@ -1,0 +1,108 @@
+name: Cópia de segurança + ensaio de reposição
+
+# O plano gratuito do Supabase não guarda cópias de segurança. Esta rotina faz uma por noite,
+# cifra-a (só quem tem a chave privada a consegue abrir) e logo a seguir repõe-na numa base
+# vazia para provar que a cópia serve. Fica parada até existirem os segredos abaixo.
+#
+# Segredos (Settings → Secrets and variables → Actions):
+#   SUPABASE_DB_URL   ligação "Session pooler" do Supabase (Project Settings → Database → Connect)
+#   COPIA_CHAVE_PUB   chave pública age (age1...) — cifra
+#   COPIA_CHAVE_PRIV  chave privada age (AGE-SECRET-KEY-...) — só para o ensaio de reposição
+#
+# Recomendado: pôr este ficheiro num repositório PRIVADO à parte (ex.: crm-copias).
+# Num repositório público, os anexos das execuções podem ser descarregados por qualquer pessoa;
+# por isso a cópia vai sempre cifrada.
+
+on:
+  schedule:
+    - cron: '17 2 * * *'   # todos os dias às 02:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  copia:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      DB: ${{ secrets.SUPABASE_DB_URL }}
+      PUB: ${{ secrets.COPIA_CHAVE_PUB }}
+    steps:
+      - name: Segredos definidos?
+        id: ok
+        run: |
+          if [ -z "$DB" ] || [ -z "$PUB" ]; then echo "Sem segredos: rotina parada."; echo "ativo=0" >> $GITHUB_OUTPUT; else echo "ativo=1" >> $GITHUB_OUTPUT; fi
+      - name: Ferramentas (pg_dump 17 e age)
+        if: steps.ok.outputs.ativo == '1'
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client-17 age
+      - name: Exportar (esquema public + utilizadores mínimos + contagens)
+        if: steps.ok.outputs.ativo == '1'
+        run: |
+          set -euo pipefail
+          mkdir copia
+          /usr/lib/postgresql/17/bin/pg_dump "$DB" --schema=public --no-owner --no-privileges -Fc -f copia/public.dump
+          psql "$DB" -v ON_ERROR_STOP=1 -c "\copy (select id,email,raw_user_meta_data,created_at from auth.users) to 'copia/auth_users.csv' csv header"
+          psql "$DB" -At -v ON_ERROR_STOP=1 -c "select json_object_agg(relname, n_live_tup) from (select c.relname, (xpath('/row/n/text()', query_to_xml(format('select count(*) as n from public.%I', c.relname), false, true, '')))[1]::text::bigint n_live_tup from pg_class c join pg_namespace s on s.oid=c.relnamespace where s.nspname='public' and c.relkind='r') x" > copia/contagens.json
+          cat copia/contagens.json
+          tar czf - copia | age -r "$PUB" > copia-$(date -u +%F).tar.gz.age
+          rm -rf copia
+      - uses: actions/upload-artifact@v4
+        if: steps.ok.outputs.ativo == '1'
+        with:
+          name: copia-cifrada
+          path: copia-*.tar.gz.age
+          retention-days: 30
+    outputs:
+      ativo: ${{ steps.ok.outputs.ativo }}
+
+  ensaio-reposicao:
+    needs: copia
+    if: needs.copia.outputs.ativo == '1'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      pg:
+        image: postgres:17
+        env: { POSTGRES_PASSWORD: ensaio }
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-retries 20
+    env:
+      PRIV: ${{ secrets.COPIA_CHAVE_PRIV }}
+      ENSAIO: postgresql://postgres:ensaio@localhost:5432/postgres
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with: { name: copia-cifrada }
+      - name: Ferramentas
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client-17 age jq
+      - name: Decifrar e repor numa base vazia
+        run: |
+          set -euo pipefail
+          echo "$PRIV" > chave.txt
+          age -d -i chave.txt copia-*.tar.gz.age | tar xzf -
+          rm chave.txt
+          psql "$ENSAIO" -v ON_ERROR_STOP=1 -f sql/base/00_supabase_stub.sql
+          psql "$ENSAIO" -v ON_ERROR_STOP=1 -c "\copy auth.users(id,email,raw_user_meta_data,created_at) from 'copia/auth_users.csv' csv header"
+          # avisos de objetos próprios do Supabase não param o ensaio: quem decide são as contagens a seguir
+          /usr/lib/postgresql/17/bin/pg_restore --no-owner --no-privileges -d "$ENSAIO" copia/public.dump 2> avisos.txt || true
+          echo "Avisos da reposição: $(grep -c . avisos.txt || true)"; head -20 avisos.txt || true
+      - name: Confirmar que nada se perdeu (contagens por tabela)
+        run: |
+          set -euo pipefail
+          falhas=0
+          for t in $(jq -r 'keys[]' copia/contagens.json); do
+            esperado=$(jq -r --arg t "$t" '.[$t]' copia/contagens.json)
+            obtido=$(psql "$ENSAIO" -At -c "select count(*) from public.\"$t\"")
+            if [ "$esperado" = "$obtido" ]; then echo "✓ $t $obtido"; else echo "✗ $t esperado $esperado obtido $obtido"; falhas=$((falhas+1)); fi
+          done
+          test $falhas -eq 0
+          rm -rf copia

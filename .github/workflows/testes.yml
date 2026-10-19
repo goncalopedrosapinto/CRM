@@ -1,0 +1,47 @@
+name: Testes
+
+# Corre a cada alteração enviada e a cada pedido de integração (pull request).
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  base-de-dados:
+    name: Permissões e migrações (base de ensaio)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults: { run: { working-directory: tests } }
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: 22 }
+      - run: npm install --no-audit --no-fund
+        env: { PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1' }
+      - name: Matriz de permissões com as migrações pendentes
+        run: npm run permissoes
+
+  pagina:
+    name: Página (segurança, erros, integridade)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    defaults: { run: { working-directory: tests } }
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: 22 }
+      - run: npm install --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Versão atualizada nos dois sítios
+        run: |
+          M=$(grep -o 'name="app-version" content="[^"]*"' ../index.html | cut -d'"' -f4)
+          J=$(grep -o "const APP_VERSION='[^']*'" ../index.html | cut -d"'" -f2)
+          echo "meta=$M js=$J"; test -n "$M" && test "$M" = "$J"
+      - run: npm run csp
+      - run: npm run erros
+      - run: npm run ecras
+      - run: npm run xss
+      - run: npm run integridade
