@@ -23,7 +23,7 @@ permissions:
 
 jobs:
   copia:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
       DB: ${{ secrets.SUPABASE_DB_URL }}
@@ -63,7 +63,7 @@ jobs:
   ensaio-reposicao:
     needs: copia
     if: needs.copia.outputs.ativo == '1'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     services:
       pg:
@@ -75,7 +75,7 @@ jobs:
       PRIV: ${{ secrets.COPIA_CHAVE_PRIV }}
       ENSAIO: postgresql://postgres:ensaio@localhost:5432/postgres
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/download-artifact@v4
         with: { name: copia-cifrada }
       - name: Ferramentas
