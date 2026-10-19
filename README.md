@@ -30,3 +30,11 @@ Correm sozinhos no GitHub (separador **Actions**) a cada alteração. Localmente
 2. Enviar para o GitHub: os testes correm a migração na base de ensaio.
 3. Se passar, correr no SQL Editor do Supabase e acrescentar o nome a `sql/APLICADAS.txt`.
 4. De vez em quando, voltar a ler o esquema de produção para `sql/base/` (garante que a base de ensaio não se afasta da real).
+
+## Cópias de segurança
+
+O plano gratuito do Supabase não guarda cópias. A rotina `copia-seguranca.yml` faz uma por noite, cifrada com a frase-senha `COPIA_SENHA`, e repõe-na logo numa base vazia para confirmar que serve (contagem tabela a tabela). As cópias ficam 30 dias em **Actions → Cópia de segurança → execução → Artifacts**.
+
+Abrir uma cópia à mão (precisa de GnuPG; no Windows, Gpg4win): `gpg -d copia-AAAA-MM-DD.tar.gz.gpg | tar xzf -`. Repor no Supabase: correr `pg_restore` com a ligação do projeto — pedir ajuda antes de o fazer.
+
+O GitHub desliga rotinas agendadas em repositórios públicos sem alterações durante 60 dias: se isso acontecer, aparece um aviso no separador Actions e basta reativar.
