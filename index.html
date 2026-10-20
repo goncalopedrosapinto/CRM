@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-20-g">
+<meta name="app-version" content="2026-10-20-h">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -762,6 +762,7 @@ html,body{overflow-x:hidden;max-width:100vw}
 .fm-lig{font-size:10px;font-weight:800;background:#1F3864;color:#fff;border-radius:8px;padding:2px 7px;margin-left:6px;vertical-align:middle;text-transform:uppercase;letter-spacing:.3px}
 .fm-lig.solta{background:var(--text3)}
 .fm-negbar{margin:0 16px 10px;padding:8px 12px;font-size:12px;background:#EEF4FF;border:1px solid #BFD3F2;border-radius:8px;color:#1E3A8A}
+.fm-volta-neg{margin-left:8px;padding:4px 10px;min-height:28px;border:1px solid currentColor;border-radius:6px;background:transparent;color:inherit;font:inherit;font-weight:700;cursor:pointer}
 .fm-res{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:0 16px 10px}
 .fm-res-c{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 11px}
 .fm-res-c.dsc{background:#DBEAFE;border-color:#93C5FD}.fm-res-c.mg{background:var(--green-bg);border-color:var(--green)}.fm-res-c.neg{background:#FEE2E2;border-color:var(--red)}
@@ -2115,7 +2116,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-20-g';
+const APP_VERSION='2026-10-20-h';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -2562,12 +2563,14 @@ function fmCalc(){
   const _mf=fmN('mg_fixa_pct'),_mv=fmN('mg_var_pct');
   const margFixaPct=_mf>0?_mf/100:null, margVarPct=_mv>0?_mv/100:null;
   const internosPct=base?internos/base:0;
-  const esforcoPct=(descCliPct!=null&&margFixaPct!=null)?Math.max(0,descCliPct+internosPct-margFixaPct):null;
+  // O desconto conta a partir do PVP já com os apoios BMW (apoio demo, protocolo, PAC...): esses não saem da margem do concessionário.
+  const descEsfPct=(venda&&base)?((pvpDesc-venda)/k)/base:null;
+  const esforcoPct=(descEsfPct!=null&&margFixaPct!=null)?Math.max(0,descEsfPct+internosPct-margFixaPct):null;
   // aprovação da chefia: margem (s/IVA) abaixo de 0,50% do valor proposto
   const FM_MARGEM_MIN=0.005;
   const margPct=null,folga=null;
   const aprovacao=!!venda&&margemPct<FM_MARGEM_MIN;
-  return {internosPct,margFixaPct,esforcoPct,margVarPct,margPct,folga,aprovacao,modo:fmModo(),iva,k,isv,sgpu,base,baseD:base-descPreco,dl,desc,descMarg,descPreco,pvpRef,descCli,descCliPct,descPct:base?desc/base:0,diversos,ptot,ptotD,taxasTab:taxas(ptot),taxasDesc:taxas(ptotD),
+  return {descEsfPct,internosPct,margFixaPct,esforcoPct,margVarPct,margPct,folga,aprovacao,modo:fmModo(),iva,k,isv,sgpu,base,baseD:base-descPreco,dl,desc,descMarg,descPreco,pvpRef,descCli,descCliPct,descPct:base?desc/base:0,diversos,ptot,ptotD,taxasTab:taxas(ptot),taxasDesc:taxas(ptotD),
     pvp:pvpTab,pvpTab,pvpDesc,internos,custo,custoSC,compart,descCusto,venda,vendaS,margem,margemPct,com,regraCom,
     descValor:venda-pvpRef,descPercent:pvpRef?(venda-pvpRef)/pvpRef:0,plat,difPlat};
 }
@@ -2609,6 +2612,8 @@ async function fmAbrirNegocio(id){
     const base=S.fmRascunho||fmPrefill(S.form||{});
     S.fmNeg='novo';S.fmVolta=volta;S.fm=fmParaCiva(fmMigra(base));setState({screen:'ficha'});return;
   }
+  if(S.fmNeg&&String(S.fmNeg)===String(id)&&S.fmNeg!=='novo'){S.fmVolta=volta==='ficha'?S.fmVolta:volta;setState({screen:'ficha'});return;}
+  if(S.fmNeg&&S.fmNeg!=='novo')fmSairDoNegocio();
   const r=(S.records||[]).find(x=>String(x.id)===String(id))||S.selected||{};
   S.fmNeg=String(id);S.fmVolta=volta;S.fmGravado='';
   let dados=null;
@@ -2624,17 +2629,27 @@ function fmGuardarNegocio(){
   clearTimeout(_fmTimer);clearTimeout(_fmRetry);S.fmEstado='a guardar…';S.fmPendente=true;fmEstadoMostrar();
   _fmTimer=setTimeout(fmGravarAgora,600);
 }
-let _fmRetry=null,_fmTent=0,_fmGravando=false,_fmDeNovo=false,_fmEnvios=[];
+let _fmRetry=null,_fmTent=0,_fmGravando=false,_fmDeNovo=false,_fmEnvios=[],_fmProx=null;
 async function fmGravarAgora(forcar){
   const id=S.fmNeg;if(!id||id==='novo')return;
   if(S.fmConflito&&!forcar)return;
-  // uma gravação de cada vez: se chegar outra a meio, corre a seguir com a versão nova
-  if(_fmGravando){_fmDeNovo=true;return;}
-  _fmGravando=true;
-  try{await fmGravar1(id,forcar);}finally{_fmGravando=false;if(_fmDeNovo&&S.fmNeg===id&&!S.fmConflito){_fmDeNovo=false;fmGravarAgora();}else _fmDeNovo=false;}
+  return fmGravarPara(id,S.fm,forcar);
 }
-async function fmGravar1(id,forcar){
-  const body={dados:S.fm,updated_at:new Date().toISOString()};const envio=JSON.stringify(S.fm);
+// grava esta versão desta ficha; uma gravação de cada vez — se chegar outra a meio, corre a seguir (mesmo que já se tenha saído da ficha)
+async function fmGravarPara(id,dados,forcar){
+  if(_fmGravando){_fmProx={id,dados};return;}
+  _fmGravando=true;
+  try{await fmGravar1(id,forcar,dados);}finally{_fmGravando=false;const p=_fmProx;_fmProx=null;if(p&&!S.fmConflito)fmGravarPara(p.id,p.dados);}
+}
+// sair de uma ficha de negócio: grava já o que estiver pendente e volta à ficha solta deste dispositivo
+function fmSairDoNegocio(){
+  if(!S.fmNeg)return;
+  if(S.fmNeg!=='novo'&&S.fmPendente&&!S.fmConflito){clearTimeout(_fmTimer);_fmTimer=null;fmGravarPara(S.fmNeg,S.fm);}
+  S.fmNeg=null;S.fmVolta=null;S.fmEstado='';S.fmErro='';
+  try{const o=JSON.parse(localStorage.getItem('bc_fm'));S.fm=o?fmParaCiva(fmMigra(o)):{natureza:'MN',iva:23,modo:'civa',fv:2};}catch(e){S.fm={natureza:'MN',iva:23,modo:'civa',fv:2};}
+}
+async function fmGravar1(id,forcar,dados){
+  dados=dados||S.fm;const body={dados,updated_at:new Date().toISOString()};const envio=JSON.stringify(dados);
   try{
     let r;
     _fmEnvios.push(envio);if(_fmEnvios.length>20)_fmEnvios.shift();
@@ -2643,7 +2658,7 @@ async function fmGravar1(id,forcar){
       if(Array.isArray(r)&&r.length===0){
         const cur=await supabaseApi('GET',`/fichas_margem?negocio_id=eq.${id}&select=updated_at,dados`);
         // a versão no servidor é a nossa última gravação (a resposta perdeu-se na rede): não é conflito
-        if(cur&&cur[0]&&_fmEnvios.includes(JSON.stringify(cur[0].dados))){S.fmGravado=cur[0].updated_at;return fmGravar1(id,false);}
+        if(cur&&cur[0]&&_fmEnvios.includes(JSON.stringify(cur[0].dados))){S.fmGravado=cur[0].updated_at;return fmGravar1(id,false,dados);}
         if(cur&&cur[0]){S.fmConflito={upd:cur[0].updated_at};S.fmEstado='não gravado: outra pessoa alterou esta ficha';S.fmPendente=true;if(S.screen==='ficha')render();return;}
         r=await supabaseApi('POST','/fichas_margem',Object.assign({negocio_id:Number(id)},body));
       }
@@ -2656,7 +2671,7 @@ async function fmGravar1(id,forcar){
     S.fichasIdx=Object.assign({},S.fichasIdx||{},{[id]:nova});S.fmGravado=nova;S.fmEstado='guardado';S.fmPendente=false;S.fmConflito=null;_fmTent=0;
   }catch(e){
     S.fmPendente=true;const rede=/Failed to fetch|NetworkError|Load failed|network/i.test(String(e&&e.message));
-    if(rede&&_fmTent<5){_fmTent++;const seg=[5,15,30,60,120][_fmTent-1];S.fmEstado='por gravar — sem ligação; nova tentativa em '+seg+' s';_fmRetry=setTimeout(()=>fmGravarAgora(),seg*1000);}
+    if(rede&&_fmTent<5){_fmTent++;const seg=[5,15,30,60,120][_fmTent-1];S.fmEstado='por gravar — sem ligação; nova tentativa em '+seg+' s';_fmRetry=setTimeout(()=>fmGravarPara(id,dados),seg*1000);}
     else S.fmEstado='erro ao guardar: '+erroTexto(e)+' — as alterações continuam no ecrã';
   }
   if(S.screen==='ficha'){const a=document.activeElement;if(a&&a.dataset&&a.dataset.fm!=null)fmEstadoMostrar();else render();}
@@ -2666,9 +2681,7 @@ async function fmConflitoCarregar(){const id=S.fmNeg;S.fmConflito=null;S.fmPende
 function fmConflitoManter(){S.fmConflito=null;fmGravarAgora(true);}
 function fmVoltar(){
   const volta=S.fmVolta||(isAdmin()?'dashboard':'list');
-  const eraNeg=!!S.fmNeg;
-  S.fmNeg=null;S.fmVolta=null;S.fmEstado='';S.fmErro='';
-  if(eraNeg){try{const o=JSON.parse(localStorage.getItem('bc_fm'));S.fm=o?fmParaCiva(fmMigra(o)):{natureza:'MN',iva:23,modo:'civa',fv:2};}catch(e){S.fm={natureza:'MN',iva:23,modo:'civa',fv:2};}}
+  if(S.fmNeg)fmSairDoNegocio();
   setState({screen:volta});
 }
 async function fmLigarAoNovo(id){
@@ -2709,7 +2722,7 @@ function fmPDF(){
   r+=lin('Comiss\u00e3o',esc(c.regraCom),c.com==null?'\u2014':fE(c.com),'dest','');
   const fE0=n=>Math.round(Number(n||0)).toLocaleString('pt-PT')+' \u20ac';
   const cel=(cls,kk,v,sub)=>'<td class="'+cls+'"><div class="rk">'+kk+'</div><div class="rv">'+v+'</div>'+(sub?'<div class="rs">'+sub+'</div>':'')+'</td>';
-  const esfSub=c.margFixaPct==null?'falta MG. FIXA':((c.margVarPct!=null?'de '+pc(c.margVarPct)+' vari\u00e1vel \u00b7 ':'')+'fixa '+pc(c.margFixaPct)+(c.internosPct>0.00005?' \u00b7 custos '+pc(c.internosPct):''));
+  const esfSub=c.margFixaPct==null?'falta MG. FIXA':((c.margVarPct!=null?'de '+pc(c.margVarPct)+' vari\u00e1vel \u00b7 ':'')+'desconto '+pc(Math.max(0,(c.descEsfPct||0)-c.margFixaPct))+(c.internosPct>0.00005?' + custos '+pc(c.internosPct):''));
   const resumo='<table class="res"><tr>'
     +cel('','PVP',c.pvpDesc?fE0(c.pvpDesc):'\u2014','')
     +cel('dsc','Valor proposto',c.venda?fE0(c.venda):'\u2014',c.descCliPct!=null&&c.venda?(c.descCliPct>=0?'desconto ':'acima do PVP ')+pc(Math.abs(c.descCliPct)):'')
@@ -2796,13 +2809,13 @@ function renderFichaMargem(){
       <label>Tipo<input class="norma-inp" data-fm="tipo" value="${esc(fm.tipo||'')}" placeholder="Particular / Empresa"></label>
     </div>
     ${S.fmConflito?`<div class="fm-conflito" role="alert"><b>⚠ Esta ficha foi alterada por outra pessoa</b> (${esc(new Date(S.fmConflito.upd).toLocaleString('pt-PT'))}) enquanto a tinhas aberta. As tuas últimas alterações <b>ainda não foram gravadas</b>.<div class="fm-conflito-acoes"><button class="btn btn-dark btn-sm" data-action="fm-conflito-carregar">Ver a versão gravada (perco as minhas)</button><button class="btn btn-orange btn-sm" data-action="fm-conflito-manter">Gravar a minha por cima</button></div></div>`:''}
-    ${S.fmNeg?`<div class="fm-negbar">${S.fmNeg==='novo'?'📝 Rascunho do registo novo — fica ligada ao negócio quando carregares em <b>Guardar</b>.':`🔗 Ligada a este negócio · <span id="fm-estado" role="status">${S.fmEstado?esc(S.fmEstado):(S.fmGravado?'guardada':'ainda sem alterações')}</span> — guarda-se sozinha a cada alteração.`}${S.fmErro?` <span style="color:var(--red)">${esc(S.fmErro)}</span>`:''}</div>`:''}
+    ${S.fmNeg?`<div class="fm-negbar">${S.fmNeg==='novo'?'📝 Rascunho do registo novo — fica ligada ao negócio quando carregares em <b>Guardar</b>.':`🔗 Ligada a este negócio · <span id="fm-estado" role="status">${S.fmEstado?esc(S.fmEstado):(S.fmGravado?'guardada':'ainda sem alterações')}</span> — guarda-se sozinha a cada alteração. <button class="fm-volta-neg" data-action="fm-voltar">← Voltar ao negócio</button>`}${S.fmErro?` <span style="color:var(--red)">${esc(S.fmErro)}</span>`:''}</div>`:''}
     <div class="kpi-strip fm-kpis" aria-label="Resumo da ficha">
       <div class="kpi-c"><span class="kpi-k">PVP</span><span class="kpi-v">${c.pvpDesc?fE0(c.pvpDesc):'—'}</span></div>
       <div class="kpi-c"><span class="kpi-k">Valor proposto</span><span class="kpi-v">${c.venda?fE0(c.venda):'—'}</span>${c.descCliPct!=null&&c.venda?`<span class="kpi-s">${c.descCliPct>=0?'desconto':'acima do PVP'} ${Math.abs(c.descCliPct*100).toLocaleString('pt-PT',{maximumFractionDigits:1})} %</span>`:''}</div>
       <div class="kpi-c"><span class="kpi-k">Margem</span><span class="kpi-v ${c.venda&&c.margem<0?'neg':''}">${c.venda?fE0(c.margem):'—'}</span>${c.venda?`<span class="kpi-s">${pc(c.margemPct)}${c.aprovacao?' · <b class="neg">precisa aprovação</b>':''}</span>`:''}</div>
       <div class="kpi-c"><span class="kpi-k">Comissão</span><span class="kpi-v pos">${c.com==null?'—':fE0(c.com)}</span></div>
-      <div class="kpi-c"><span class="kpi-k">Esforço</span><span class="kpi-v">${c.venda&&c.esforcoPct!=null?pc(c.esforcoPct):'—'}</span><span class="kpi-s">${c.margFixaPct==null?'falta MG. FIXA':`${c.margVarPct!=null?`de ${pc(c.margVarPct)} variável · `:''}fixa ${pc(c.margFixaPct)}${c.internosPct>0.00005?` · custos ${pc(c.internosPct)}`:''}`}</span></div>
+      <div class="kpi-c"><span class="kpi-k">Esforço</span><span class="kpi-v">${c.venda&&c.esforcoPct!=null?pc(c.esforcoPct):'—'}</span><span class="kpi-s">${c.margFixaPct==null?'falta MG. FIXA':`${c.margVarPct!=null?`de ${pc(c.margVarPct)} variável · `:''}desconto ${pc(Math.max(0,(c.descEsfPct||0)-c.margFixaPct))}${c.internosPct>0.00005?` + custos ${pc(c.internosPct)}`:''}`}</span></div>
     </div>
     ${c.aprovacao?`<div class="fm-aprov">⚠️ <b>Necessário aprovação da chefia</b> — margem de ${(c.margemPct*100).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})}%, abaixo do mínimo de 0,50%.</div>`:''}
     <div class="gpp-card fm-card">
@@ -4561,7 +4574,7 @@ function vSidebarHTML(A){
       ${vend?`<div class="vnav-sec">O meu mês</div>
       ${vNavItem({act:'go-vcom',ic:'💶',lb:'Comissões',on:A==='vcom'})}
       <div class="vnav-sec">Ferramentas</div>
-      ${vNavItem({act:'go-ficha',ic:'🧮',lb:'Ficha de margem',on:A==='ficha'})}
+      ${vNavItem({act:'go-ficha',ic:'🧮',lb:'Ficha de margem',on:A==='ficha'&&!S.fmNeg})}
       ${vNavItem({act:'go-vstockeq',ic:'🧥',lb:'Stock equipamento / lifestyle',on:A==='vstockeq'})}
       ${vNavItem({act:'go-stock-vend',ic:'🏍️',lb:'Stock usadas / demos',on:A==='stockvend'})}
       ${vNavItem({act:'go-escala',ic:'📅',lb:'Escala',on:A==='escala'})}
@@ -8381,7 +8394,7 @@ function bindEvents(){
       case'tri-pdf':triPDF();break;
       case'tri-email-fechar':setState({triEmailPrev:false});break;
       case'tri-email':{triEmailCopiar(el);setState({triEmailPrev:!S.triEmailPrev});break;}
-      case'go-ficha':setState({screen:'ficha'});break;
+      case'go-ficha':if(S.fmNeg)fmSairDoNegocio();setState({screen:'ficha'});break;
       case'fm-pdf':fmPDF();break;
       case'fm-limpar':fmLimpar();break;
       case'fm-voltar':fmVoltar();break;
@@ -8480,7 +8493,7 @@ function bindEvents(){
       case'retail-ord':{const o=el.dataset.o;if(S.retailOrd===o)setState({retailDir:S.retailDir==='asc'?'desc':'asc'});else setState({retailOrd:o,retailDir:'asc'});break;}
       case'gpp-mais':setState({gppMais:!S.gppMais});break;
       case'gpp-mais-close':setState({gppMais:false});break;
-      case'gpp-sec':{let s=el.dataset.s;if(s==='eots')loadEot().then(()=>render());if(GRUPOS_SEC[s])s=((S.gppTab||{})[s])||GRUPOS_SEC[s].tabs[0][0];{const _g=grupoDe(s);if(_g)S.gppTab=Object.assign({},S.gppTab||{},{[_g]:s});}S.gppBusca='';S.gppMais=false;if(s==='escala'){setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}else if(s==='stock'||s==='depreciacao'||s==='margem'){setState({gppSec:s,dashAlertOpen:null});if(!S.stockLoaded)loadStock().then(()=>render());}
+      case'gpp-sec':{let s=el.dataset.s;if(s==='ficha'&&S.fmNeg)fmSairDoNegocio();if(s==='eots')loadEot().then(()=>render());if(GRUPOS_SEC[s])s=((S.gppTab||{})[s])||GRUPOS_SEC[s].tabs[0][0];{const _g=grupoDe(s);if(_g)S.gppTab=Object.assign({},S.gppTab||{},{[_g]:s});}S.gppBusca='';S.gppMais=false;if(s==='escala'){setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}else if(s==='stock'||s==='depreciacao'||s==='margem'){setState({gppSec:s,dashAlertOpen:null});if(!S.stockLoaded)loadStock().then(()=>render());}
       else if(s==='premios'){setState({gppSec:s,dashAlertOpen:null});loadPremiosMes().then(()=>render());}
       else if(s==='entregas'){setState({gppSec:s,dashAlertOpen:null});loadEntregas().then(()=>render());}
       else if(s==='comissoes'){setState({gppSec:s,dashAlertOpen:null,pdfMenu:false});Promise.all([loadMargens(),loadEquipamento(),loadAssessores(),loadComFecho()]).then(()=>render());}else if(s==='evento'){setState({gppSec:s,dashAlertOpen:null,eventoErr:''});const ev=eventoAtual();if(ev){S.eventoSel=ev.id;loadRanking(ev.id).then(()=>render());}}else if(s==='funil'){setState({gppSec:s,dashAlertOpen:null});loadTransicoes().then(()=>render());}else{setState({gppSec:s,dashAlertOpen:null});}break}
