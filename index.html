@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-19-a">
+<meta name="app-version" content="2026-10-20-a">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2112,7 +2112,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-19-a';
+const APP_VERSION='2026-10-20-a';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -2155,10 +2155,10 @@ async function atualizarDadosSilencioso(){
   if(isAdmin())L.push(loadObjetivos(),loadObjEquipa(),loadTeam(),loadNps(),loadEot(),loadEntregas(),loadMargens(),loadEquipamento(),loadComsRecentes(),loadComFecho());
   else if(isVendedor())L.push(loadTeam(),loadEot(),loadEntregas(),loadMargens(),loadEquipamento(),loadComsRecentes(),loadComFecho());
   else if(rl==='secretario')L.push(loadTeam(),loadEntregas(),...(isFinanceiro()?[loadEot()]:[]));
-  else if(rl==='assessor')L.push(loadTeam(),loadEquipamento());
+  else if(rl==='assessor')L.push(loadTeam(),loadEquipamento(),...(isSecretaria()?[loadEntregas()]:[]));
   else if(isFinanceiro())L.push(loadTeam(),loadEot());
   try{
-    const rec=(rl==='assessor'||rl==='financeiro')?null:await supabaseApi('GET',rl==='secretario'?'/negocios_secretaria?select=*&order=neg.desc.nullslast':'/baviera_control?select=*&order=neg.desc.nullslast');
+    const _fn=fonteNegocios();const rec=_fn?await supabaseApi('GET',_fn):null;
     await Promise.all(L.map(p=>p&&p.catch?p.catch(()=>{}):p));
     if(rec){S.records=rec;if(S.selected){const n=rec.find(x=>String(x.id)===String(S.selected.id));if(n)S.selected=n;}}
   }catch(e){return;}
@@ -2320,7 +2320,7 @@ async function loadMe(){const uid=jwtSub(S.token);if(!uid)throw new Error('Token
 function isAdmin(){return S.me&&S.me.role==='admin'}
 function isVendedor(){return S.me&&S.me.role==='vendedor'}
 const ROLE_LBL={admin:'Chefe de Vendas',vendedor:'Vendedor',assessor:'Assessor de Serviço',secretario:'Secretário Comercial',financeiro:'Financeiro',pendente:'À espera de aprovação do chefe'};
-function ecraInicial(){const r=S.me&&S.me.role;return r==='admin'?'dashboard':(r==='vendedor'?'list':(r==='secretario'?'secretaria':(r==='assessor'?'assessor':(r==='financeiro'?'financeiro':'semacesso'))));}
+function ecraInicial(){const r=S.me&&S.me.role;if(r!=='admin'&&r!=='vendedor'&&temArea('previsao'))return'previsao';return r==='admin'?'dashboard':(r==='vendedor'?'list':(r==='secretario'?'secretaria':(r==='assessor'?'assessor':(r==='financeiro'?'financeiro':'semacesso'))));}
 // ---- Secretaria comercial: Retail, Carteira e Entregas — só leitura ----
 function secMesesDisp(){const m=new Set([curYM()]);(S.records||[]).forEach(r=>{if(r.status==='Retail'&&retailYM(r))m.add(retailYM(r));if(r.status==='Carteira'&&r.mes1)m.add(r.mes1);});return [...m].sort();}
 function secDetalhe(r,cols){
@@ -2445,10 +2445,12 @@ function renderAssessor(){
   if(S.asTab==='stock')return`<div class="app-layout"><div class="main-panel" style="width:100%">
     <div class="hdr"><div class="hdr-accent"></div><div class="hdr-title">${S.asTab==='stock'?'Stock Equipamento &amp; Lifestyle':'As minhas vendas de equipamento'}</div>
       ${contaHTML()}</div>
+    ${areaTabs()}
     <div class="content">${asTabs}${stockEqView()}</div></div></div>`;
   return`<div class="app-layout"><div class="main-panel" style="width:100%">
     <div class="hdr"><div class="hdr-accent"></div><div class="hdr-title">As minhas vendas de equipamento</div>
       ${contaHTML()}</div>
+    ${areaTabs()}
     <div class="content">${asTabs}<div style="padding:12px 0">
       <div class="v-mesbar"><span class="v-meslbl">Mês</span><select class="gpp-mes-sel" data-action="as-mes-sel">${meses.slice().reverse().map(m=>`<option value="${m}" ${m===sel?'selected':''}>${esc(ymCurto(m))}</option>`).join('')}</select></div>
       <div class="lc-cards">
@@ -2966,8 +2968,47 @@ function triPDF(){
 }
 // ===== Utilizador Financeiro: só EOTs, só leitura =====
 function isFinanceiro(){return !!(S.me&&(S.me.role==='financeiro'||S.me.financeiro===true));}
-function secFinTabs(cur){if(!(S.me&&S.me.role==='secretario'&&isFinanceiro()))return'';
-  return`<nav class="top-tabs" aria-label="Áreas"><button class="top-tab ${cur==='sec'?'on':''}" data-action="go-sec">${ico('inbox')}<span>Secretaria comercial</span></button><button class="top-tab ${cur==='fin'?'on':''}" data-action="go-fin">${ico('repeat')}<span>EOTs</span></button></nav>`;}
+// Áreas extra por utilizador (profiles.areas, definidas pelo chefe): 'secretaria', 'previsao'
+function temArea(a){return !!(S.me&&Array.isArray(S.me.areas)&&S.me.areas.includes(a));}
+function isSecretaria(){return !!(S.me&&(S.me.role==='secretario'||temArea('secretaria')));}
+function fonteNegocios(){const r=S.me&&S.me.role;if(r==='admin'||r==='vendedor')return'/baviera_control?select=*&order=neg.desc.nullslast';if(isSecretaria())return'/negocios_secretaria?select=*&order=neg.desc.nullslast';return null;}
+function areasDoUtilizador(){const r=S.me&&S.me.role;const L=[];if(r==='admin'||r==='vendedor')return L;
+  if(temArea('previsao'))L.push(['previsao','Previsão do mês','Previsão','calendar']);
+  if(r==='assessor')L.push(['assessor','Assessor','Assessor','receipt']);
+  if(isSecretaria())L.push(['secretaria','Secretaria comercial','Secretaria','inbox']);
+  if(isFinanceiro())L.push(['financeiro','EOTs','EOTs','repeat']);
+  return L;}
+function areaTabs(){const L=areasDoUtilizador();if(L.length<2)return'';
+  return`<nav class="top-tabs" aria-label="Áreas">${L.map(([sc,lb,cu,ic])=>`<button class="top-tab ${S.screen===sc?'on':''}" data-action="go-area" data-s="${sc}">${ico(ic)}<span class="t-longo">${lb}</span><span class="t-curto">${cu}</span></button>`).join('')}</nav>`;}
+function secFinTabs(){return areaTabs();}
+function renderPrevisao(){
+  const recs=S.records||[];
+  const isNovas=r=>r.type==='MN'||r.type==='MD',isUsadas=r=>r.type==='MU';
+  const ms=new Set();recs.forEach(r=>{if(r.status==='Retail'&&r.col_298)ms.add(retailYM(r));if(r.status==='Carteira'&&r.mes1)ms.add(r.mes1);});
+  const mesAtual=curYM();const sel=S.prevMes||mesAtual;const ano=+sel.slice(0,4);
+  const anos=[...new Set([...[...ms].filter(Boolean).map(m=>+m.slice(0,4)),ano,+mesAtual.slice(0,4)])].sort();
+  const MN=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const retail=recs.filter(r=>r.status==='Retail'&&retailYM(r)===sel),cart=recs.filter(r=>r.status==='Carteira'&&r.mes1===sel);
+  const c=(a,f)=>a.filter(f).length;const rN=c(retail,isNovas),rU=c(retail,isUsadas),cN=c(cart,isNovas),cU=c(cart,isUsadas);
+  return`<div class="app-layout"><div class="main-panel" style="width:100%">
+    <div class="hdr"><div class="hdr-accent"></div><div class="hdr-title">Previsão do mês</div>
+      <button class="hdr-btn hdr-ic" data-action="refresh" title="Atualizar" aria-label="Atualizar">${ico('refresh')}</button>
+      ${contaHTML()}</div>
+    ${areaTabs()}
+    <div class="content"><div class="sec-wrap">
+      <div class="per-bar">
+        <div class="per-seg">${anos.map(a=>`<button class="per-b ${a===ano?'on':''}" data-action="prev-ano" data-a="${a}">${a}</button>`).join('')}</div>
+        <div class="per-meses">${MN.map((n,k)=>{const ym=ano+'/'+String(k+1).padStart(2,'0');return`<button class="per-m ${ym===sel?'on':''} ${ms.has(ym)?'':'vazio'}" data-action="prev-mes" data-m="${ym}">${n}</button>`;}).join('')}</div>
+      </div>
+      <div class="gpp-card"><table class="gpp-table">
+        <thead><tr><th></th><th class="gpp-th-novas">MN + MD<div class="gpp-th-sub">Novas</div></th><th class="gpp-th-usadas">MU<div class="gpp-th-sub">Usadas</div></th><th class="gpp-th-tot">Total</th></tr></thead>
+        <tbody>
+          <tr><td class="gpp-rowlbl"><span class="gpp-dot" style="background:var(--green)"></span>Retail<div class="gpp-rowsub">entregue</div></td><td class="gpp-num">${rN}</td><td class="gpp-num">${rU}</td><td class="gpp-num gpp-tot">${rN+rU}</td></tr>
+          <tr><td class="gpp-rowlbl"><span class="gpp-dot" style="background:var(--blue)"></span>Carteira<div class="gpp-rowsub">a entregar</div></td><td class="gpp-num">${cN}</td><td class="gpp-num">${cU}</td><td class="gpp-num gpp-tot">${cN+cU}</td></tr>
+          <tr class="gpp-totrow"><td class="gpp-rowlbl">Total</td><td class="gpp-num gpp-tot">${rN+cN}</td><td class="gpp-num gpp-tot">${rU+cU}</td><td class="gpp-num gpp-tot gpp-grandtot">${rN+rU+cN+cU}</td></tr>
+        </tbody></table></div>
+    </div></div></div></div>`;
+}
 function renderFinanceiro(){
   const F=Object.assign({prazo:'',fase:'',resp:'',mapa:'1'},S.finF||{});
   const fE=n=>n==null?'—':Number(n).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
@@ -3355,7 +3396,7 @@ function recsOf(vid){return S.records.filter(r=>r.vendedor_id===vid)}
 function statsFor(recs){const ym=curYM();const fech=recs.filter(r=>(r.status==='Retail'||r.status==='Carteira')&&negYM(r)===ym);const funil=recs.filter(r=>FUNIL.includes(r.status));const bev=fech.filter(r=>r.bev).length;const fechTotal=recs.filter(r=>r.status==='Retail'||r.status==='Carteira').length;const perdidos=recs.filter(r=>r.status==='Perdido').length;return{fechados:fech.length,funil:funil.length,bev,fechTotal,perdidos,alerts:calcAlerts(recs)}}
 function lastUpdateDays(recs){let m=0;recs.forEach(r=>{const t=new Date(r.updated_at||r.status_updated_at||r.created_at||0).getTime();if(t>m)m=t});if(!m)return null;return Math.floor((Date.now()-m)/86400000)}
 function lastUpdateDaysR(r){const t=new Date(r.updated_at||r.status_updated_at||r.created_at||0).getTime();if(!t)return 999;return Math.floor((Date.now()-t)/86400000)}
-async function loadRecords(){setState({loading:true,error:''});try{const _rl=S.me&&S.me.role;const d=_rl==='secretario'?await supabaseApi('GET','/negocios_secretaria?select=*&order=neg.desc.nullslast'):((_rl==='assessor'||_rl==='financeiro')?[]:await supabaseApi('GET','/baviera_control?select=*&order=neg.desc.nullslast'));setState({records:d,loading:false})}catch(e){setState({error:'Erro: '+erroTexto(e),loading:false})}}
+async function loadRecords(){setState({loading:true,error:''});try{const _fn=fonteNegocios();const d=_fn?await supabaseApi('GET',_fn):[];setState({records:d,loading:false})}catch(e){setState({error:'Erro: '+erroTexto(e),loading:false})}}
 async function saveLead(){
   const f=S.leadForm||{};
   if(!f.campanha||!String(f.campanha).trim()){setState({leadErr:'Indica a campanha / lote.'});return;}
@@ -8071,7 +8112,7 @@ function render(){
 function render0(){
   const app=document.getElementById('app');
   const ce=app.querySelector('.content'),st=ce?ce.scrollTop:0,ps=app.dataset.screen||'';
-  const screens={loading:'<div class="content"><div class="center-screen"><p style="color:var(--text3)">A carregar...</p></div></div>',login:renderLogin,financeiro:renderFinanceiro,list:renderList,detail:renderDetail,edit:renderEdit,dashboard:renderDashboard,escala:renderEscala,password:renderPassword,ventregas:renderMinhasEntregas,vcom:renderMinhasComissoes,semacesso:renderSemAcesso,ficha:renderFichaMargem,secretaria:renderSecretaria,assessor:renderAssessor,stockvend:renderStockVend,evento:renderEventoVend,veot:renderMinhasEot,vstockeq:renderStockEqVend};
+  const screens={loading:'<div class="content"><div class="center-screen"><p style="color:var(--text3)">A carregar...</p></div></div>',login:renderLogin,financeiro:renderFinanceiro,list:renderList,detail:renderDetail,edit:renderEdit,dashboard:renderDashboard,escala:renderEscala,password:renderPassword,ventregas:renderMinhasEntregas,vcom:renderMinhasComissoes,semacesso:renderSemAcesso,previsao:renderPrevisao,ficha:renderFichaMargem,secretaria:renderSecretaria,assessor:renderAssessor,stockvend:renderStockVend,evento:renderEventoVend,veot:renderMinhasEot,vstockeq:renderStockEqVend};
   if(S.screen==='ventregas'&&S.me&&!isAdmin())S.screen='list';
   if(S.screen==='financeiro'&&S.me&&!isFinanceiro())S.screen=ecraInicial();
   const fn=screens[S.screen];
@@ -8317,7 +8358,10 @@ function bindEvents(){
       case'lemb-abrir':{const a=el.dataset.alvo;if(el.dataset.k==='com'){setState({screen:'dashboard',gppSec:'comissoes',dashMes:a,perTipo:'mes',gppMais:false});}
         else{S.escalaMes=a.replace('/','-');setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}break;}
       case'nv-atualizar':recarregarComRascunho();break;
-      case'go-sec':setState({screen:'secretaria'});break;
+      case'go-sec':if(isSecretaria())setState({screen:'secretaria'});break;
+      case'go-area':if(areasDoUtilizador().some(a=>a[0]===el.dataset.s))setState({screen:el.dataset.s});break;
+      case'prev-ano':{const m=(S.prevMes||curYM()).slice(5,7);setState({prevMes:el.dataset.a+'/'+m});break;}
+      case'prev-mes':setState({prevMes:el.dataset.m});break;
       case'go-fin':if(isFinanceiro())setState({screen:'financeiro'});break;
       case'eot-abrir':eotAbrir(el.dataset.c);break;
       case'eotm-fechar':eotFechar();break;
@@ -8524,7 +8568,7 @@ function bindEvents(){
 
 function collectFormData(){document.querySelectorAll('input[data-field],select[data-field],textarea[data-field]').forEach(el=>{const k=el.dataset.field;let v=el.value;if(el.dataset.fmt==='month'&&v)v=v.replace('-','/');S.form[k]=v})}
 
-function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadComsRecentes(),loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes(),loadTransicoes(),loadNorma(),loadFichasIdx(),loadEot(),loadComFecho()]):(isVendedor()?Promise.all([loadComsRecentes(),loadTeam(),loadEventos(),loadInscricoes(),loadInscricoesAll(),loadMargens(),loadEntregas(),loadEquipamento(),loadFichasIdx(),loadEot(),loadComFecho()]):(S.me&&S.me.role==='secretario'?Promise.all([loadTeam(),loadEntregas(),...(isFinanceiro()?[loadEot()]:[])]):(S.me&&S.me.role==='assessor'?Promise.all([loadTeam(),loadEquipamento()]):(S.me&&S.me.role==='financeiro'?Promise.all([loadTeam(),loadEot()]):Promise.all([loadTeam()])))));return extra}).then(function(){return loadRecords()}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:ecraInicial(),loading:false,statusFilter:isAdmin()?S.statusFilter:'_hoje'});_ultimoAuto=Date.now();restaurarRascunho();})}
+function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadComsRecentes(),loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes(),loadTransicoes(),loadNorma(),loadFichasIdx(),loadEot(),loadComFecho()]):(isVendedor()?Promise.all([loadComsRecentes(),loadTeam(),loadEventos(),loadInscricoes(),loadInscricoesAll(),loadMargens(),loadEntregas(),loadEquipamento(),loadFichasIdx(),loadEot(),loadComFecho()]):(S.me&&S.me.role==='secretario'?Promise.all([loadTeam(),loadEntregas(),...(isFinanceiro()?[loadEot()]:[])]):(S.me&&S.me.role==='assessor'?Promise.all([loadTeam(),loadEquipamento(),...(isSecretaria()?[loadEntregas()]:[])]):(S.me&&S.me.role==='financeiro'?Promise.all([loadTeam(),loadEot()]):Promise.all([loadTeam()])))));return extra}).then(function(){return loadRecords()}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:ecraInicial(),loading:false,statusFilter:isAdmin()?S.statusFilter:'_hoje'});_ultimoAuto=Date.now();restaurarRascunho();})}
 (function(){
   S.screen='loading';render();
   // Link de recuperacao do Supabase: #access_token=...&type=recovery

@@ -3,15 +3,16 @@
 import {baseDeEnsaio} from './base.mjs';
 
 const U={chefe:'00000000-0000-0000-0000-0000000000a1',vend:'00000000-0000-0000-0000-0000000000b1',vend2:'00000000-0000-0000-0000-0000000000b2',
-  sec:'00000000-0000-0000-0000-0000000000c1',ass:'00000000-0000-0000-0000-0000000000d1',fin:'00000000-0000-0000-0000-0000000000e1',novo:'00000000-0000-0000-0000-0000000000f1'};
+  sec:'00000000-0000-0000-0000-0000000000c1',assSec:'00000000-0000-0000-0000-0000000000d2',ass:'00000000-0000-0000-0000-0000000000d1',fin:'00000000-0000-0000-0000-0000000000e1',novo:'00000000-0000-0000-0000-0000000000f1'};
 const {db,pendentes}=await baseDeEnsaio();
 
 // ---------- dados fictícios (como servidor, sem utilizador) ----------
-const perfis=[['chefe','admin'],['vend','vendedor'],['vend2','vendedor'],['sec','secretario'],['ass','assessor'],['fin','financeiro']];
+const perfis=[['chefe','admin'],['vend','vendedor'],['vend2','vendedor'],['sec','secretario'],['ass','assessor'],['fin','financeiro'],['assSec','assessor']];
 for(const [k,role] of perfis){
   await db.query("insert into auth.users(id,email) values($1,$2)",[U[k],k+'@teste.pt']);
   await db.query("update public.profiles set role=$2, linha='motorrad', nome=$3 where id=$1",[U[k],role,k]);
 }
+await db.query("update public.profiles set areas=array['secretaria'] where id=$1",[U.assSec]);
 await db.query("insert into auth.users(id,email) values($1,'novo@teste.pt')",[U.novo]); // conta nova: fica com o perfil que o trigger lhe der
 const neg=async(v,s)=>(await db.query("insert into public.baviera_control(vendedor_id,status,id_cliente,obs_gestor,col_298) values($1,$2,'Cliente','nota do chefe','2026-09-10') returning id",[v,s])).rows[0].id;
 const N={retail:await neg(U.vend,'Retail'),carteira:await neg(U.vend,'Carteira'),exCarteira:await neg(U.vend,'Carteira'),frio:await neg(U.vend,'Frio'),comFicha:await neg(U.vend,'Quente'),retail2:await neg(U.vend2,'Retail')};
@@ -91,6 +92,14 @@ const C=[ // [área, perfil, descrição, função, esperado]
   ['assessor','ass','lê margens',conta('margens'),0],
   ['assessor','ass','muda estado de usada',()=>ok("select public.stock_mudar_estado(1,'Vendida',false)"),'recusado'],
 
+  ['assessor','ass','lê vista secretaria (sem área extra)',conta('negocios_secretaria'),0],
+  ['assessor','ass','dá a si próprio a área secretaria',async()=>{await db.query("update public.profiles set areas=array['secretaria'] where id=auth.uid()");return (await db.query('select areas from public.profiles where id=auth.uid()')).rows[0].areas.length;},0],
+  ['ass.+secret.','assSec','lê vista secretaria (com área extra)',conta('negocios_secretaria'),3],
+  ['ass.+secret.','assSec','lê entregas (vista)',conta('entregas_publico'),1],
+  ['ass.+secret.','assSec','lê stock de equipamento',conta('stock_equip'),1],
+  ['ass.+secret.','assSec','regista equipamento em seu nome',()=>ok(`insert into public.equipamento(vendedor_id,data,custo,venda) values('${U.assSec}','2026-10-01',1,2)`),'consegue'],
+  ['ass.+secret.','assSec','lê negócios diretamente (NIF, CC, notas)',conta('baviera_control'),0],
+  ['ass.+secret.','assSec','lê margens',conta('margens'),0],
   ['financeiro','fin','lê EOTs (todas)',conta('eot_contratos'),2],
   ['financeiro','fin','lê negócios',conta('baviera_control'),0],
   ['financeiro','fin','lê margens',conta('margens'),0],
