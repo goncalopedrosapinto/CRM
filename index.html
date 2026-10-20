@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-20-f">
+<meta name="app-version" content="2026-10-20-g">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2115,7 +2115,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-20-f';
+const APP_VERSION='2026-10-20-g';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -4751,7 +4751,7 @@ function renderCard(r){
 function origemVeiculo(r){if(!r)return'—';if(r.type==='MU')return'Usada';if(r.type==='MD')return'DEMO';if(r.stock==='Sim')return'Stock';if(r.enc)return'Encomenda';return'—';}
 function textoMatricula(r){r=r||{};return['*Pedido de matrícula*','NIF: '+(r.nif||'—'),'CC: '+(r.cc||'—'),'Nome: '+(r.id_cliente||'—'),'Chassis/Encomenda: '+(String(r.chas||'').trim()?String(r.chas).trim():(String(r.enc||'').trim()?String(r.enc).trim()+' (encomenda)':'—')),'Nº Bizagi: '+(r.biz||'—')].join('\n');}
 function tipoLabel(t){return{MN:'MN - Mota Nova',MD:'MD - Mota Demo',MU:'MU - Mota Usada'}[t]||(t||'—');}
-function textoVenda(r){r=r||{};const modelo=[r.model,r.version].filter(Boolean).join(' ')||'—';const ret=r.retoma==='Sim'?('Retoma'+(r.retoma_modelo?' '+r.retoma_modelo:'')+(r.retoma_mat?' ('+r.retoma_mat+')':'')):'Sem Retoma';return['*Comunicação de venda*','Modelo: '+modelo,'Tipo: '+tipoLabel(r.type),ret,'Pagamento: '+(r.fin||'—'),'Nome: '+(r.id_cliente||'—')].join('\n');}
+function textoVenda(r){r=r||{};const modelo=[r.model,r.version].filter(Boolean).join(' ')||'—';const ret=r.retoma==='Sim'?('Retoma'+(r.retoma_modelo?' '+r.retoma_modelo:'')+(r.retoma_mat?' ('+r.retoma_mat+')':'')):'Sem Retoma';return['*Comunicação de venda*','Modelo: '+modelo,'Tipo: '+tipoLabel(r.type),ret,'Pagamento: '+(r.fin||'—'),'Nome: '+(r.id_cliente||'—'),'Bizagi: '+(String(r.biz||'').trim()||'—'),String(r.chas||'').trim()?'Chassis: '+String(r.chas).trim():(String(r.enc||'').trim()?'Encomenda: '+String(r.enc).trim():'Chassis/Encomenda: —')].join('\n');}
   function pedAutLista(){
     const norma=(S.norma||[]).slice();
     const rank=n=>n.vendida?0:(n.estado!=='Matriculada'?1:2);
