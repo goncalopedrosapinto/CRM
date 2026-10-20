@@ -9,7 +9,8 @@
     "ecras": "node ecras_seguranca.js ../index.html",
     "xss": "node xss.js ../index.html A 120 && node xss.js ../index.html B 120",
     "integridade": "node integridade.js ../index.html 8",
-    "todos": "npm run permissoes && npm run csp && npm run erros && npm run ecras && npm run xss && npm run integridade"
+    "todos": "npm run permissoes && npm run csp && npm run erros && npm run ecras && npm run esforco && npm run xss && npm run integridade",
+    "esforco": "node ficha_esforco.js ../index.html"
   },
   "dependencies": {
     "@electric-sql/pglite": "0.3.16",

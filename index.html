@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-20-d">
+<meta name="app-version" content="2026-10-20-e">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2115,7 +2115,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-20-d';
+const APP_VERSION='2026-10-20-e';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -2542,7 +2542,7 @@ function fmCalc(){
   const compart=fmIn('compart_conc');
   const custoSC=custo-compart*k;
   const venda=fmN('preco_venda'), vendaS=venda/k;
-  const descCusto=(venda&&custoSC)?(custoSC-venda)/custoSC:null;
+  const descCusto=(venda&&custo)?(custo-venda)/custo:null;   // custo completo: a comparticipação também conta
   const margem=venda?(vendaS-custo/k):0;
   const margemPct=vendaS?margem/vendaS:0;
   const tipo=(S.fm&&S.fm.natureza)||'MN';
@@ -2556,16 +2556,18 @@ function fmCalc(){
   const pvpRef=plat||pvpDesc;
   const descCli=venda?(pvpRef-venda)/k:null;
   const descCliPct=(descCli!=null&&base)?descCli/base:null;
-  // Esforço = desconto ao cliente acima da MG. FIXA do modelo (as duas em % do Model and Options s/IVA).
-  // Comparticipação, preparação ou ofertas mexem no preço de custo mas não no esforço.
+  // Esforço = (desconto ao cliente + custos internos) acima da MG. FIXA do modelo.
+  // Tudo em % do Model and Options s/IVA (a base da plataforma BMW). Os custos internos
+  // (preparação, comparticipação, ofertas) sobem o preço de custo e por isso comem margem como um desconto.
   const _mf=fmN('mg_fixa_pct'),_mv=fmN('mg_var_pct');
   const margFixaPct=_mf>0?_mf/100:null, margVarPct=_mv>0?_mv/100:null;
-  const esforcoPct=(descCliPct!=null&&margFixaPct!=null)?Math.max(0,descCliPct-margFixaPct):null;
+  const internosPct=base?internos/base:0;
+  const esforcoPct=(descCliPct!=null&&margFixaPct!=null)?Math.max(0,descCliPct+internosPct-margFixaPct):null;
   // aprovação da chefia: margem (s/IVA) abaixo de 0,50% do valor proposto
   const FM_MARGEM_MIN=0.005;
   const margPct=null,folga=null;
   const aprovacao=!!venda&&margemPct<FM_MARGEM_MIN;
-  return {margFixaPct,esforcoPct,margVarPct,margPct,folga,aprovacao,modo:fmModo(),iva,k,isv,sgpu,base,baseD:base-descPreco,dl,desc,descMarg,descPreco,pvpRef,descCli,descCliPct,descPct:base?desc/base:0,diversos,ptot,ptotD,taxasTab:taxas(ptot),taxasDesc:taxas(ptotD),
+  return {internosPct,margFixaPct,esforcoPct,margVarPct,margPct,folga,aprovacao,modo:fmModo(),iva,k,isv,sgpu,base,baseD:base-descPreco,dl,desc,descMarg,descPreco,pvpRef,descCli,descCliPct,descPct:base?desc/base:0,diversos,ptot,ptotD,taxasTab:taxas(ptot),taxasDesc:taxas(ptotD),
     pvp:pvpTab,pvpTab,pvpDesc,internos,custo,custoSC,compart,descCusto,venda,vendaS,margem,margemPct,com,regraCom,
     descValor:venda-pvpRef,descPercent:pvpRef?(venda-pvpRef)/pvpRef:0,plat,difPlat};
 }
@@ -2788,7 +2790,7 @@ function renderFichaMargem(){
       <div class="kpi-c"><span class="kpi-k">Valor proposto</span><span class="kpi-v">${c.venda?fE0(c.venda):'—'}</span>${c.descCliPct!=null&&c.venda?`<span class="kpi-s">${c.descCliPct>=0?'desconto':'acima do PVP'} ${Math.abs(c.descCliPct*100).toLocaleString('pt-PT',{maximumFractionDigits:1})} %</span>`:''}</div>
       <div class="kpi-c"><span class="kpi-k">Margem</span><span class="kpi-v ${c.venda&&c.margem<0?'neg':''}">${c.venda?fE0(c.margem):'—'}</span>${c.venda?`<span class="kpi-s">${pc(c.margemPct)}${c.aprovacao?' · <b class="neg">precisa aprovação</b>':''}</span>`:''}</div>
       <div class="kpi-c"><span class="kpi-k">Comissão</span><span class="kpi-v pos">${c.com==null?'—':fE0(c.com)}</span></div>
-      <div class="kpi-c"><span class="kpi-k">Esforço</span><span class="kpi-v">${c.venda&&c.esforcoPct!=null?pc(c.esforcoPct):'—'}</span><span class="kpi-s">${c.margFixaPct==null?'falta MG. FIXA':(c.margVarPct!=null?`de ${pc(c.margVarPct)} variável`:'MG. variável por preencher')}</span></div>
+      <div class="kpi-c"><span class="kpi-k">Esforço</span><span class="kpi-v">${c.venda&&c.esforcoPct!=null?pc(c.esforcoPct):'—'}</span><span class="kpi-s">${c.margFixaPct==null?'falta MG. FIXA':`${c.margVarPct!=null?`de ${pc(c.margVarPct)} variável · `:''}fixa ${pc(c.margFixaPct)}${c.internosPct>0.00005?` · custos ${pc(c.internosPct)}`:''}`}</span></div>
     </div>
     ${c.aprovacao?`<div class="fm-aprov">⚠️ <b>Necessário aprovação da chefia</b> — margem de ${(c.margemPct*100).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})}%, abaixo do mínimo de 0,50%.</div>`:''}
     <div class="gpp-card fm-card">
