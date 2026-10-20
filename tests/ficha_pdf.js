@@ -13,7 +13,7 @@ const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'))
       apoio:'50',pac:'200',bsi:'300',acess_marca:'150',acess_conc:'80',ecovalor:'5',iuc_s:'20',transporte:'150'};
     let cap='';const o=window.open;window.open=()=>({document:{open(){},write(h){cap+=h},close(){}},focus(){},print(){}});fmPDF();window.open=o;return cap;});
   const q=await b.newPage();await q.setContent(html);await q.waitForTimeout(200);
-  const tem=await q.evaluate(()=>({resumo:document.querySelectorAll('table.res td').length,esforco:/Esfor/.test(document.body.innerText),assinatura:document.querySelectorAll('.ass .ln').length,zoom:document.body.style.zoom||'1'}));
+  const tem=await q.evaluate(()=>({resumo:document.querySelectorAll('table.res td').length,esforco:/Esforço/.test(document.body.textContent),assinatura:document.querySelectorAll('.ass .ln').length,zoom:document.body.style.zoom||'1'}));
   const pdf=await q.pdf({preferCSSPageSize:true,printBackground:true});
   const paginas=(pdf.toString('latin1').match(/\/Type\s*\/Page[^s]/g)||[]).length;
   console.log(JSON.stringify(Object.assign({paginas},tem)));
