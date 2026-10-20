@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-20-a">
+<meta name="app-version" content="2026-10-20-b">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -467,6 +467,8 @@ html,body{overflow-x:hidden;max-width:100vw}
 .gpp-grandtot{color:var(--orange);font-size:24px}
 .gpp-obj-card{margin-top:12px;padding:16px}
 .gpp-obj-grid{display:flex;align-items:center;gap:12px;flex-wrap:nowrap}
+.prev-obj-grid{align-items:flex-start}
+@media(max-width:700px){.prev-obj-grid{flex-wrap:wrap}.prev-obj-grid .gpp-obj-cell{flex:1 1 40%}}
 .gpp-obj-cell{flex:1;min-width:0}
 .gpp-obj-center{text-align:center}
 .gpp-obj-lbl{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px}
@@ -2112,7 +2114,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-20-a';
+const APP_VERSION='2026-10-20-b';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -2155,6 +2157,7 @@ async function atualizarDadosSilencioso(){
   if(isAdmin())L.push(loadObjetivos(),loadObjEquipa(),loadTeam(),loadNps(),loadEot(),loadEntregas(),loadMargens(),loadEquipamento(),loadComsRecentes(),loadComFecho());
   else if(isVendedor())L.push(loadTeam(),loadEot(),loadEntregas(),loadMargens(),loadEquipamento(),loadComsRecentes(),loadComFecho());
   else if(rl==='secretario')L.push(loadTeam(),loadEntregas(),...(isFinanceiro()?[loadEot()]:[]));
+  if(!isAdmin()&&temArea('previsao'))L.push(loadObjEquipa());
   else if(rl==='assessor')L.push(loadTeam(),loadEquipamento(),...(isSecretaria()?[loadEntregas()]:[]));
   else if(isFinanceiro())L.push(loadTeam(),loadEot());
   try{
@@ -3007,7 +3010,26 @@ function renderPrevisao(){
           <tr><td class="gpp-rowlbl"><span class="gpp-dot" style="background:var(--blue)"></span>Carteira<div class="gpp-rowsub">a entregar</div></td><td class="gpp-num">${cN}</td><td class="gpp-num">${cU}</td><td class="gpp-num gpp-tot">${cN+cU}</td></tr>
           <tr class="gpp-totrow"><td class="gpp-rowlbl">Total</td><td class="gpp-num gpp-tot">${rN+cN}</td><td class="gpp-num gpp-tot">${rU+cU}</td><td class="gpp-num gpp-tot gpp-grandtot">${rN+rU+cN+cU}</td></tr>
         </tbody></table></div>
+      ${prevObjetivo(sel,rN,cN)}
     </div></div></div></div>`;
+}
+function prevObjetivo(sel,rN,cN){
+  const obj=(objEquipaGet(sel,'novas')||{}).objetivo||0;
+  if(!obj)return`<div class="gpp-card gpp-obj-card"><div class="gpp-obj-sub" style="text-align:center;padding:6px 0">Sem objetivo lançado para ${esc(ymCurto(sel))}.</div></div>`;
+  const o110=Math.ceil(obj*1.1),proj=rN+cN;
+  const falta=(alvo,v)=>v>=alvo?'atingido':`faltam ${alvo-v}`;
+  const pct=Math.round(rN/obj*100),cls=pct>=100?'ok':(pct>=70?'warn':'bad');
+  const cel=(lbl,val,sub,extra)=>`<div class="gpp-obj-cell gpp-obj-center"><div class="gpp-obj-lbl">${lbl}</div><div class="gpp-obj-real"${extra||''}>${val}</div><div class="gpp-obj-sub">${sub}</div></div>`;
+  return`<div class="gpp-card gpp-obj-card">
+    <div class="gpp-obj-lbl" style="margin-bottom:10px">Objetivo Novas <span class="gpp-obj-sub">MN+MD · ${esc(ymCurto(sel))}</span></div>
+    <div class="gpp-obj-grid prev-obj-grid">
+      ${cel('Objetivo 100%',obj,'motas')}
+      ${cel('Objetivo 110%',o110,'motas')}
+      ${cel('Retail feito',rN,`${falta(obj,rN)} p/ 100% · ${falta(o110,rN)} p/ 110%`)}
+      ${cel('Retail + carteira',proj,`${falta(obj,proj)} p/ 100% · ${falta(o110,proj)} p/ 110%`)}
+    </div>
+    <div class="gpp-obj-bar"><div class="gpp-obj-bar-fill ${cls}" style="width:${Math.min(100,pct)}%"></div></div>
+  </div>`;
 }
 function renderFinanceiro(){
   const F=Object.assign({prazo:'',fase:'',resp:'',mapa:'1'},S.finF||{});
@@ -8568,7 +8590,7 @@ function bindEvents(){
 
 function collectFormData(){document.querySelectorAll('input[data-field],select[data-field],textarea[data-field]').forEach(el=>{const k=el.dataset.field;let v=el.value;if(el.dataset.fmt==='month'&&v)v=v.replace('-','/');S.form[k]=v})}
 
-function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadComsRecentes(),loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes(),loadTransicoes(),loadNorma(),loadFichasIdx(),loadEot(),loadComFecho()]):(isVendedor()?Promise.all([loadComsRecentes(),loadTeam(),loadEventos(),loadInscricoes(),loadInscricoesAll(),loadMargens(),loadEntregas(),loadEquipamento(),loadFichasIdx(),loadEot(),loadComFecho()]):(S.me&&S.me.role==='secretario'?Promise.all([loadTeam(),loadEntregas(),...(isFinanceiro()?[loadEot()]:[])]):(S.me&&S.me.role==='assessor'?Promise.all([loadTeam(),loadEquipamento(),...(isSecretaria()?[loadEntregas()]:[])]):(S.me&&S.me.role==='financeiro'?Promise.all([loadTeam(),loadEot()]):Promise.all([loadTeam()])))));return extra}).then(function(){return loadRecords()}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:ecraInicial(),loading:false,statusFilter:isAdmin()?S.statusFilter:'_hoje'});_ultimoAuto=Date.now();restaurarRascunho();})}
+function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadComsRecentes(),loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes(),loadTransicoes(),loadNorma(),loadFichasIdx(),loadEot(),loadComFecho()]):(isVendedor()?Promise.all([loadComsRecentes(),loadTeam(),loadEventos(),loadInscricoes(),loadInscricoesAll(),loadMargens(),loadEntregas(),loadEquipamento(),loadFichasIdx(),loadEot(),loadComFecho()]):(S.me&&S.me.role==='secretario'?Promise.all([loadTeam(),loadEntregas(),...(isFinanceiro()?[loadEot()]:[])]):(S.me&&S.me.role==='assessor'?Promise.all([loadTeam(),loadEquipamento(),...(isSecretaria()?[loadEntregas()]:[])]):(S.me&&S.me.role==='financeiro'?Promise.all([loadTeam(),loadEot()]):Promise.all([loadTeam()])))));return Promise.all([extra,(!isAdmin()&&temArea('previsao'))?loadObjEquipa():null])}).then(function(){return loadRecords()}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:ecraInicial(),loading:false,statusFilter:isAdmin()?S.statusFilter:'_hoje'});_ultimoAuto=Date.now();restaurarRascunho();})}
 (function(){
   S.screen='loading';render();
   // Link de recuperacao do Supabase: #access_token=...&type=recovery

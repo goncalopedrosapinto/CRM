@@ -3,16 +3,18 @@
 import {baseDeEnsaio} from './base.mjs';
 
 const U={chefe:'00000000-0000-0000-0000-0000000000a1',vend:'00000000-0000-0000-0000-0000000000b1',vend2:'00000000-0000-0000-0000-0000000000b2',
-  sec:'00000000-0000-0000-0000-0000000000c1',assSec:'00000000-0000-0000-0000-0000000000d2',ass:'00000000-0000-0000-0000-0000000000d1',fin:'00000000-0000-0000-0000-0000000000e1',novo:'00000000-0000-0000-0000-0000000000f1'};
+  sec:'00000000-0000-0000-0000-0000000000c1',assSec:'00000000-0000-0000-0000-0000000000d2',secPrev:'00000000-0000-0000-0000-0000000000c2',ass:'00000000-0000-0000-0000-0000000000d1',fin:'00000000-0000-0000-0000-0000000000e1',novo:'00000000-0000-0000-0000-0000000000f1'};
 const {db,pendentes}=await baseDeEnsaio();
 
 // ---------- dados fictícios (como servidor, sem utilizador) ----------
-const perfis=[['chefe','admin'],['vend','vendedor'],['vend2','vendedor'],['sec','secretario'],['ass','assessor'],['fin','financeiro'],['assSec','assessor']];
+const perfis=[['chefe','admin'],['vend','vendedor'],['vend2','vendedor'],['sec','secretario'],['ass','assessor'],['fin','financeiro'],['assSec','assessor'],['secPrev','secretario']];
 for(const [k,role] of perfis){
   await db.query("insert into auth.users(id,email) values($1,$2)",[U[k],k+'@teste.pt']);
   await db.query("update public.profiles set role=$2, linha='motorrad', nome=$3 where id=$1",[U[k],role,k]);
 }
 await db.query("update public.profiles set areas=array['secretaria'] where id=$1",[U.assSec]);
+await db.query("update public.profiles set areas=array['previsao'] where id=$1",[U.secPrev]);
+await db.query("insert into public.objetivos_equipa(mes,tipo,objetivo) values('2026-10-01','novas',9)");
 await db.query("insert into auth.users(id,email) values($1,'novo@teste.pt')",[U.novo]); // conta nova: fica com o perfil que o trigger lhe der
 const neg=async(v,s)=>(await db.query("insert into public.baviera_control(vendedor_id,status,id_cliente,obs_gestor,col_298) values($1,$2,'Cliente','nota do chefe','2026-09-10') returning id",[v,s])).rows[0].id;
 const N={retail:await neg(U.vend,'Retail'),carteira:await neg(U.vend,'Carteira'),exCarteira:await neg(U.vend,'Carteira'),frio:await neg(U.vend,'Frio'),comFicha:await neg(U.vend,'Quente'),retail2:await neg(U.vend2,'Retail')};
@@ -100,6 +102,10 @@ const C=[ // [área, perfil, descrição, função, esperado]
   ['ass.+secret.','assSec','regista equipamento em seu nome',()=>ok(`insert into public.equipamento(vendedor_id,data,custo,venda) values('${U.assSec}','2026-10-01',1,2)`),'consegue'],
   ['ass.+secret.','assSec','lê negócios diretamente (NIF, CC, notas)',conta('baviera_control'),0],
   ['ass.+secret.','assSec','lê margens',conta('margens'),0],
+  ['secretário','sec','lê objetivos de equipa (sem área)',conta('objetivos_equipa'),0],
+  ['secr.+previsão','secPrev','lê objetivos de equipa',conta('objetivos_equipa'),1],
+  ['secr.+previsão','secPrev','altera objetivo de equipa',()=>n("with u as (update public.objetivos_equipa set objetivo=99 returning 1) select count(*) n from u"),0],
+  ['vendedor','vend','lê objetivos de equipa',conta('objetivos_equipa'),0],
   ['financeiro','fin','lê EOTs (todas)',conta('eot_contratos'),2],
   ['financeiro','fin','lê negócios',conta('baviera_control'),0],
   ['financeiro','fin','lê margens',conta('margens'),0],

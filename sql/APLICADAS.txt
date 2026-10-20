@@ -3,3 +3,4 @@
 2026-10-14_mes_referencia_validacao.sql
 2026-10-19_seguranca_fase1.sql
 2026-10-19_erros_cliente.sql
+2026-10-20_areas_extra.sql
