@@ -4,3 +4,4 @@
 2026-10-19_seguranca_fase1.sql
 2026-10-19_erros_cliente.sql
 2026-10-20_areas_extra.sql
+2026-10-20_objetivo_previsao.sql
