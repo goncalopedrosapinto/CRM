@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-20-e">
+<meta name="app-version" content="2026-10-20-f">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2115,7 +2115,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-20-e';
+const APP_VERSION='2026-10-20-f';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -2703,10 +2703,20 @@ function fmPDF(){
   r+=lin('PRE\u00c7O CUSTO','',fE(c.custo),'t','c');
   r+=sec('Venda');
   r+=lin('Valor proposto de venda','',fE(c.venda),'dest','c');
-  if(c.descCli!=null)r+=lin('Desconto ao cliente',pc(c.descCliPct||0),fE(c.descCli*k),'dest','c');
+  if(c.descCli!=null)r+=lin('Desconto ao cliente',pc(c.descCliPct||0),(c.descCli>0?'\u2212':'')+fE(Math.abs(c.descCli)),'dest','s');
   r+=lin('Valor proposto','',fE(c.vendaS),'','s');
   r+=lin('Margem',pc(c.margemPct),fE(c.margem),'dest','s');
   r+=lin('Comiss\u00e3o',esc(c.regraCom),c.com==null?'\u2014':fE(c.com),'dest','');
+  const fE0=n=>Math.round(Number(n||0)).toLocaleString('pt-PT')+' \u20ac';
+  const cel=(cls,kk,v,sub)=>'<td class="'+cls+'"><div class="rk">'+kk+'</div><div class="rv">'+v+'</div>'+(sub?'<div class="rs">'+sub+'</div>':'')+'</td>';
+  const esfSub=c.margFixaPct==null?'falta MG. FIXA':((c.margVarPct!=null?'de '+pc(c.margVarPct)+' vari\u00e1vel \u00b7 ':'')+'fixa '+pc(c.margFixaPct)+(c.internosPct>0.00005?' \u00b7 custos '+pc(c.internosPct):''));
+  const resumo='<table class="res"><tr>'
+    +cel('','PVP',c.pvpDesc?fE0(c.pvpDesc):'\u2014','')
+    +cel('dsc','Valor proposto',c.venda?fE0(c.venda):'\u2014',c.descCliPct!=null&&c.venda?(c.descCliPct>=0?'desconto ':'acima do PVP ')+pc(Math.abs(c.descCliPct)):'')
+    +cel(c.venda&&c.margem<0?'neg':'mg','Margem',c.venda?fE0(c.margem):'\u2014',c.venda?pc(c.margemPct)+(c.aprovacao?' \u00b7 <b>precisa aprova\u00e7\u00e3o</b>':''):'')
+    +cel('mg','Comiss\u00e3o',c.com==null?'\u2014':fE0(c.com),'')
+    +cel('','Esfor\u00e7o',c.venda&&c.esforcoPct!=null?pc(c.esforcoPct):'\u2014',esfSub)
+    +'</tr></table>';
   const html='<!doctype html><html lang="pt"><head><meta charset="utf-8"><title>Ficha de Margem'+(fm.modelo?' \u2014 '+fm.modelo:'')+'</title>'
    +'<style>@page{size:A4;margin:9mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:0}'
    +'h1{font-size:14px;margin:0 0 1px}.s{color:#666;font-size:9px;margin:0 0 6px}'
@@ -2719,21 +2729,23 @@ function fmPDF(){
    +'.iva{font-size:7.5px;font-weight:700;color:#64748B;border:1px solid #cbd5e1;border-radius:3px;padding:0 3px;margin-left:4px}'
    +'.nota{margin-top:8px;font-size:9px;color:#666}'
    +'table.res{width:100%;border-collapse:separate;border-spacing:4px 0;margin:0 -4px 6px;}table.res td{background:#f1f5f9;border:1px solid #cbd5e1;border-radius:5px;padding:4px 7px;vertical-align:top;width:20%}'
-   +'table.res td.dsc{background:#DBEAFE;border-color:#93C5FD}table.res td.mg{background:#DCFCE7;border-color:#86EFAC}.rk{font-size:7px;font-weight:800;text-transform:uppercase;color:#475569}.rv{font-size:12px;font-weight:800;margin-top:1px}.rs{font-size:7px;color:#64748B}'
+   +'table.res td.dsc{background:#DBEAFE;border-color:#93C5FD}table.res td.mg{background:#DCFCE7;border-color:#86EFAC}table.res td.neg{background:#FEE2E2;border-color:#FCA5A5}table.res td.neg .rv{color:#B91C1C}.rk{font-size:7px;font-weight:800;text-transform:uppercase;color:#475569}.rv{font-size:12px;font-weight:800;margin-top:1px}.rs{font-size:7px;color:#64748B}'
    +'.aprov{background:#FEE2E2;border:2px solid #DC2626;color:#991B1B;font-weight:800;font-size:9.5px;padding:5px 8px;border-radius:5px;margin-bottom:6px}'
    +'.ass{margin-top:12px;border-top:1.5px solid #111;padding-top:5px;page-break-inside:avoid}.ass-t{font-size:8.5px;font-weight:800;text-transform:uppercase;margin-bottom:16px}'
-   +'.ass-g{display:flex;gap:20px}.ass-g>div{flex:1;font-size:8px;color:#475569;text-align:center}.ln{border-bottom:1px solid #111;height:20px;margin-bottom:3px}'
+   +'.ass-g{display:flex;gap:20px}.ass-g>div{flex:1;font-size:8px;color:#475569;text-align:center}.ln{border-bottom:1px solid #111;height:34px;margin-bottom:3px}'
    +'.nota{margin-top:4px!important;font-size:7.5px!important}'
    +'</style></head><body>'
    +'<h1>Ficha de Margem</h1><p class="s">Bimby Motorrad \u00b7 '+new Date().toLocaleDateString('pt-PT')+(S.me&&S.me.nome?' \u00b7 '+esc(S.me.nome):'')+'</p>'
    +'<table class="id"><tr><td class="k">Natureza</td><td>'+esc(fm.natureza||'')+'</td><td class="k">Modelo</td><td>'+esc(fm.modelo||'')+'</td></tr>'
    +'<tr><td class="k">N\u00ba proposta</td><td>'+esc(fm.proposta||'')+'</td><td class="k">Pagamento</td><td>'+esc(fm.pagamento||'')+'</td></tr>'
    +'<tr><td class="k">Cliente</td><td>'+esc(fm.cliente||'')+'</td><td class="k">Tipo</td><td>'+esc(fm.tipo||'')+'</td></tr></table>'
+   +resumo
    +(c.aprovacao?'<div class="aprov">NECESS\u00c1RIO APROVA\u00c7\u00c3O DA CHEFIA \u2014 margem de '+pc(c.margemPct)+', abaixo do m\u00ednimo de 0,50 %.</div>':'')
    +'<table class="r">'+r+'</table>'
    +'<div class="nota">Valores com IVA, como na plataforma BMW, exceto ISV, SGPU e Comparticipa\u00e7\u00e3o Concession\u00e1rio (sem IVA). A margem e a comiss\u00e3o s\u00e3o calculadas sem IVA.</div>'
    +'<div class="ass"><div class="ass-t">'+(c.aprovacao?'Aprova\u00e7\u00e3o da chefia (obrigat\u00f3ria)':'Aprova\u00e7\u00e3o da chefia')+'</div>'
    +'<div class="ass-g"><div><div class="ln"></div>Chefe de Vendas</div><div><div class="ln"></div>Data</div><div><div class="ln"></div>Vendedor</div></div></div>'
+   +'<script>(function(){var mm=96/25.4,util=279*mm-4,h=document.body.scrollHeight;if(h>util){document.body.style.zoom=(util/h).toFixed(3);}})();<\/script>'
    +'</body></html>';
   const w=window.open('','_blank');
   if(!w){alert('Permite pop-ups neste site para gerar o PDF.');return;}
