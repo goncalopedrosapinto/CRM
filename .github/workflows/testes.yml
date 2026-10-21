@@ -45,5 +45,6 @@ jobs:
       - run: npm run ecras
       - run: npm run esforco
       - run: npm run pdf
+      - run: npm run navegacao
       - run: npm run xss
       - run: npm run integridade

@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-20-h">
+<meta name="app-version" content="2026-10-21-a">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2116,7 +2116,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-20-h';
+const APP_VERSION='2026-10-21-a';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -2127,6 +2127,7 @@ function rascunhoAtual(){
   const r={uid:S.me.id,quando:Date.now(),screen:S.screen,gppSec:S.gppSec,statusFilter:S.statusFilter,selId:S.selected?S.selected.id:null,
     scroll:(document.querySelector('#app .content')||{}).scrollTop||0};
   if(S.screen==='edit'){try{collectFormData();}catch(e){}r.form=S.form;r.formCompleto=!!S.formCompleto;r.openGroups=S.openGroups;r.fmRascunho=S.fmRascunho||null;}
+  if(S.screen==='ficha'&&S.fmNeg){r.fmNeg=S.fmNeg;r.fmVolta=S.fmVolta||null;if(S.fmNeg==='novo'){if(S.form)r.form=S.form;r.formCompleto=!!S.formCompleto;r.openGroups=S.openGroups;r.fmRascunho=S.fm||S.fmRascunho||null;}}
   if(S.eotAberto){r.eotAberto=S.eotAberto;r.eotEd=S.eotEd||{};r.eotCom=S.eotCom||'';}
   if(S.negCom)r.negCom=S.negCom;
   if(S.seqFora)r.seqFora=S.seqFora;
@@ -2142,6 +2143,9 @@ function restaurarRascunho(){
   if((r.screen==='detail'||(r.screen==='edit'&&r.selId!=null))&&!sel)return;
   Object.assign(S,{screen:r.screen,gppSec:r.gppSec||S.gppSec,statusFilter:r.statusFilter||S.statusFilter,selected:sel});
   if(r.screen==='edit'&&r.form){S.form=r.form;S.formCompleto=r.formCompleto;S.openGroups=r.openGroups||S.openGroups;if(r.fmRascunho)S.fmRascunho=r.fmRascunho;}
+  // ficha de margem de um negócio (p.ex. depois de a página se atualizar sozinha): volta à do negócio, nunca à solta
+  if(r.screen==='ficha'&&r.fmNeg&&r.fmNeg!=='novo'){let v=(r.fmVolta&&r.fmVolta!=='ficha')?r.fmVolta:(sel?'detail':ecraInicial());if(v==='detail'&&!sel)v=ecraInicial();S.screen=v;fmAbrirNegocio(r.fmNeg);return;}
+  if(r.screen==='ficha'&&r.fmNeg==='novo'&&r.form){S.form=r.form;S.formCompleto=r.formCompleto;S.openGroups=r.openGroups||S.openGroups;S.fmRascunho=r.fmRascunho||null;S.screen='edit';fmAbrirNegocio('novo');return;}
   if(r.eotAberto&&(S.eot||[]).some(x=>String(x.contrato)===String(r.eotAberto))){S.eotAberto=r.eotAberto;S.eotEd=r.eotEd||{};S.eotCom=r.eotCom||'';loadEotHist(r.eotAberto);}
   if(r.negCom)S.negCom=r.negCom;
   if(r.seqFora)S.seqFora=r.seqFora;
