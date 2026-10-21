@@ -6,3 +6,4 @@
 2026-10-20_areas_extra.sql
 2026-10-20_objetivo_previsao.sql
 2026-10-20_configuracoes.sql
+2026-10-21_encomendas_bmw.sql

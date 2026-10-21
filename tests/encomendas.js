@@ -13,11 +13,11 @@ const jwt=(sub)=>b64({alg:'ES256'})+'.'+b64({sub,exp:Math.floor(Date.now()/1000)
 const CAB='Production Number;Chassis No.;Body Group;Brand;Model Code;Model Description;Model Series;Color Code;Upholstery Code;Options String;Order Template ID;Wholesaler;Dealer Number;Dealer No.;Region;District;Act. Location;Dest. Loc.;Order Status;Timestamp Order Status;Processing Type;Sales Channel;Port Location;Confirmed Production Week;Subsidiary Requested Production Week;Actual Production Date;Conf F3 From;Conf.F3 To;AG Inv. Date;Wholesale Invoice Ind;Retail System Date (GMT);New vehicle retail;Current Release Date;Holds;Customer;Customer (Last);Purchase Agreement Date;P. A. Date / Event Date;TS Order Entry;CO2 Output;Chassis Number 17;Fuel Type;Salesperson Number;Factory;Businesstype;Quota Month;Exp. Del. Wk.;Wholesale Invoice Document Date;Planned F2 Date;Corrected F2 Date;Retail Requested Production Week;Retail Counting Date;Retail Cancellation Date;AG Vehicle Hold;Planned Handover Wk.;Order Template ID;Sub. Notes;Quota PAK;PDI Done'.split(';');
 const linha=o=>CAB.map(h=>o[h]==null?'':o[h]);
 const L=[
-  {'Production Number':'9000005','Chassis No.':'6N00005','Body Group':'KA1','Model Code':'0M21','Model Description':'R 1300 GS','Color Code':'N52','Options String':'20B 389 7A8','Order Status':'198','Timestamp Order Status':'03.07.2026','Processing Type':'CS','Actual Production Date':'28.01.2026','Conf F3 From':'01/07/2026','Conf.F3 To':'05/07/2026','Customer (Last)':'Gonçalves Simão','Chassis Number 17':'WB10M2100T6N00005','Exp. Del. Wk.':'20260727'},
-  {'Production Number':'9000004','Chassis No.':'','Body Group':'KA1','Model Code':'0M21','Model Description':'R 1300 GS','Color Code':'ND2','Options String':'389 413','Order Status':'111','Timestamp Order Status':'09.09.2026','Processing Type':'ST','Actual Production Date':'','Conf F3 From':'18/01/2027','Conf.F3 To':'24/01/2027','Customer (Last)':'','Chassis Number 17':'','Exp. Del. Wk.':'20270103'},
+  {'Production Number':'9000005','Chassis No.':'6N00005','Body Group':'KA1','Model Code':'0M21','Model Description':'R 1300 GS','Color Code':'N52','Options String':'20B 389 7A8','Order Status':'198','Timestamp Order Status':'03.07.2026','Processing Type':'CS','Actual Production Date':'28.01.2026','Conf F3 From':'01/07/2026','Conf.F3 To':'05/07/2026','Customer (Last)':'Gonçalves Simão','Salesperson Number':'GM','Chassis Number 17':'WB10M2100T6N00005','Exp. Del. Wk.':'20260727'},
+  {'Salesperson Number':'cm0ggvc','Production Number':'9000004','Chassis No.':'','Body Group':'KA1','Model Code':'0M21','Model Description':'R 1300 GS','Color Code':'ND2','Options String':'389 413','Order Status':'111','Timestamp Order Status':'09.09.2026','Processing Type':'ST','Actual Production Date':'','Conf F3 From':'18/01/2027','Conf.F3 To':'24/01/2027','Customer (Last)':'','Chassis Number 17':'','Exp. Del. Wk.':'20270103'},
   {'Production Number':'9000003','Chassis No.':'6N00003','Body Group':'KA1','Model Code':'0M21','Model Description':'R 1300 GS','Color Code':'N52','Options String':'5AG 6AC','Order Status':'150','Timestamp Order Status':'12.10.2026','Processing Type':'DE','Actual Production Date':'04.11.2026','Conf F3 From':'16/11/2026','Conf.F3 To':'22/11/2026','Customer (Last)':'','Chassis Number 17':'WB10M2100V6N00003','Exp. Del. Wk.':'20261147'},
   {'Production Number':'9000002','Chassis No.':'6N00002','Body Group':'KA1','Model Code':'0M21','Model Description':'R 1300 GS','Color Code':'N52','Options String':'5AG','Order Status':'193','Timestamp Order Status':'01.09.2026','Processing Type':'US','Actual Production Date':'','Conf F3 From':'','Conf.F3 To':'','Customer (Last)':'','Chassis Number 17':'WB10M2100V6N00002','Exp. Del. Wk.':'20260936'},
-  {'Production Number':'9000001','Chassis No.':'6N00001','Body Group':'KM9','Model Code':'0,00E+00','Model Description':'M 1000 XR','Color Code':'N3S','Options String':'18F 79A','Order Status':'198','Timestamp Order Status':'16.10.2026','Processing Type':'CS','Actual Production Date':'06.10.2026','Conf F3 From':'12/10/2026','Conf.F3 To':'18/10/2026','Customer (Last)':'Almeida Teste','Chassis Number 17':'WB10E9100V6N00001','Exp. Del. Wk.':'20261042'},
+  {'Production Number':'9000001','Chassis No.':'6N00001','Body Group':'KM9','Model Code':'0,00E+00','Model Description':'M 1000 XR','Color Code':'N3S','Options String':'18F 79A','Order Status':'198','Timestamp Order Status':'16.10.2026','Processing Type':'CS','Actual Production Date':'06.10.2026','Conf F3 From':'12/10/2026','Conf.F3 To':'18/10/2026','Customer (Last)':'Almeida Teste','Salesperson Number':'FG','Chassis Number 17':'WB10E9100V6N00001','Exp. Del. Wk.':'20261042'},
   {'Production Number':'9000006','Chassis No.':'','Body Group':'KD1','Model Code':'0R31','Model Description':'F 450 GS','Color Code':'N2L','Options String':'222 2T1','Order Status':'47','Timestamp Order Status':'17.08.2026','Processing Type':'ST','Actual Production Date':'','Conf F3 From':'','Conf.F3 To':'','Customer (Last)':'','Chassis Number 17':'','Exp. Del. Wk.':''},
 ];
 const csvTxt='"{   ""from"" : 0    ""size"" : 200 }";;;;\n;;;;\n'+[CAB,...L.map(linha)].map(r=>r.join(';')).join('\n')+'\n';
@@ -39,7 +39,7 @@ const XLSX_JS=fs.readFileSync(path.join(__dirname,'node_modules/xlsx/dist/xlsx.f
    if(u.includes('/rpc/encomendas_bmw_substituir')){const body=JSON.parse(r.request().postData());est.rpc.push(body);
      est.tabela=body.linhas.map(l=>Object.assign({importado_em:new Date().toISOString()},l));return r.fulfill({status:200,contentType:'application/json',body:String(est.tabela.length)});}
    const t=(u.match(/rest\/v1\/([a-z_]+)/)||[])[1];
-   const body=t==='profiles'?[{id:'u1',nome:'Teste',role,linha:'motorrad',areas:[]}]:t==='encomendas_bmw'?(u.includes('offset=0')?est.tabela:[]):[];
+   const body=t==='profiles'?[{id:'u1',nome:'Teste',role,linha:'motorrad',areas:[]},{id:'g1',nome:'Gonçalo Mendes',role:'vendedor',linha:'motorrad'},{id:'a1',nome:'António Felipe Gomes',role:'vendedor',linha:'motorrad'}]:t==='encomendas_bmw'?(u.includes('offset=0')?est.tabela:[]):[];
    return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(body)});});
   const p=await ctx.newPage();const erros=[];p.on('pageerror',e=>erros.push(e.message));
   await p.goto(`http://localhost:${PORTA}/`);await p.waitForTimeout(1500);return{ctx,p,est,erros};}
@@ -79,7 +79,12 @@ const XLSX_JS=fs.readFileSync(path.join(__dirname,'node_modules/xlsx/dist/xlsx.f
   const nPesq=await p.$$eval('.enc-t tbody tr:not(.enc-grp)',x=>x.length);
   await p.fill('#enc-q','5ag 0m21');await p.waitForTimeout(300);
   const nPesq2=await p.$$eval('.enc-t tbody tr:not(.enc-grp)',x=>x.length);
+  await p.fill('#enc-q','mendes');await p.waitForTimeout(300);
+  const nPesqVend=await p.$$eval('.enc-t tbody tr:not(.enc-grp)',x=>x.length);
   await p.fill('#enc-q','');await p.waitForTimeout(300);
+  const cab=await p.$$eval('.enc-t th',x=>x.map(t=>t.textContent));
+  const vendCel=await p.evaluate(()=>{const ths=[...document.querySelectorAll('.enc-t th')].map(t=>t.textContent);const iV=ths.indexOf('Vendedor'),iP=ths.indexOf('Produção');const o={};
+    document.querySelectorAll('.enc-t tbody tr:not(.enc-grp)').forEach(tr=>{const td=tr.children;const s=td[iV].querySelector('span');o[td[iP].textContent]=s?s.textContent+'|'+(s.title||''):'';});return o;});
   await p.click('[data-action="enc-painel"]');await p.waitForTimeout(200);
   await p.uncheck('input[data-enc-g="processing_type"][value="ST"]');await p.waitForTimeout(300);
   const nSemST=await p.$$eval('.enc-t tbody tr:not(.enc-grp)',x=>x.length);
@@ -92,7 +97,7 @@ const XLSX_JS=fs.readFileSync(path.join(__dirname,'node_modules/xlsx/dist/xlsx.f
   await p.setViewportSize({width:390,height:800});await p.waitForTimeout(300);
   const scrollPagina=await p.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth+1);
   await p.screenshot({path:path.join(__dirname,'encomendas.png')});
-  R.vendedor={temMenu,ecra,temBotao,nTodos,nPesq,nPesq2,nSemST,nNenhum,colOpcionais,ordem,scrollPagina,erros};
+  R.vendedor={nPesqVend,cab,vendCel,temMenu,ecra,temBotao,nTodos,nPesq,nPesq2,nSemST,nNenhum,colOpcionais,ordem,scrollPagina,erros};
   await ctx.close();}
 
  console.log(JSON.stringify(R,null,1));
@@ -119,6 +124,9 @@ const XLSX_JS=fs.readFileSync(path.join(__dirname,'node_modules/xlsx/dist/xlsx.f
   '"Nenhum" num grupo esconde tudo':v.nNenhum===0,
   'coluna Opcionais escondida':!v.colOpcionais,
   'sem scroll horizontal da página no telemóvel':!v.scrollPagina,
+  'ordem das colunas':JSON.stringify(v.cab)===JSON.stringify(['Produção','Chassis','Código','Modelo','Cor','Opcionais','Estado','Data do estado','Tipo','Produzida a','Semana de entrega','Entrega prevista de','Entrega prevista até','Vendedor','Cliente']),
+  'vendedor: GM e FG identificados, códigos cm0… escondidos':v.vendCel['9000005']==='GM|Gonçalo Mendes'&&v.vendCel['9000001']==='FG|António Felipe Gomes'&&v.vendCel['9000004']==='',
+  'pesquisa pelo nome do vendedor':v.nPesqVend===1,
   'sem erros JS':!c.erros.length&&!v.erros.length,
  };
  let f=0;for(const [k,ok] of Object.entries(checks)){console.log((ok?'✓ ':'✗ ')+k);if(!ok)f++;}

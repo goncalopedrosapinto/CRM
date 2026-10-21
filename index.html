@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-21-g">
+<meta name="app-version" content="2026-10-21-h">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2141,7 +2141,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-21-g';
+const APP_VERSION='2026-10-21-h';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -4559,10 +4559,10 @@ function renderStockEqVend(){
 }
 // ---- Encomendas BMW (mapa de encomendas/produção do portal BMW) ----
 // O chefe carrega o ficheiro (CSV ou Excel, sempre no mesmo formato); chefe e vendedores só leem.
-const ENC_COLS=[ // [campo, cabeçalho no ficheiro, rótulo no ecrã, tipo: t texto · d data · w semana]
-  ['production_number','Production Number','Prod. nº','t'],
+const ENC_COLS=[ // [campo, cabeçalho no ficheiro, rótulo no ecrã, tipo: t texto · d data · w semana · v vendedor, opcional no ficheiro]
+  ['production_number','Production Number','Produção','t'],
   ['chassis','Chassis No.','Chassis','t'],
-  ['model_code','Model Code','Cód.','t'],
+  ['model_code','Model Code','Código','t'],
   ['model_desc','Model Description','Modelo','t'],
   ['color_code','Color Code','Cor','t'],
   ['options','Options String','Opcionais','t'],
@@ -4570,13 +4570,19 @@ const ENC_COLS=[ // [campo, cabeçalho no ficheiro, rótulo no ecrã, tipo: t te
   ['ts_order_status','Timestamp Order Status','Data do estado','d'],
   ['processing_type','Processing Type','Tipo','t'],
   ['actual_prod_date','Actual Production Date','Produzida a','d'],
+  ['exp_del_wk','Exp. Del. Wk.','Semana de entrega','w'],
   ['conf_f3_from','Conf F3 From','Entrega prevista de','d'],
   ['conf_f3_to','Conf.F3 To','Entrega prevista até','d'],
+  ['salesperson','Salesperson Number','Vendedor','v',1],
   ['customer_last','Customer (Last)','Cliente','t'],
-  ['exp_del_wk','Exp. Del. Wk.','Semana de entrega','w'],
 ];
 const ENC_TIPOS=['ST','US','DE','CS'];
-const ENC_FILTROS=[['model_desc','Modelo'],['processing_type','Tipo (Processing Type)'],['order_status','Estado (Order Status)'],['color_code','Cor'],['_cliente','Cliente']];
+const ENC_FILTROS=[['model_desc','Modelo'],['processing_type','Tipo (Processing Type)'],['order_status','Estado (Order Status)'],['color_code','Cor'],['_vend','Vendedor'],['_cliente','Cliente']];
+// "Salesperson Number": as siglas dos vendedores (GM, FG/AG…) aparecem; os códigos cm0… são utilizadores do portal BMW e não se mostram
+function encSigla(v){const s=String(v||'').trim().toUpperCase();return /^[A-Z]{2,3}$/.test(s)?s:'';}
+function encVendDe(sig){if(!sig)return null;const sub=(a,b)=>{let k=0;for(const ch of b){if(ch===a[k])k++;}return k===a.length;};
+  const L=(S.team||[]).filter(p=>sub(sig,String(p.nome||'').trim().split(/\s+/).map(w=>(w[0]||'').toUpperCase()).join('')));return L.length===1?L[0]:null;}
+function encVendTxt(v){const sig=encSigla(v);if(!sig)return'';const p=encVendDe(sig);return p?sig+' · '+(p.nome||''):sig;}
 const encChave=s=>String(s==null?'':s).toLowerCase().replace(/[^a-z0-9]/g,'');
 function encPad(n){return String(n).padStart(2,'0');}
 function encData(v){
@@ -4615,14 +4621,14 @@ function encParse(rows){
   if(iCab<0)throw new Error('Não encontrei a linha de cabeçalhos (Production Number, Model Code…). É o ficheiro de encomendas do portal BMW?');
   const cab=rows[iCab].map(encChave);
   const idx={};ENC_COLS.forEach(([c,h])=>{idx[c]=cab.indexOf(encChave(h));});
-  const faltam=ENC_COLS.filter(([c])=>idx[c]<0).map(x=>x[1]);
+  const faltam=ENC_COLS.filter(([c,,,,opc])=>!opc&&idx[c]<0).map(x=>x[1]);
   if(faltam.length)throw new Error('O ficheiro não tem estas colunas: '+faltam.join(', ')+'. O formato mudou?');
   const iVin=cab.indexOf('chassisnumber17');
   const codOk=c=>/^[0-9A-Z]{4}$/.test(c);
   const porNum=new Map();let duplicados=0;
   rows.slice(iCab+1).forEach(r=>{
     if(!r||!r.length)return;
-    const l={};ENC_COLS.forEach(([c,,,t])=>{const v=r[idx[c]];l[c]=t==='d'?encData(v):(encTexto(v)||null);});
+    const l={};ENC_COLS.forEach(([c,,,t])=>{const v=idx[c]<0?null:r[idx[c]];l[c]=t==='d'?encData(v):(encTexto(v)||null);});
     if(!l.production_number)return;
     if(l.model_code)l.model_code=l.model_code.toUpperCase();
     if(l.processing_type)l.processing_type=l.processing_type.toUpperCase();
@@ -4680,13 +4686,13 @@ async function encConfirmar(){
     setState({encBusy:false,encPrev:null,encMsg:`Mapa atualizado: ${Number(n)||P.linhas.length} encomendas. Os vendedores já o veem.`});
   }catch(e){setState({encBusy:false,encErrImp:'Erro ao gravar (o mapa anterior ficou como estava): '+erroTexto(e)});}
 }
-function encValor(x,g){return g==='_cliente'?(x.customer_last?'Com cliente':'Sem cliente'):(x[g]==null||x[g]===''?'(vazio)':String(x[g]));}
+function encValor(x,g){if(g==='_vend')return encVendTxt(x.salesperson)||'(sem vendedor)';return g==='_cliente'?(x.customer_last?'Com cliente':'Sem cliente'):(x[g]==null||x[g]===''?'(vazio)':String(x[g]));}
 function encColsOcultas(){if(S.encCols)return S.encCols;let v=[];try{v=JSON.parse(localStorage.getItem('bm_enc_cols')||'[]')||[];}catch(e){}S.encCols=Array.isArray(v)?v:[];return S.encCols;}
 function encFiltrar(todos,F){
   const ex=F.ex||{};
   let arr=todos.filter(x=>ENC_FILTROS.every(([g])=>!(ex[g]||[]).length||!(ex[g]).includes(encValor(x,g))));
   const termos=eotNorm(F.q).split(' ').filter(Boolean);
-  if(termos.length)arr=arr.filter(x=>{const t=eotNorm(ENC_COLS.map(([c,,,tp])=>tp==='d'?encDataPT(x[c]):tp==='w'?(x[c]||'')+' '+encSemana(x[c]):x[c]).join(' '));return termos.every(q=>t.includes(q));});
+  if(termos.length)arr=arr.filter(x=>{const t=eotNorm(ENC_COLS.map(([c,,,tp])=>tp==='d'?encDataPT(x[c]):tp==='w'?(x[c]||'')+' '+encSemana(x[c]):tp==='v'?encVendTxt(x[c]):x[c]).join(' '));return termos.every(q=>t.includes(q));});
   return arr;
 }
 function encView(){
@@ -4701,6 +4707,8 @@ function encView(){
     if(t==='d')return`<td class="enc-d">${esc(encDataPT(v))}</td>`;
     if(t==='w')return`<td class="enc-d" title="${esc(v||'')}">${esc(encSemana(v))}</td>`;
     if(c==='options')return`<td class="enc-opt">${esc(v||'')}</td>`;
+    if(t==='v'){const sig=encSigla(v);if(!sig)return'<td></td>';const p=encVendDe(sig);
+      return p?`<td><span class="vtag" style="background:${corVend(p.id)}" title="${esc(p.nome||'')}">${esc(sig)}</span></td>`:`<td><span class="enc-tp">${esc(sig)}</span></td>`;}
     if(c==='processing_type')return`<td><span class="enc-tp enc-tp-${esc(String(v||'').toLowerCase())}">${esc(v||'')}</span></td>`;
     if(c==='model_desc')return`<td class="enc-mod">${esc(v||'')}</td>`;
     if(c==='production_number')return`<td class="sec-mono enc-pn">${esc(v||'')}</td>`;
