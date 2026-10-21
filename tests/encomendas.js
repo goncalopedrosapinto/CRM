@@ -104,8 +104,9 @@ const dias=n=>new Date(Date.now()-n*864e5).toISOString();
   const nPesqVend=await p.$$eval('.enc-t tbody tr:not(.enc-grp)',x=>x.length);
   await p.fill('#enc-q','');await p.waitForTimeout(300);
   const cab=await p.$$eval('.enc-t th',x=>x.map(t=>t.textContent));
-  const vendCel=await p.evaluate(()=>{const ths=[...document.querySelectorAll('.enc-t th')].map(t=>t.textContent);const iV=ths.indexOf('Vendedor'),iP=ths.indexOf('Produção');const o={};
-    document.querySelectorAll('.enc-t tbody tr:not(.enc-grp)').forEach(tr=>{const td=tr.children;const s=td[iV].querySelector('span');o[td[iP].textContent]=s?s.textContent+'|'+(s.title||''):'';});return o;});
+  const vendCel=await p.evaluate(()=>{const ths=[...document.querySelectorAll('.enc-t th')].map(t=>t.textContent);const iV=ths.indexOf('Negociação'),iP=ths.indexOf('Produção');const o={};
+    document.querySelectorAll('.enc-t tbody tr:not(.enc-grp)').forEach(tr=>{const td=tr.children;const s=td[iV].querySelector('.vtag');o[td[iP].textContent]=s?s.textContent+'|'+(s.title||''):'';});return o;});
+  const filtroVend=await p.evaluate(()=>[...new Set(S.enc.map(x=>encValor(x,'_vend')))].sort());
   await p.click('[data-action="enc-painel"]');await p.waitForTimeout(200);
   await p.uncheck('input[data-enc-g="processing_type"][value="ST"]');await p.waitForTimeout(300);
   const nSemST=await p.$$eval('.enc-t tbody tr:not(.enc-grp)',x=>x.length);
@@ -145,7 +146,7 @@ const dias=n=>new Date(Date.now()-n*864e5).toISOString();
   await p.click('.qf [data-action="save-record"]');await p.waitForTimeout(800);
   const novoPost=est.posts.slice(-1)[0]||null;
   R.neg={novoForm,novoPost,neg1,modal,patch,neg2,modalFechou,alertas,opcoes,dicaOcupada,dicaFora};
-  R.vendedor={nPesqVend,cab,vendCel,temMenu,ecra,temBotao,nTodos,nPesq,nPesq2,nSemST,nNenhum,colOpcionais,ordem,scrollPagina,erros};
+  R.vendedor={nPesqVend,cab,vendCel,filtroVend,temMenu,ecra,temBotao,nTodos,nPesq,nPesq2,nSemST,nNenhum,colOpcionais,ordem,scrollPagina,erros};
   await ctx.close();}
 
  console.log(JSON.stringify(R,null,1));
@@ -172,8 +173,9 @@ const dias=n=>new Date(Date.now()-n*864e5).toISOString();
   '"Nenhum" num grupo esconde tudo':v.nNenhum===0,
   'coluna Opcionais escondida':!v.colOpcionais,
   'sem scroll horizontal da página no telemóvel':!v.scrollPagina,
-  'ordem das colunas':JSON.stringify(v.cab)===JSON.stringify(['Produção','Chassis','Código','Modelo','Cor','Opcionais','Estado','Data do estado','Tipo','Produzida a','Semana de entrega','Entrega prevista de','Entrega prevista até','Vendedor','Cliente','Negociação']),
-  'vendedor: GM e FG identificados, códigos cm0… escondidos':v.vendCel['9000005']==='GM|Gonçalo Mendes'&&v.vendCel['9000001']==='FG|António Felipe Gomes'&&v.vendCel['9000004']==='',
+  'ordem das colunas':JSON.stringify(v.cab)===JSON.stringify(['Produção','Chassis','Código','Modelo','Cor','Opcionais','Estado','Data do estado','Tipo','Produzida a','Semana de entrega','Entrega prevista de','Entrega prevista até','Cliente','Negociação']),
+  'sem coluna Vendedor: sigla BMW (GM/FG) em Negociação, cm0… escondido':v.vendCel['9000005']==='GM|Gonçalo Mendes (sigla BMW)'&&v.vendCel['9000001']==='FG|António Felipe Gomes (sigla BMW)'&&v.vendCel['9000004']===''&&!v.cab.includes('Vendedor'),
+  'filtro Vendedor junta negociação e sigla BMW':JSON.stringify(v.filtroVend)===JSON.stringify(['(ninguém)','FG · António Felipe Gomes','GM · Gonçalo Mendes','Teste']),
   'pesquisa pelo nome do vendedor (BMW e quem negoceia)':v.nPesqVend===2,
   'colega a negociar: aparece com dias parada, sem Libertar':/Em negociação/.test(R.neg.neg1['9000003'].txt)&&/parada há 10 dias/.test(R.neg.neg1['9000003'].txt)&&!R.neg.neg1['9000003'].liv,
   'a minha reserva: tem Libertar':R.neg.neg1['9000002'].liv,

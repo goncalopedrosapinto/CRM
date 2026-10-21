@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-21-j">
+<meta name="app-version" content="2026-10-21-k">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2163,7 +2163,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-21-j';
+const APP_VERSION='2026-10-21-k';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -4611,6 +4611,7 @@ const ENC_COLS=[ // [campo, cabeçalho no ficheiro, rótulo no ecrã, tipo: t te
   ['customer_last','Customer (Last)','Cliente','t'],
 ];
 const ENC_TIPOS=['ST','US','DE','CS'];
+const ENC_SO_DADOS=['salesperson']; // lido e guardado, mas sem coluna: a sigla aparece em Negociação
 const ENC_FILTROS=[['_neg','Negociação'],['model_desc','Modelo'],['processing_type','Tipo (Processing Type)'],['order_status','Estado (Order Status)'],['color_code','Cor'],['_vend','Vendedor'],['_cliente','Cliente']];
 // "Salesperson Number": as siglas dos vendedores (GM, FG/AG…) aparecem; os códigos cm0… são utilizadores do portal BMW e não se mostram
 function encSigla(v){const s=String(v||'').trim().toUpperCase();return /^[A-Z]{2,3}$/.test(s)?s:'';}
@@ -4720,7 +4721,7 @@ async function encConfirmar(){
     setState({encBusy:false,encPrev:null,encMsg:`Mapa atualizado: ${Number(n)||P.linhas.length} encomendas. Os vendedores já o veem.`});
   }catch(e){setState({encBusy:false,encErrImp:'Erro ao gravar (o mapa anterior ficou como estava): '+erroTexto(e)});}
 }
-function encValor(x,g){if(g==='_neg')return encNegEstado(x);if(g==='_vend')return encVendTxt(x.salesperson)||'(sem vendedor)';return g==='_cliente'?(x.customer_last?'Com cliente':'Sem cliente'):(x[g]==null||x[g]===''?'(vazio)':String(x[g]));}
+function encValor(x,g){if(g==='_neg')return encNegEstado(x);if(g==='_vend')return encQuemTxt(x);return g==='_cliente'?(x.customer_last?'Com cliente':'Sem cliente'):(x[g]==null||x[g]===''?'(vazio)':String(x[g]));}
 function encColsOcultas(){if(S.encCols)return S.encCols;let v=[];try{v=JSON.parse(localStorage.getItem('bm_enc_cols')||'[]')||[];}catch(e){}S.encCols=Array.isArray(v)?v:[];return S.encCols;}
 function encFiltrar(todos,F){
   const ex=F.ex||{};
@@ -4732,7 +4733,7 @@ function encFiltrar(todos,F){
 function encView(){
   encGarantirCarga();
   const todos=S.enc||[];const F=Object.assign({q:'',ex:{}},S.encF||{});const ex=F.ex||{};
-  const ocultas=encColsOcultas();const cols=ENC_COLS.filter(([c])=>!ocultas.includes(c));
+  const ocultas=encColsOcultas();const cols=ENC_COLS.filter(([c])=>!ocultas.includes(c)&&!ENC_SO_DADOS.includes(c));
   const M=encResMapa();S._encResM=M;
   const arr=encFiltrar(todos,F);S._encResM=null;
   const ult=todos.map(x=>x.importado_em).filter(Boolean).sort().pop();
@@ -4763,7 +4764,7 @@ function encView(){
       return`<div class="enc-fg"><div class="enc-fg-t"><span>${esc(lb)}</span><button class="enc-lnk" data-action="enc-todos" data-g="${g}" data-v="1">Todos</button><button class="enc-lnk" data-action="enc-todos" data-g="${g}" data-v="0">Nenhum</button></div>
         <div class="enc-fg-l">${vals.map(v=>`<label class="enc-chk ${exg.includes(v)?'':'on'}"><input type="checkbox" data-enc-g="${g}" value="${esc(v)}" ${exg.includes(v)?'':'checked'}><span>${esc(v)}</span><small>${cont[v]}</small></label>`).join('')}</div></div>`;}).join('')}
     <div class="enc-fg enc-cols"><div class="enc-fg-t"><span>Colunas visíveis</span><button class="enc-lnk" data-action="enc-cols-todas">Todas</button></div>
-      <div class="enc-fg-l">${ENC_COLS.map(([c,h,lb])=>`<label class="enc-chk ${ocultas.includes(c)?'':'on'}" title="${esc(h)}"><input type="checkbox" data-enc-col="${c}" ${ocultas.includes(c)?'':'checked'}><span>${esc(lb)}</span></label>`).join('')}</div></div>
+      <div class="enc-fg-l">${ENC_COLS.filter(([c])=>!ENC_SO_DADOS.includes(c)).map(([c,h,lb])=>`<label class="enc-chk ${ocultas.includes(c)?'':'on'}" title="${esc(h)}"><input type="checkbox" data-enc-col="${c}" ${ocultas.includes(c)?'':'checked'}><span>${esc(lb)}</span></label>`).join('')}</div></div>
   </div>`:'';
   const ativos=ENC_FILTROS.filter(([g])=>(ex[g]||[]).length).map(([g,lb])=>`<button class="vchip on" data-action="enc-todos" data-g="${g}" data-v="1" title="Limpar este filtro">${esc(lb.replace(/ \(.*\)/,''))}: sem ${(ex[g]||[]).length} ✕</button>`).join('');
   const porTipo=ENC_TIPOS.map(t=>[t,arr.filter(x=>x.processing_type===t).length]).filter(([,n])=>n);
@@ -4829,10 +4830,16 @@ function encNegCel(x,M){
     const quando=d==null?'':(parada?`<b class="enc-parada">parada há ${d} dias</b>`:(d===0?'hoje':`há ${d} dia${d>1?'s':''}`));
     return`<td class="enc-neg"><span class="enc-ng n">Em negociação</span>${tag(r)}<small>${esc(r.status)}${quando?' · '+quando:''}</small>${A.length>1?`<b class="enc-parada">em ${A.length} negócios</b>`:''}<span class="enc-neg-a">${abrir(r)}${isAdmin()||r.vendedor_id===eu?`<button class="enc-lnk" data-action="enc-libertar" data-id="${esc(r.negocio_id)}" data-pn="${esc(x.production_number)}">Libertar</button>`:''}</span></td>`;}
   if(est==='Livre')return encPodeReservar()?`<td class="enc-neg"><button class="btn btn-outline btn-sm enc-res-btn" data-action="enc-escolher" data-pn="${esc(x.production_number)}">${isAdmin()?'Atribuir':'Estou a negociar'}</button></td>`:'<td class="enc-neg"><span class="enc-ng l">Livre</span></td>';
-  return'<td class="enc-neg"><small class="enc-mut">Cliente BMW · sem negócio na plataforma</small></td>';
+  const sig=encSigla(x.salesperson),pb=encVendDe(sig);
+  const tb=sig?(pb?`<span class="vtag" style="background:${corVend(pb.id)}" title="${esc(pb.nome||'')} (sigla BMW)">${esc(sig)}</span>`:`<span class="enc-tp" title="Sigla BMW">${esc(sig)}</span>`):'';
+  return`<td class="enc-neg">${tb}<small class="enc-mut">Cliente BMW · sem negócio na plataforma</small></td>`;
 }
 // a mesma sigla que a BMW usa para o vendedor (GM, FG…), para não aparecerem duas siglas diferentes na mesma linha
 function encSiglaDeVend(id){if(!id)return'';for(const x of (S.enc||[])){const sig=encSigla(x.salesperson);if(sig){const p=encVendDe(sig);if(p&&String(p.id)===String(id))return sig;}}return'';}
+// quem tem a mota: o vendedor do negócio na plataforma; se não houver, a sigla BMW
+function encQuemTxt(x){const R=((S._encResM||encResMapa()).get(String(x.production_number))||[]).filter(r=>ENC_ATIVOS.includes(r.status));
+  if(R.length){const id=R[0].vendedor_id;const sig=encSiglaDeVend(id);const n=vendName(id)||'?';return sig?sig+' · '+n:n;}
+  return encVendTxt(x.salesperson)||'(ninguém)';}
 function encNorm(s){return eotNorm(s).replace(/[^a-z0-9]/g,'');}
 function encEscolherHTML(){
   const pn=S.encEscolher;if(!pn)return'';const x=(S.enc||[]).find(y=>String(y.production_number)===String(pn));if(!x)return'';
