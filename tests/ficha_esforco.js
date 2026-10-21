@@ -22,6 +22,11 @@ const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'))
     return {pvp:+c.pvpDesc.toFixed(2),pvpPlat:+c.pvpPlat.toFixed(2),difPlat:+c.difPlat.toFixed(2),margem:+c.margem.toFixed(2),esf:+(c.esforcoPct*100).toFixed(2),desc:+(c.descCliPct*100).toFixed(2)};});
   const realOk=Math.abs(real.pvp-24682.08)<0.02&&Math.abs(real.difPlat)<=0.05&&Math.abs(real.margem-237.5)<0.05&&Math.abs(real.esf-2.31)<0.01;
   casos.push({n:'demo S 1000 RR (PVP plataforma '+real.pvpPlat+', dif. '+real.difPlat+', margem '+real.margem+')',esf:real.esf,esperado:2.31,ok:realOk});
+  // Todos os apoios fora do PVP da plataforma: PAC 200 € + protocolo 2 % + apoio adicional 1 %, PVP da plataforma = PVP (c/ impostos).
+  const apoios=await p.evaluate(()=>{S.fm={natureza:'MN',iva:23,modo:'civa',fv:2,isv:'0',sgpu:'0',pvb:'10000',mg_fixa_pct:'6',mg_var_pct:'3.5',pac:'200',protocolo_pct:'2',apoio_adic_pct:'1',pvp_plat:'10000',preco_venda:'9000'};
+    const c=fmCalc();return {dif:+c.difPlat.toFixed(2),desc:+(c.descCliPct*100).toFixed(3),descEsf:+(c.descEsfPct*100).toFixed(3),esf:+(c.esforcoPct*100).toFixed(3),ident:+Math.max(0,3.5-c.margem/c.base*100).toFixed(3)};});
+  casos.push({n:'PAC + protocolo + apoio adicional fora do PVP (dif. '+apoios.dif+', desconto plataforma '+apoios.desc+' %, desconto p/ esforço '+apoios.descEsf+' %)',esf:apoios.esf,esperado:apoios.ident,
+    ok:Math.abs(apoios.dif)<=0.05&&apoios.desc>apoios.descEsf&&Math.abs(apoios.esf-apoios.ident)<0.001});
   casos.forEach(c=>console.log((c.ok?'✓ ':'✗ ')+c.n+': esforço '+c.esf+' % (esperado '+c.esperado+' %)'));
   const ok=casos.every(c=>c.ok);console.log(ok?'Esforço correto':'FALHOU');await b.close();process.exit(ok?0:1);
 })();
