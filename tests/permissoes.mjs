@@ -29,6 +29,7 @@ await db.query("insert into public.eot_contratos(contrato,cliente,responsavel_id
 await db.query("insert into public.stock_equip(lote,ref,custo_unit) values('L1','REF1',10)");
 await db.query("insert into public.precos_ref(ref,pvp) values('REF1',20)");
 await db.query("insert into public.equipamento(vendedor_id,data,custo,venda) values($1,'2026-09-10',10,20)",[U.vend]);
+await db.query("insert into public.encomendas_bmw(production_number,model_code,customer_last) values('8000001','0M21','Cliente')");
 
 // ---------- motor ----------
 async function como(quem,fn){
@@ -127,6 +128,20 @@ const C=[ // [área, perfil, descrição, função, esperado]
   ['chefe','chefe','apaga Retail',apaga(`id=${N.retail}`),1],
   ['chefe','chefe','fecha mês de comissões',()=>ok("insert into public.comissoes_fecho(mes) values('2026/09')"),'consegue'],
   ['chefe','chefe','lê resumo de erros',()=>ok('select * from public.erros_resumo(7)'),'consegue'],
+  ['anónimo','anon','lê encomendas BMW',conta('encomendas_bmw'),'recusado'],
+  ['anónimo','anon','substitui encomendas BMW',()=>ok(`select public.encomendas_bmw_substituir('[{"production_number":"1"}]')`),'recusado'],
+  ['vendedor','vend','lê encomendas BMW',conta('encomendas_bmw'),1],
+  ['vendedor','vend','substitui encomendas BMW',()=>ok(`select public.encomendas_bmw_substituir('[{"production_number":"1"}]')`),'recusado'],
+  ['vendedor','vend','acrescenta encomenda diretamente',()=>ok("insert into public.encomendas_bmw(production_number) values('9')"),'recusado'],
+  ['vendedor','vend','altera encomenda diretamente',()=>ok("update public.encomendas_bmw set customer_last='X'"),'recusado'],
+  ['secretário','sec','lê encomendas BMW',conta('encomendas_bmw'),0],
+  ['assessor','ass','lê encomendas BMW',conta('encomendas_bmw'),0],
+  ['ass.+secret.','assSec','lê encomendas BMW',conta('encomendas_bmw'),0],
+  ['financeiro','fin','lê encomendas BMW',conta('encomendas_bmw'),0],
+  ['conta nova','novo','lê encomendas BMW',conta('encomendas_bmw'),0],
+  ['chefe','chefe','lê encomendas BMW',conta('encomendas_bmw'),1],
+  ['chefe','chefe','substitui encomendas BMW (fica só o ficheiro novo)',async()=>{await db.query(`select public.encomendas_bmw_substituir('[{"production_number":"1","ts_order_status":"2026-10-03"},{"production_number":"2"}]')`);return n("select count(*) n from public.encomendas_bmw");},2],
+  ['chefe','chefe','carrega ficheiro vazio (mapa fica como está)',async()=>{await db.exec('savepoint s');try{await db.query(`select public.encomendas_bmw_substituir('[]')`);}catch(e){await db.exec('rollback to savepoint s');}return n("select count(*) n from public.encomendas_bmw");},1],
 ];
 
 let falhas=0;const linhas=[];

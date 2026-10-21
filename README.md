@@ -22,6 +22,7 @@ Correm sozinhos no GitHub (separador **Actions**) a cada alteração. Localmente
 - **xss** — enche todos os campos de texto com código malicioso e percorre todos os ecrãs de todos os perfis e todos os PDFs. Falha se algum campo entrar sem proteção.
 - **erros** — erros do browser chegam à tabela `erros_cliente`, sem duplicados e com limite.
 - **ecras** — o botão "Apagar" só aparece quando o servidor deixa apagar; conta nova vê a mensagem de espera.
+- **encomendas** — lê um ficheiro fictício do portal BMW (CSV em Windows-1252 e Excel), recupera o código de modelo que o Excel estraga, confirma a ordem, que o vendedor só lê e que pesquisa e filtros funcionam. Nunca pôr aqui um ficheiro real: tem apelidos de clientes.
 - **integridade** — escreve números à portuguesa a velocidades aleatórias, com rede lenta e falhas, e confirma que o gravado é igual ao escrito.
 
 ## Ao mudar a base de dados
