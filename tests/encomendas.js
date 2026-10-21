@@ -97,16 +97,16 @@ const XLSX_JS=fs.readFileSync(path.join(__dirname,'node_modules/xlsx/dist/xlsx.f
 
  console.log(JSON.stringify(R,null,1));
  const c=R.chefeCSV,x=R.chefeXLSX,v=R.vendedor;
- const ordemEsperada=['0E91:CS','0M21:ST','0M21:US','0M21:DE','0M21:CS','0R31:ST'];
+ const ordemEsperada=['0E91:CS','0M21:CS','0M21:US','0M21:DE','0M21:ST','0R31:ST']; // estado 198,198,193,150,111,47
  const checks={
   'chefe tem botão de carregar':c.temBotao,
   'CSV: 6 encomendas, linha JSON ignorada':c.prev&&c.prev.n===6&&c.prev.semJson,
   'CSV: acentos (Windows-1252) certos':c.prev&&c.prev.cliente==='Gonçalves Simão',
   'CSV: 0,00E+00 recuperado do chassis como 0E91':c.prev&&c.prev.corr.length===1&&c.prev.corr[0].para==='0E91'&&c.prev.susp===0,
-  'CSV: ordem Model Code → ST, US, DE, CS':c.prev&&JSON.stringify(c.prev.ordem)===JSON.stringify(ordemEsperada),
+  'CSV: ordem Estado (desc.) → Model Code → ST, US, DE, CS':c.prev&&JSON.stringify(c.prev.ordem)===JSON.stringify(ordemEsperada),
   'CSV: datas dd.mm.aaaa e dd/mm/aaaa lidas':c.prev&&c.prev.datas.ts_order_status==='2026-07-03'&&c.prev.datas.conf_f3_from==='2026-07-01'&&c.prev.datas.actual_prod_date==='2026-01-28',
   'grava tudo numa chamada, sem campos internos':c.rpcChamado===1&&c.enviadoN===6&&c.camposExtra.length===0,
-  'tabela mostra 6 linhas em 3 grupos':c.linhasTabela===6&&c.grupos===3,
+  'tabela mostra 6 linhas em 5 grupos de estado':c.linhasTabela===6&&c.grupos===5,
   'Excel: lido, código 0 recuperado, datas certas':x.n===6&&x.cod==='0E91'&&x.data==='2026-07-03',
   'Excel: comparação com o mapa atual':x.entram===0&&x.saem===0&&x.mudam===0,
   'ficheiro errado: erro claro e nada gravado':/cabeçalhos/.test(R.ficheiroErrado.erro)&&R.ficheiroErrado.rpc===1,
