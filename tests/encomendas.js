@@ -32,7 +32,7 @@ const XLSX_JS=fs.readFileSync(path.join(__dirname,'node_modules/xlsx/dist/xlsx.f
 const dias=n=>new Date(Date.now()-n*864e5).toISOString();
 (async()=>{const b=await chromium.launch(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{});const R={};
  async function abrir(role){
-  const ctx=await b.newContext();const est={tabela:[],rpc:[],negocios:[],reservas:[],patches:[]};
+  const ctx=await b.newContext();const est={tabela:[],rpc:[],negocios:[],reservas:[],patches:[],posts:[]};
   await ctx.addInitScript((t)=>localStorage.setItem('bc_session',JSON.stringify({refresh_token:'rt',access_token:t,exp:Date.now()+3600e3})),jwt('u1'));
   await ctx.route('**/*',async r=>{const u=r.request().url();if(u.startsWith('http://localhost'))return r.continue();
    if(u.includes('cdnjs.cloudflare.com/ajax/libs/xlsx'))return r.fulfill({status:200,contentType:'application/javascript',headers:{'access-control-allow-origin':'*'},body:XLSX_JS});
@@ -44,6 +44,7 @@ const dias=n=>new Date(Date.now()-n*864e5).toISOString();
    if(t==='baviera_control'&&r.request().method()==='PATCH'){const id=(u.match(/id=eq\.(\d+)/)||[])[1];const body=JSON.parse(r.request().postData());est.patches.push({id,body});
      if(body.enc==='9000003')return r.fulfill({status:400,contentType:'application/json',body:JSON.stringify({code:'P0001',message:'A encomenda 9000003 já está a ser trabalhada por Gonçalo Mendes (Morno). Só o chefe de vendas a pode passar para outro negócio.'})});
      return r.fulfill({status:204,body:''});}
+   if(t==='baviera_control'&&r.request().method()==='POST'){const body=JSON.parse(r.request().postData());est.posts.push(body);const novo=Object.assign({id:200+est.posts.length,updated_at:new Date().toISOString()},body);est.negocios.push(novo);return r.fulfill({status:201,contentType:'application/json',body:JSON.stringify([novo])});}
    if(t==='baviera_control')return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(est.negocios)});
    const body=t==='profiles'?[{id:'u1',nome:'Teste',role,linha:'motorrad',areas:[]},{id:'g1',nome:'Gonçalo Mendes',role:'vendedor',linha:'motorrad'},{id:'a1',nome:'António Felipe Gomes',role:'vendedor',linha:'motorrad'}]:t==='encomendas_bmw'?(u.includes('offset=0')?est.tabela:[]):[];
    return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(body)});});
@@ -71,6 +72,15 @@ const dias=n=>new Date(Date.now()-n*864e5).toISOString();
   await p.setInputFiles('#enc-file',{name:'outro.csv',mimeType:'text/csv',buffer:Buffer.from('a;b;c\n1;2;3\n')});
   await p.waitForFunction(()=>S.encErrImp||S.encPrev,null,{timeout:5000}).catch(()=>{});
   R.ficheiroErrado={erro:await p.evaluate(()=>S.encErrImp),rpc:est.rpc.length};
+  await p.evaluate(()=>{S.encErrImp='';S.encPrev=null;S.screen='dashboard';S.gppSec='encomendas';render();});await p.waitForTimeout(200);
+  await p.click('[data-action="enc-escolher"][data-pn="9000004"]');await p.waitForTimeout(200);
+  const botoes=await p.$$eval('[data-action="enc-novo-negocio"]',x=>x.length);
+  await p.click('[data-action="enc-novo-negocio"][data-v="g1"]');await p.waitForTimeout(300);
+  await p.fill('input[data-field="id_cliente"]','Cliente do GM');await p.click('.qf [data-action="save-record"]');await p.waitForTimeout(800);
+  const postGM=est.posts.slice(-1)[0]||null;
+  await p.evaluate(()=>{const f=emptyForm();f.status='Frio';f.id_cliente='Outro';S.selected=null;S.form=f;S.formCompleto=false;S.screen='edit';render();});await p.waitForTimeout(200);
+  await p.click('.qf [data-action="save-record"]');await p.waitForTimeout(800);
+  R.chefeNovo={botoes,post:postGM,depois:(est.posts.slice(-1)[0]||{}).vendedor_id};
   await ctx.close();}
 
  // ---------- 2) vendedor: só lê, pesquisa, filtra por caixas ----------
@@ -126,7 +136,15 @@ const dias=n=>new Date(Date.now()-n*864e5).toISOString();
   const dicaOcupada=await p.textContent('#enc-dica');
   await p.fill('input[data-field="enc"]','1111111');await p.waitForTimeout(200);
   const dicaFora=await p.textContent('#enc-dica');
-  R.neg={neg1,modal,patch,neg2,modalFechou,alertas,opcoes,dicaOcupada,dicaFora};
+  // ---- negócio novo a partir da encomenda
+  await p.evaluate(()=>{S.screen='vencomendas';render();});await p.waitForTimeout(200);
+  await p.click('[data-action="enc-escolher"][data-pn="9000006"]');await p.waitForTimeout(200);
+  await p.click('[data-action="enc-novo-negocio"]');await p.waitForTimeout(300);
+  const novoForm=await p.evaluate(()=>({ecra:S.screen,enc:S.form.enc,model:S.form.model,status:S.form.status,banner:(document.querySelector('.enc-novo-ban')||{}).textContent||''}));
+  await p.fill('input[data-field="id_cliente"]','Cliente Novo');
+  await p.click('.qf [data-action="save-record"]');await p.waitForTimeout(800);
+  const novoPost=est.posts.slice(-1)[0]||null;
+  R.neg={novoForm,novoPost,neg1,modal,patch,neg2,modalFechou,alertas,opcoes,dicaOcupada,dicaFora};
   R.vendedor={nPesqVend,cab,vendCel,temMenu,ecra,temBotao,nTodos,nPesq,nPesq2,nSemST,nNenhum,colOpcionais,ordem,scrollPagina,erros};
   await ctx.close();}
 
@@ -167,6 +185,10 @@ const dias=n=>new Date(Date.now()-n*864e5).toISOString();
   'campo Encomenda sugere só motas livres (e a do próprio negócio)':R.neg.opcoes.includes('9000004')&&!R.neg.opcoes.includes('9000003')&&!R.neg.opcoes.includes('9000002')&&!R.neg.opcoes.includes('9000005'),
   'campo Encomenda avisa mota com colega':/Já está com Gonçalo Mendes/.test(R.neg.dicaOcupada),
   'campo Encomenda avisa número fora do mapa':/não está no mapa BMW/.test(R.neg.dicaFora),
+  'vendedor: negócio novo a partir da encomenda abre já preenchido':R.neg.novoForm.ecra==='edit'&&R.neg.novoForm.enc==='9000006'&&R.neg.novoForm.model==='F 450 GS'&&R.neg.novoForm.status==='Quente'&&/9000006/.test(R.neg.novoForm.banner),
+  'vendedor: gravar cria o negócio com a encomenda':R.neg.novoPost&&R.neg.novoPost.enc==='9000006'&&R.neg.novoPost.id_cliente==='Cliente Novo'&&R.neg.novoPost.status==='Quente',
+  'chefe: negócio novo fica no vendedor escolhido':R.chefeNovo&&R.chefeNovo.botoes>=3&&R.chefeNovo.post&&R.chefeNovo.post.vendedor_id==='g1'&&R.chefeNovo.post.enc==='9000004',
+  'chefe: negócio normal depois não herda o vendedor':R.chefeNovo&&R.chefeNovo.depois==='u1',
   'sem erros JS':!c.erros.length&&!v.erros.length,
  };
  let f=0;for(const [k,ok] of Object.entries(checks)){console.log((ok?'✓ ':'✗ ')+k);if(!ok)f++;}

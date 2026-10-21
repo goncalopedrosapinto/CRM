@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-21-i">
+<meta name="app-version" content="2026-10-21-j">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1423,13 +1423,15 @@ html,body{overflow-x:hidden;max-width:100vw}
 .seq-nota{font-size:11.5px;color:var(--text3);margin-top:8px}
 .enc-tw{overflow:auto;max-height:calc(100vh - 250px);border:1px solid var(--border);border-radius:var(--r2);background:var(--surface);margin-top:8px}
 .enc-t{border-collapse:separate;border-spacing:0;width:100%;font-size:12px}
-.enc-t th{position:sticky;top:0;z-index:1;background:var(--bg2);text-align:left;font-weight:700;font-size:11px;color:var(--text2);padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
-.enc-t td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:top;white-space:nowrap}
-.enc-t td.enc-opt{white-space:normal;min-width:220px;max-width:340px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;color:var(--text2);line-height:1.45}
-.enc-t td.enc-mod{font-weight:700}.enc-t td.enc-d{font-variant-numeric:tabular-nums}
+.enc-t th{position:sticky;top:0;z-index:1;background:var(--bg2);text-align:left;vertical-align:bottom;font-weight:700;font-size:11px;line-height:1.25;color:var(--text2);padding:7px 5px;border-bottom:1px solid var(--border);white-space:normal}
+.enc-t th.enc-th-opt{width:34%}
+.enc-t td{padding:6px 5px;border-bottom:1px solid var(--border);vertical-align:top;white-space:nowrap}
+.enc-t td.enc-cli{white-space:normal;min-width:90px}.enc-t td.enc-wk small{display:block;color:var(--text3);font-size:10.5px}
+.enc-t td.enc-opt{white-space:normal;min-width:150px;word-spacing:1px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;color:var(--text2);line-height:1.45}
+.enc-t td.enc-mod{font-weight:700;white-space:normal;min-width:72px}.enc-t td.enc-d{font-variant-numeric:tabular-nums}
 .enc-t tr.enc-grp td{background:var(--bg);font-size:12px;padding:7px 10px;color:var(--text)}
 .enc-grp span{color:var(--text3);margin-left:6px;font-size:11px}
-.enc-t td.enc-pn{font-weight:800;font-size:13px;color:var(--text);border-left:3px solid var(--orange);background:color-mix(in srgb,var(--orange) 6%,transparent)}
+.enc-t td.enc-pn{font-weight:800;font-size:13px;padding-left:7px;color:var(--text);border-left:3px solid var(--orange);background:color-mix(in srgb,var(--orange) 6%,transparent)}
 .enc-t th:first-child{border-left:3px solid transparent}
 .enc-tp{display:inline-block;min-width:28px;text-align:center;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid var(--border2);color:var(--text2)}
 .enc-tp-cs{border-color:var(--green);color:var(--green)}
@@ -1441,7 +1443,7 @@ html,body{overflow-x:hidden;max-width:100vw}
 .enc-chk.on{background:color-mix(in srgb,var(--blue) 9%,transparent)}.enc-chk span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.enc-chk small{color:var(--text3)}
 .enc-chk input[type=checkbox]{-webkit-appearance:none;appearance:none;flex:none;width:16px;height:16px;min-height:0;margin:0;padding:0;border:1.5px solid var(--text3);border-radius:4px;background:var(--surface);cursor:pointer;box-shadow:none}
 .enc-chk input[type=checkbox]:checked{background:var(--blue) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' stroke='white' stroke-width='2.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/12px no-repeat;border-color:var(--blue)}
-.enc-t td.enc-neg{white-space:nowrap}.enc-neg>*{margin-right:6px;vertical-align:middle}.enc-neg small{color:var(--text2);font-size:11px}
+.enc-t td.enc-neg{white-space:normal;min-width:132px}.enc-neg>*{margin-right:5px;vertical-align:middle}.enc-neg .enc-neg-a{display:block;margin-top:3px}.enc-neg .enc-neg-a .enc-lnk{padding:0 8px 0 0}.enc-neg small{color:var(--text2);font-size:11px}
 .enc-ng{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
 .enc-ng.n{background:color-mix(in srgb,var(--amber) 16%,transparent);color:var(--amber)}.enc-ng.v{background:color-mix(in srgb,var(--green) 14%,transparent);color:var(--green)}.enc-ng.l{color:var(--text3)}
 .enc-parada{color:var(--red);font-weight:700}.enc-mut{color:var(--text3)}
@@ -1457,6 +1459,8 @@ html,body{overflow-x:hidden;max-width:100vw}
 .enc-m-i:hover{border-color:var(--blue)}.enc-m-i:disabled{opacity:.6;cursor:wait}
 .enc-m-n{font-weight:700;font-size:13px}.enc-m-n em{font-style:normal;font-size:10.5px;font-weight:700;color:var(--green);margin-left:6px}
 .enc-m-d{grid-column:1/2;font-size:12px;color:var(--text2)}.enc-m-i .s-badge{grid-row:1/3;grid-column:2/3;align-self:center}
+.enc-m-novo{display:flex;align-items:center;justify-content:center;gap:6px}.enc-m-novos{display:flex;flex-wrap:wrap;gap:6px}.enc-m-novos .btn{display:inline-flex;align-items:center;gap:5px}
+.enc-novo-ban{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;margin:0 0 14px;border:1px solid var(--border);border-left:3px solid var(--orange);border-radius:var(--r);background:var(--surface);font-size:13px;line-height:1.45}.enc-novo-ban small{display:block;color:var(--text3);font-size:11.5px}.enc-novo-ban .ic{flex:none;margin-top:2px}
 .enc-m-nota{font-size:11.5px;color:var(--text3);margin-top:10px;line-height:1.5}
 .enc-dica{display:flex;flex-direction:column;gap:3px;margin-top:5px;font-size:12px;line-height:1.4}.enc-dica .ok{color:var(--green)}.enc-dica .av{color:var(--amber)}.enc-dica .err{color:var(--red);font-weight:700}
 .enc-chk input[type=checkbox]:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
@@ -2159,7 +2163,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-21-i';
+const APP_VERSION='2026-10-21-j';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -3639,7 +3643,7 @@ async function saveRecord(){
   if((S.form.type==='MU'||S.form.type==='MD')&&!S.form.stock_id&&(S.form.status==='Retail'||S.form.status==='Carteira')){
     if(!confirm('Esta venda de usada/demo não tem a Mota do Stock associada.\n\nSem isso não consegues ver a margem real nem o stock fica marcado como vendido.\n\nGravar mesmo assim?'))return;
   }
-  setState({loading:true,error:''});try{const b={...S.form};['neg','dmat','col_298','alert_date','recontactar_em'].forEach(k=>{if(!b[k])b[k]=null});if(b.recontactar_em==null||(S.selected&&String(b.recontactar_em)===String(S.selected.recontactar_em||'')))delete b.recontactar_em;['qor','xev','bev','m_flag','csc','cme'].forEach(k=>{b[k]=b[k]?parseInt(b[k]):null});b.pvp=b.pvp?parseFloat(b.pvp):null;b.stock_id=b.stock_id?parseInt(b.stock_id):null;if(!isAdmin())delete b.obs_gestor;delete b.id;delete b.created_at;delete b.updated_at;delete b.updated_by;if(!S.selected&&isAdmin())b.vendedor_id=S.viewVendedor||S.me.id;S._avisoMes='';if(!isAdmin()&&b.status==='Carteira'){const _o=S.selected;if(!_o||_o.status!=='Carteira')S._avisoMes='Mês de entrega enviado ao chefe para validar';else if(_o.mes1&&_o.mes1_validado===true&&(b.mes1||'')!==(_o.mes1||''))S._avisoMes='Pedido enviado ao chefe: mudar para '+mrTxt(b.mes1)+' (até lá conta '+mrTxt(_o.mes1)+')';}if(S.selected){if(b.status!==S.selected.status)b.status_updated_at=new Date().toISOString();delete b.status_updated_at_keep;await supabaseApi('PATCH',`/baviera_control?id=eq.${S.selected.id}`,b)}else{b.status_updated_at=new Date().toISOString();const _novo=await supabaseApi('POST','/baviera_control',b);if(S.fmRascunho&&Array.isArray(_novo)&&_novo[0]&&_novo[0].id)await fmLigarAoNovo(_novo[0].id);}await syncStockComNegocio(b.stock_id,b.status);await loadRecords();setState({screen:'list',selected:null,loading:false});if(S._avisoMes){const _t=S._avisoMes;S._avisoMes='';setTimeout(()=>toast(_t),450);}}catch(e){setState({error:'Erro ao guardar: '+erroTexto(e),loading:false})}}
+  setState({loading:true,error:''});try{const b={...S.form};['neg','dmat','col_298','alert_date','recontactar_em'].forEach(k=>{if(!b[k])b[k]=null});if(b.recontactar_em==null||(S.selected&&String(b.recontactar_em)===String(S.selected.recontactar_em||'')))delete b.recontactar_em;['qor','xev','bev','m_flag','csc','cme'].forEach(k=>{b[k]=b[k]?parseInt(b[k]):null});b.pvp=b.pvp?parseFloat(b.pvp):null;b.stock_id=b.stock_id?parseInt(b.stock_id):null;if(!isAdmin())delete b.obs_gestor;delete b.id;delete b.created_at;delete b.updated_at;delete b.updated_by;if(!S.selected&&isAdmin())b.vendedor_id=encNovoVendDe(S.form)||S.viewVendedor||S.me.id;S._avisoMes='';if(!isAdmin()&&b.status==='Carteira'){const _o=S.selected;if(!_o||_o.status!=='Carteira')S._avisoMes='Mês de entrega enviado ao chefe para validar';else if(_o.mes1&&_o.mes1_validado===true&&(b.mes1||'')!==(_o.mes1||''))S._avisoMes='Pedido enviado ao chefe: mudar para '+mrTxt(b.mes1)+' (até lá conta '+mrTxt(_o.mes1)+')';}if(S.selected){if(b.status!==S.selected.status)b.status_updated_at=new Date().toISOString();delete b.status_updated_at_keep;await supabaseApi('PATCH',`/baviera_control?id=eq.${S.selected.id}`,b)}else{b.status_updated_at=new Date().toISOString();const _novo=await supabaseApi('POST','/baviera_control',b);if(S.fmRascunho&&Array.isArray(_novo)&&_novo[0]&&_novo[0].id)await fmLigarAoNovo(_novo[0].id);}await syncStockComNegocio(b.stock_id,b.status);await loadRecords();setState({screen:'list',selected:null,loading:false});if(S._avisoMes){const _t=S._avisoMes;S._avisoMes='';setTimeout(()=>toast(_t),450);}}catch(e){setState({error:'Erro ao guardar: '+erroTexto(e),loading:false})}}
 async function syncStockComNegocio(stockId,status){
   // Estado da mota acompanha o negocio: funil=A negociar; carteira/retail=Vendida; perdido=Disponivel
   if(!stockId)return;
@@ -4736,12 +4740,13 @@ function encView(){
   const P=S.encPrev;
   const celula=(x,[c,,,t])=>{const v=x[c];
     if(t==='d')return`<td class="enc-d">${esc(encDataPT(v))}</td>`;
-    if(t==='w')return`<td class="enc-d" title="${esc(v||'')}">${esc(encSemana(v))}</td>`;
+    if(t==='w'){const w=encSemana(v),i=w.indexOf(' · ');return`<td class="enc-d enc-wk" title="${esc(v||'')}">${i>0?esc(w.slice(0,i))+'<small>'+esc(w.slice(i+3))+'</small>':esc(w)}</td>`;}
+    if(c==='customer_last')return`<td class="enc-cli">${esc(v||'')}</td>`;
     if(c==='options')return`<td class="enc-opt">${esc(v||'')}</td>`;
     if(t==='v'){const sig=encSigla(v);if(!sig)return'<td></td>';const p=encVendDe(sig);
       return p?`<td><span class="vtag" style="background:${corVend(p.id)}" title="${esc(p.nome||'')}">${esc(sig)}</span></td>`:`<td><span class="enc-tp">${esc(sig)}</span></td>`;}
     if(c==='processing_type')return`<td><span class="enc-tp enc-tp-${esc(String(v||'').toLowerCase())}">${esc(v||'')}</span></td>`;
-    if(c==='model_desc')return`<td class="enc-mod">${esc(v||'')}</td>`;
+    if(c==='model_desc'){const m=String(v||'');return`<td class="enc-mod">${esc(m.length<=10?m.replace(/ /g,'\u00a0'):m)}</td>`;}
     if(c==='production_number')return`<td class="sec-mono enc-pn">${esc(v||'')}</td>`;
     if(['chassis','model_code','color_code','order_status'].includes(c))return`<td class="sec-mono">${esc(v||'')}</td>`;
     return`<td>${esc(v||'')}</td>`;};
@@ -4790,7 +4795,7 @@ function encView(){
     ${painel}
     ${ativos?`<div class="vchips" style="padding:8px 0 0">${ativos}</div>`:''}
     <div class="seq-res"><b>${arr.length}</b> de ${todos.length} encomendas${porTipo.length?' · '+porTipo.map(([t,n])=>`${t} ${n}`).join(' · '):''}</div>
-    ${arr.length?`<div class="enc-tw"><table class="enc-t"><thead><tr>${cols.map(([c,h,lb])=>`<th title="${esc(h)}">${esc(lb)}</th>`).join('')}<th>Negociação</th></tr></thead><tbody>${corpo}</tbody></table></div>`:'<div class="gpp-empty">Nada com esta pesquisa ou filtros.</div>'}
+    ${arr.length?`<div class="enc-tw"><table class="enc-t"><thead><tr>${cols.map(([c,h,lb])=>`<th title="${esc(h)}"${c==='options'?' class="enc-th-opt"':''}>${esc(lb)}</th>`).join('')}<th>Negociação</th></tr></thead><tbody>${corpo}</tbody></table></div>`:'<div class="gpp-empty">Nada com esta pesquisa ou filtros.</div>'}
     <div class="seq-nota" style="margin-top:12px">Ordenado por estado (o mais avançado primeiro), depois por código de modelo e por tipo (ST, US, DE, CS). “Negociação” vem dos negócios da plataforma: Quente/Morno = em negociação, Carteira/Retail = vendida. “Entrega prevista de/até” são as datas F3 da BMW; “Semana de entrega” é a Exp. Del. Wk. O mapa é o do dia em que foi carregado: confirma no portal BMW antes de prometer uma data ao cliente.</div>`}
   </div>`;
 }
@@ -4819,11 +4824,11 @@ function encNegCel(x,M){
   const tag=r=>{const n=vendName(r.vendedor_id)||'?';return`<span class="vtag" style="background:${corVend(r.vendedor_id)}" title="${esc(n)}">${esc(encSiglaDeVend(r.vendedor_id)||iniciais(n))}</span>`;};
   const abrir=r=>(S.records||[]).some(y=>String(y.id)===String(r.negocio_id))?`<button class="enc-lnk" data-action="${isAdmin()?'open-record-from-dash':'open-detail'}" data-id="${esc(r.negocio_id)}">Abrir negócio</button>`:'';
   if(est==='Vendida'){const r=R.find(y=>y.status==='Carteira'||y.status==='Retail');
-    return`<td class="enc-neg"><span class="enc-ng v">Vendida</span>${tag(r)}<small>${esc(r.status)}</small>${abrir(r)}</td>`;}
+    return`<td class="enc-neg"><span class="enc-ng v">Vendida</span>${tag(r)}<small>${esc(r.status)}</small><span class="enc-neg-a">${abrir(r)}</span></td>`;}
   if(est==='Em negociação'){const A=R.filter(y=>ENC_NEG.includes(y.status));const r=A[0];const d=encDias(r.atualizado);const parada=d!=null&&d>ENC_PARADA_DIAS;
     const quando=d==null?'':(parada?`<b class="enc-parada">parada há ${d} dias</b>`:(d===0?'hoje':`há ${d} dia${d>1?'s':''}`));
-    return`<td class="enc-neg"><span class="enc-ng n">Em negociação</span>${tag(r)}<small>${esc(r.status)}${quando?' · '+quando:''}</small>${A.length>1?`<b class="enc-parada">em ${A.length} negócios</b>`:''}${abrir(r)}${isAdmin()||r.vendedor_id===eu?`<button class="enc-lnk" data-action="enc-libertar" data-id="${esc(r.negocio_id)}" data-pn="${esc(x.production_number)}">Libertar</button>`:''}</td>`;}
-  if(est==='Livre')return encPodeReservar()?`<td class="enc-neg"><button class="btn btn-outline btn-sm enc-res-btn" data-action="enc-escolher" data-pn="${esc(x.production_number)}">${isAdmin()?'Atribuir a negócio':'Estou a negociar'}</button></td>`:'<td class="enc-neg"><span class="enc-ng l">Livre</span></td>';
+    return`<td class="enc-neg"><span class="enc-ng n">Em negociação</span>${tag(r)}<small>${esc(r.status)}${quando?' · '+quando:''}</small>${A.length>1?`<b class="enc-parada">em ${A.length} negócios</b>`:''}<span class="enc-neg-a">${abrir(r)}${isAdmin()||r.vendedor_id===eu?`<button class="enc-lnk" data-action="enc-libertar" data-id="${esc(r.negocio_id)}" data-pn="${esc(x.production_number)}">Libertar</button>`:''}</span></td>`;}
+  if(est==='Livre')return encPodeReservar()?`<td class="enc-neg"><button class="btn btn-outline btn-sm enc-res-btn" data-action="enc-escolher" data-pn="${esc(x.production_number)}">${isAdmin()?'Atribuir':'Estou a negociar'}</button></td>`:'<td class="enc-neg"><span class="enc-ng l">Livre</span></td>';
   return'<td class="enc-neg"><small class="enc-mut">Cliente BMW · sem negócio na plataforma</small></td>';
 }
 // a mesma sigla que a BMW usa para o vendedor (GM, FG…), para não aparecerem duas siglas diferentes na mesma linha
@@ -4841,11 +4846,14 @@ function encEscolherHTML(){
       <div class="enc-m-s">${esc(x.model_desc||'')} · cor ${esc(x.color_code||'—')} · ${esc(x.processing_type||'')} · estado ${esc(x.order_status||'—')} · Prod. <span class="sec-mono">${esc(pn)}</span>${x.chassis?' · chassis <span class="sec-mono">'+esc(x.chassis)+'</span>':''}</div></div>
       <button class="enc-m-x" data-action="enc-escolher-fechar" aria-label="Fechar">${ico('x')}</button></div>
     <div class="enc-m-b">
-      ${C.length?`<div class="enc-m-l">Para que negócio${isAdmin()?'':' (os teus Quentes e Mornos)'}?</div>${C.map(r=>`<button class="enc-m-i" data-action="enc-reservar" data-id="${esc(r.id)}" data-pn="${esc(pn)}" ${S.encResBusy?'disabled':''}>
+      <div class="enc-m-l">Cliente novo</div>
+      ${isAdmin()?`<div class="enc-m-novos">${[...(S.team||[]),S.me].filter(Boolean).map(p=>`<button class="btn btn-orange btn-sm" data-action="enc-novo-negocio" data-pn="${esc(pn)}" data-v="${esc(p.id)}">${ico('plus','ic-sm')}<span>${p.id===eu?'Negócio meu':'Negócio de '+esc(String(p.nome||'?').split(' ')[0])}</span></button>`).join('')}</div>`
+        :`<button class="btn btn-orange btn-block enc-m-novo" data-action="enc-novo-negocio" data-pn="${esc(pn)}">${ico('plus','ic-sm')}<span>Criar negócio novo com esta mota</span></button>`}
+      ${C.length?`<div class="enc-m-l" style="margin-top:14px">Ou junta a um negócio em curso${isAdmin()?'':' (os teus Quentes e Mornos)'}:</div>${C.map(r=>`<button class="enc-m-i" data-action="enc-reservar" data-id="${esc(r.id)}" data-pn="${esc(pn)}" ${S.encResBusy?'disabled':''}>
         <span class="enc-m-n">${esc(r.id_cliente||'Sem nome')}${igual(r)?' <em>mesmo modelo</em>':''}</span>
         <span class="enc-m-d">${isAdmin()?vendTag(r.vendedor_id)+' ':''}${esc([r.model,r.version].filter(Boolean).join(' ')||'modelo por preencher')}${String(r.enc||'').trim()&&String(r.enc).trim()!==String(pn)?` · <b>já tem a encomenda ${esc(r.enc)}: vai ser trocada</b>`:''}</span>
         <span class="s-badge s-${esc(r.status)}">${esc(r.status)}</span></button>`).join('')}`
-      :`<div class="gpp-empty">${isAdmin()?'Não há negócios Quentes ou Mornos.':'Não tens negócios Quentes ou Mornos. Cria primeiro o negócio no funil e volta aqui.'}</div>`}
+      :''}
       ${S.encResErr?`<div class="error" style="margin-top:10px">${esc(S.encResErr)}</div>`:''}
       <div class="enc-m-nota">A mota passa a aparecer <b>em negociação</b> para toda a equipa (sem o nome do cliente). Fica <b>vendida</b> quando o negócio passar a Carteira e <b>livre</b> sozinha se passar a Frio ou Perdido. Sem mexer no negócio durante ${ENC_PARADA_DIAS} dias, o chefe é avisado.</div>
     </div>
@@ -4866,6 +4874,20 @@ async function encReservar(id,pn){
   }catch(e){S.encResErr=erroTexto(e);}
   setState({encResBusy:false});
 }
+// Negócio novo já com a mota: abre o formulário rápido com modelo, encomenda e chassis preenchidos, fase Quente
+function encNovoNegocio(pn,vendId){
+  const x=(S.enc||[]).find(y=>String(y.production_number)===String(pn));if(!x)return;
+  const f=emptyForm();f.status='Quente';f.type='MN';f.model=x.model_desc||'';f.enc=String(pn);if(x.chassis)f.chas=x.chassis;
+  if(typeof sugereAlerta==='function')f.alert_date=sugereAlerta('Quente');
+  let alvo=null;if(isAdmin()&&vendId){alvo=String(vendId);const p=(S.team||[]).find(t=>String(t.id)===alvo)||(S.me&&String(S.me.id)===alvo?S.me:null);if(p&&p.nome)f.resp=p.nome;}
+  S.fmRascunho=null;S.formCompleto=false;
+  setState({encEscolher:null,encResErr:'',encNovoVend:alvo?{pn:String(pn),v:alvo}:null,selected:null,form:f,screen:'edit',error:'',openGroups:{INFO:true}});
+}
+// o vendedor escolhido pelo chefe só vale para o negócio desta mota
+function encNovoVendDe(F){const n=S.encNovoVend;return n&&String((F||{}).enc||'').trim()===n.pn?n.v:null;}
+function encNovoBannerHTML(){const F=S.form||{};const v=String(F.enc||'').trim();if(!v)return'';const x=(S.enc||[]).find(y=>String(y.production_number)===v);if(!x)return'';
+  const nv=encNovoVendDe(F);const quem=isAdmin()&&nv?(vendName(nv)||''):'';
+  return`<div class="enc-novo-ban">${ico('package','ic-sm')}<div><b>${esc(x.model_desc||'')}</b> · cor ${esc(x.color_code||'—')} · ${esc(x.processing_type||'')} · Prod. <span class="sec-mono">${esc(v)}</span>${x.chassis?' · chassis <span class="sec-mono">'+esc(x.chassis)+'</span>':''}${quem?' · negócio de <b>'+esc(quem)+'</b>':''}<small>Ao gravar, a mota fica em negociação neste negócio.</small></div></div>`;}
 async function encLibertar(id,pn){
   const r=(S.records||[]).find(x=>String(x.id)===String(id));if(!r)return;
   if(!confirm(`Libertar a mota ${pn} do negócio de ${r.id_cliente||'—'}? O negócio fica igual, só deixa de ter esta encomenda.`))return;
@@ -6185,6 +6207,7 @@ function renderEditRapido(){
   const inp=(k,lb,ph,tipo)=>`<label class="qf-f"><span>${lb}</span><input class="field-input" ${tipo?`type="${tipo}"`:'type="text"'} data-field="${k}" ${tipo==='month'?'data-fmt="month"':''} value="${esc(tipo==='month'?String(F[k]||'').replace('/','-'):(F[k]||''))}" placeholder="${ph||''}"></label>`;
   return`<div class="qf">
     ${S.error?`<div class="error" style="margin:0 0 12px">${esc(S.error)}</div>`:''}
+    ${encNovoBannerHTML()}
     <div class="qf-sec">Em que fase está? <i>*</i></div>
     <div class="qf-chips">${['Quente','Morno','Frio','Carteira','Retail'].map(v=>qfChip('status',v)).join('')}</div>
     <div class="qf-hint">${fun?'Funil — fica a lembrar-te de contactar na data abaixo.':(st==='Carteira'?'Vendida, ainda por entregar.':(st==='Retail'?'Já entregue (298 feito).':'Quente / Morno / Frio = funil · Carteira = vendida por entregar · Retail = entregue'))}</div>
@@ -8863,6 +8886,7 @@ function bindEvents(){
       case'enc-escolher':setState({encEscolher:el.dataset.pn,encResErr:''});break;
       case'enc-escolher-fechar':setState({encEscolher:null,encResErr:''});break;
       case'enc-reservar':encReservar(el.dataset.id,el.dataset.pn);break;
+      case'enc-novo-negocio':encNovoNegocio(el.dataset.pn,el.dataset.v);break;
       case'enc-libertar':encLibertar(el.dataset.id,el.dataset.pn);break;
       case'enc-cancelar':setState({encPrev:null,encErrImp:''});break;
       case'enc-painel':setState({encPainel:!S.encPainel});break;
@@ -9046,7 +9070,7 @@ function bindEvents(){
         else setState({screen:'list',selected:null});
         break;}
       case'open-edit':setState({form:recordToForm(S.selected||{}),screen:'edit',error:'',openGroups:{INFO:true}});break;
-      case'open-add':S.fmRascunho=null;S.formCompleto=false;setState({selected:null,form:emptyForm(),screen:'edit',error:'',openGroups:{INFO:true}});break;
+      case'open-add':S.fmRascunho=null;S.formCompleto=false;setState({encNovoVend:null,selected:null,form:emptyForm(),screen:'edit',error:'',openGroups:{INFO:true}});break;
       case'back-from-edit':setState({screen:S.selected?'detail':'list',error:''});break;
       case'save-record':collectFormData();saveRecord();break;
       case'toggle-section':{const g=el.dataset.group;S.openGroups[g]=!S.openGroups[g];if(S.screen==='edit')collectFormData();render();break}
