@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-21-c">
+<meta name="app-version" content="2026-10-21-d">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2116,7 +2116,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-21-c';
+const APP_VERSION='2026-10-21-d';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -2249,9 +2249,43 @@ async function pedirRecuperacao(){
   }catch(e){setState({recLoading:false,recErr:'Não consegui enviar: '+erroTexto(e)});}
 }
 async function supabaseAuth(e,p){const r=await fetch(`${S.config.url}/auth/v1/token?grant_type=password`,{method:'POST',headers:{'apikey':S.config.key,'Content-Type':'application/json'},body:JSON.stringify({email:e,password:p})});if(!r.ok)throw new Error('Login falhou. Verifica email e password.');const d=await r.json();saveSession(d);return d}
-function saveSession(d){try{if(d.access_token&&d.refresh_token){localStorage.setItem('bc_session',JSON.stringify({refresh_token:d.refresh_token}))}}catch(e){}}
 function clearSession(){try{localStorage.removeItem('bc_session')}catch(e){}}
-async function refreshSession(){let raw;try{raw=localStorage.getItem('bc_session')}catch(e){return null}if(!raw)return null;let s;try{s=JSON.parse(raw)}catch(e){return null}if(!s.refresh_token)return null;try{const r=await fetch(`${S.config.url}/auth/v1/token?grant_type=refresh_token`,{method:'POST',headers:{'apikey':S.config.key,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:s.refresh_token})});if(!r.ok){clearSession();return null}const d=await r.json();saveSession(d);return d.access_token}catch(e){return null}}
+// ---- Sessão: uma renovação de cada vez (também entre separadores) ----
+// O Supabase troca o refresh token a cada renovação; duas renovações em paralelo com o mesmo token
+// são tratadas como abuso e a sessão é revogada (utilizador fica preso em "A carregar" ou é posto fora).
+function jwtExp(t){try{return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).exp*1000}catch(e){return 0}}
+function saveSession(d){try{if(d.access_token&&d.refresh_token){localStorage.setItem('bc_session',JSON.stringify({refresh_token:d.refresh_token,access_token:d.access_token,exp:jwtExp(d.access_token)}));sessaoAgendar(d.access_token);}}catch(e){}}
+function lerSessao(){try{return JSON.parse(localStorage.getItem('bc_session')||'null')}catch(e){return null}}
+let _refreshP=null,_sessaoT=null;
+function fetchT(url,opts,ms){const c=new AbortController();const t=setTimeout(()=>c.abort(),ms||20000);return fetch(url,Object.assign({},opts,{signal:c.signal})).finally(()=>clearTimeout(t));}
+async function refreshSession(){
+  if(_refreshP)return _refreshP;
+  _refreshP=(async()=>{
+    const fazer=async()=>{
+      const s=lerSessao();if(!s||!s.refresh_token)return null;
+      // outro separador já renovou há pouco: usa esse token em vez de gastar o refresh token outra vez
+      if(s.access_token&&s.exp&&s.exp-Date.now()>120000&&s.access_token!==S.token){sessaoAgendar(s.access_token);return s.access_token;}
+      let r;
+      try{r=await fetchT(`${S.config.url}/auth/v1/token?grant_type=refresh_token`,{method:'POST',headers:{'apikey':S.config.key,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:s.refresh_token})},25000);}
+      catch(e){S._sessaoRede=true;return null;}
+      S._sessaoRede=false;
+      if(!r.ok){
+        // o token pode ter sido renovado por outro separador entretanto
+        const s2=lerSessao();if(s2&&s2.refresh_token!==s.refresh_token&&s2.access_token&&s2.exp-Date.now()>60000){sessaoAgendar(s2.access_token);return s2.access_token;}
+        if(r.status>=500){S._sessaoRede=true;return null;}
+        clearSession();return null;
+      }
+      const d=await r.json();saveSession(d);return d.access_token;
+    };
+    try{return (navigator.locks&&navigator.locks.request)?await navigator.locks.request('bc_refresh',fazer):await fazer();}
+    catch(e){return null;}
+  })();
+  try{return await _refreshP;}finally{_refreshP=null;}
+}
+// renova antes de expirar (2 min antes), para os pedidos não apanharem 401 todos ao mesmo tempo
+function sessaoAgendar(tok){clearTimeout(_sessaoT);const exp=jwtExp(tok);if(!exp)return;const em=Math.max(5000,exp-Date.now()-120000);
+  _sessaoT=setTimeout(async()=>{if(!S.token)return;const nt=await refreshSession();if(nt)S.token=nt;},Math.min(em,2147483000));}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.token&&jwtExp(S.token)-Date.now()<180000){refreshSession().then(nt=>{if(nt)S.token=nt;});}});
 async function saveObsGestor(id,texto){
   try{
     await supabaseApi('PATCH',`/baviera_control?id=eq.${id}`,{obs_gestor:texto||null});
@@ -2318,7 +2352,7 @@ window.addEventListener('error',function(ev){
 },true);
 window.addEventListener('unhandledrejection',function(ev){const r=ev&&ev.reason;erroRegistar('promessa',r&&r.message?r.message:String(r),r&&r.stack,'');});
 document.addEventListener('securitypolicyviolation',function(ev){erroRegistar('csp','Bloqueado pela política de segurança: '+(ev.violatedDirective||'')+' '+(function(u){try{return new URL(u).origin}catch(e){return String(u||'').slice(0,40)}})(ev.blockedURI),'',(ev.sourceFile||'').split('?')[0]);});
-async function supabaseApi0(m,path,body,_retry){const h={'apikey':S.config.key,'Authorization':`Bearer ${S.token}`,'Content-Type':'application/json'};if(m==='POST'||m==='PATCH')h['Prefer']='return=representation';const o={method:m,headers:h};if(body)o.body=JSON.stringify(body);const r=await fetch(`${S.config.url}/rest/v1${path}`,o);if(r.status===401&&!_retry){const nt=await refreshSession();if(nt){S.token=nt;return supabaseApi(m,path,body,true)}}if(!r.ok){const e=await r.text();throw new Error(e)}const t=await r.text();if(m!=='GET'&&!_retry_silencio(path))toastGravado(m);return t?JSON.parse(t):null}
+async function supabaseApi0(m,path,body,_retry){const h={'apikey':S.config.key,'Authorization':`Bearer ${S.token}`,'Content-Type':'application/json'};if(m==='POST'||m==='PATCH')h['Prefer']='return=representation';const o={method:m,headers:h};if(body)o.body=JSON.stringify(body);let r;try{r=await fetchT(`${S.config.url}/rest/v1${path}`,o,m==='GET'?20000:45000);}catch(e){if(m==='GET'&&!o._rep){o._rep=1;r=await fetchT(`${S.config.url}/rest/v1${path}`,o,25000).catch(()=>{throw new Error('Failed to fetch: o servidor demorou demasiado a responder')});}else throw new Error(e&&e.name==='AbortError'?'Failed to fetch: o servidor demorou demasiado a responder':String(e&&e.message||e));}if(r.status===401&&!_retry){const nt=await refreshSession();if(nt){S.token=nt;return supabaseApi(m,path,body,true)}}if(!r.ok){const e=await r.text();throw new Error(e)}const t=await r.text();if(m!=='GET'&&!_retry_silencio(path))toastGravado(m);return t?JSON.parse(t):null}
 function _retry_silencio(p){return /^\/(precos_ref|rpc\/inscricoes_ranking|comissoes_fecho|fichas_margem)/.test(String(p||''));}
 let _tgT=null;function toastGravado(m){clearTimeout(_tgT);_tgT=setTimeout(()=>{try{toast(m==='DELETE'?'Apagado':'Gravado')}catch(e){}},250);}
 const LINHA_LABELS={motorrad:'Motorrad',auto:'Equipa Teste'};
@@ -8178,7 +8212,8 @@ function render(){
 function render0(){
   const app=document.getElementById('app');
   const ce=app.querySelector('.content'),st=ce?ce.scrollTop:0,ps=app.dataset.screen||'';
-  const screens={loading:'<div class="content"><div class="center-screen"><p style="color:var(--text3)">A carregar...</p></div></div>',login:renderLogin,financeiro:renderFinanceiro,list:renderList,detail:renderDetail,edit:renderEdit,dashboard:renderDashboard,escala:renderEscala,password:renderPassword,ventregas:renderMinhasEntregas,vcom:renderMinhasComissoes,semacesso:renderSemAcesso,previsao:renderPrevisao,ficha:renderFichaMargem,secretaria:renderSecretaria,assessor:renderAssessor,stockvend:renderStockVend,evento:renderEventoVend,veot:renderMinhasEot,vstockeq:renderStockEqVend};
+  const screens={loading:'<div class="content"><div class="center-screen"><p style="color:var(--text3)">A carregar...</p>'+(S._lento?'<p style="color:var(--text2);max-width:360px;text-align:center;line-height:1.5;margin-top:10px">A ligação ao servidor está lenta. Continua a tentar sozinho; se preferires, recomeça.</p><button class="btn btn-dark" data-action="recarregar" style="margin-top:8px">Tentar outra vez</button>':'')+'</div></div>',
+    semrede:'<div class="content"><div class="center-screen"><p style="font-weight:700;font-size:16px">Sem resposta do servidor</p><p style="color:var(--text2);max-width:380px;text-align:center;line-height:1.5">A ligação está lenta ou falhou. A tua sessão continua guardada — não precisas de voltar a entrar.</p><button class="btn btn-dark" data-action="recarregar" style="margin-top:10px">Tentar outra vez</button></div></div>',login:renderLogin,financeiro:renderFinanceiro,list:renderList,detail:renderDetail,edit:renderEdit,dashboard:renderDashboard,escala:renderEscala,password:renderPassword,ventregas:renderMinhasEntregas,vcom:renderMinhasComissoes,semacesso:renderSemAcesso,previsao:renderPrevisao,ficha:renderFichaMargem,secretaria:renderSecretaria,assessor:renderAssessor,stockvend:renderStockVend,evento:renderEventoVend,veot:renderMinhasEot,vstockeq:renderStockEqVend};
   if(S.screen==='ventregas'&&S.me&&!isAdmin())S.screen='list';
   if(S.screen==='financeiro'&&S.me&&!isFinanceiro())S.screen=ecraInicial();
   const fn=screens[S.screen];
@@ -8425,6 +8460,7 @@ function bindEvents(){
         else{S.escalaMes=a.replace('/','-');setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}break;}
       case'nv-atualizar':recarregarComRascunho();break;
       case'go-sec':if(isSecretaria())setState({screen:'secretaria'});break;
+      case'recarregar':location.reload();break;
       case'go-area':if(areasDoUtilizador().some(a=>a[0]===el.dataset.s))setState({screen:el.dataset.s});break;
       case'prev-ano':{const m=(S.prevMes||curYM()).slice(5,7);setState({prevMes:el.dataset.a+'/'+m});break;}
       case'prev-mes':setState({prevMes:el.dataset.m});break;
@@ -8661,10 +8697,14 @@ function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promi
     });
     return;
   }
+  // se ficar demasiado tempo a carregar, diz porquê e deixa tentar outra vez (sem perder a sessão)
+  setTimeout(function(){if(S.screen==='loading'){S._lento=true;render();}},15000);
+  const semRede=e=>/Failed to fetch|NetworkError|Load failed|network|demorou|AbortError|timeout/i.test(String(e&&e.message||e));
   refreshSession().then(function(token){
     if(token){S.token=token;return afterAuth()}
+    else if(S._sessaoRede){setState({screen:'semrede'})}
     else{setState({screen:'login'})}
-  }).catch(function(e){clearSession();setState({screen:'login',error:e&&e.message?e.message:''})});
+  }).catch(function(e){if(semRede(e)){setState({screen:'semrede'});return;}clearSession();setState({screen:'login',error:e&&e.message?e.message:''})});
 })();
 </script>
 </body>
