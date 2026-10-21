@@ -8,3 +8,4 @@
 2026-10-20_configuracoes.sql
 2026-10-21_encomendas_bmw.sql
 2026-10-21_encomendas_vendedor.sql
+2026-10-21_encomendas_reservas.sql
