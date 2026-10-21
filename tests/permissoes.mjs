@@ -30,6 +30,11 @@ await db.query("insert into public.stock_equip(lote,ref,custo_unit) values('L1',
 await db.query("insert into public.precos_ref(ref,pvp) values('REF1',20)");
 await db.query("insert into public.equipamento(vendedor_id,data,custo,venda) values($1,'2026-09-10',10,20)",[U.vend]);
 await db.query("insert into public.encomendas_bmw(production_number,model_code,customer_last) values('8000001','0M21','Cliente')");
+N.v2q=await neg(U.vend2,'Quente');
+await db.exec("set session_replication_role = replica"); // dados de partida: inclui uma encomenda repetida antiga, como existe em produção
+await db.query(`update public.baviera_control set enc='7000001' where id=${N.v2q}`);
+await db.query(`update public.baviera_control set enc='7000005' where id in (${N.carteira},${N.retail2})`);
+await db.exec("set session_replication_role = origin");
 
 // ---------- motor ----------
 async function como(quem,fn){
@@ -45,6 +50,7 @@ const n=async q=>Number((await db.query(q)).rows[0].n);
 const conta=t=>()=>n(`select count(*) n from public.${t}`);
 const apaga=(where)=>()=>n(`with d as (delete from public.baviera_control where ${where} returning 1) select count(*) n from d`);
 const ok=async q=>{await db.query(q);return 'consegue';};
+const bloq=q=>async()=>{try{await db.query(q);return 'passou';}catch(e){return /já está/.test(e.message)?'bloqueado':'ERRO: '+e.message.slice(0,90);}};
 
 const C=[ // [área, perfil, descrição, função, esperado]
   ['anónimo','anon','lê negócios',conta('baviera_control'),'recusado'],
@@ -122,7 +128,7 @@ const C=[ // [área, perfil, descrição, função, esperado]
   ['conta nova','novo','lê demos (vista)',conta('stock_norma_publico'),0],
   ['conta nova','novo','lê stock de equipamento',conta('stock_equip'),0],
 
-  ['chefe','chefe','lê todos os negócios',conta('baviera_control'),6],
+  ['chefe','chefe','lê todos os negócios',conta('baviera_control'),7],
   ['chefe','chefe','lê todas as margens',conta('margens'),2],
   ['chefe','chefe','reescreve nota',async()=>{await db.query(`update public.baviera_control set obs_gestor='nova' where id=${N.retail}`);return n("select count(*) n from public.baviera_control where obs_gestor='nova'");},1],
   ['chefe','chefe','apaga Retail',apaga(`id=${N.retail}`),1],
@@ -140,6 +146,16 @@ const C=[ // [área, perfil, descrição, função, esperado]
   ['financeiro','fin','lê encomendas BMW',conta('encomendas_bmw'),0],
   ['conta nova','novo','lê encomendas BMW',conta('encomendas_bmw'),0],
   ['chefe','chefe','lê encomendas BMW',conta('encomendas_bmw'),1],
+  ['anónimo','anon','lê quem negoceia cada mota',()=>n('select count(*) n from public.encomendas_reservas()'),'recusado'],
+  ['vendedor','vend','lê quem negoceia cada mota (sem clientes)',()=>n('select count(*) n from public.encomendas_reservas()'),3],
+  ['secretário','sec','lê quem negoceia cada mota',()=>n('select count(*) n from public.encomendas_reservas()'),0],
+  ['vendedor','vend','reserva mota livre no seu negócio Quente',()=>n(`with u as (update public.baviera_control set enc='7000009' where id=${N.comFicha} returning 1) select count(*) n from u`),1],
+  ['vendedor','vend','reserva mota que o colega está a negociar',bloq(`update public.baviera_control set enc='7000001' where id=${N.comFicha}`),'bloqueado'],
+  ['vendedor','vend','reserva mota que já está noutro negócio seu',bloq(`update public.baviera_control set enc='7000005' where id=${N.comFicha}`),'bloqueado'],
+  ['vendedor','vend','negócio Perdido com a mesma mota não bloqueia',()=>ok("insert into public.baviera_control(vendedor_id,status,id_cliente,enc) values(auth.uid(),'Perdido','X','7000001')"),'consegue'],
+  ['vendedor','vend','reabre Perdido como Quente com mota do colega',async()=>{const id=(await db.query("insert into public.baviera_control(vendedor_id,status,id_cliente,enc) values(auth.uid(),'Perdido','X','7000001') returning id")).rows[0].id;return bloq(`update public.baviera_control set status='Quente' where id=${id}`)();},'bloqueado'],
+  ['vendedor','vend','grava outro campo em negócio com encomenda repetida antiga',()=>n(`with u as (update public.baviera_control set obs='ok' where id=${N.carteira} returning 1) select count(*) n from u`),1],
+  ['chefe','chefe','passa a mota do colega para outro negócio',()=>n(`with u as (update public.baviera_control set enc='7000001' where id=${N.comFicha} returning 1) select count(*) n from u`),1],
   ['chefe','chefe','substitui encomendas BMW (fica só o ficheiro novo)',async()=>{await db.query(`select public.encomendas_bmw_substituir('[{"production_number":"1","ts_order_status":"2026-10-03"},{"production_number":"2"}]')`);return n("select count(*) n from public.encomendas_bmw");},2],
   ['chefe','chefe','carrega ficheiro vazio (mapa fica como está)',async()=>{await db.exec('savepoint s');try{await db.query(`select public.encomendas_bmw_substituir('[]')`);}catch(e){await db.exec('rollback to savepoint s');}return n("select count(*) n from public.encomendas_bmw");},1],
 ];

@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-21-h">
+<meta name="app-version" content="2026-10-21-i">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1441,6 +1441,24 @@ html,body{overflow-x:hidden;max-width:100vw}
 .enc-chk.on{background:color-mix(in srgb,var(--blue) 9%,transparent)}.enc-chk span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.enc-chk small{color:var(--text3)}
 .enc-chk input[type=checkbox]{-webkit-appearance:none;appearance:none;flex:none;width:16px;height:16px;min-height:0;margin:0;padding:0;border:1.5px solid var(--text3);border-radius:4px;background:var(--surface);cursor:pointer;box-shadow:none}
 .enc-chk input[type=checkbox]:checked{background:var(--blue) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' stroke='white' stroke-width='2.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/12px no-repeat;border-color:var(--blue)}
+.enc-t td.enc-neg{white-space:nowrap}.enc-neg>*{margin-right:6px;vertical-align:middle}.enc-neg small{color:var(--text2);font-size:11px}
+.enc-ng{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
+.enc-ng.n{background:color-mix(in srgb,var(--amber) 16%,transparent);color:var(--amber)}.enc-ng.v{background:color-mix(in srgb,var(--green) 14%,transparent);color:var(--green)}.enc-ng.l{color:var(--text3)}
+.enc-parada{color:var(--red);font-weight:700}.enc-mut{color:var(--text3)}
+.enc-t tr.enc-r-n td.enc-pn{border-left-color:var(--amber)}.enc-t tr.enc-r-v td.enc-pn{border-left-color:var(--green)}
+.enc-res-btn{padding:4px 10px;font-size:12px}
+.enc-mbd{position:fixed;inset:0;background:rgba(2,6,23,.45);z-index:900}
+.enc-modal{position:fixed;z-index:901;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100vw - 32px));max-height:calc(100vh - 48px);display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);box-shadow:var(--elev2)}
+.enc-m-h{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border)}
+.enc-m-t{font-weight:800;font-size:16px}.enc-m-s{font-size:12px;color:var(--text2);margin-top:3px;line-height:1.45}
+.enc-m-x{background:none;border:0;cursor:pointer;color:var(--text2);padding:4px;border-radius:6px}.enc-m-x .ic{width:18px;height:18px}
+.enc-m-b{padding:12px 16px 16px;overflow:auto}.enc-m-l{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px}
+.enc-m-i{display:grid;grid-template-columns:1fr auto;gap:2px 10px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;margin-bottom:6px;cursor:pointer;font-family:inherit;color:var(--text)}
+.enc-m-i:hover{border-color:var(--blue)}.enc-m-i:disabled{opacity:.6;cursor:wait}
+.enc-m-n{font-weight:700;font-size:13px}.enc-m-n em{font-style:normal;font-size:10.5px;font-weight:700;color:var(--green);margin-left:6px}
+.enc-m-d{grid-column:1/2;font-size:12px;color:var(--text2)}.enc-m-i .s-badge{grid-row:1/3;grid-column:2/3;align-self:center}
+.enc-m-nota{font-size:11.5px;color:var(--text3);margin-top:10px;line-height:1.5}
+.enc-dica{display:flex;flex-direction:column;gap:3px;margin-top:5px;font-size:12px;line-height:1.4}.enc-dica .ok{color:var(--green)}.enc-dica .av{color:var(--amber)}.enc-dica .err{color:var(--red);font-weight:700}
 .enc-chk input[type=checkbox]:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .enc-fg.enc-cols{grid-column:1/-1;border-top:1px solid var(--border);padding-top:12px}
 .enc-cols .enc-fg-l{flex-direction:row;flex-wrap:wrap;max-height:none;gap:4px}.enc-cols .enc-chk{border:1px solid var(--border);padding:5px 9px}.enc-cols .enc-chk span{flex:none}
@@ -2141,7 +2159,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-21-h';
+const APP_VERSION='2026-10-21-i';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -2185,8 +2203,8 @@ window.addEventListener('beforeunload',guardarRascunho);
 async function atualizarDadosSilencioso(){
   if(!S.me||!S.token)return;
   const rl=S.me.role;const L=[];
-  if(isAdmin())L.push(loadObjetivos(),loadObjEquipa(),loadTeam(),loadNps(),loadEot(),loadEntregas(),loadMargens(),loadEquipamento(),loadComsRecentes(),loadComFecho());
-  else if(isVendedor())L.push(loadTeam(),loadEot(),loadEntregas(),loadMargens(),loadEquipamento(),loadComsRecentes(),loadComFecho());
+  if(isAdmin())L.push(loadEnc(),loadObjetivos(),loadObjEquipa(),loadTeam(),loadNps(),loadEot(),loadEntregas(),loadMargens(),loadEquipamento(),loadComsRecentes(),loadComFecho());
+  else if(isVendedor())L.push(loadEnc(),loadTeam(),loadEot(),loadEntregas(),loadMargens(),loadEquipamento(),loadComsRecentes(),loadComFecho());
   else if(rl==='secretario')L.push(loadTeam(),loadEntregas(),...(isFinanceiro()?[loadEot()]:[]));
   if(!isAdmin()&&temArea('previsao'))L.push(loadObjEquipa());
   else if(rl==='assessor')L.push(loadTeam(),loadEquipamento(),...(isSecretaria()?[loadEntregas()]:[]));
@@ -3719,6 +3737,18 @@ function calcAlerts(records){
   // HIGIENE: negócio sem PVP (cega os valores)
   const semPvp=records.filter(r=>(r.status==='Carteira'||r.status==='Retail')&&!r.pvp);
   if(semPvp.length)alerts.push({id:'sem_pvp',icon:'💶',label:`${semPvp.length} sem PVP preenchido`,count:semPvp.length,ids:semPvp.map(r=>r.id)});
+  // ENCOMENDAS BMW: mota reservada num negócio que ninguém mexe há mais de 7 dias
+  const encTxt=r=>String(r.enc||'').trim();
+  const encParada=records.filter(r=>ENC_NEG.includes(r.status)&&encTxt(r)&&r.updated_at&&(now-new Date(r.updated_at).getTime())>ENC_PARADA_DIAS*day);
+  if(encParada.length)alerts.push({id:'enc_parada',icon:'🏭',label:`${encParada.length} mota${encParada.length>1?'s':''} em negociação sem mexer há +${ENC_PARADA_DIAS} dias`,count:encParada.length,ids:encParada.map(r=>r.id)});
+  // a mesma encomenda em mais de um negócio ativo
+  const porEnc={};records.filter(r=>['Quente','Morno','Carteira'].includes(r.status)&&encTxt(r)).forEach(r=>{(porEnc[encTxt(r)]=porEnc[encTxt(r)]||[]).push(r);});
+  const encRep=Object.values(porEnc).filter(L=>L.length>1).flat();
+  if(encRep.length)alerts.push({id:'enc_repetida',icon:'⛔',label:`${encRep.length} negócios com a mesma encomenda`,count:encRep.length,ids:encRep.map(r=>r.id)});
+  // carteira com um nº de encomenda que não existe no mapa BMW carregado (engano no número?)
+  if((S.enc||[]).length){const noMapa=new Set(S.enc.map(x=>String(x.production_number)));
+    const fora=records.filter(r=>r.status==='Carteira'&&r.type!=='MU'&&encTxt(r)&&!noMapa.has(encTxt(r)));
+    if(fora.length)alerts.push({id:'enc_fora_mapa',icon:'❓',label:`${fora.length} carteira${fora.length>1?'s':''} com encomenda que não está no mapa BMW`,count:fora.length,ids:fora.map(r=>r.id)});}
   return alerts;
 }
 // Ritmo do mês: compara % do objetivo com % do mês já decorrido (dias úteis)
@@ -4577,7 +4607,7 @@ const ENC_COLS=[ // [campo, cabeçalho no ficheiro, rótulo no ecrã, tipo: t te
   ['customer_last','Customer (Last)','Cliente','t'],
 ];
 const ENC_TIPOS=['ST','US','DE','CS'];
-const ENC_FILTROS=[['model_desc','Modelo'],['processing_type','Tipo (Processing Type)'],['order_status','Estado (Order Status)'],['color_code','Cor'],['_vend','Vendedor'],['_cliente','Cliente']];
+const ENC_FILTROS=[['_neg','Negociação'],['model_desc','Modelo'],['processing_type','Tipo (Processing Type)'],['order_status','Estado (Order Status)'],['color_code','Cor'],['_vend','Vendedor'],['_cliente','Cliente']];
 // "Salesperson Number": as siglas dos vendedores (GM, FG/AG…) aparecem; os códigos cm0… são utilizadores do portal BMW e não se mostram
 function encSigla(v){const s=String(v||'').trim().toUpperCase();return /^[A-Z]{2,3}$/.test(s)?s:'';}
 function encVendDe(sig){if(!sig)return null;const sub=(a,b)=>{let k=0;for(const ch of b){if(ch===a[k])k++;}return k===a.length;};
@@ -4651,7 +4681,7 @@ function encOrdenar(arr){const t=x=>{const i=ENC_TIPOS.indexOf(x.processing_type
   const e=x=>{const n=parseInt(x.order_status,10);return isNaN(n)?-1:n;};
   return arr.slice().sort((a,b)=>e(b)-e(a)||String(a.model_code||'').localeCompare(String(b.model_code||''))||t(a)-t(b)||String(a.processing_type||'').localeCompare(String(b.processing_type||''))||String(a.production_number).localeCompare(String(b.production_number),undefined,{numeric:true}));}
 async function loadEnc(){
-  try{S.enc=encOrdenar(await apiTodos('/encomendas_bmw?select=*'));S.encErr='';}
+  try{const [d]=await Promise.all([apiTodos('/encomendas_bmw?select=*'),loadEncRes()]);S.enc=encOrdenar(d);S.encErr='';}
   catch(e){S.enc=S.enc||[];S.encErr=erroTexto(e);}
   S.encLoaded=true;
 }
@@ -4686,20 +4716,21 @@ async function encConfirmar(){
     setState({encBusy:false,encPrev:null,encMsg:`Mapa atualizado: ${Number(n)||P.linhas.length} encomendas. Os vendedores já o veem.`});
   }catch(e){setState({encBusy:false,encErrImp:'Erro ao gravar (o mapa anterior ficou como estava): '+erroTexto(e)});}
 }
-function encValor(x,g){if(g==='_vend')return encVendTxt(x.salesperson)||'(sem vendedor)';return g==='_cliente'?(x.customer_last?'Com cliente':'Sem cliente'):(x[g]==null||x[g]===''?'(vazio)':String(x[g]));}
+function encValor(x,g){if(g==='_neg')return encNegEstado(x);if(g==='_vend')return encVendTxt(x.salesperson)||'(sem vendedor)';return g==='_cliente'?(x.customer_last?'Com cliente':'Sem cliente'):(x[g]==null||x[g]===''?'(vazio)':String(x[g]));}
 function encColsOcultas(){if(S.encCols)return S.encCols;let v=[];try{v=JSON.parse(localStorage.getItem('bm_enc_cols')||'[]')||[];}catch(e){}S.encCols=Array.isArray(v)?v:[];return S.encCols;}
 function encFiltrar(todos,F){
   const ex=F.ex||{};
   let arr=todos.filter(x=>ENC_FILTROS.every(([g])=>!(ex[g]||[]).length||!(ex[g]).includes(encValor(x,g))));
   const termos=eotNorm(F.q).split(' ').filter(Boolean);
-  if(termos.length)arr=arr.filter(x=>{const t=eotNorm(ENC_COLS.map(([c,,,tp])=>tp==='d'?encDataPT(x[c]):tp==='w'?(x[c]||'')+' '+encSemana(x[c]):tp==='v'?encVendTxt(x[c]):x[c]).join(' '));return termos.every(q=>t.includes(q));});
+  if(termos.length)arr=arr.filter(x=>{const t=eotNorm(ENC_COLS.map(([c,,,tp])=>tp==='d'?encDataPT(x[c]):tp==='w'?(x[c]||'')+' '+encSemana(x[c]):tp==='v'?encVendTxt(x[c]):x[c]).join(' ')+' '+encNegEstado(x)+' '+((S._encResM||encResMapa()).get(String(x.production_number))||[]).map(r=>vendName(r.vendedor_id)||'').join(' '));return termos.every(q=>t.includes(q));});
   return arr;
 }
 function encView(){
   encGarantirCarga();
   const todos=S.enc||[];const F=Object.assign({q:'',ex:{}},S.encF||{});const ex=F.ex||{};
   const ocultas=encColsOcultas();const cols=ENC_COLS.filter(([c])=>!ocultas.includes(c));
-  const arr=encFiltrar(todos,F);
+  const M=encResMapa();S._encResM=M;
+  const arr=encFiltrar(todos,F);S._encResM=null;
   const ult=todos.map(x=>x.importado_em).filter(Boolean).sort().pop();
   const nFiltros=ENC_FILTROS.reduce((a,[g])=>a+((ex[g]||[]).length?1:0),0);
   const P=S.encPrev;
@@ -4717,10 +4748,11 @@ function encView(){
   // linhas agrupadas por código de modelo (a ordem já vem por Model Code e depois ST, US, DE, CS)
   let corpo='',grpAnt=null;
   arr.forEach(x=>{const g=String(x.order_status||'');if(g!==grpAnt){grpAnt=g;const n=arr.filter(y=>String(y.order_status||'')===g).length;
-      corpo+=`<tr class="enc-grp"><td colspan="${cols.length}">Estado <b class="sec-mono">${esc(g||'—')}</b> <span>${n} encomenda${n!==1?'s':''}</span></td></tr>`;}
-    corpo+=`<tr>${cols.map(c=>celula(x,c)).join('')}</tr>`;});
+      corpo+=`<tr class="enc-grp"><td colspan="${cols.length+1}">Estado <b class="sec-mono">${esc(g||'—')}</b> <span>${n} encomenda${n!==1?'s':''}</span></td></tr>`;}
+    const ne=encNegEstado(x,M);
+    corpo+=`<tr class="${ne==='Em negociação'?'enc-r-n':ne==='Vendida'?'enc-r-v':''}">${cols.map(c=>celula(x,c)).join('')}${encNegCel(x,M)}</tr>`;});
   const painel=S.encPainel?`<div class="enc-painel">
-    ${ENC_FILTROS.map(([g,lb])=>{const cont={};todos.forEach(x=>{const v=encValor(x,g);cont[v]=(cont[v]||0)+1;});
+    ${ENC_FILTROS.map(([g,lb])=>{const cont={};S._encResM=M;todos.forEach(x=>{const v=encValor(x,g);cont[v]=(cont[v]||0)+1;});S._encResM=null;
       const vals=Object.keys(cont).sort((a,b)=>g==='processing_type'?((ENC_TIPOS.indexOf(a)+1||99)-(ENC_TIPOS.indexOf(b)+1||99)):a.localeCompare(b,'pt',{numeric:true}));
       const exg=ex[g]||[];
       return`<div class="enc-fg"><div class="enc-fg-t"><span>${esc(lb)}</span><button class="enc-lnk" data-action="enc-todos" data-g="${g}" data-v="1">Todos</button><button class="enc-lnk" data-action="enc-todos" data-g="${g}" data-v="0">Nenhum</button></div>
@@ -4730,7 +4762,7 @@ function encView(){
   </div>`:'';
   const ativos=ENC_FILTROS.filter(([g])=>(ex[g]||[]).length).map(([g,lb])=>`<button class="vchip on" data-action="enc-todos" data-g="${g}" data-v="1" title="Limpar este filtro">${esc(lb.replace(/ \(.*\)/,''))}: sem ${(ex[g]||[]).length} ✕</button>`).join('');
   const porTipo=ENC_TIPOS.map(t=>[t,arr.filter(x=>x.processing_type===t).length]).filter(([,n])=>n);
-  return`<div class="seq-wrap enc-wrap">
+  return`${encEscolherHTML()}<div class="seq-wrap enc-wrap">
     <div class="seq-head">
       <div><div class="seq-tit">Encomendas BMW</div><div class="seq-sub">${ult?'Mapa carregado a '+esc(new Date(ult).toLocaleString('pt-PT',{dateStyle:'short',timeStyle:'short'})):'Sem mapa carregado'} · ${todos.length} encomenda${todos.length!==1?'s':''}${isAdmin()?'':' · só leitura'}</div></div>
       ${isAdmin()?`<label class="btn btn-orange btn-sm" style="cursor:pointer;margin:0">${S.encBusy&&!P?'A ler…':'📥 Carregar ficheiro de encomendas'}<input type="file" id="enc-file" accept=".csv,.xls,.xlsx,text/csv" style="display:none"></label>`:''}
@@ -4758,9 +4790,115 @@ function encView(){
     ${painel}
     ${ativos?`<div class="vchips" style="padding:8px 0 0">${ativos}</div>`:''}
     <div class="seq-res"><b>${arr.length}</b> de ${todos.length} encomendas${porTipo.length?' · '+porTipo.map(([t,n])=>`${t} ${n}`).join(' · '):''}</div>
-    ${arr.length?`<div class="enc-tw"><table class="enc-t"><thead><tr>${cols.map(([c,h,lb])=>`<th title="${esc(h)}">${esc(lb)}</th>`).join('')}</tr></thead><tbody>${corpo}</tbody></table></div>`:'<div class="gpp-empty">Nada com esta pesquisa ou filtros.</div>'}
-    <div class="seq-nota" style="margin-top:12px">Ordenado por estado (o mais avançado primeiro), depois por código de modelo e por tipo (ST, US, DE, CS). “Entrega prevista de/até” são as datas F3 da BMW; “Semana de entrega” é a Exp. Del. Wk. O mapa é o do dia em que foi carregado: confirma no portal BMW antes de prometer uma data ao cliente.</div>`}
+    ${arr.length?`<div class="enc-tw"><table class="enc-t"><thead><tr>${cols.map(([c,h,lb])=>`<th title="${esc(h)}">${esc(lb)}</th>`).join('')}<th>Negociação</th></tr></thead><tbody>${corpo}</tbody></table></div>`:'<div class="gpp-empty">Nada com esta pesquisa ou filtros.</div>'}
+    <div class="seq-nota" style="margin-top:12px">Ordenado por estado (o mais avançado primeiro), depois por código de modelo e por tipo (ST, US, DE, CS). “Negociação” vem dos negócios da plataforma: Quente/Morno = em negociação, Carteira/Retail = vendida. “Entrega prevista de/até” são as datas F3 da BMW; “Semana de entrega” é a Exp. Del. Wk. O mapa é o do dia em que foi carregado: confirma no portal BMW antes de prometer uma data ao cliente.</div>`}
   </div>`;
+}
+// ---- Encomendas BMW · "estou a negociar esta mota" ----
+// A reserva vive no negócio: campo Encomenda = Production Number. Quente/Morno = em negociação; Carteira/Retail = vendida;
+// Frio/Perdido = livre. O servidor (trigger bc_reserva_unica) não deixa a mesma mota em dois negócios ativos.
+const ENC_ATIVOS=['Quente','Morno','Carteira','Retail'],ENC_NEG=['Quente','Morno'],ENC_PARADA_DIAS=7;
+async function loadEncRes(){try{S.encRes=(await supabaseApi('POST','/rpc/encomendas_reservas',{}))||[];}catch(e){S.encRes=S.encRes||[];}}
+// junta o que o servidor diz (negócios dos colegas) com os negócios que já estão no ecrã (mais recentes)
+function encReservas(){
+  const meus=new Set((S.records||[]).map(r=>String(r.id)));
+  const L=(S.encRes||[]).filter(x=>!meus.has(String(x.negocio_id))).map(x=>({enc:String(x.enc||'').trim(),negocio_id:x.negocio_id,vendedor_id:x.vendedor_id,status:x.status,atualizado:x.atualizado}));
+  (S.records||[]).forEach(r=>{const e=String(r.enc||'').trim();if(e&&ENC_ATIVOS.includes(r.status))L.push({enc:e,negocio_id:r.id,vendedor_id:r.vendedor_id,status:r.status,atualizado:r.updated_at});});
+  return L;
+}
+function encResMapa(){const m=new Map();encReservas().forEach(x=>{if(!m.has(x.enc))m.set(x.enc,[]);m.get(x.enc).push(x);});return m;}
+function encDias(d){const t=new Date(d||'').getTime();return isNaN(t)?null:Math.max(0,Math.floor((Date.now()-t)/864e5));}
+function encNegEstado(x,M){const R=(M||S._encResM||encResMapa()).get(String(x.production_number))||[];
+  if(R.some(r=>r.status==='Carteira'||r.status==='Retail'))return'Vendida';
+  if(R.some(r=>ENC_NEG.includes(r.status)))return'Em negociação';
+  if(x.customer_last||x.processing_type==='CS')return'Cliente BMW sem negócio';
+  return'Livre';}
+function encPodeReservar(){return isAdmin()||isVendedor();}
+function encNegCel(x,M){
+  const R=M.get(String(x.production_number))||[];const est=encNegEstado(x,M);const eu=S.me&&S.me.id;
+  const tag=r=>{const n=vendName(r.vendedor_id)||'?';return`<span class="vtag" style="background:${corVend(r.vendedor_id)}" title="${esc(n)}">${esc(encSiglaDeVend(r.vendedor_id)||iniciais(n))}</span>`;};
+  const abrir=r=>(S.records||[]).some(y=>String(y.id)===String(r.negocio_id))?`<button class="enc-lnk" data-action="${isAdmin()?'open-record-from-dash':'open-detail'}" data-id="${esc(r.negocio_id)}">Abrir negócio</button>`:'';
+  if(est==='Vendida'){const r=R.find(y=>y.status==='Carteira'||y.status==='Retail');
+    return`<td class="enc-neg"><span class="enc-ng v">Vendida</span>${tag(r)}<small>${esc(r.status)}</small>${abrir(r)}</td>`;}
+  if(est==='Em negociação'){const A=R.filter(y=>ENC_NEG.includes(y.status));const r=A[0];const d=encDias(r.atualizado);const parada=d!=null&&d>ENC_PARADA_DIAS;
+    const quando=d==null?'':(parada?`<b class="enc-parada">parada há ${d} dias</b>`:(d===0?'hoje':`há ${d} dia${d>1?'s':''}`));
+    return`<td class="enc-neg"><span class="enc-ng n">Em negociação</span>${tag(r)}<small>${esc(r.status)}${quando?' · '+quando:''}</small>${A.length>1?`<b class="enc-parada">em ${A.length} negócios</b>`:''}${abrir(r)}${isAdmin()||r.vendedor_id===eu?`<button class="enc-lnk" data-action="enc-libertar" data-id="${esc(r.negocio_id)}" data-pn="${esc(x.production_number)}">Libertar</button>`:''}</td>`;}
+  if(est==='Livre')return encPodeReservar()?`<td class="enc-neg"><button class="btn btn-outline btn-sm enc-res-btn" data-action="enc-escolher" data-pn="${esc(x.production_number)}">${isAdmin()?'Atribuir a negócio':'Estou a negociar'}</button></td>`:'<td class="enc-neg"><span class="enc-ng l">Livre</span></td>';
+  return'<td class="enc-neg"><small class="enc-mut">Cliente BMW · sem negócio na plataforma</small></td>';
+}
+// a mesma sigla que a BMW usa para o vendedor (GM, FG…), para não aparecerem duas siglas diferentes na mesma linha
+function encSiglaDeVend(id){if(!id)return'';for(const x of (S.enc||[])){const sig=encSigla(x.salesperson);if(sig){const p=encVendDe(sig);if(p&&String(p.id)===String(id))return sig;}}return'';}
+function encNorm(s){return eotNorm(s).replace(/[^a-z0-9]/g,'');}
+function encEscolherHTML(){
+  const pn=S.encEscolher;if(!pn)return'';const x=(S.enc||[]).find(y=>String(y.production_number)===String(pn));if(!x)return'';
+  const md=encNorm(x.model_desc);const eu=S.me&&S.me.id;
+  const igual=r=>{const m=encNorm(r.model);return m&&md&&(m.includes(md)||md.includes(m))?1:0;};
+  const C=(S.records||[]).filter(r=>ENC_NEG.includes(r.status)&&(isAdmin()||r.vendedor_id===eu));
+  C.sort((a,b)=>igual(b)-igual(a)||(a.status==='Quente'?0:1)-(b.status==='Quente'?0:1)||String(a.id_cliente||'').localeCompare(String(b.id_cliente||''),'pt'));
+  return`<div class="enc-mbd" data-action="enc-escolher-fechar"></div>
+  <div class="enc-modal" role="dialog" aria-modal="true" aria-label="Escolher negócio">
+    <div class="enc-m-h"><div><div class="enc-m-t">${isAdmin()?'Atribuir a um negócio':'Estou a negociar esta mota'}</div>
+      <div class="enc-m-s">${esc(x.model_desc||'')} · cor ${esc(x.color_code||'—')} · ${esc(x.processing_type||'')} · estado ${esc(x.order_status||'—')} · Prod. <span class="sec-mono">${esc(pn)}</span>${x.chassis?' · chassis <span class="sec-mono">'+esc(x.chassis)+'</span>':''}</div></div>
+      <button class="enc-m-x" data-action="enc-escolher-fechar" aria-label="Fechar">${ico('x')}</button></div>
+    <div class="enc-m-b">
+      ${C.length?`<div class="enc-m-l">Para que negócio${isAdmin()?'':' (os teus Quentes e Mornos)'}?</div>${C.map(r=>`<button class="enc-m-i" data-action="enc-reservar" data-id="${esc(r.id)}" data-pn="${esc(pn)}" ${S.encResBusy?'disabled':''}>
+        <span class="enc-m-n">${esc(r.id_cliente||'Sem nome')}${igual(r)?' <em>mesmo modelo</em>':''}</span>
+        <span class="enc-m-d">${isAdmin()?vendTag(r.vendedor_id)+' ':''}${esc([r.model,r.version].filter(Boolean).join(' ')||'modelo por preencher')}${String(r.enc||'').trim()&&String(r.enc).trim()!==String(pn)?` · <b>já tem a encomenda ${esc(r.enc)}: vai ser trocada</b>`:''}</span>
+        <span class="s-badge s-${esc(r.status)}">${esc(r.status)}</span></button>`).join('')}`
+      :`<div class="gpp-empty">${isAdmin()?'Não há negócios Quentes ou Mornos.':'Não tens negócios Quentes ou Mornos. Cria primeiro o negócio no funil e volta aqui.'}</div>`}
+      ${S.encResErr?`<div class="error" style="margin-top:10px">${esc(S.encResErr)}</div>`:''}
+      <div class="enc-m-nota">A mota passa a aparecer <b>em negociação</b> para toda a equipa (sem o nome do cliente). Fica <b>vendida</b> quando o negócio passar a Carteira e <b>livre</b> sozinha se passar a Frio ou Perdido. Sem mexer no negócio durante ${ENC_PARADA_DIAS} dias, o chefe é avisado.</div>
+    </div>
+  </div>`;
+}
+async function encReservar(id,pn){
+  const r=(S.records||[]).find(x=>String(x.id)===String(id));if(!r)return;
+  const atual=String(r.enc||'').trim();
+  if(atual&&atual!==String(pn)&&!confirm(`O negócio de ${r.id_cliente||'este cliente'} já tem a encomenda ${atual}. Trocar para ${pn}?`))return;
+  const x=(S.enc||[]).find(y=>String(y.production_number)===String(pn))||{};
+  const patch={enc:String(pn)};if(x.chassis&&!String(r.chas||'').trim())patch.chas=x.chassis;
+  setState({encResBusy:true,encResErr:''});
+  try{
+    await supabaseApi('PATCH',`/baviera_control?id=eq.${encodeURIComponent(id)}`,patch);
+    Object.assign(r,patch,{updated_at:new Date().toISOString()});
+    S.encEscolher=null;S.encMsg=`${x.model_desc||'Mota'} (${pn}) em negociação no negócio de ${r.id_cliente||'—'}.`;
+    loadEncRes().then(()=>render());
+  }catch(e){S.encResErr=erroTexto(e);}
+  setState({encResBusy:false});
+}
+async function encLibertar(id,pn){
+  const r=(S.records||[]).find(x=>String(x.id)===String(id));if(!r)return;
+  if(!confirm(`Libertar a mota ${pn} do negócio de ${r.id_cliente||'—'}? O negócio fica igual, só deixa de ter esta encomenda.`))return;
+  const x=(S.enc||[]).find(y=>String(y.production_number)===String(pn))||{};
+  const patch={enc:null};if(x.chassis&&String(r.chas||'').trim()===String(x.chassis))patch.chas=null;
+  try{
+    await supabaseApi('PATCH',`/baviera_control?id=eq.${encodeURIComponent(id)}`,patch);
+    Object.assign(r,patch,{updated_at:new Date().toISOString()});
+    S.encMsg=`Mota ${pn} libertada.`;await loadEncRes();render();
+  }catch(e){alert('Erro ao libertar: '+erroTexto(e));}
+}
+// Campo "Encomenda" no negócio: escolhe entre as motas livres do mapa e avisa logo se a mota não existe ou já está com alguém
+function encFormId(){return S.selected&&S.selected.id!=null?S.selected.id:null;}
+function encCampoHTML(){
+  encGarantirCarga();
+  const v=S.form.enc||'';const M=encResMapa();const md=encNorm(S.form.model);const id=encFormId();
+  const livres=(S.enc||[]).filter(x=>!(M.get(String(x.production_number))||[]).some(r=>String(r.negocio_id)!==String(id))&&!x.customer_last&&x.processing_type!=='CS');
+  const igual=x=>{const m=encNorm(x.model_desc);return md&&m&&(md.includes(m)||m.includes(md))?1:0;};
+  livres.sort((a,b)=>igual(b)-igual(a)||String(a.model_desc||'').localeCompare(String(b.model_desc||'')));
+  return`<input class="field-input" type="text" data-field="enc" list="enc-livres" autocomplete="off" value="${esc(v)}"${livres.length?' placeholder="Escreve ou escolhe uma mota livre do mapa BMW"':''}>
+    <datalist id="enc-livres">${livres.map(x=>`<option value="${esc(x.production_number)}">${esc([x.model_desc,'cor '+(x.color_code||'—'),x.processing_type,'estado '+(x.order_status||'—'),x.conf_f3_from?'entrega '+encDataPT(x.conf_f3_from):''].filter(Boolean).join(' · '))}</option>`).join('')}</datalist>
+    <div class="enc-dica" id="enc-dica">${encDicaHTML(v,id)}</div>`;
+}
+function encDicaHTML(v,id){
+  v=String(v||'').trim();if(!v||!(S.enc||[]).length)return'';
+  const x=S.enc.find(y=>String(y.production_number)===v);
+  const R=(encResMapa().get(v)||[]).filter(r=>String(r.negocio_id)!==String(id));
+  let h=x?`<span class="ok">✓ No mapa BMW: ${esc(x.model_desc||'')} · cor ${esc(x.color_code||'—')} · ${esc(x.processing_type||'')} · estado ${esc(x.order_status||'—')}${x.conf_f3_from?' · entrega prevista '+esc(encDataPT(x.conf_f3_from))+(x.conf_f3_to?' a '+esc(encDataPT(x.conf_f3_to)):''):''}</span>`
+    :`<span class="av">⚠ A encomenda ${esc(v)} não está no mapa BMW carregado. Confirma o número.</span>`;
+  if(R.length){const r=R[0];const meu=r.vendedor_id===(S.me&&S.me.id);const n=vendName(r.vendedor_id)||'outro vendedor';
+    h+=isAdmin()?`<span class="av">⚠ Também está no negócio de ${esc(n)} (${esc(r.status)}). Liberta-a lá para não ficar repetida.</span>`
+      :`<span class="err">⛔ ${meu?'Já está noutro negócio teu':'Já está com '+esc(n)} (${esc(r.status)}). Não vai gravar${meu?': liberta-a lá primeiro':': fala com o chefe de vendas'}.</span>`;}
+  return h;
 }
 function renderEncVend(){
   return`<div class="app-layout"><div class="main-panel" style="width:100%">
@@ -6097,6 +6235,7 @@ function renderEdit(){
           fd.t==='select'?`<select class="field-input" data-field="${fd.k}"><option value="">—</option>${(fd.o||[]).filter(Boolean).map(o=>`<option value="${esc(o)}" ${S.form[fd.k]===o?'selected':''}>${esc(o)}</option>`).join('')}</select>`:
           fd.t==='textarea'?`<textarea class="field-input" data-field="${fd.k}" rows="3">${esc(S.form[fd.k]||'')}</textarea>`:
           fd.t==='month'?`<input class="field-input" type="month" data-field="${fd.k}" data-fmt="month" value="${esc((S.form[fd.k]||'').replace('/','-'))}">${fd.k==='mes1'?mes1Nota():''}`:
+          fd.k==='enc'?encCampoHTML():
           fd.t==='date'?`<input class="field-input" type="date" data-field="${fd.k}" value="${esc(S.form[fd.k]||'')}">`:
           fd.t==='number'?`<input class="field-input" type="number" data-field="${fd.k}" value="${esc(S.form[fd.k]||'')}" placeholder="10" min="1" max="365">`:
           `<input class="field-input" type="text" data-field="${fd.k}" value="${esc(S.form[fd.k]||'')}">`
@@ -8475,6 +8614,7 @@ function bindEvents(){
   app.oninput=function(e){
     const el=e.target;
     if(el.dataset&&el.dataset.tblQ){const k=el.dataset.tblQ;S.tblQ=Object.assign({},S.tblQ||{},{[k]:el.value});const tb=tblPorChave(k);if(tb)tblFiltrar(tb,el.value);return;}
+    if(el.dataset&&el.dataset.field==='enc'&&S.screen==='edit'){S.form.enc=el.value;const d=document.getElementById('enc-dica');if(d)d.innerHTML=encDicaHTML(el.value,encFormId());return;}
     if(el.id==='enc-q'){S.encF=Object.assign({q:'',ex:{}},S.encF||{},{q:el.value});const p=el.selectionStart;render();const n=document.getElementById('enc-q');if(n){n.focus();n.setSelectionRange(p,p);}return;}
     if(el.id==='seq-q'){const F=Object.assign({},S.seqF||{});F.q=el.value;S.seqF=F;S.seqLim=80;const p=el.selectionStart;render();const n=document.getElementById('seq-q');if(n){n.focus();n.setSelectionRange(p,p);}return;}
     if(el.id==='seq-pct'){seqPctInput(el);return;}
@@ -8720,6 +8860,10 @@ function bindEvents(){
       case'seqf-preco-set':{const F=Object.assign({},S.seqFora||{});const v=Number(el.dataset.v);F.preco=String(v).replace('.',',');const pvp=numPT(F.pvp);F.pct=pvp?String(Math.round((1-v/pvp)*1000)/10):'';setState({seqFora:F});break;}
       case'seq-confirmar':seqConfirmar();break;
       case'enc-confirmar':encConfirmar();break;
+      case'enc-escolher':setState({encEscolher:el.dataset.pn,encResErr:''});break;
+      case'enc-escolher-fechar':setState({encEscolher:null,encResErr:''});break;
+      case'enc-reservar':encReservar(el.dataset.id,el.dataset.pn);break;
+      case'enc-libertar':encLibertar(el.dataset.id,el.dataset.pn);break;
       case'enc-cancelar':setState({encPrev:null,encErrImp:''});break;
       case'enc-painel':setState({encPainel:!S.encPainel});break;
       case'enc-todos':{const F=Object.assign({q:'',ex:{}},S.encF||{});F.ex=Object.assign({},F.ex||{});const g=el.dataset.g;

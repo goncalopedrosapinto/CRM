@@ -29,23 +29,29 @@ const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to
 const xlsxBuf=XLSX.write(wb,{type:'buffer',bookType:'xlsx'});
 const XLSX_JS=fs.readFileSync(path.join(__dirname,'node_modules/xlsx/dist/xlsx.full.min.js'));
 
+const dias=n=>new Date(Date.now()-n*864e5).toISOString();
 (async()=>{const b=await chromium.launch(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{});const R={};
  async function abrir(role){
-  const ctx=await b.newContext();const est={tabela:[],rpc:[]};
+  const ctx=await b.newContext();const est={tabela:[],rpc:[],negocios:[],reservas:[],patches:[]};
   await ctx.addInitScript((t)=>localStorage.setItem('bc_session',JSON.stringify({refresh_token:'rt',access_token:t,exp:Date.now()+3600e3})),jwt('u1'));
   await ctx.route('**/*',async r=>{const u=r.request().url();if(u.startsWith('http://localhost'))return r.continue();
    if(u.includes('cdnjs.cloudflare.com/ajax/libs/xlsx'))return r.fulfill({status:200,contentType:'application/javascript',headers:{'access-control-allow-origin':'*'},body:XLSX_JS});
    if(u.includes('/auth/v1/token'))return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({access_token:jwt('u1'),refresh_token:'rt2'})});
    if(u.includes('/rpc/encomendas_bmw_substituir')){const body=JSON.parse(r.request().postData());est.rpc.push(body);
      est.tabela=body.linhas.map(l=>Object.assign({importado_em:new Date().toISOString()},l));return r.fulfill({status:200,contentType:'application/json',body:String(est.tabela.length)});}
+   if(u.includes('/rpc/encomendas_reservas'))return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(est.reservas)});
    const t=(u.match(/rest\/v1\/([a-z_]+)/)||[])[1];
+   if(t==='baviera_control'&&r.request().method()==='PATCH'){const id=(u.match(/id=eq\.(\d+)/)||[])[1];const body=JSON.parse(r.request().postData());est.patches.push({id,body});
+     if(body.enc==='9000003')return r.fulfill({status:400,contentType:'application/json',body:JSON.stringify({code:'P0001',message:'A encomenda 9000003 já está a ser trabalhada por Gonçalo Mendes (Morno). Só o chefe de vendas a pode passar para outro negócio.'})});
+     return r.fulfill({status:204,body:''});}
+   if(t==='baviera_control')return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(est.negocios)});
    const body=t==='profiles'?[{id:'u1',nome:'Teste',role,linha:'motorrad',areas:[]},{id:'g1',nome:'Gonçalo Mendes',role:'vendedor',linha:'motorrad'},{id:'a1',nome:'António Felipe Gomes',role:'vendedor',linha:'motorrad'}]:t==='encomendas_bmw'?(u.includes('offset=0')?est.tabela:[]):[];
    return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(body)});});
   const p=await ctx.newPage();const erros=[];p.on('pageerror',e=>erros.push(e.message));
-  await p.goto(`http://localhost:${PORTA}/`);await p.waitForTimeout(1500);return{ctx,p,est,erros};}
+  return{ctx,p,est,erros,ir:async()=>{await p.goto(`http://localhost:${PORTA}/`);await p.waitForTimeout(1500);}};}
 
  // ---------- 1) chefe: carrega CSV, pré-visualização, confirma ----------
- {const {ctx,p,est,erros}=await abrir('admin');
+ {const {ctx,p,est,erros,ir}=await abrir('admin');await ir();
   await p.evaluate(()=>{S.screen='dashboard';S.gppSec='encomendas';S.encLoaded=false;render();});await p.waitForTimeout(500);
   const temBotao=await p.$('#enc-file')!==null;
   await p.setInputFiles('#enc-file',{name:'encomendas.csv',mimeType:'text/csv',buffer:csvBuf});await p.waitForFunction(()=>S.encPrev||S.encErrImp,null,{timeout:5000}).catch(()=>{});
@@ -68,9 +74,14 @@ const XLSX_JS=fs.readFileSync(path.join(__dirname,'node_modules/xlsx/dist/xlsx.f
   await ctx.close();}
 
  // ---------- 2) vendedor: só lê, pesquisa, filtra por caixas ----------
- {const {ctx,p,est,erros}=await abrir('vendedor');
+ {const {ctx,p,est,erros,ir}=await abrir('vendedor');
   est.tabela=await (async()=>{const pp=await ctx.newPage();await pp.goto(`http://localhost:${PORTA}/`);await pp.waitForTimeout(800);
     const t=await pp.evaluate(b=>{const rows=encLerCSV(new TextDecoder('windows-1252').decode(new Uint8Array(b)));return encParse(rows).linhas;},[...csvBuf]);await pp.close();return t;})();
+  est.negocios=[{id:101,vendedor_id:'u1',status:'Quente',id_cliente:'Cliente Q',model:'R 1300 GS',updated_at:dias(1)},
+    {id:102,vendedor_id:'u1',status:'Carteira',id_cliente:'Cliente C',model:'F 900 R',type:'MN',enc:'1234567',mes1:'2027/01',updated_at:dias(1)},
+    {id:103,vendedor_id:'u1',status:'Morno',id_cliente:'Cliente M',model:'S 1000 RR',enc:'9000002',updated_at:dias(10)}];
+  est.reservas=[{enc:'9000003',negocio_id:900,vendedor_id:'g1',status:'Morno',atualizado:dias(10)},{enc:'9000002',negocio_id:103,vendedor_id:'u1',status:'Morno',atualizado:dias(10)}];
+  await ir();
   const temMenu=await p.$('[data-action="go-vencomendas"]')!==null;
   await p.evaluate(()=>{document.querySelector('[data-action="go-vencomendas"]').click();});await p.waitForTimeout(600);
   const ecra=await p.evaluate(()=>S.screen);const temBotao=await p.$('#enc-file')!==null;
@@ -97,6 +108,25 @@ const XLSX_JS=fs.readFileSync(path.join(__dirname,'node_modules/xlsx/dist/xlsx.f
   await p.setViewportSize({width:390,height:800});await p.waitForTimeout(300);
   const scrollPagina=await p.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth+1);
   await p.screenshot({path:path.join(__dirname,'encomendas.png')});
+  // ---- negociação
+  await p.setViewportSize({width:1600,height:900});await p.uncheck('input[data-enc-col="options"]').catch(()=>{});
+  await p.evaluate(()=>{S.encF={q:'',ex:{}};S.encCols=[];S.encPainel=false;render();});await p.waitForTimeout(200);
+  const negDe=()=>p.evaluate(()=>{const o={};const ths=[...document.querySelectorAll('.enc-t th')].map(t=>t.textContent);const iP=ths.indexOf('Produção'),iN=ths.indexOf('Negociação');
+    document.querySelectorAll('.enc-t tbody tr:not(.enc-grp)').forEach(tr=>{const td=tr.children;o[td[iP].textContent]={txt:td[iN].textContent.replace(/\s+/g,' ').trim(),liv:!!td[iN].querySelector('[data-action="enc-libertar"]'),res:!!td[iN].querySelector('[data-action="enc-escolher"]')};});return o;});
+  const neg1=await negDe();
+  await p.click('[data-action="enc-escolher"][data-pn="9000004"]');await p.waitForTimeout(200);
+  const modal=await p.$$eval('.enc-m-i',x=>x.map(b=>b.textContent.replace(/\s+/g,' ').trim()));
+  await p.click('.enc-m-i[data-id="101"]');await p.waitForTimeout(600);
+  const patch=est.patches.slice(-1)[0];const neg2=await negDe();const modalFechou=await p.$('.enc-modal')===null;
+  const alertas=await p.evaluate(()=>calcAlerts(S.records).map(a=>a.id));
+  // campo Encomenda no negócio
+  await p.evaluate(()=>{S.selected=S.records.find(r=>r.id===101);S.form=recordToForm(S.selected);S.openGroups={Viatura:true};S.formCompleto=true;S.screen='edit';render();});await p.waitForTimeout(300);
+  const opcoes=await p.$$eval('#enc-livres option',x=>x.map(o=>o.value));
+  await p.fill('input[data-field="enc"]','9000003');await p.waitForTimeout(200);
+  const dicaOcupada=await p.textContent('#enc-dica');
+  await p.fill('input[data-field="enc"]','1111111');await p.waitForTimeout(200);
+  const dicaFora=await p.textContent('#enc-dica');
+  R.neg={neg1,modal,patch,neg2,modalFechou,alertas,opcoes,dicaOcupada,dicaFora};
   R.vendedor={nPesqVend,cab,vendCel,temMenu,ecra,temBotao,nTodos,nPesq,nPesq2,nSemST,nNenhum,colOpcionais,ordem,scrollPagina,erros};
   await ctx.close();}
 
@@ -124,9 +154,19 @@ const XLSX_JS=fs.readFileSync(path.join(__dirname,'node_modules/xlsx/dist/xlsx.f
   '"Nenhum" num grupo esconde tudo':v.nNenhum===0,
   'coluna Opcionais escondida':!v.colOpcionais,
   'sem scroll horizontal da página no telemóvel':!v.scrollPagina,
-  'ordem das colunas':JSON.stringify(v.cab)===JSON.stringify(['Produção','Chassis','Código','Modelo','Cor','Opcionais','Estado','Data do estado','Tipo','Produzida a','Semana de entrega','Entrega prevista de','Entrega prevista até','Vendedor','Cliente']),
+  'ordem das colunas':JSON.stringify(v.cab)===JSON.stringify(['Produção','Chassis','Código','Modelo','Cor','Opcionais','Estado','Data do estado','Tipo','Produzida a','Semana de entrega','Entrega prevista de','Entrega prevista até','Vendedor','Cliente','Negociação']),
   'vendedor: GM e FG identificados, códigos cm0… escondidos':v.vendCel['9000005']==='GM|Gonçalo Mendes'&&v.vendCel['9000001']==='FG|António Felipe Gomes'&&v.vendCel['9000004']==='',
-  'pesquisa pelo nome do vendedor':v.nPesqVend===1,
+  'pesquisa pelo nome do vendedor (BMW e quem negoceia)':v.nPesqVend===2,
+  'colega a negociar: aparece com dias parada, sem Libertar':/Em negociação/.test(R.neg.neg1['9000003'].txt)&&/parada há 10 dias/.test(R.neg.neg1['9000003'].txt)&&!R.neg.neg1['9000003'].liv,
+  'a minha reserva: tem Libertar':R.neg.neg1['9000002'].liv,
+  'mota livre: botão Estou a negociar':R.neg.neg1['9000004'].res,
+  'encomenda de cliente BMW sem negócio':/Cliente BMW/.test(R.neg.neg1['9000005'].txt),
+  'escolha lista Quente e Morno, mesmo modelo primeiro':R.neg.modal.length===2&&/Cliente Q/.test(R.neg.modal[0])&&/mesmo modelo/.test(R.neg.modal[0])&&/vai ser trocada/.test(R.neg.modal[1]),
+  'reservar grava a Encomenda no negócio':R.neg.patch&&R.neg.patch.id==='101'&&R.neg.patch.body.enc==='9000004'&&R.neg.modalFechou&&/Em negociação/.test(R.neg.neg2['9000004'].txt)&&R.neg.neg2['9000004'].liv,
+  'alertas: reserva parada e carteira fora do mapa':R.neg.alertas.includes('enc_parada')&&R.neg.alertas.includes('enc_fora_mapa'),
+  'campo Encomenda sugere só motas livres (e a do próprio negócio)':R.neg.opcoes.includes('9000004')&&!R.neg.opcoes.includes('9000003')&&!R.neg.opcoes.includes('9000002')&&!R.neg.opcoes.includes('9000005'),
+  'campo Encomenda avisa mota com colega':/Já está com Gonçalo Mendes/.test(R.neg.dicaOcupada),
+  'campo Encomenda avisa número fora do mapa':/não está no mapa BMW/.test(R.neg.dicaFora),
   'sem erros JS':!c.erros.length&&!v.erros.length,
  };
  let f=0;for(const [k,ok] of Object.entries(checks)){console.log((ok?'✓ ':'✗ ')+k);if(!ok)f++;}
