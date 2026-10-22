@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-22-a">
+<meta name="app-version" content="2026-10-22-b">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1425,6 +1425,16 @@ html,body{overflow-x:hidden;max-width:100vw}
 .seq-com b{color:var(--green);font-size:15px}
 .seq-calc-v{color:var(--text3)}
 .seq-nota{font-size:11.5px;color:var(--text3);margin-top:8px}
+.enc-origens{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 6px}
+.enc-or{display:grid;grid-template-columns:1fr auto;align-items:center;gap:0 8px;text-align:left;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--r2);background:var(--surface);cursor:pointer;font-family:inherit;color:var(--text)}
+.enc-or:hover{border-color:var(--text3)}.enc-or.on{border-color:var(--text);box-shadow:inset 0 0 0 1px var(--text)}
+.enc-or-t{font-weight:800;font-size:14px;letter-spacing:.2px;text-transform:uppercase}.enc-or-n{font-weight:800;font-size:18px;font-variant-numeric:tabular-nums}
+.enc-or small{grid-column:1/3;font-size:11px;color:var(--text3);margin-top:2px}
+.enc-or-nota{font-size:12px;color:var(--text2);margin:0 0 10px}
+.enc-pn-or{display:block;font-family:inherit;font-weight:600;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.3px}
+.enc-pf{border-top:1px solid var(--border);padding:10px 0 4px}.enc-pf:first-of-type{border-top:0}
+.enc-pf-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}.enc-pf-h b{font-size:13px;word-break:break-all}
+@media(max-width:700px){.enc-origens{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .enc-tw{overflow:auto;max-height:calc(100vh - 250px);border:1px solid var(--border);border-radius:var(--r2);background:var(--surface);margin-top:8px}
 .enc-t{border-collapse:separate;border-spacing:0;width:100%;font-size:12px}
 .enc-t th{position:sticky;top:0;z-index:1;background:var(--bg2);text-align:left;vertical-align:bottom;font-weight:700;font-size:11px;line-height:1.25;color:var(--text2);padding:7px 5px;border-bottom:1px solid var(--border);white-space:normal}
@@ -2167,7 +2177,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-22-a';
+const APP_VERSION='2026-10-22-b';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -4617,11 +4627,26 @@ const ENC_COLS=[ // [campo, cabeçalho no ficheiro, rótulo no ecrã, tipo: t te
   ['conf_f3_from','Conf F3 From','Entrega prevista de','d'],
   ['conf_f3_to','Conf.F3 To','Entrega prevista até','d'],
   ['salesperson','Salesperson Number','Vendedor','v',1],
+  ['dealer_nome','Dealer No.','Concessionário','t',1],
+  ['regiao','Region','Zona','z',1],
+  ['dealer_num','Dealer Number','Nº concessionário','t',1],
   ['customer_last','Customer (Last)','Cliente','t'],
 ];
+// Três ficheiros do portal BMW, cada um com a sua origem. Cada carregamento substitui só a origem desse ficheiro.
+const ENC_ORIGENS=[['aveiro','Stock Aveiro'],['rede','Stock Rede'],['bmw','Stock BMW']];
+const ENC_ORIGEM_NOTA={aveiro:'Motas do Caetano Aveiro: encomendadas, a caminho e no stand.',rede:'Motas de outros concessionários da rede. Confirma com o concessionário antes de prometer: podem já estar vendidas.',bmw:'Stock da BMW Portugal (NSC). Pede ao chefe de vendas para alocar a mota.',tudo:'As três origens juntas. A origem aparece por baixo do número de produção.'};
+const ENC_ZONA={CE:'Centro',NO:'Norte',SO:'Sul'};
+function encOrigemDe(x){return (x&&x.origem)||'aveiro';}
+function encOrigemLb(o){return (ENC_ORIGENS.find(e=>e[0]===o)||[,'—'])[1];}
+function encZona(v){const k=String(v||'').trim().toUpperCase();return ENC_ZONA[k]||(k&&k!=='--'?String(v).trim():'');}
+function encOndeTxt(x){const o=encOrigemDe(x);return encOrigemLb(o)+(o==='rede'&&x.dealer_nome?' · '+x.dealer_nome+(encZona(x.regiao)?' ('+encZona(x.regiao)+')':''):'');}
 const ENC_TIPOS=['ST','US','DE','CS'];
-const ENC_SO_DADOS=['salesperson']; // lido e guardado, mas sem coluna: a sigla aparece em Negociação
-const ENC_FILTROS=[['_neg','Negociação'],['model_desc','Modelo'],['processing_type','Tipo (Processing Type)'],['order_status','Estado (Order Status)'],['color_code','Cor'],['_vend','Vendedor'],['_cliente','Cliente']];
+const ENC_SO_DADOS=['salesperson','dealer_num']; // lido e guardado, mas sem coluna: a sigla aparece em Negociação
+const ENC_FILTROS=[['_neg','Negociação'],['model_desc','Modelo'],['processing_type','Tipo (Processing Type)'],['order_status','Estado (Order Status)'],['color_code','Cor'],['dealer_nome','Concessionário'],['_zona','Zona'],['_vend','Vendedor'],['_cliente','Cliente']];
+// grupos de filtro e colunas que fazem sentido em cada separador
+function encFiltrosDe(O){return ENC_FILTROS.filter(([g])=>O==='aveiro'?!['dealer_nome','_zona'].includes(g):O==='bmw'?!['dealer_nome','_zona','_cliente'].includes(g):O==='rede'?g!=='_cliente':true);}
+function encColsDe(O,ocultas){const fora=O==='aveiro'?['dealer_nome','regiao']:O==='bmw'?['dealer_nome','regiao','customer_last']:O==='rede'?['customer_last']:[];
+  return ENC_COLS.filter(([c])=>!ocultas.includes(c)&&!ENC_SO_DADOS.includes(c)&&!fora.includes(c));}
 // "Salesperson Number": as siglas dos vendedores (GM, FG/AG…) aparecem; os códigos cm0… são utilizadores do portal BMW e não se mostram
 function encSigla(v){const s=String(v||'').trim().toUpperCase();return /^[A-Z]{2,3}$/.test(s)?s:'';}
 function encVendDe(sig){if(!sig)return null;const sub=(a,b)=>{let k=0;for(const ch of b){if(ch===a[k])k++;}return k===a.length;};
@@ -4689,7 +4714,25 @@ function encParse(rows){
     if(!codOk(novo||'')&&l.model_desc&&descCod[l.model_desc])novo=descCod[l.model_desc];
     if(codOk(novo||'')){corrigidos.push({modelo:l.model_desc,de:c,para:novo});l.model_code=novo;}else suspeitos.push({modelo:l.model_desc,cod:c,num:l.production_number});
     delete l._vin;});
-  return{linhas:encOrdenar(linhas),duplicados,corrigidos,suspeitos};
+  const antes=rows.slice(0,iCab).map(r=>(r||[]).map(encTexto).join(' ')).join(' ');
+  return{linhas:encOrdenar(linhas),duplicados,corrigidos,suspeitos,antes};
+}
+// De que origem é o ficheiro: 1.º os critérios que o portal escreve por cima do cabeçalho, 2.º o nome do ficheiro, 3.º os concessionários
+function encDetetarOrigem(nome,P){
+  const t=String(P.antes||'').replace(/[\s"']/g,'').toLowerCase();
+  let c=null,porque='';
+  if(/foreigndealerstock/.test(t)){c='rede';porque='critério do portal: “Foreign Dealer Stock”';}
+  else if(/nscstock/.test(t)){c='bmw';porque='critério do portal: “NSC Stock”';}
+  else if(/dealerids:\[[^\]]*052895/.test(t)){c='aveiro';porque='critério do portal: concessionário 052895 (Caetano Aveiro)';}
+  const n=eotNorm(nome).replace(/[^a-z0-9]+/g,' ');const pn=/aveiro/.test(n)?'aveiro':/rede/.test(n)?'rede':/\bbmw\b|\bnsc\b/.test(n)?'bmw':null;
+  let aviso='';
+  if(c&&pn&&pn!==c)aviso=`O nome do ficheiro diz ${encOrigemLb(pn)}, mas o conteúdo é de ${encOrigemLb(c)}.`;
+  if(!c&&pn){c=pn;porque='nome do ficheiro';}
+  if(!c){const ds=[...new Set(P.linhas.map(l=>String(l.dealer_num||'').replace(/\D/g,'')).filter(Boolean))];
+    if(ds.length===1&&ds[0]==='052895'){c='aveiro';porque='todas as motas são do Caetano Aveiro (052895)';}
+    else if(ds.length===1&&ds[0]==='027947'){c='bmw';porque='todas as motas são da BMW Portugal (027947)';}
+    else if(ds.length>1&&!ds.includes('052895')&&!ds.includes('027947')){c='rede';porque=`${ds.length} concessionários diferentes`;}}
+  return{origem:c,porque:porque||'não consegui perceber: escolhe a origem',aviso};
 }
 function encOrdenar(arr){const t=x=>{const i=ENC_TIPOS.indexOf(x.processing_type);return i<0?99:i;};
   const e=x=>{const n=parseInt(x.order_status,10);return isNaN(n)?-1:n;};
@@ -4699,65 +4742,87 @@ async function loadEnc(){
   catch(e){S.enc=S.enc||[];S.encErr=erroTexto(e);}
   S.encLoaded=true;
 }
-function encGarantirCarga(){if(!S.encLoaded&&!S._encLoading){S._encLoading=true;loadEnc().finally(()=>{S._encLoading=false;render();});}}
-async function encFicheiro(f){
-  if(!f)return;
+function encGarantirCarga(){if(!S.encOrigem){try{const o=localStorage.getItem('bm_enc_origem');if(['aveiro','rede','bmw','tudo'].includes(o))S.encOrigem=o;}catch(e){}}if(!S.encLoaded&&!S._encLoading){S._encLoading=true;loadEnc().finally(()=>{S._encLoading=false;render();});}}
+async function encLerFicheiro(f){
+  const buf=new Uint8Array(await f.arrayBuffer());
+  const zipOuXls=(buf[0]===0x50&&buf[1]===0x4B)||(buf[0]===0xD0&&buf[1]===0xCF);
+  let rows;
+  if(zipOuXls){const X=await eotCarregarXLSX();const wb=X.read(buf,{type:'array',cellDates:true});rows=X.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:null});}
+  else rows=encLerCSV(encDecodificar(buf));
+  const P=encParse(rows);
+  if(!P.linhas.length)throw new Error('o ficheiro não traz motas.');
+  Object.assign(P,encDetetarOrigem(f.name,P),{nome:f.name});
+  return P;
+}
+// compara cada ficheiro com o que já está gravado na mesma origem
+function encPrevComparar(L){(L||[]).forEach(P=>{
+  const ant=new Map((S.enc||[]).filter(x=>encOrigemDe(x)===P.origem).map(x=>[String(x.production_number),x]));const novos=new Set(P.linhas.map(l=>String(l.production_number)));
+  P.temAnterior=ant.size>0;P.entram=P.linhas.filter(l=>!ant.has(String(l.production_number))).length;P.saem=[...ant.keys()].filter(k=>!novos.has(k)).length;
+  P.mudamEstado=P.linhas.filter(l=>{const a=ant.get(String(l.production_number));return a&&String(a.order_status||'')!==String(l.order_status||'');}).length;});}
+async function encFicheiros(lista){
+  const fs=[...(lista||[])];if(!fs.length)return;
   setState({encBusy:true,encErrImp:'',encMsg:'',encPrev:null});
-  try{
-    const buf=new Uint8Array(await f.arrayBuffer());
-    const zipOuXls=(buf[0]===0x50&&buf[1]===0x4B)||(buf[0]===0xD0&&buf[1]===0xCF);
-    let rows;
-    if(zipOuXls){const X=await eotCarregarXLSX();const wb=X.read(buf,{type:'array',cellDates:true});rows=X.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:null});}
-    else rows=encLerCSV(encDecodificar(buf));
-    const P=encParse(rows);
-    if(!P.linhas.length)throw new Error('O ficheiro não traz encomendas.');
-    const ant=new Map((S.enc||[]).map(x=>[String(x.production_number),x]));const novos=new Set(P.linhas.map(l=>String(l.production_number)));
-    P.entram=P.linhas.filter(l=>!ant.has(String(l.production_number))).length;
-    P.saem=[...ant.keys()].filter(k=>!novos.has(k)).length;
-    P.mudamEstado=P.linhas.filter(l=>{const a=ant.get(String(l.production_number));return a&&String(a.order_status||'')!==String(l.order_status||'');}).length;
-    P.nome=f.name;
-    setState({encBusy:false,encPrev:P});
-  }catch(e){setState({encBusy:false,encErrImp:(e&&e.message)||String(e)});}
+  const ok=[],erros=[];
+  for(const f of fs){try{ok.push(await encLerFicheiro(f));}catch(e){erros.push(`${f.name}: ${(e&&e.message)||e}`);}}
+  encPrevComparar(ok);
+  setState({encBusy:false,encPrev:ok.length?{ficheiros:ok}:null,encErrImp:erros.length?(erros.length===1&&!ok.length?erros[0].replace(/^[^:]*: /,''):erros.join(' · ')):''});
 }
+function encPrevProblema(P){const L=(P&&P.ficheiros)||[];if(!L.length)return'Sem ficheiros.';
+  if(L.some(f=>!f.origem))return'Escolhe a origem de cada ficheiro.';
+  const vistos={};for(const f of L){if(vistos[f.origem])return`Há dois ficheiros para ${encOrigemLb(f.origem)}. Tira um ou muda a origem.`;vistos[f.origem]=1;}
+  return'';}
 async function encConfirmar(){
-  const P=S.encPrev;if(!P)return;
+  const P=S.encPrev;if(!P)return;const prob=encPrevProblema(P);if(prob){setState({encErrImp:prob});return;}
   setState({encBusy:true,encErrImp:''});
+  const feitos=[];
   try{
-    // substituir o mapa é idempotente: se o pedido se perder na rede, tenta outra vez sozinho uma vez
-    let n;try{n=await supabaseApi('POST','/rpc/encomendas_bmw_substituir',{linhas:P.linhas});}
-    catch(e1){if(!/fetch|rede|liga/i.test(String(e1&&e1.message||e1)))throw e1;await new Promise(z=>setTimeout(z,2000));n=await supabaseApi('POST','/rpc/encomendas_bmw_substituir',{linhas:P.linhas});}
+    for(const f of P.ficheiros){
+      // Rede e BMW: não sai daqui o cliente nem o vendedor de outro concessionário (o servidor também os limpa)
+      const linhas=f.origem==='aveiro'?f.linhas:f.linhas.map(l=>Object.assign({},l,{customer_last:null,salesperson:null}));
+      const corpo={linhas,p_origem:f.origem};
+      // substituir é idempotente: se o pedido se perder na rede, tenta outra vez sozinho uma vez
+      let n;try{n=await supabaseApi('POST','/rpc/encomendas_bmw_substituir',corpo);}
+      catch(e1){if(!/fetch|rede|liga/i.test(String(e1&&e1.message||e1)))throw e1;await new Promise(z=>setTimeout(z,2000));n=await supabaseApi('POST','/rpc/encomendas_bmw_substituir',corpo);}
+      feitos.push(`${encOrigemLb(f.origem)}: ${Number(n)||linhas.length}`);
+    }
     await loadEnc();
-    setState({encBusy:false,encPrev:null,encMsg:`Mapa atualizado: ${Number(n)||P.linhas.length} encomendas. Os vendedores já o veem.`});
-  }catch(e){setState({encBusy:false,encErrImp:'Erro ao gravar (o mapa anterior ficou como estava): '+erroTexto(e)});}
+    const o1=P.ficheiros.length===1?P.ficheiros[0].origem:null;
+    setState({encBusy:false,encPrev:null,encOrigem:o1||S.encOrigem,encMsg:`Atualizado · ${feitos.join(' · ')} motas. Os vendedores já veem.`});
+  }catch(e){await loadEnc().catch(()=>{});setState({encBusy:false,encErrImp:(feitos.length?`Gravado: ${feitos.join(' · ')}. `:'')+'Erro ao gravar o resto (essa origem ficou como estava): '+erroTexto(e)});}
 }
-function encValor(x,g){if(g==='_neg')return encNegEstado(x);if(g==='_vend')return encQuemTxt(x);return g==='_cliente'?(x.customer_last?'Com cliente':'Sem cliente'):(x[g]==null||x[g]===''?'(vazio)':String(x[g]));}
+function encValor(x,g){if(g==='_neg')return encNegEstado(x);if(g==='_zona')return encZona(x.regiao)||'(vazio)';if(g==='_vend')return encQuemTxt(x);return g==='_cliente'?(x.customer_last?'Com cliente':'Sem cliente'):(x[g]==null||x[g]===''?'(vazio)':String(x[g]));}
 function encColsOcultas(){if(S.encCols)return S.encCols;let v=[];try{v=JSON.parse(localStorage.getItem('bm_enc_cols')||'[]')||[];}catch(e){}S.encCols=Array.isArray(v)?v:[];return S.encCols;}
-function encFiltrar(todos,F){
+function encFiltrar(todos,F,grupos){
   const ex=F.ex||{};
-  let arr=todos.filter(x=>ENC_FILTROS.every(([g])=>!(ex[g]||[]).length||!(ex[g]).includes(encValor(x,g))));
+  let arr=todos.filter(x=>(grupos||ENC_FILTROS).every(([g])=>!(ex[g]||[]).length||!(ex[g]).includes(encValor(x,g))));
   const termos=eotNorm(F.q).split(' ').filter(Boolean);
-  if(termos.length)arr=arr.filter(x=>{const t=eotNorm(ENC_COLS.map(([c,,,tp])=>tp==='d'?encDataPT(x[c]):tp==='w'?(x[c]||'')+' '+encSemana(x[c]):tp==='v'?encVendTxt(x[c]):x[c]).join(' ')+' '+encNegEstado(x)+' '+((S._encResM||encResMapa()).get(String(x.production_number))||[]).map(r=>vendName(r.vendedor_id)||'').join(' '));return termos.every(q=>t.includes(q));});
+  if(termos.length)arr=arr.filter(x=>{const t=eotNorm(ENC_COLS.map(([c,,,tp])=>tp==='d'?encDataPT(x[c]):tp==='w'?(x[c]||'')+' '+encSemana(x[c]):tp==='v'?encVendTxt(x[c]):tp==='z'?encZona(x[c]):x[c]).join(' ')+' '+encOrigemLb(encOrigemDe(x))+' '+encNegEstado(x)+' '+((S._encResM||encResMapa()).get(String(x.production_number))||[]).map(r=>vendName(r.vendedor_id)||'').join(' '));return termos.every(q=>t.includes(q));});
   return arr;
 }
 function encView(){
   encGarantirCarga();
-  const todos=S.enc||[];const F=Object.assign({q:'',ex:{}},S.encF||{});const ex=F.ex||{};
-  const ocultas=encColsOcultas();const cols=ENC_COLS.filter(([c])=>!ocultas.includes(c)&&!ENC_SO_DADOS.includes(c));
+  const tudo=S.enc||[];const O=S.encOrigem||'aveiro';const todos=O==='tudo'?tudo:tudo.filter(x=>encOrigemDe(x)===O);
+  const F=Object.assign({q:'',ex:{}},S.encF||{});const ex=F.ex||{};const grupos=encFiltrosDe(O);
+  const ocultas=encColsOcultas();const cols=encColsDe(O,ocultas);
   const M=encResMapa();S._encResM=M;
-  const arr=encFiltrar(todos,F);S._encResM=null;
-  const ult=todos.map(x=>x.importado_em).filter(Boolean).sort().pop();
-  const nFiltros=ENC_FILTROS.reduce((a,[g])=>a+((ex[g]||[]).length?1:0),0);
+  const arr=encFiltrar(todos,F,grupos);S._encResM=null;
+  const ultDe=o=>tudo.filter(x=>o==='tudo'||encOrigemDe(x)===o).map(x=>x.importado_em).filter(Boolean).sort().pop();
+  const ult=ultDe(O);const fData=d=>new Date(d).toLocaleString('pt-PT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const nFiltros=grupos.reduce((a,[g])=>a+((ex[g]||[]).length?1:0),0);
+  const separadores=`<div class="enc-origens" role="tablist" aria-label="Origem do stock">${[...ENC_ORIGENS,['tudo','Tudo']].map(([o,lb])=>{const n=o==='tudo'?tudo.length:tudo.filter(x=>encOrigemDe(x)===o).length;const u=ultDe(o);
+    return`<button class="enc-or ${o===O?'on':''}" role="tab" aria-selected="${o===O}" data-action="enc-origem" data-o="${o}"><span class="enc-or-t">${esc(lb)}</span><span class="enc-or-n">${n}</span><small>${o==='tudo'?'as três origens':(u?'carregado a '+esc(fData(u)):'sem ficheiro')}</small></button>`;}).join('')}</div>`;
   const P=S.encPrev;
   const celula=(x,[c,,,t])=>{const v=x[c];
     if(t==='d')return`<td class="enc-d">${esc(encDataPT(v))}</td>`;
     if(t==='w'){const w=encSemana(v),i=w.indexOf(' · ');return`<td class="enc-d enc-wk" title="${esc(v||'')}">${i>0?esc(w.slice(0,i))+'<small>'+esc(w.slice(i+3))+'</small>':esc(w)}</td>`;}
-    if(c==='customer_last')return`<td class="enc-cli">${esc(v||'')}</td>`;
+    if(c==='customer_last'||c==='dealer_nome')return`<td class="enc-cli">${esc(v||'')}</td>`;
+    if(t==='z')return`<td>${esc(encZona(v))}</td>`;
     if(c==='options')return`<td class="enc-opt">${esc(v||'')}</td>`;
     if(t==='v'){const sig=encSigla(v);if(!sig)return'<td></td>';const p=encVendDe(sig);
       return p?`<td><span class="vtag" style="background:${corVend(p.id)}" title="${esc(p.nome||'')}">${esc(sig)}</span></td>`:`<td><span class="enc-tp">${esc(sig)}</span></td>`;}
     if(c==='processing_type')return`<td><span class="enc-tp enc-tp-${esc(String(v||'').toLowerCase())}">${esc(v||'')}</span></td>`;
     if(c==='model_desc'){const m=String(v||'');return`<td class="enc-mod">${esc(m.length<=10?m.replace(/ /g,'\u00a0'):m)}</td>`;}
-    if(c==='production_number')return`<td class="sec-mono enc-pn">${esc(v||'')}</td>`;
+    if(c==='production_number')return`<td class="sec-mono enc-pn">${esc(v||'')}${O==='tudo'?`<small class="enc-pn-or">${esc(encOrigemLb(encOrigemDe(x)).replace('Stock ',''))}</small>`:''}</td>`;
     if(['chassis','model_code','color_code','order_status'].includes(c))return`<td class="sec-mono">${esc(v||'')}</td>`;
     return`<td>${esc(v||'')}</td>`;};
   // linhas agrupadas por código de modelo (a ordem já vem por Model Code e depois ST, US, DE, CS)
@@ -4767,44 +4832,52 @@ function encView(){
     const ne=encNegEstado(x,M);
     corpo+=`<tr class="${ne==='Em negociação'?'enc-r-n':ne==='Vendida'?'enc-r-v':''}">${cols.map(c=>celula(x,c)).join('')}${encNegCel(x,M)}</tr>`;});
   const painel=S.encPainel?`<div class="enc-painel">
-    ${ENC_FILTROS.map(([g,lb])=>{const cont={};S._encResM=M;todos.forEach(x=>{const v=encValor(x,g);cont[v]=(cont[v]||0)+1;});S._encResM=null;
+    ${grupos.map(([g,lb])=>{const cont={};S._encResM=M;todos.forEach(x=>{const v=encValor(x,g);cont[v]=(cont[v]||0)+1;});S._encResM=null;
       const vals=Object.keys(cont).sort((a,b)=>g==='processing_type'?((ENC_TIPOS.indexOf(a)+1||99)-(ENC_TIPOS.indexOf(b)+1||99)):a.localeCompare(b,'pt',{numeric:true}));
       const exg=ex[g]||[];
       return`<div class="enc-fg"><div class="enc-fg-t"><span>${esc(lb)}</span><button class="enc-lnk" data-action="enc-todos" data-g="${g}" data-v="1">Todos</button><button class="enc-lnk" data-action="enc-todos" data-g="${g}" data-v="0">Nenhum</button></div>
         <div class="enc-fg-l">${vals.map(v=>`<label class="enc-chk ${exg.includes(v)?'':'on'}"><input type="checkbox" data-enc-g="${g}" value="${esc(v)}" ${exg.includes(v)?'':'checked'}><span>${esc(v)}</span><small>${cont[v]}</small></label>`).join('')}</div></div>`;}).join('')}
     <div class="enc-fg enc-cols"><div class="enc-fg-t"><span>Colunas visíveis</span><button class="enc-lnk" data-action="enc-cols-todas">Todas</button></div>
-      <div class="enc-fg-l">${ENC_COLS.filter(([c])=>!ENC_SO_DADOS.includes(c)).map(([c,h,lb])=>`<label class="enc-chk ${ocultas.includes(c)?'':'on'}" title="${esc(h)}"><input type="checkbox" data-enc-col="${c}" ${ocultas.includes(c)?'':'checked'}><span>${esc(lb)}</span></label>`).join('')}</div></div>
+      <div class="enc-fg-l">${encColsDe(O,[]).map(([c,h,lb])=>`<label class="enc-chk ${ocultas.includes(c)?'':'on'}" title="${esc(h)}"><input type="checkbox" data-enc-col="${c}" ${ocultas.includes(c)?'':'checked'}><span>${esc(lb)}</span></label>`).join('')}</div></div>
   </div>`:'';
-  const ativos=ENC_FILTROS.filter(([g])=>(ex[g]||[]).length).map(([g,lb])=>`<button class="vchip on" data-action="enc-todos" data-g="${g}" data-v="1" title="Limpar este filtro">${esc(lb.replace(/ \(.*\)/,''))}: sem ${(ex[g]||[]).length} ✕</button>`).join('');
+  const ativos=grupos.filter(([g])=>(ex[g]||[]).length).map(([g,lb])=>`<button class="vchip on" data-action="enc-todos" data-g="${g}" data-v="1" title="Limpar este filtro">${esc(lb.replace(/ \(.*\)/,''))}: sem ${(ex[g]||[]).length} ✕</button>`).join('');
   const porTipo=ENC_TIPOS.map(t=>[t,arr.filter(x=>x.processing_type===t).length]).filter(([,n])=>n);
   return`${encEscolherHTML()}<div class="seq-wrap enc-wrap">
     <div class="seq-head">
-      <div><div class="seq-tit">Encomendas BMW</div><div class="seq-sub">${ult?'Mapa carregado a '+esc(new Date(ult).toLocaleString('pt-PT',{dateStyle:'short',timeStyle:'short'})):'Sem mapa carregado'} · ${todos.length} encomenda${todos.length!==1?'s':''}${isAdmin()?'':' · só leitura'}</div></div>
-      ${isAdmin()?`<label class="btn btn-orange btn-sm" style="cursor:pointer;margin:0">${S.encBusy&&!P?'A ler…':'📥 Carregar ficheiro de encomendas'}<input type="file" id="enc-file" accept=".csv,.xls,.xlsx,text/csv" style="display:none"></label>`:''}
+      <div><div class="seq-tit">Encomendas BMW</div><div class="seq-sub">${esc(O==='tudo'?'Tudo':encOrigemLb(O))} · ${todos.length} mota${todos.length!==1?'s':''}${ult&&O!=='tudo'?' · carregado a '+esc(new Date(ult).toLocaleString('pt-PT',{dateStyle:'short',timeStyle:'short'})):''}${isAdmin()?'':' · só leitura'}</div></div>
+      ${isAdmin()?`<label class="btn btn-orange btn-sm" style="cursor:pointer;margin:0" title="Podes escolher os três ficheiros de uma vez">${S.encBusy&&!P?'A ler…':'📥 Carregar ficheiros (Aveiro, Rede, BMW)'}<input type="file" id="enc-file" multiple accept=".csv,.xls,.xlsx,text/csv" style="display:none"></label>`:''}
     </div>
+    ${separadores}
     ${S.encErr?`<div class="mg-aviso">⚠️ Não consegui ler as encomendas (${esc(S.encErr)}). ${isAdmin()?'Se a tabela ainda não existe, corre o SQL "2026-10-21_encomendas_bmw" no Supabase.':'Fala com o chefe de vendas.'}</div>`:''}
     ${S.encErrImp?`<div class="error" style="margin-bottom:10px">${esc(S.encErrImp)}</div>`:''}
     ${S.encMsg?`<div class="lead-ok" style="margin-bottom:10px">✓ ${esc(S.encMsg)}</div>`:''}
-    ${P?`<div class="gpp-card eot-prev" style="margin:0 0 14px">
-      <div class="vd-form-t">📄 ${esc(P.nome)} — confirmar</div>
-      <div class="eot-prev-g">
-        <div><b>${P.linhas.length}</b> encomendas · ${[...new Set(P.linhas.map(l=>l.model_code))].length} modelos · ${ENC_TIPOS.map(t=>`${t} ${P.linhas.filter(l=>l.processing_type===t).length}`).join(' · ')}</div>
-        ${todos.length?`<div>Face ao mapa atual: <b>${P.entram}</b> novas · <b>${P.saem}</b> saem · <b>${P.mudamEstado}</b> mudaram de estado</div>`:''}
-        ${P.corrigidos.length?`<div class="ok">${P.corrigidos.length} código${P.corrigidos.length>1?'s':''} de modelo estragado${P.corrigidos.length>1?'s':''} pelo Excel e recuperado${P.corrigidos.length>1?'s':''}: ${P.corrigidos.map(c=>`${esc(c.modelo||'?')} “${esc(c.de)}” → <b>${esc(c.para)}</b>`).join(', ')}</div>`:''}
-        ${P.suspeitos.length?`<div class="mg-aviso" style="margin:4px 0">⚠️ ${P.suspeitos.length} código${P.suspeitos.length>1?'s':''} de modelo que não consegui recuperar (fica como vem): ${P.suspeitos.map(s=>`${esc(s.modelo||'?')} “${esc(s.cod)}” (prod. ${esc(s.num)})`).join(', ')}</div>`:''}
-        ${P.duplicados?`<div>${P.duplicados} linha${P.duplicados>1?'s':''} repetida${P.duplicados>1?'s':''} (mesmo Production Number): fica a última.</div>`:''}
-        <div class="mut">O mapa atual é substituído por este de uma só vez. Se a gravação falhar, fica o anterior.</div>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-orange btn-sm" data-action="enc-confirmar" ${S.encBusy?'disabled':''}>${S.encBusy?'A gravar…':'Confirmar e substituir'}</button><button class="btn btn-dark btn-sm" data-action="enc-cancelar">Cancelar</button></div>
-    </div>`:''}
-    ${!todos.length?`<div class="gpp-empty">${S._encLoading||!S.encLoaded?'A carregar…':'Ainda não há mapa de encomendas.'+(isAdmin()?' Carrega o ficheiro exportado do portal BMW.':'')}</div>`:`
+    ${P?(()=>{const prob=encPrevProblema(P);return`<div class="gpp-card eot-prev" style="margin:0 0 14px">
+      <div class="vd-form-t">📄 Confirmar ${P.ficheiros.length} ficheiro${P.ficheiros.length>1?'s':''}</div>
+      ${P.ficheiros.map((f,i)=>`<div class="enc-pf">
+        <div class="enc-pf-h"><b>${esc(f.nome)}</b><select class="seq-sel" data-enc-or-i="${i}" aria-label="Origem de ${esc(f.nome)}">${f.origem?'':'<option value="">— escolher a origem —</option>'}${ENC_ORIGENS.map(([o,lb])=>`<option value="${o}" ${f.origem===o?'selected':''}>${esc(lb)}</option>`).join('')}</select></div>
+        <div class="eot-prev-g">
+          <div class="mut">Origem: ${esc(f.porque)}</div>
+          ${f.aviso?`<div class="mg-aviso" style="margin:2px 0">⚠️ ${esc(f.aviso)}</div>`:''}
+          <div><b>${f.linhas.length}</b> motas · ${[...new Set(f.linhas.map(l=>l.model_code))].length} modelos · ${ENC_TIPOS.map(t=>`${t} ${f.linhas.filter(l=>l.processing_type===t).length}`).filter(x=>!/ 0$/.test(x)).join(' · ')}${f.origem==='rede'?` · ${[...new Set(f.linhas.map(l=>l.dealer_nome).filter(Boolean))].length} concessionários`:''}</div>
+          ${f.origem&&f.temAnterior?`<div>Face ao ${esc(encOrigemLb(f.origem))} atual: <b>${f.entram}</b> novas · <b>${f.saem}</b> saem · <b>${f.mudamEstado}</b> mudaram de estado</div>`:''}
+          ${f.origem&&f.origem!=='aveiro'?'<div class="mut">Não guardo o cliente nem o vendedor de outros concessionários.</div>':''}
+          ${f.corrigidos.length?`<div class="ok">${f.corrigidos.length} código${f.corrigidos.length>1?'s':''} de modelo estragado${f.corrigidos.length>1?'s':''} pelo Excel e recuperado${f.corrigidos.length>1?'s':''}: ${f.corrigidos.map(c=>`${esc(c.modelo||'?')} “${esc(c.de)}” → <b>${esc(c.para)}</b>`).join(', ')}</div>`:''}
+          ${f.suspeitos.length?`<div class="mg-aviso" style="margin:4px 0">⚠️ ${f.suspeitos.length} código${f.suspeitos.length>1?'s':''} de modelo que não consegui recuperar (fica como vem): ${f.suspeitos.map(x=>`${esc(x.modelo||'?')} “${esc(x.cod)}” (prod. ${esc(x.num)})`).join(', ')}</div>`:''}
+          ${f.duplicados?`<div>${f.duplicados} linha${f.duplicados>1?'s':''} repetida${f.duplicados>1?'s':''} (mesmo Production Number): fica a última.</div>`:''}
+        </div></div>`).join('')}
+      <div class="mut" style="font-size:12px;margin-top:8px">Cada ficheiro substitui só a sua origem, de uma vez. As origens que não carregares ficam como estão.</div>
+      ${prob?`<div class="error" style="margin-top:8px">${esc(prob)}</div>`:''}
+      <div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-orange btn-sm" data-action="enc-confirmar" ${S.encBusy||prob?'disabled':''}>${S.encBusy?'A gravar…':'Confirmar e substituir'}</button><button class="btn btn-dark btn-sm" data-action="enc-cancelar">Cancelar</button></div>
+    </div>`;})():''}
+    <div class="enc-or-nota">${esc(ENC_ORIGEM_NOTA[O]||'')}</div>
+    ${!todos.length?`<div class="gpp-empty">${S._encLoading||!S.encLoaded?'A carregar…':'Ainda não há ficheiro para '+esc(O==='tudo'?'nenhuma origem':encOrigemLb(O))+'.'+(isAdmin()?' Carrega o ficheiro exportado do portal BMW.':'')}</div>`:`
     <div class="seq-bar">
-      <input class="sec-q" id="enc-q" placeholder="Pesquisar modelo, chassis, cliente, opcional, cor…" aria-label="Pesquisar encomendas" value="${esc(F.q||'')}">
+      <input class="sec-q" id="enc-q" placeholder="Pesquisar ${esc(O==='tudo'?'em tudo':'no '+encOrigemLb(O))}: modelo, chassis, ${O==='rede'?'concessionário':'cliente'}, opcional, cor…" aria-label="Pesquisar encomendas" value="${esc(F.q||'')}">
       <button class="btn ${S.encPainel?'btn-dark':'btn-outline'} btn-sm" data-action="enc-painel" aria-expanded="${S.encPainel?'true':'false'}">${ico('sliders','ic-sm')}<span>Filtros${nFiltros?' ('+nFiltros+')':''}</span></button>
     </div>
     ${painel}
     ${ativos?`<div class="vchips" style="padding:8px 0 0">${ativos}</div>`:''}
-    <div class="seq-res"><b>${arr.length}</b> de ${todos.length} encomendas${porTipo.length?' · '+porTipo.map(([t,n])=>`${t} ${n}`).join(' · '):''}</div>
+    <div class="seq-res"><b>${arr.length}</b> de ${todos.length} motas ${esc(O==='tudo'?'em todas as origens':'no '+encOrigemLb(O))}${porTipo.length?' · '+porTipo.map(([t,n])=>`${t} ${n}`).join(' · '):''}</div>
     ${arr.length?`<div class="enc-tw"><table class="enc-t"><thead><tr>${cols.map(([c,h,lb])=>`<th title="${esc(h)}"${c==='options'?' class="enc-th-opt"':''}>${esc(lb)}</th>`).join('')}<th>Negociação</th></tr></thead><tbody>${corpo}</tbody></table></div>`:'<div class="gpp-empty">Nada com esta pesquisa ou filtros.</div>'}
     <div class="seq-nota" style="margin-top:12px">Ordenado por estado (o mais avançado primeiro), depois por código de modelo e por tipo (ST, US, DE, CS). “Negociação” vem dos negócios da plataforma: Quente/Morno = em negociação, Carteira/Retail = vendida. “Entrega prevista de/até” são as datas F3 da BMW; “Semana de entrega” é a Exp. Del. Wk. O mapa é o do dia em que foi carregado: confirma no portal BMW antes de prometer uma data ao cliente.</div>`}
   </div>`;
@@ -4859,7 +4932,7 @@ function encEscolherHTML(){
   return`<div class="enc-mbd" data-action="enc-escolher-fechar"></div>
   <div class="enc-modal" role="dialog" aria-modal="true" aria-label="Escolher negócio">
     <div class="enc-m-h"><div><div class="enc-m-t">${isAdmin()?'Atribuir a um negócio':'Estou a negociar esta mota'}</div>
-      <div class="enc-m-s">${esc(x.model_desc||'')} · cor ${esc(x.color_code||'—')} · ${esc(x.processing_type||'')} · estado ${esc(x.order_status||'—')} · Prod. <span class="sec-mono">${esc(pn)}</span>${x.chassis?' · chassis <span class="sec-mono">'+esc(x.chassis)+'</span>':''}</div></div>
+      <div class="enc-m-s"><b>${esc(encOndeTxt(x))}</b> · ${esc(x.model_desc||'')} · cor ${esc(x.color_code||'—')} · ${esc(x.processing_type||'')} · estado ${esc(x.order_status||'—')} · Prod. <span class="sec-mono">${esc(pn)}</span>${x.chassis?' · chassis <span class="sec-mono">'+esc(x.chassis)+'</span>':''}</div></div>
       <button class="enc-m-x" data-action="enc-escolher-fechar" aria-label="Fechar">${ico('x')}</button></div>
     <div class="enc-m-b">
       <div class="enc-m-l">Cliente novo</div>
@@ -4903,7 +4976,7 @@ function encNovoNegocio(pn,vendId){
 function encNovoVendDe(F){const n=S.encNovoVend;return n&&String((F||{}).enc||'').trim()===n.pn?n.v:null;}
 function encNovoBannerHTML(){const F=S.form||{};const v=String(F.enc||'').trim();if(!v)return'';const x=(S.enc||[]).find(y=>String(y.production_number)===v);if(!x)return'';
   const nv=encNovoVendDe(F);const quem=isAdmin()&&nv?(vendName(nv)||''):'';
-  return`<div class="enc-novo-ban">${ico('package','ic-sm')}<div><b>${esc(x.model_desc||'')}</b> · cor ${esc(x.color_code||'—')} · ${esc(x.processing_type||'')} · Prod. <span class="sec-mono">${esc(v)}</span>${x.chassis?' · chassis <span class="sec-mono">'+esc(x.chassis)+'</span>':''}${quem?' · negócio de <b>'+esc(quem)+'</b>':''}<small>Ao gravar, a mota fica em negociação neste negócio.</small></div></div>`;}
+  return`<div class="enc-novo-ban">${ico('package','ic-sm')}<div>${esc(encOndeTxt(x))} · <b>${esc(x.model_desc||'')}</b> · cor ${esc(x.color_code||'—')} · ${esc(x.processing_type||'')} · Prod. <span class="sec-mono">${esc(v)}</span>${x.chassis?' · chassis <span class="sec-mono">'+esc(x.chassis)+'</span>':''}${quem?' · negócio de <b>'+esc(quem)+'</b>':''}<small>Ao gravar, a mota fica em negociação neste negócio.</small></div></div>`;}
 async function encLibertar(id,pn){
   const r=(S.records||[]).find(x=>String(x.id)===String(id));if(!r)return;
   if(!confirm(`Libertar a mota ${pn} do negócio de ${r.id_cliente||'—'}? O negócio fica igual, só deixa de ter esta encomenda.`))return;
@@ -4922,16 +4995,17 @@ function encCampoHTML(){
   const v=S.form.enc||'';const M=encResMapa();const md=encNorm(S.form.model);const id=encFormId();
   const livres=(S.enc||[]).filter(x=>!(M.get(String(x.production_number))||[]).some(r=>String(r.negocio_id)!==String(id))&&!x.customer_last&&x.processing_type!=='CS');
   const igual=x=>{const m=encNorm(x.model_desc);return md&&m&&(md.includes(m)||m.includes(md))?1:0;};
-  livres.sort((a,b)=>igual(b)-igual(a)||String(a.model_desc||'').localeCompare(String(b.model_desc||'')));
+  const ordO=x=>['aveiro','bmw','rede'].indexOf(encOrigemDe(x));
+  livres.sort((a,b)=>igual(b)-igual(a)||ordO(a)-ordO(b)||String(a.model_desc||'').localeCompare(String(b.model_desc||'')));
   return`<input class="field-input" type="text" data-field="enc" list="enc-livres" autocomplete="off" value="${esc(v)}"${livres.length?' placeholder="Escreve ou escolhe uma mota livre do mapa BMW"':''}>
-    <datalist id="enc-livres">${livres.map(x=>`<option value="${esc(x.production_number)}">${esc([x.model_desc,'cor '+(x.color_code||'—'),x.processing_type,'estado '+(x.order_status||'—'),x.conf_f3_from?'entrega '+encDataPT(x.conf_f3_from):''].filter(Boolean).join(' · '))}</option>`).join('')}</datalist>
+    <datalist id="enc-livres">${livres.map(x=>`<option value="${esc(x.production_number)}">${esc([encOndeTxt(x),x.model_desc,'cor '+(x.color_code||'—'),x.processing_type,'estado '+(x.order_status||'—'),x.conf_f3_from?'entrega '+encDataPT(x.conf_f3_from):''].filter(Boolean).join(' · '))}</option>`).join('')}</datalist>
     <div class="enc-dica" id="enc-dica">${encDicaHTML(v,id)}</div>`;
 }
 function encDicaHTML(v,id){
   v=String(v||'').trim();if(!v||!(S.enc||[]).length)return'';
   const x=S.enc.find(y=>String(y.production_number)===v);
   const R=(encResMapa().get(v)||[]).filter(r=>String(r.negocio_id)!==String(id));
-  let h=x?`<span class="ok">✓ No mapa BMW: ${esc(x.model_desc||'')} · cor ${esc(x.color_code||'—')} · ${esc(x.processing_type||'')} · estado ${esc(x.order_status||'—')}${x.conf_f3_from?' · entrega prevista '+esc(encDataPT(x.conf_f3_from))+(x.conf_f3_to?' a '+esc(encDataPT(x.conf_f3_to)):''):''}</span>`
+  let h=x?`<span class="ok">✓ ${esc(encOndeTxt(x))}: ${esc(x.model_desc||'')} · cor ${esc(x.color_code||'—')} · ${esc(x.processing_type||'')} · estado ${esc(x.order_status||'—')}${x.conf_f3_from?' · entrega prevista '+esc(encDataPT(x.conf_f3_from))+(x.conf_f3_to?' a '+esc(encDataPT(x.conf_f3_to)):''):''}</span>`
     :`<span class="av">⚠ A encomenda ${esc(v)} não está no mapa BMW carregado. Confirma o número.</span>`;
   if(R.length){const r=R[0];const meu=r.vendedor_id===(S.me&&S.me.id);const n=vendName(r.vendedor_id)||'outro vendedor';
     h+=isAdmin()?`<span class="av">⚠ Também está no negócio de ${esc(n)} (${esc(r.status)}). Liberta-a lá para não ficar repetida.</span>`
@@ -6877,8 +6951,8 @@ function EXPORT_FOLHAS(){
       {c:'ult_saida',l:'Última saída',f:d},{c:'qtd',l:'Qtd'},{c:'custo_unit',l:'Custo unitário'},{c:'custo_total',l:'Custo total'},{c:'procura',l:'Procura média mensal'},
       {c:'desc_max',l:'Desconto máx. s/ PVP',f:v=>v==null?'':Math.round(v*100)+'%'},{c:'importado_em',l:'Mapa de',f:dt},
     ]},
-    {nome:'Encomendas BMW',path:'/encomendas_bmw?select=*&order=model_code.asc,production_number.asc',cols:[
-      ...ENC_COLS.map(([c,h,,t])=>({c,l:h,f:t==='d'?d:undefined})),{c:'importado_em',l:'Mapa de',f:dt},
+    {nome:'Encomendas BMW',path:'/encomendas_bmw?select=*&order=origem.asc,model_code.asc,production_number.asc',cols:[
+      {c:'origem',l:'Origem',f:v=>encOrigemLb(v||'aveiro')},...ENC_COLS.map(([c,h,,t])=>({c,l:h,f:t==='d'?d:undefined})),{c:'importado_em',l:'Mapa de',f:dt},
     ]},
     {nome:'EOTs',path:'/eot_contratos?select=*&order=data_fim.asc',cols:[
       {c:'contrato',l:'Contrato'},{c:'tipo',l:'Tipo'},{c:'cliente',l:'Cliente'},{c:'contacto_nome',l:'Contacto'},{c:'telefone',l:'Telefone'},{c:'telemovel',l:'Telemóvel'},
@@ -8716,7 +8790,8 @@ function bindEvents(){
     if(el.dataset&&el.dataset.pmK){savePremioMes(el.dataset.pmMes,el.dataset.pmK,el.value);return;}
     if(el.dataset&&el.dataset.mrgId){saveMargem(el.dataset.mrgId,el.value);return;}
     if(el.dataset&&el.dataset.entId){const v=el.value;saveEntrega(el.dataset.entId,{[el.dataset.entF]:(v===''?null:v)});return;}
-    if(el.id==='enc-file'){const f=el.files&&el.files[0];el.value='';encFicheiro(f);return;}
+    if(el.id==='enc-file'){const fs=[...(el.files||[])];el.value='';encFicheiros(fs);return;}
+    if(el.dataset&&el.dataset.encOrI!=null){const P=S.encPrev;if(P&&P.ficheiros[+el.dataset.encOrI]){const f=P.ficheiros[+el.dataset.encOrI];f.origem=el.value||null;f.porque=el.value?'escolhida por ti':f.porque;f.aviso='';encPrevComparar([f]);setState({encPrev:P,encErrImp:''});}return;}
     if(el.dataset&&el.dataset.encG){const F=Object.assign({q:'',ex:{}},S.encF||{});F.ex=Object.assign({},F.ex||{});const g=el.dataset.encG,v=el.value;const L=(F.ex[g]||[]).filter(x=>x!==v);if(!el.checked)L.push(v);F.ex[g]=L;setState({encF:F});return;}
     if(el.dataset&&el.dataset.encCol){const c=el.dataset.encCol;const L=encColsOcultas().filter(x=>x!==c);if(!el.checked)L.push(c);if(L.length>=ENC_COLS.length)return render();S.encCols=L;try{localStorage.setItem('bm_enc_cols',JSON.stringify(L));}catch(e){}render();return;}
     if(el.id==='seq-file'){const f=el.files&&el.files[0];el.value='';seqFicheiro(f);return;}
@@ -8906,6 +8981,7 @@ function bindEvents(){
       case'enc-libertar':encLibertar(el.dataset.id,el.dataset.pn);break;
       case'enc-cancelar':setState({encPrev:null,encErrImp:''});break;
       case'enc-painel':setState({encPainel:!S.encPainel});break;
+      case'enc-origem':{const o=el.dataset.o;try{localStorage.setItem('bm_enc_origem',o);}catch(e){}setState({encOrigem:o,encMsg:''});break;}
       case'enc-todos':{const F=Object.assign({q:'',ex:{}},S.encF||{});F.ex=Object.assign({},F.ex||{});const g=el.dataset.g;
         if(el.dataset.v==='1')F.ex[g]=[];else F.ex[g]=[...new Set((S.enc||[]).map(x=>encValor(x,g)))];setState({encF:F});break;}
       case'enc-cols-todas':S.encCols=[];try{localStorage.setItem('bm_enc_cols','[]');}catch(e){}render();break;

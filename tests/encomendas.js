@@ -11,7 +11,7 @@ const jwt=(sub)=>b64({alg:'ES256'})+'.'+b64({sub,exp:Math.floor(Date.now()/1000)
 
 // ---------- ficheiro fictício no formato do portal ----------
 const CAB='Production Number;Chassis No.;Body Group;Brand;Model Code;Model Description;Model Series;Color Code;Upholstery Code;Options String;Order Template ID;Wholesaler;Dealer Number;Dealer No.;Region;District;Act. Location;Dest. Loc.;Order Status;Timestamp Order Status;Processing Type;Sales Channel;Port Location;Confirmed Production Week;Subsidiary Requested Production Week;Actual Production Date;Conf F3 From;Conf.F3 To;AG Inv. Date;Wholesale Invoice Ind;Retail System Date (GMT);New vehicle retail;Current Release Date;Holds;Customer;Customer (Last);Purchase Agreement Date;P. A. Date / Event Date;TS Order Entry;CO2 Output;Chassis Number 17;Fuel Type;Salesperson Number;Factory;Businesstype;Quota Month;Exp. Del. Wk.;Wholesale Invoice Document Date;Planned F2 Date;Corrected F2 Date;Retail Requested Production Week;Retail Counting Date;Retail Cancellation Date;AG Vehicle Hold;Planned Handover Wk.;Order Template ID;Sub. Notes;Quota PAK;PDI Done'.split(';');
-const linha=o=>CAB.map(h=>o[h]==null?'':o[h]);
+const linha=o=>CAB.map(h=>o[h]==null?(h==='Dealer Number'?"'052895'":''):o[h]);
 const L=[
   {'Production Number':'9000005','Chassis No.':'6N00005','Body Group':'KA1','Model Code':'0M21','Model Description':'R 1300 GS','Color Code':'N52','Options String':'20B 389 7A8','Order Status':'198','Timestamp Order Status':'03.07.2026','Processing Type':'CS','Actual Production Date':'28.01.2026','Conf F3 From':'01/07/2026','Conf.F3 To':'05/07/2026','Customer (Last)':'Gonçalves Simão','Salesperson Number':'GM','Chassis Number 17':'WB10M2100T6N00005','Exp. Del. Wk.':'20260727'},
   {'Salesperson Number':'cm0ggvc','Production Number':'9000004','Chassis No.':'','Body Group':'KA1','Model Code':'0M21','Model Description':'R 1300 GS','Color Code':'ND2','Options String':'389 413','Order Status':'111','Timestamp Order Status':'09.09.2026','Processing Type':'ST','Actual Production Date':'','Conf F3 From':'18/01/2027','Conf.F3 To':'24/01/2027','Customer (Last)':'','Chassis Number 17':'','Exp. Del. Wk.':'20270103'},
@@ -27,6 +27,13 @@ const aoa=[['relatório'],[],CAB,...L.map(o=>{const r=linha(o);const i=CAB.index
   const iT=CAB.indexOf('Timestamp Order Status');const m=String(r[iT]).match(/(\d+)\.(\d+)\.(\d+)/);if(m)r[iT]=new Date(Date.UTC(+m[3],+m[2]-1,+m[1]));return r;})];
 const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(aoa,{cellDates:true}),'Folha1');
 const xlsxBuf=XLSX.write(wb,{type:'buffer',bookType:'xlsx'});
+const csvDe=(topo,linhas)=>Buffer.from(topo+'\n\n'+[CAB,...linhas.map(linha)].map(r=>r.join(';')).join('\n')+'\n','latin1');
+const csvRede=csvDe('{ "stockTypes" : [ "Foreign Dealer Stock (22)" ] }',[
+  {'Production Number':'7100001','Chassis No.':'6N71001','Model Code':'0K61','Model Description':'F 900 GS','Color Code':'ND2','Order Status':'198','Processing Type':'US','Dealer Number':"'030252'",'Dealer No.':'J&M Motos','Region':'Ce','Customer (Last)':'Paulo Cliente Doutro','Salesperson Number':'XX','Chassis Number 17':'WB10K6100T6N71001'},
+  {'Production Number':'7100002','Chassis No.':'6N71002','Model Code':'0M21','Model Description':'R 1300 GS','Color Code':'N52','Order Status':'193','Processing Type':'US','Dealer Number':"'047020'",'Dealer No.':'BMcar Porto','Region':'No'}]);
+const csvBMW=csvDe('{ "from" : 0 }',[
+  {'Production Number':'7200001','Chassis No.':'6N72001','Model Code':'0R41','Model Description':'F 430 R','Color Code':'N5A','Order Status':'150','Processing Type':'US','Dealer Number':"'027947'",'Dealer No.':'BMW Portugal','Region':'--'}]);
+const csvSemOrigem=csvDe('{ "from" : 0 }',[{'Production Number':'7300001','Model Code':'0K81','Model Description':'F 900 R','Order Status':'111','Processing Type':'US','Dealer Number':''}]);
 const XLSX_JS=fs.readFileSync(path.join(__dirname,'node_modules/xlsx/dist/xlsx.full.min.js'));
 
 const dias=n=>new Date(Date.now()-n*864e5).toISOString();
@@ -37,8 +44,8 @@ const dias=n=>new Date(Date.now()-n*864e5).toISOString();
   await ctx.route('**/*',async r=>{const u=r.request().url();if(u.startsWith('http://localhost'))return r.continue();
    if(u.includes('cdnjs.cloudflare.com/ajax/libs/xlsx'))return r.fulfill({status:200,contentType:'application/javascript',headers:{'access-control-allow-origin':'*'},body:XLSX_JS});
    if(u.includes('/auth/v1/token'))return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({access_token:jwt('u1'),refresh_token:'rt2'})});
-   if(u.includes('/rpc/encomendas_bmw_substituir')){const body=JSON.parse(r.request().postData());est.rpc.push(body);
-     est.tabela=body.linhas.map(l=>Object.assign({importado_em:new Date().toISOString()},l));return r.fulfill({status:200,contentType:'application/json',body:String(est.tabela.length)});}
+   if(u.includes('/rpc/encomendas_bmw_substituir')){const body=JSON.parse(r.request().postData());est.rpc.push(body);const o=body.p_origem||'aveiro';
+     est.tabela=est.tabela.filter(x=>(x.origem||'aveiro')!==o).concat(body.linhas.map(l=>Object.assign({importado_em:new Date().toISOString(),origem:o},l)));return r.fulfill({status:200,contentType:'application/json',body:String(body.linhas.length)});}
    if(u.includes('/rpc/encomendas_reservas'))return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(est.reservas)});
    const t=(u.match(/rest\/v1\/([a-z_]+)/)||[])[1];
    if(t==='baviera_control'&&r.request().method()==='PATCH'){const id=(u.match(/id=eq\.(\d+)/)||[])[1];const body=JSON.parse(r.request().postData());est.patches.push({id,body});
@@ -56,7 +63,7 @@ const dias=n=>new Date(Date.now()-n*864e5).toISOString();
   await p.evaluate(()=>{S.screen='dashboard';S.gppSec='encomendas';S.encLoaded=false;render();});await p.waitForTimeout(500);
   const temBotao=await p.$('#enc-file')!==null;
   await p.setInputFiles('#enc-file',{name:'encomendas.csv',mimeType:'text/csv',buffer:csvBuf});await p.waitForFunction(()=>S.encPrev||S.encErrImp,null,{timeout:5000}).catch(()=>{});
-  const prev=await p.evaluate(()=>{const P=S.encPrev;return P&&{n:P.linhas.length,corr:P.corrigidos,susp:P.suspeitos.length,
+  const prev=await p.evaluate(()=>{const P=S.encPrev&&S.encPrev.ficheiros[0];return P&&{origem:P.origem,n:P.linhas.length,corr:P.corrigidos,susp:P.suspeitos.length,
     ordem:P.linhas.map(l=>l.model_code+':'+l.processing_type),cliente:P.linhas.find(l=>l.production_number==='9000005').customer_last,
     datas:P.linhas.find(l=>l.production_number==='9000005'),semJson:P.linhas.every(l=>!String(l.production_number).includes('{'))};});
   await p.click('[data-action="enc-confirmar"]');await p.waitForTimeout(600);
@@ -65,13 +72,32 @@ const dias=n=>new Date(Date.now()-n*864e5).toISOString();
     msg:await p.evaluate(()=>S.encMsg),linhasTabela:await p.$$eval('.enc-t tbody tr:not(.enc-grp)',x=>x.length),grupos:await p.$$eval('.enc-grp',x=>x.length),erros};
   // ---- Excel com o mesmo conteúdo
   await p.setInputFiles('#enc-file',{name:'encomendas.xlsx',mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',buffer:xlsxBuf});await p.waitForFunction(()=>S.encPrev||S.encErrImp,null,{timeout:8000}).catch(()=>{});
-  R.chefeXLSX=await p.evaluate(()=>{const P=S.encPrev;return P?{n:P.linhas.length,cod:P.linhas.find(l=>l.production_number==='9000001').model_code,
+  R.chefeXLSX=await p.evaluate(()=>{const P=S.encPrev&&S.encPrev.ficheiros[0];return P?{n:P.linhas.length,cod:P.linhas.find(l=>l.production_number==='9000001').model_code,
     data:P.linhas.find(l=>l.production_number==='9000005').ts_order_status,mudam:P.mudamEstado,entram:P.entram,saem:P.saem}:{erro:S.encErrImp};});
   // ---- ficheiro errado não estraga nada
   await p.click('[data-action="enc-cancelar"]');await p.waitForFunction(()=>!S.encPrev);await p.waitForTimeout(200);
   await p.setInputFiles('#enc-file',{name:'outro.csv',mimeType:'text/csv',buffer:Buffer.from('a;b;c\n1;2;3\n')});
   await p.waitForFunction(()=>S.encErrImp||S.encPrev,null,{timeout:5000}).catch(()=>{});
   R.ficheiroErrado={erro:await p.evaluate(()=>S.encErrImp),rpc:est.rpc.length};
+  // ---- Rede + BMW de uma vez, e um ficheiro sem origem reconhecível
+  await p.evaluate(()=>{S.encErrImp='';S.encPrev=null;render();});await p.waitForTimeout(200);
+  await p.setInputFiles('#enc-file',[{name:'IVSLocatorFileExport_1.csv',mimeType:'text/csv',buffer:csvRede},{name:'Stock BMW.csv',mimeType:'text/csv',buffer:csvBMW},{name:'IVSLocatorFileExport_3.csv',mimeType:'text/csv',buffer:csvSemOrigem}]);
+  await p.waitForFunction(()=>S.encPrev&&S.encPrev.ficheiros.length===3,null,{timeout:8000}).catch(()=>{});
+  const tres=await p.evaluate(()=>({origens:S.encPrev.ficheiros.map(f=>f.origem),bloqueado:!!document.querySelector('[data-action="enc-confirmar"][disabled]')}));
+  await p.click('[data-action="enc-cancelar"]');await p.waitForTimeout(200);
+  await p.setInputFiles('#enc-file',[{name:'IVSLocatorFileExport_1.csv',mimeType:'text/csv',buffer:csvRede},{name:'Stock BMW.csv',mimeType:'text/csv',buffer:csvBMW}]);
+  await p.waitForFunction(()=>S.encPrev&&S.encPrev.ficheiros.length===2,null,{timeout:8000}).catch(()=>{});
+  const nAntes=est.rpc.length;await p.click('[data-action="enc-confirmar"]');await p.waitForTimeout(900);
+  const chamadas=est.rpc.slice(nAntes).map(b=>({o:b.p_origem,n:b.linhas.length,cli:b.linhas.filter(l=>l.customer_last||l.salesperson).length}));
+  const sep=await p.$$eval('.enc-or',x=>x.map(b=>b.querySelector('.enc-or-t').textContent+':'+b.querySelector('.enc-or-n').textContent));
+  await p.click('[data-action="enc-origem"][data-o="rede"]');await p.waitForTimeout(200);
+  const rede={cab:await p.$$eval('.enc-t th',x=>x.map(t=>t.textContent)),linhas:await p.$$eval('.enc-t tbody tr:not(.enc-grp)',x=>x.length),txt:await p.$eval('.enc-t tbody',x=>x.textContent)};
+  await p.click('[data-action="enc-origem"][data-o="tudo"]');await p.waitForTimeout(200);
+  const tudoN=await p.$$eval('.enc-t tbody tr:not(.enc-grp)',x=>x.length);const tudoOr=await p.$$eval('.enc-pn-or',x=>[...new Set(x.map(e=>e.textContent))].sort());
+  await p.fill('#enc-q','porto');await p.waitForTimeout(200);const tudoPorto=await p.$$eval('.enc-t tbody tr:not(.enc-grp)',x=>x.length);await p.fill('#enc-q','');
+  await p.click('[data-action="enc-origem"][data-o="aveiro"]');await p.waitForTimeout(200);
+  const aveiroN=await p.$$eval('.enc-t tbody tr:not(.enc-grp)',x=>x.length);
+  R.origens={tres,chamadas,sep,rede,tudoN,tudoOr,tudoPorto,aveiroN};
   await p.evaluate(()=>{S.encErrImp='';S.encPrev=null;S.screen='dashboard';S.gppSec='encomendas';render();});await p.waitForTimeout(200);
   await p.click('[data-action="enc-escolher"][data-pn="9000004"]');await p.waitForTimeout(200);
   const botoes=await p.$$eval('[data-action="enc-novo-negocio"]',x=>x.length);
@@ -154,7 +180,7 @@ const dias=n=>new Date(Date.now()-n*864e5).toISOString();
  const ordemEsperada=['0E91:CS','0M21:CS','0M21:US','0M21:DE','0M21:ST','0R31:ST']; // estado 198,198,193,150,111,47
  const checks={
   'chefe tem botão de carregar':c.temBotao,
-  'CSV: 6 encomendas, linha JSON ignorada':c.prev&&c.prev.n===6&&c.prev.semJson,
+  'CSV: 6 encomendas, linha JSON ignorada, origem Aveiro':c.prev&&c.prev.n===6&&c.prev.semJson&&c.prev.origem==='aveiro',
   'CSV: acentos (Windows-1252) certos':c.prev&&c.prev.cliente==='Gonçalves Simão',
   'CSV: 0,00E+00 recuperado do chassis como 0E91':c.prev&&c.prev.corr.length===1&&c.prev.corr[0].para==='0E91'&&c.prev.susp===0,
   'CSV: ordem Estado (desc.) → Model Code → ST, US, DE, CS':c.prev&&JSON.stringify(c.prev.ordem)===JSON.stringify(ordemEsperada),
@@ -163,6 +189,11 @@ const dias=n=>new Date(Date.now()-n*864e5).toISOString();
   'tabela mostra 6 linhas em 5 grupos de estado':c.linhasTabela===6&&c.grupos===5,
   'Excel: lido, código 0 recuperado, datas certas':x.n===6&&x.cod==='0E91'&&x.data==='2026-07-03',
   'Excel: comparação com o mapa atual':x.entram===0&&x.saem===0&&x.mudam===0,
+  'origens: Rede pelo critério do portal, BMW pelo nome, desconhecido pede escolha':JSON.stringify(R.origens.tres.origens)===JSON.stringify(['rede','bmw',null])&&R.origens.tres.bloqueado,
+  'origens: grava cada origem à parte, sem cliente/vendedor da Rede':JSON.stringify(R.origens.chamadas)===JSON.stringify([{o:'rede',n:2,cli:0},{o:'bmw',n:1,cli:0}]),
+  'origens: separadores com contagens e Aveiro intacto':JSON.stringify(R.origens.sep)===JSON.stringify(['Stock Aveiro:6','Stock Rede:2','Stock BMW:1','Tudo:9'])&&R.origens.aveiroN===6,
+  'Stock Rede: mostra concessionário e zona, sem coluna Cliente':R.origens.rede.linhas===2&&R.origens.rede.cab.includes('Concessionário')&&R.origens.rede.cab.includes('Zona')&&!R.origens.rede.cab.includes('Cliente')&&/J&M Motos/.test(R.origens.rede.txt)&&/Norte/.test(R.origens.rede.txt)&&!/Paulo Cliente/.test(R.origens.rede.txt),
+  'Tudo: as três origens, pesquisa por concessionário':R.origens.tudoN===9&&JSON.stringify(R.origens.tudoOr)===JSON.stringify(['Aveiro','BMW','Rede'])&&R.origens.tudoPorto===1,
   'ficheiro errado: erro claro e nada gravado':/cabeçalhos/.test(R.ficheiroErrado.erro)&&R.ficheiroErrado.rpc===1,
   'vendedor: tem o menu e abre o ecrã':v.temMenu&&v.ecra==='vencomendas',
   'vendedor: sem botão de carregar':!v.temBotao,
