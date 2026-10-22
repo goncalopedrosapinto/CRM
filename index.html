@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-22-g">
+<meta name="app-version" content="2026-10-22-h">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -922,6 +922,9 @@ html,body{overflow-x:hidden;max-width:100vw}
 .eot-ult{font-size:11px;color:var(--text3)}
 .eot-prev{margin:0 16px 14px;padding:14px;border:2px solid var(--orange)}
 .eot-prev-g{display:grid;gap:4px;font-size:13px;margin-top:6px}.eot-prev-g .ok{color:var(--green)}.eot-prev-g .no{color:var(--red)}.eot-prev-g .mut{color:var(--text3);font-size:12px}
+.eot-ad{display:inline-block;margin-left:5px;font-size:10.5px;font-weight:700;color:var(--green);white-space:nowrap}
+.eot-k-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.eot-prev-reab{color:var(--green)}
 .eot-prev-saem{font-size:12px;color:var(--text3);margin-top:6px}
 .eot-card-acao{border-left:4px solid var(--red)}
 .eot-v-num{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;margin-top:6px}
@@ -2206,7 +2209,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-22-g';
+const APP_VERSION='2026-10-22-h';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -5631,6 +5634,9 @@ async function loadEquipamento(){try{const d=await supabaseApi('GET','/equipamen
 // ---- EOT: contratos BMW Bank a terminar — só BMW Motorrad de Aveiro ----
 const EOT_FASES=['Por contactar','Contactado','Proposta','Renovado','Retomado','Adenda','Liquidado','Perdido'];
 const EOT_FECHO=['Renovado','Retomado','Adenda','Liquidado','Perdido'];
+const EOT_GANHO=['Renovado','Retomado','Adenda'];
+// a adenda conta como renovado, mesmo depois de o contrato voltar a "Por contactar" com a nova data de fim
+function eotGanho(x){return !!x&&(EOT_GANHO.includes(x.fase)||!!x.adenda_em);}
 const EOT_TEMP=['Quente','Morno','Frio'];
 const EOT_CAMPOS_BANCO=['tipo','cliente','contacto_nome','telefone','telemovel','data_fim','prazo','prestacao','kms','matricula','modelo','seguro','manutencao','residual','despesas','total','concessionario','conc_resp','vendedor_origem'];
 async function loadEot(){try{const d=await supabaseApi('GET','/eot_contratos?select=*&order=data_fim.asc');S.eot=d||[];S.eotErr='';}catch(e){S.eot=[];S.eotErr=(e&&e.message)||'erro';}}
@@ -5689,7 +5695,10 @@ function eotDiff(linhas,exist){
   const voltam=linhas.filter(l=>m.has(l.contrato)&&m.get(l.contrato).no_mapa===false);
   const atual=linhas.filter(l=>m.has(l.contrato)&&m.get(l.contrato).no_mapa!==false);
   const saem=(exist||[]).filter(x=>x.no_mapa!==false&&!noFich.has(String(x.contrato)));
-  return {novos,voltam,atual,saem};
+  // adenda: o banco mantém o número do contrato e muda a data de fim → volta a "Por contactar"
+  const reabrir=linhas.filter(l=>{const e=m.get(l.contrato);return !!e&&e.fase==='Adenda'&&!!l.data_fim&&!!e.data_fim&&String(l.data_fim)>String(e.data_fim);})
+    .map(l=>Object.assign({},l,{fim_antes:m.get(l.contrato).data_fim}));
+  return {novos,voltam,atual,saem,reabrir};
 }
 let _xlsxP=null;
 function eotCarregarXLSX(){
@@ -5735,8 +5744,17 @@ async function eotConfirmar(){
       const ids=saem.slice(i,i+100).map(c=>'"'+c.replace(/"/g,'')+'"').join(',');
       await supabaseApi('PATCH','/eot_contratos?contrato=in.('+encodeURIComponent(ids)+')',{no_mapa:false,saiu_em:agora});
     }
+    // contratos com adenda e data de fim nova: voltam a "Por contactar"; a adenda fica registada (conta como renovado)
+    const reab=(P.reabrir||[]).map(l=>String(l.contrato));let nReab=0,avisoAd='';
+    if(reab.length){const hoje=new Date().toISOString().slice(0,10);
+      try{for(let i=0;i<reab.length;i+=100){
+          const ids=reab.slice(i,i+100).map(c=>'"'+c.replace(/"/g,'')+'"').join(',');
+          await supabaseApi('PATCH','/eot_contratos?contrato=in.('+encodeURIComponent(ids)+')&fase=eq.Adenda',{fase:'Por contactar',adenda_em:hoje,proxima_acao:null,proxima_data:null,updated_at:agora});
+          nReab+=Math.min(100,reab.length-i);}}
+      catch(e){if(/adenda_em|PGRST204|schema cache/i.test(String(e&&e.message)))avisoAd=' ⚠️ Contratos com adenda não reabertos: falta correr o SQL "2026-10-22_eot_adenda" no Supabase.';else throw e;}
+    }
     await loadEot();
-    setState({eotBusy:false,eotPrev:null,eotMsg:`Mapa atualizado: ${P.novos.length} novos · ${P.atual.length} atualizados${P.voltam.length?` · ${P.voltam.length} voltaram`:''}${P.saem.length?` · ${P.saem.length} saíram do mapa`:''}.`});
+    setState({eotBusy:false,eotPrev:null,eotMsg:`Mapa atualizado: ${P.novos.length} novos · ${P.atual.length} atualizados${P.voltam.length?` · ${P.voltam.length} voltaram`:''}${P.saem.length?` · ${P.saem.length} saíram do mapa`:''}${nReab?` · ${nReab} com adenda voltaram a "Por contactar"`:''}.${avisoAd}`});
   }catch(e){setState({eotBusy:false,eotErrImp:'Erro ao gravar: '+erroTexto(e)});}
 }
 async function eotGuardar(contrato,patch){
@@ -5795,7 +5813,7 @@ function eotDistribuicao(ativos,vend,sel){
   if(!ativos.length||!vend.length)return'';
   const fE0=n=>Number(n||0).toLocaleString('pt-PT',{maximumFractionDigits:0})+' €';
   const linha=L=>{const d=x=>eotDias(x);return{n:L.length,u90:L.filter(x=>{const v=d(x);return v!=null&&v<=90;}).length,u180:L.filter(x=>{const v=d(x);return v!=null&&v>90&&v<=180;}).length,
-    res:L.reduce((a,x)=>a+(Number(x.residual)||0),0),cont:L.filter(x=>(x.fase||'Por contactar')!=='Por contactar').length,ganhos:L.filter(x=>x.fase==='Renovado'||x.fase==='Retomado').length};};
+    res:L.reduce((a,x)=>a+(Number(x.residual)||0),0),cont:L.filter(x=>(x.fase||'Por contactar')!=='Por contactar').length,ganhos:L.filter(eotGanho).length};};
   const porV=vend.map(p=>({p,...linha(ativos.filter(x=>x.responsavel_id===p.id))}));
   const sem=linha(ativos.filter(x=>!x.responsavel_id));
   const atrib=porV.reduce((a,r)=>a+r.n,0);const resT=porV.reduce((a,r)=>a+r.res,0);const u180T=porV.reduce((a,r)=>a+r.u90+r.u180,0);
@@ -5832,8 +5850,8 @@ function eotDistribuicao(ativos,vend,sel){
 const EOT_CAMPOS={cliente:'Cliente',contacto_nome:'Contacto',telemovel:'Telemóvel',telefone:'Telefone',tipo:'Tipo de contrato',modelo:'Modelo',matricula:'Matrícula',kms:'Km contratados',
   data_fim:'Data de fim',prazo:'Prazo (meses)',prestacao:'Prestação',residual:'Valor residual',despesas:'Despesas finais',total:'Total a pagar',seguro:'Seguro',manutencao:'Manutenção',
   concessionario:'Concessionário',conc_resp:'Conc. responsável',vendedor_origem:'Vendedor original',no_mapa:'No mapa',
-  responsavel_id:'Responsável',fase:'Fase',temperatura:'Temperatura',proxima_acao:'Próxima ação',proxima_data:'Data da próxima ação',notas:'Notas',negocio_id:'Negócio no funil'};
-const EOT_NUM=['prazo','prestacao','residual','despesas','total'],EOT_DATA=['data_fim','proxima_data'];
+  responsavel_id:'Responsável',fase:'Fase',temperatura:'Temperatura',proxima_acao:'Próxima ação',proxima_data:'Data da próxima ação',notas:'Notas',negocio_id:'Negócio no funil',adenda_em:'Adenda (contrato prolongado)'};
+const EOT_NUM=['prazo','prestacao','residual','despesas','total'],EOT_DATA=['data_fim','proxima_data','adenda_em'];
 const EOT_GRP_CONTRATO=['cliente','contacto_nome','telemovel','telefone','tipo','modelo','matricula','kms','data_fim','prazo','prestacao','residual','despesas','total','seguro','manutencao','concessionario','conc_resp','vendedor_origem','no_mapa'];
 const EOT_GRP_ACOMP=['responsavel_id','fase','temperatura','proxima_acao','proxima_data','notas'];
 const EOT_ROLE_LB={admin:'Chefe de Vendas',vendedor:'Vendedor',financeiro:'Financeiro',secretario:'Secretaria',assessor:'Assessor'};
@@ -5992,7 +6010,7 @@ function eotModalHTML(){
   </div>`;
 }
 function eotModalInput(el){const k=el.dataset.eotm;S.eotEd=Object.assign({},S.eotEd||{},{[k]:el.value});const b=document.getElementById('eotm-guardar');if(b){const n=Object.keys(eotPatch()).length;b.textContent='Guardar'+(n?` (${n})`:'');}}
-function eotFaseHTML(x){const f=x.fase||'Por contactar';const c=f==='Por contactar'?'neu':(['Renovado','Retomado'].includes(f)?'ok':(['Adenda','Liquidado','Perdido'].includes(f)?'mut':'mn'));return`<span class="atag atag-${c==='ok'?'ok':c}">${esc(f)}</span>`;}
+function eotFaseHTML(x){const f=x.fase||'Por contactar';const c=f==='Por contactar'?'neu':(EOT_GANHO.includes(f)?'ok':(['Liquidado','Perdido'].includes(f)?'mut':'mn'));return`<span class="atag atag-${c==='ok'?'ok':c}">${esc(f)}</span>${x.adenda_em&&f!=='Adenda'?`<span class="eot-ad" title="Contrato prolongado por adenda: conta como renovado">adenda ${esc(eotDataPT(x.adenda_em))}</span>`:''}`;}
 function eotProxHTML(x){if(!x.proxima_data&&!x.proxima_acao)return'<span style="color:var(--text3)">—</span>';const at=x.proxima_data&&String(x.proxima_data).slice(0,10)<=new Date().toISOString().slice(0,10)&&!EOT_FECHO.includes(x.fase);return`${x.proxima_data?`<b class="${at?'neg':''}">${eotDataPT(x.proxima_data)}</b>`:''}${x.proxima_acao?`<div class="eot-sub eot-trunc">${esc(x.proxima_acao)}</div>`:''}`;}
 function eotView(){
   const F=S.eotF||{};
@@ -6003,7 +6021,8 @@ function eotView(){
   const k180=ativos.filter(x=>{const d=eotDias(x);return d!=null&&d>90&&d<=180&&!EOT_FECHO.includes(x.fase);}).length;
   const kSemResp=ativos.filter(x=>!x.responsavel_id&&!EOT_FECHO.includes(x.fase)).length;
   const kPorCont=ativos.filter(x=>(x.fase||'Por contactar')==='Por contactar').length;
-  const kGanhos=todos.filter(x=>x.fase==='Renovado'||x.fase==='Retomado').length;
+  const kGanhos=todos.filter(eotGanho).length;
+  const kAdendas=todos.filter(x=>x.fase==='Adenda'||x.adenda_em).length;
   const kSaiu=todos.filter(x=>x.no_mapa===false&&!EOT_FECHO.includes(x.fase)).length;
   const ultima=todos.map(x=>x.ultima_import).filter(Boolean).sort().pop();
   let arr=todos.filter(x=>F.saiu?(x.no_mapa===false):(x.no_mapa!==false));
@@ -6025,9 +6044,11 @@ function eotView(){
         <div class="ok">＋ <b>${P.novos.length}</b> novos</div>
         <div>↻ <b>${P.atual.length}</b> já existentes (só dados do banco atualizados)</div>
         ${P.voltam.length?`<div>↩ <b>${P.voltam.length}</b> voltaram ao mapa</div>`:''}
+        ${(P.reabrir||[]).length?`<div class="ok">↻ <b>${P.reabrir.length}</b> com adenda e data de fim nova: voltam a "Por contactar" (a adenda continua a contar como renovado)</div>`:''}
         <div class="${P.saem.length?'no':''}">⇥ <b>${P.saem.length}</b> saem do mapa (não são apagados)</div>
         <div class="mut">Ignorados: ${P.exMarca} de outras marcas · ${P.exConc} Motorrad de outros concessionários (total no ficheiro: ${P.total})</div>
       </div>
+      ${(P.reabrir||[]).length?`<div class="eot-prev-saem eot-prev-reab">Reabrem: ${P.reabrir.slice(0,12).map(x=>esc(x.cliente||x.contrato)+' ('+esc(eotDataPT(x.fim_antes))+' → '+esc(eotDataPT(x.data_fim))+')').join(', ')}${P.reabrir.length>12?` e mais ${P.reabrir.length-12}`:''}</div>`:''}
       ${P.saem.length?`<div class="eot-prev-saem">Saem: ${P.saem.slice(0,12).map(x=>esc(x.cliente||x.contrato)).join(', ')}${P.saem.length>12?` e mais ${P.saem.length-12}`:''}</div>`:''}
       <div style="display:flex;gap:8px;margin-top:12px">
         <button class="btn btn-orange btn-sm" data-action="eot-confirmar" ${S.eotBusy?'disabled':''}>${S.eotBusy?'A gravar…':'Confirmar e atualizar'}</button>
@@ -6061,7 +6082,7 @@ function eotView(){
       <div class="mg-card"><div class="mg-k">91–180 dias</div><div class="mg-v" style="color:var(--amber)">${k180}</div></div>
       <div class="mg-card"><div class="mg-k">Por contactar</div><div class="mg-v">${kPorCont}</div></div>
       <div class="mg-card"><div class="mg-k">Por atribuir</div><div class="mg-v" style="color:${kSemResp?'var(--red)':'inherit'}">${kSemResp}</div></div>
-      <div class="mg-card"><div class="mg-k">Renovados / Retomados</div><div class="mg-v" style="color:var(--green)">${kGanhos}</div></div>
+      <div class="mg-card"><div class="mg-k">Renovados / Retomados</div><div class="mg-v" style="color:var(--green)">${kGanhos}</div>${kAdendas?`<div class="eot-k-sub">inclui ${kAdendas} adenda${kAdendas>1?'s':''}</div>`:''}</div>
     </div>
     ${distHTML}
     ${kSaiu?`<div class="mg-aviso">⇥ <b>${kSaiu}</b> contrato${kSaiu!==1?'s':''} saíram do mapa sem fase final — vê em "Saíram do mapa" e marca Renovado / Retomado / Adenda / Liquidado / Perdido.</div>`:''}
@@ -7183,7 +7204,7 @@ function EXPORT_FOLHAS(){
       {c:'data_fim',l:'Data fim',f:d},{c:'prazo',l:'Prazo'},{c:'prestacao',l:'Prestação'},{c:'kms',l:'Km contratados'},{c:'matricula',l:'Matrícula'},{c:'modelo',l:'Modelo'},
       {c:'seguro',l:'Seguro'},{c:'manutencao',l:'Manutenção'},{c:'residual',l:'Valor residual'},{c:'despesas',l:'Despesas finais'},{c:'total',l:'Total a pagar'},
       {c:'concessionario',l:'Concessionário'},{c:'conc_resp',l:'Conc. responsável'},{c:'vendedor_origem',l:'Vendedor original'},
-      {c:'responsavel_id',l:'Responsável',f:nome},{c:'fase',l:'Fase'},{c:'temperatura',l:'Temperatura'},{c:'proxima_acao',l:'Próxima ação'},{c:'proxima_data',l:'Data próx. ação',f:d},
+      {c:'responsavel_id',l:'Responsável',f:nome},{c:'fase',l:'Fase'},{c:'adenda_em',l:'Adenda em',f:d},{c:'temperatura',l:'Temperatura'},{c:'proxima_acao',l:'Próxima ação'},{c:'proxima_data',l:'Data próx. ação',f:d},
       {c:'notas',l:'Notas'},{c:'negocio_id',l:'Negócio ID'},{c:'no_mapa',l:'No mapa',f:sn},{c:'saiu_em',l:'Saiu do mapa',f:dt},
       {c:'criado_em',l:'Criado',f:dt},{c:'ultima_import',l:'Última importação',f:dt},{c:'updated_at',l:'Atualizado',f:dt},
     ]},
