@@ -10,3 +10,4 @@
 2026-10-21_encomendas_vendedor.sql
 2026-10-21_encomendas_reservas.sql
 2026-10-22_encomendas_origens.sql
+2026-10-22_eot_imagens.sql
