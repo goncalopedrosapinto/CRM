@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-21-k">
+<meta name="app-version" content="2026-10-22-a">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -455,6 +455,10 @@ html,body{overflow-x:hidden;max-width:100vw}
 .gpp-table thead th{background:var(--bg);font-size:13px;font-weight:700;color:var(--text2);border-bottom:1px solid var(--border)}
 .gpp-th-sub{font-size:10px;font-weight:400;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
 .gpp-th-novas{color:var(--blue)}.gpp-th-usadas{color:var(--amber)}
+.gpp-num-sub{font-size:10.5px;font-weight:600;color:var(--amber);margin-top:2px;letter-spacing:0}
+.gpp-com-nota{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;border-top:1px solid var(--border);background:var(--bg);font-size:12.5px;line-height:1.45;color:var(--text2);text-align:left}
+.gpp-com-nota b{color:var(--text)}.gpp-com-nota ul{margin:4px 0 0;padding:0;list-style:none}.gpp-com-nota li{padding:2px 0}.gpp-com-nota li.gpp-lclick{cursor:pointer}.gpp-com-nota li.gpp-lclick:hover b{text-decoration:underline}
+.gpp-com-nota em{font-style:normal;color:var(--text3)}.gpp-com-seta{color:var(--text3)}.gpp-com-ic{flex:none}
 .gpp-th-tot{color:var(--text)}
 .gpp-rowlbl{text-align:left!important;font-weight:600;font-size:14px;color:var(--text)}
 .gpp-rowsub{font-size:10px;font-weight:400;color:var(--text3);margin-top:1px}
@@ -2163,7 +2167,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-21-k';
+const APP_VERSION='2026-10-22-a';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -3128,13 +3132,18 @@ function renderPrevisao(){
       <div class="gpp-card"><table class="gpp-table">
         <thead><tr><th></th><th class="gpp-th-novas">MN + MD<div class="gpp-th-sub">Novas</div></th><th class="gpp-th-usadas">MU<div class="gpp-th-sub">Usadas</div></th><th class="gpp-th-tot">Total</th></tr></thead>
         <tbody>
-          <tr><td class="gpp-rowlbl"><span class="gpp-dot" style="background:var(--green)"></span>Retail<div class="gpp-rowsub">entregue</div></td><td class="gpp-num">${rN}</td><td class="gpp-num">${rU}</td><td class="gpp-num gpp-tot">${rN+rU}</td></tr>
-          <tr><td class="gpp-rowlbl"><span class="gpp-dot" style="background:var(--blue)"></span>Carteira<div class="gpp-rowsub">a entregar</div></td><td class="gpp-num">${cN}</td><td class="gpp-num">${cU}</td><td class="gpp-num gpp-tot">${cN+cU}</td></tr>
+          <tr><td class="gpp-rowlbl"><span class="gpp-dot" style="background:var(--green)"></span>Retail<div class="gpp-rowsub">entregue</div></td><td class="gpp-num">${rN}${comercioN(retail,isNovas)}</td><td class="gpp-num">${rU}${comercioN(retail,isUsadas)}</td><td class="gpp-num gpp-tot">${rN+rU}</td></tr>
+          <tr><td class="gpp-rowlbl"><span class="gpp-dot" style="background:var(--blue)"></span>Carteira<div class="gpp-rowsub">a entregar</div></td><td class="gpp-num">${cN}${comercioN(cart,isNovas)}</td><td class="gpp-num">${cU}${comercioN(cart,isUsadas)}</td><td class="gpp-num gpp-tot">${cN+cU}</td></tr>
           <tr class="gpp-totrow"><td class="gpp-rowlbl">Total</td><td class="gpp-num gpp-tot">${rN+cN}</td><td class="gpp-num gpp-tot">${rU+cU}</td><td class="gpp-num gpp-tot gpp-grandtot">${rN+rU+cN+cU}</td></tr>
-        </tbody></table></div>
+        </tbody></table>${comercioNotaHTML(retail,cart,sel,false)}</div>
       ${prevObjetivo(sel,rN,cN)}
     </div></div></div></div>`;
 }
+// Vendas a comerciante (venda_direta): já contam nos números do mês; aqui ficam identificadas no mês de faturação (298)
+function comercioN(L,f){const n=L.filter(r=>r.venda_direta&&f(r)).length;return n?`<div class="gpp-num-sub">${n} comércio</div>`:'';}
+function comercioNotaHTML(retail,cart,ym,click){const L=[...retail,...cart].filter(r=>r.venda_direta);if(!L.length)return'';
+  return`<div class="gpp-com-nota"><span class="gpp-com-ic">🤝</span><div><b>${L.length} mota${L.length>1?'s':''} para o comércio</b> em ${esc(ymLongo(ym))}, já incluída${L.length>1?'s':''} nos números acima:
+    <ul>${L.map(r=>`<li${click?` class="gpp-lclick" data-action="open-record-from-dash" data-id="${esc(r.id)}"`:''}>${esc([r.model,r.version].filter(Boolean).join(' ')||'—')}${r.mat?' · '+esc(r.mat):''} <span class="gpp-com-seta">→</span> <b>${esc(r.id_cliente||'—')}</b>${r.status==='Carteira'?' <em>(carteira)</em>':''}</li>`).join('')}</ul></div></div>`;}
 function prevObjetivo(sel,rN,cN){
   const obj=(objEquipaGet(sel,'novas')||{}).objetivo||0;
   if(!obj)return`<div class="gpp-card gpp-obj-card"><div class="gpp-obj-sub" style="text-align:center;padding:6px 0">Sem objetivo lançado para ${esc(ymCurto(sel))}.</div></div>`;
@@ -7355,10 +7364,10 @@ function renderDashboard(){
     return`<div class="gpp-card"><table class="gpp-table">
       <thead><tr><th></th><th class="gpp-th-novas">MN + MD<div class="gpp-th-sub">Novas</div></th><th class="gpp-th-usadas">MU<div class="gpp-th-sub">Usadas</div></th><th class="gpp-th-tot">Total</th></tr></thead>
       <tbody>
-        <tr><td class="gpp-rowlbl"><span class="gpp-dot" style="background:var(--green)"></span>Retail<div class="gpp-rowsub">entregue</div></td><td class="gpp-num">${rN}</td><td class="gpp-num">${rU}</td><td class="gpp-num gpp-tot">${rN+rU}</td></tr>
-        <tr><td class="gpp-rowlbl"><span class="gpp-dot" style="background:var(--blue)"></span>Carteira<div class="gpp-rowsub">a entregar</div></td><td class="gpp-num">${cN}</td><td class="gpp-num">${cU}</td><td class="gpp-num gpp-tot">${cN+cU}</td></tr>
+        <tr><td class="gpp-rowlbl"><span class="gpp-dot" style="background:var(--green)"></span>Retail<div class="gpp-rowsub">entregue</div></td><td class="gpp-num">${rN}${comercioN(retail,isNovas)}</td><td class="gpp-num">${rU}${comercioN(retail,isUsadas)}</td><td class="gpp-num gpp-tot">${rN+rU}</td></tr>
+        <tr><td class="gpp-rowlbl"><span class="gpp-dot" style="background:var(--blue)"></span>Carteira<div class="gpp-rowsub">a entregar</div></td><td class="gpp-num">${cN}${comercioN(carteira,isNovas)}</td><td class="gpp-num">${cU}${comercioN(carteira,isUsadas)}</td><td class="gpp-num gpp-tot">${cN+cU}</td></tr>
         <tr class="gpp-totrow"><td class="gpp-rowlbl">Total</td><td class="gpp-num gpp-tot">${rN+cN}</td><td class="gpp-num gpp-tot">${rU+cU}</td><td class="gpp-num gpp-tot gpp-grandtot">${rN+rU+cN+cU}</td></tr>
-      </tbody></table></div>${objCard}`;
+      </tbody></table>${comercioNotaHTML(retail,carteira,mesSel,true)}</div>${objCard}`;
   }
 
   // ---- Gráfico de carteira por mês de entrega (novas vs usadas) ----
