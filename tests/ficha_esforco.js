@@ -27,6 +27,12 @@ const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'))
     const c=fmCalc();return {dif:+c.difPlat.toFixed(2),desc:+(c.descCliPct*100).toFixed(3),descEsf:+(c.descEsfPct*100).toFixed(3),esf:+(c.esforcoPct*100).toFixed(3),ident:+Math.max(0,3.5-c.margem/c.base*100).toFixed(3)};});
   casos.push({n:'PAC + protocolo + apoio adicional fora do PVP (dif. '+apoios.dif+', desconto plataforma '+apoios.desc+' %, desconto p/ esforço '+apoios.descEsf+' %)',esf:apoios.esf,esperado:apoios.ident,
     ok:Math.abs(apoios.dif)<=0.05&&apoios.desc>apoios.descEsf&&Math.abs(apoios.esf-apoios.ident)<0.001});
+  // Engano a escrever o PVP da plataforma (+10 €): o desconto ao cliente não muda, só aparece a diferença (caso F 900 R de 22/10)
+  const engano=await p.evaluate(()=>{const fm={natureza:'MN',iva:23,modo:'civa',fv:2,isv:'0',sgpu:'0',pvb:'10000',mg_fixa_pct:'6',mg_var_pct:'3.5',preco_venda:'9300'};
+    S.fm=Object.assign({},fm);const a=fmCalc();S.fm=Object.assign({},fm,{pvp_plat:(a.pvpPlat+10).toFixed(2)});const c=fmCalc();
+    return {sem:+a.descCli.toFixed(2),com:+c.descCli.toFixed(2),pct:+(c.descCliPct*100).toFixed(3),pctSem:+(a.descCliPct*100).toFixed(3),dif:+c.difPlat.toFixed(2),venda:+(a.pvpPlat-a.descCli*a.k).toFixed(2)};});
+  casos.push({n:'engano de +10 € no PVP da plataforma não muda o desconto (desconto '+engano.com+' €, dif. '+engano.dif+')',esf:engano.pct,esperado:engano.pctSem,
+    ok:engano.sem===engano.com&&engano.pct===engano.pctSem&&Math.abs(engano.dif-10)<0.01&&Math.abs(engano.venda-9300)<0.01});
   casos.forEach(c=>console.log((c.ok?'✓ ':'✗ ')+c.n+': esforço '+c.esf+' % (esperado '+c.esperado+' %)'));
   const ok=casos.every(c=>c.ok);console.log(ok?'Esforço correto':'FALHOU');await b.close();process.exit(ok?0:1);
 })();

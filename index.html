@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-22-c">
+<meta name="app-version" content="2026-10-22-d">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2198,7 +2198,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-22-c';
+const APP_VERSION='2026-10-22-d';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -2674,10 +2674,12 @@ function fmCalc(){
   else{const b=margem*pct;if(b<COM_REGRAS.minimo){com=COM_REGRAS.minimo;regraCom=Math.round(pct*100)+'% = '+b.toFixed(2)+' € — mínimo garantido';}else{com=b;regraCom=Math.round(pct*100)+'% da margem';}}
   const plat=fmN('pvp_plat');
   // A plataforma BMW mostra o PVP = modelo + opcionais + impostos + diversos, SEM apoios nem margens.
-  // É contra esse que se confirma e que se mede o desconto ao cliente. O esforço mede-se a partir do PVP já com os apoios (pvpDesc).
+  // O desconto ao cliente mede-se SEMPRE contra o PVP da própria ficha; o valor escrito em "Confirmar com a plataforma"
+  // só serve para confirmar (mostra a diferença) e nunca entra nas contas: um engano a escrevê-lo não muda o desconto.
+  // O esforço mede-se a partir do PVP já com os apoios (pvpDesc).
   const pvpPlat=pvpTab;
   const difPlat=plat?(plat-pvpPlat):null;
-  const pvpRef=plat||pvpPlat;
+  const pvpRef=pvpPlat;
   const descCli=venda?(pvpRef-venda)/k:null;
   const descCliPct=(descCli!=null&&base)?descCli/base:null;
   // Esforço = (desconto ao cliente + custos internos) acima da MG. FIXA do modelo.
@@ -2915,7 +2917,7 @@ function renderFichaMargem(){
   const tr=(cls,a,b,cc)=>`<tr class="${cls||''}"><td class="fm-l">${a}</td><td class="fm-c">${b||''}</td><td class="fm-v">${cc||''}</td></tr>`;
   const lIn=(key,l,nota,t)=>tr('',esc(l)+tag(t||'c')+onde(nota),'',inE(key));
   const sep=(t,s)=>`<tr class="fm-sep"><td colspan="3">${t}${s?` <span>${s}</span>`:''}</td></tr>`;
-  const verif=!c.plat?'':(Math.abs(c.difPlat)<=0.05?'<span class="fm-ok-b">✓ bate com a plataforma</span>':`<span class="fm-ko-b">✗ diferença ${c.difPlat>0?'+':''}${fE(c.difPlat)}</span>`);
+  const verif=!c.plat?'':(Math.abs(c.difPlat)<=0.05?'<span class="fm-ok-b">✓ bate com a plataforma</span>':`<span class="fm-ko-b" title="O desconto continua a ser calculado com o PVP da ficha. Confirma o número que escreveste ou os campos da ficha.">✗ diferença ${c.difPlat>0?'+':''}${fE(c.difPlat)}: confirma o número</span>`);
   const custoTxt=c.descCusto==null?'':(()=>{const v=c.descCusto*100,ab=v>0;return`<div class="fm-onde"><span class="fm-dc ${ab?'ab':'ac'}">${ab?'−':'+'}${Math.abs(v).toLocaleString('pt-PT',{minimumFractionDigits:1,maximumFractionDigits:1})}% ${ab?'abaixo':'acima'} do custo</span></div>`;})();
   const descBadge=c.descCliPct==null?'':(()=>{const v=c.descCliPct*100,d=v>=0;return`<span class="fm-dcli ${d?'':'acima'}">${d?'Desconto':'Acima do PVP'} ${Math.abs(v).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})}%</span>`;})();
   return`<div class="app-layout"><div class="main-panel" style="width:100%">
