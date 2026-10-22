@@ -33,6 +33,12 @@ const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'))
     return {sem:+a.descCli.toFixed(2),com:+c.descCli.toFixed(2),pct:+(c.descCliPct*100).toFixed(3),pctSem:+(a.descCliPct*100).toFixed(3),dif:+c.difPlat.toFixed(2),venda:+(a.pvpPlat-a.descCli*a.k).toFixed(2)};});
   casos.push({n:'engano de +10 € no PVP da plataforma não muda o desconto (desconto '+engano.com+' €, dif. '+engano.dif+')',esf:engano.pct,esperado:engano.pctSem,
     ok:engano.sem===engano.com&&engano.pct===engano.pctSem&&Math.abs(engano.dif-10)<0.01&&Math.abs(engano.venda-9300)<0.01});
+  // Comparticipação em % do preço de custo (os dois com IVA), mostrada ao lado do campo e no PDF
+  const cpc=await p.evaluate(()=>{S.fm={natureza:'MN',iva:23,modo:'civa',fv:2,isv:'0',sgpu:'0',pvb:'12300',mg_fixa_pct:'6',mg_var_pct:'3.5',compart_conc:'255.55',preco_venda:'11800'};
+    const c=fmCalc();S.screen='ficha';render();const el=document.querySelector('.fm-cpc');
+    return {pct:c.compartCustoPct,esperado:255.55*c.k/c.custo,txt:el?el.textContent:''};});
+  casos.push({n:'comparticipação = '+(cpc.pct*100).toFixed(2)+' % do preço de custo ('+cpc.txt+')',esf:+(cpc.pct*100).toFixed(2),esperado:+(cpc.esperado*100).toFixed(2),
+    ok:Math.abs(cpc.pct-cpc.esperado)<1e-9&&cpc.txt.includes((cpc.esperado*100).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2}))&&/do preço de custo/.test(cpc.txt)});
   casos.forEach(c=>console.log((c.ok?'✓ ':'✗ ')+c.n+': esforço '+c.esf+' % (esperado '+c.esperado+' %)'));
   const ok=casos.every(c=>c.ok);console.log(ok?'Esforço correto':'FALHOU');await b.close();process.exit(ok?0:1);
 })();
