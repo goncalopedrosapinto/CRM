@@ -4,6 +4,8 @@
 -- Um negócio pode ter uma ficha por mota negociada. Quando fecha, o vendedor marca a que foi vendida
 -- e as outras ficam arquivadas (continuam a existir, para registo). Só uma ficha vendida por negócio.
 -- As fichas que já existem ficam como estão (estado 'ativa').
+-- Aprovação da chefia: quando a ficha precisa (margem < 0,50 % ou esforço acima da margem variável), o chefe aprova
+-- e fica registado quem e quando. Se a ficha mudar depois, a aprovação cai e tem de ser aprovada outra vez.
 
 begin;
 
@@ -41,5 +43,47 @@ begin
 end $$;
 revoke execute on function public.ficha_marcar_vendida(bigint) from public, anon;
 grant  execute on function public.ficha_marcar_vendida(bigint) to authenticated;
+
+-- aprovação da chefia
+alter table public.fichas_margem add column if not exists aprovada_em  timestamptz;
+alter table public.fichas_margem add column if not exists aprovada_por uuid references public.profiles(id) on delete set null;
+
+-- só o chefe aprova; se os valores da ficha mudarem depois de aprovada, a aprovação cai
+create or replace function public.fichas_proteger_aprovacao()
+returns trigger language plpgsql set search_path = public as $$
+begin
+  if current_user in ('authenticated', 'anon') and not public.is_admin() then
+    if tg_op = 'INSERT' then
+      new.aprovada_em := null; new.aprovada_por := null;
+    else
+      new.aprovada_em := old.aprovada_em; new.aprovada_por := old.aprovada_por;
+    end if;
+  end if;
+  if tg_op = 'UPDATE' and new.dados is distinct from old.dados and new.aprovada_em is not distinct from old.aprovada_em then
+    new.aprovada_em := null; new.aprovada_por := null;
+  end if;
+  return new;
+end $$;
+drop trigger if exists fichas_proteger_aprovacao_trg on public.fichas_margem;
+create trigger fichas_proteger_aprovacao_trg before insert or update on public.fichas_margem
+  for each row execute function public.fichas_proteger_aprovacao();
+
+create or replace function public.ficha_aprovar(p_id bigint, p_aprovar boolean default true)
+returns timestamptz language plpgsql security definer set search_path = public as $$
+declare t timestamptz;
+begin
+  if not public.is_admin() then
+    raise exception 'Sem permissão: só o chefe de vendas aprova fichas' using errcode = '42501';
+  end if;
+  update public.fichas_margem
+     set aprovada_em  = case when p_aprovar then now() end,
+         aprovada_por = case when p_aprovar then auth.uid() end
+   where id = p_id
+  returning aprovada_em into t;
+  if not found then raise exception 'Ficha não encontrada'; end if;
+  return t;
+end $$;
+revoke execute on function public.ficha_aprovar(bigint, boolean) from public, anon;
+grant  execute on function public.ficha_aprovar(bigint, boolean) to authenticated;
 
 commit;

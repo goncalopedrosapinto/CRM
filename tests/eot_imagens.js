@@ -32,6 +32,8 @@ const jwt=sub=>b64({alg:'ES256'})+'.'+b64({sub,exp:Math.floor(Date.now()/1000)+3
    const blob=await new Promise(r=>c.toBlob(r,'image/png'));const f=new File([blob],'image.png',{type:'image/png'});
    const dt=new DataTransfer();dt.items.add(f);const el=document.querySelector(sel);el.focus();
    el.dispatchEvent(new ClipboardEvent('paste',{clipboardData:dt,bubbles:true,cancelable:true}));return blob.size;},alvo);
+ const adenda=await p.evaluate(()=>{const o=[...document.querySelectorAll('select[data-eotm="fase"] option')].map(x=>x.textContent);const x={fase:'Adenda',no_mapa:true,data_fim:'2026-11-01'};
+   return {opcao:o.includes('Adenda'),fecha:EOT_FECHO.includes('Adenda'),semAcao:!eotPrecisaAcao(x),neutra:/atag-mut/.test(eotFaseHTML(x))};});
  const tamOriginal=await colar('#eotm-com');await p.waitForTimeout(800);
  const pend=await p.$$eval('.eot-pend-i',x=>x.length);
  // colar uma imagem num campo de texto da EOT (notas) não junta nada ao comentário
@@ -49,7 +51,7 @@ const jwt=sub=>b64({alg:'ES256'})+'.'+b64({sub,exp:Math.floor(Date.now()/1000)+3
  await p.keyboard.press('Escape');await p.waitForTimeout(250);
  const aposEsc={lb:await p.$('.eot-lb')!==null,modal:await p.$('.eotm')!==null};
  await p.evaluate(()=>{eotImgLimpar();render();});
- const R={tamOriginal,pend,pendNotas,up:{url:up.url,tipo:up.tipo,tam:up.tam,auth:up.auth},post,depois,outro,lb,aposEsc,erros};
+ const R={adenda,tamOriginal,pend,pendNotas,up:{url:up.url,tipo:up.tipo,tam:up.tam,auth:up.auth},post,depois,outro,lb,aposEsc,erros};
  console.log(JSON.stringify(R,null,1));
  const ok={
   'Ctrl+V de um print junta a imagem ao comentário':pend===1,
@@ -60,6 +62,7 @@ const jwt=sub=>b64({alg:'ES256'})+'.'+b64({sub,exp:Math.floor(Date.now()/1000)+3
   'noutro computador: imagem pedida com sessão e mostrada como blob':outro.gets>=1&&outro.src[0]==='blob:',
   'abre a imagem em grande':lb,
   'Escape fecha a imagem e não a EOT':!aposEsc.lb&&aposEsc.modal,
+  'fase Adenda: escolhe-se no contrato, fecha a EOT e fica neutra (não conta como ganho)':adenda.opcao&&adenda.fecha&&adenda.semAcao&&adenda.neutra,
   'sem erros JS':!erros.length};
  let f=0;for(const [k,v] of Object.entries(ok)){console.log((v?'✓ ':'✗ ')+k);if(!v)f++;}
  console.log(f?`FALHOU (${f})`:'Imagens nas EOTs corretas');await b.close();srv.close();process.exit(f?1:0);})();
