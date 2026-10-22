@@ -23,6 +23,7 @@ Correm sozinhos no GitHub (separador **Actions**) a cada alteração. Localmente
 - **erros** — erros do browser chegam à tabela `erros_cliente`, sem duplicados e com limite.
 - **ecras** — o botão "Apagar" só aparece quando o servidor deixa apagar; conta nova vê a mensagem de espera.
 - **encomendas** — lê um ficheiro fictício do portal BMW (CSV em Windows-1252 e Excel), recupera o código de modelo que o Excel estraga, confirma a ordem, que o vendedor só lê e que pesquisa e filtros funcionam. Também testa as três origens (Stock Aveiro, Rede e BMW: deteção pelo critério do portal, pelo nome ou pelos concessionários; cada uma gravada à parte; sem clientes de outros concessionários) e "estou a negociar": quem vê o quê, a escolha do negócio, os avisos no campo Encomenda e os alertas de reserva parada. Nunca pôr aqui um ficheiro real: tem apelidos de clientes.
+- **eotimg** — colar um print (Ctrl+V) num comentário de EOT: a imagem é reduzida, vai para o Storage privado na pasta do contrato e aparece no histórico carregada com a sessão (sem links públicos).
 - **integridade** — escreve números à portuguesa a velocidades aleatórias, com rede lenta e falhas, e confirma que o gravado é igual ao escrito.
 
 ## Ao mudar a base de dados
@@ -34,7 +35,7 @@ Correm sozinhos no GitHub (separador **Actions**) a cada alteração. Localmente
 
 ## Cópias de segurança
 
-O plano gratuito do Supabase não guarda cópias. A rotina `copia-seguranca.yml` faz uma por noite, cifrada com a frase-senha `COPIA_SENHA`, e repõe-na logo numa base vazia para confirmar que serve (contagem tabela a tabela). As cópias ficam 30 dias em **Actions → Cópia de segurança → execução → Artifacts**.
+O plano gratuito do Supabase não guarda cópias. **As imagens das EOTs (Storage) não entram nesta cópia**: só a base de dados. A rotina `copia-seguranca.yml` faz uma por noite, cifrada com a frase-senha `COPIA_SENHA`, e repõe-na logo numa base vazia para confirmar que serve (contagem tabela a tabela). As cópias ficam 30 dias em **Actions → Cópia de segurança → execução → Artifacts**.
 
 Abrir uma cópia à mão (precisa de GnuPG; no Windows, Gpg4win): `gpg -d copia-AAAA-MM-DD.tar.gz.gpg | tar xzf -`. Repor no Supabase: correr `pg_restore` com a ligação do projeto — pedir ajuda antes de o fazer.
 

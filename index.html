@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-22-b">
+<meta name="app-version" content="2026-10-22-c">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1918,6 +1918,19 @@ a{color:var(--blue)}
 .eotm-det[open] summary{margin-bottom:10px}
 .eotm-com{display:flex;gap:8px;align-items:flex-end}
 .eotm-com textarea{flex:1;resize:vertical;min-height:44px}
+.eotm-com-b{display:flex;gap:6px;align-items:center}.eot-anexo{display:inline-flex;align-items:center;gap:4px;cursor:pointer;margin:0}
+.eot-pend{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin-top:8px}
+.eot-pend-i{position:relative;width:84px;height:84px;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:var(--bg)}
+.eot-pend-i img{width:100%;height:100%;object-fit:cover;display:block}
+.eot-pend-i small{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.55);color:#fff;font-size:10px;text-align:center;padding:1px 0}
+.eot-pend-x{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}.eot-pend-x .ic{width:13px;height:13px}
+.eot-pend-n{font-size:12px;color:var(--text2);align-self:center}
+.eoth-imgs{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.eoth-img{width:112px;height:80px;padding:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;cursor:zoom-in;background:var(--bg)}
+.eoth-img img{width:100%;height:100%;object-fit:cover;display:block}.eoth-img.falhou{cursor:default;opacity:.5}
+.eot-lb{position:fixed;inset:0;z-index:400;background:rgba(2,6,23,.85);display:flex;align-items:center;justify-content:center;padding:24px;cursor:zoom-out}
+.eot-lb img{max-width:min(1600px,94vw);max-height:90vh;border-radius:6px;box-shadow:0 12px 40px rgba(0,0,0,.5);background:#fff}
+.eot-lb-x{position:fixed;top:14px;right:14px;width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.15);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .eoth{display:flex;flex-direction:column;gap:8px;margin-top:10px}
 .eoth-it{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px}
 .eoth-it.comentario{background:var(--surface);border-left:3px solid var(--blue)}
@@ -2141,7 +2154,15 @@ const ICO={
 function ico(n,cls){const p=ICO[n];if(!p)return'';return`<svg class="ic${cls?' '+cls:''}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${p}</svg>`;}
 const EMO_IC={'🏭':'factory','🏠':'home','📋':'inbox','✅':'check','🔻':'filter','📦':'package','🔁':'repeat','☰':'more','🎯':'target','🏍️':'bike','🏍':'bike','🧥':'shirt','⭐':'star','🎟️':'ticket','🎟':'ticket','📅':'calendar','🧮':'calc','💰':'coins','💶':'coins','⬇️':'download','⬇':'download','🚚':'truck','✕':'xcircle','❌':'xcircle','🔑':'key','🚪':'logout','🤝':'store','📉':'trend','🏁':'flag','❤️':'heart','🏆':'trophy','⚠️':'alert','📐':'chart','🧾':'receipt','🔒':'lock'};
 document.addEventListener('keydown',e=>{const t=e.target;if((e.key==='Enter'||e.key===' ')&&t&&t.matches&&t.matches('[data-action][tabindex]:not(button):not(a):not(input):not(select):not(textarea)')){e.preventDefault();t.click();}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&typeof S!=='undefined'&&S.eotAberto){eotFechar();return;}if(e.key==='Escape'&&typeof S!=='undefined'&&(S.contaAberto||S.gppMais)){S.contaAberto=false;S.gppMais=false;render();}});
+// Ctrl+V de um print, ou arrastar uma imagem, com uma EOT aberta: junta ao comentário
+function imgsDoEvento(dt){if(!dt)return[];const fs=[...(dt.files||[])].filter(f=>/^image\//.test(f.type));if(fs.length)return fs;
+  return[...(dt.items||[])].filter(it=>it.kind==='file'&&/^image\//.test(it.type)).map(it=>it.getAsFile()).filter(Boolean);}
+document.addEventListener('paste',e=>{if(typeof S==='undefined'||!S.eotAberto||S.screen==='login')return;const t=e.target;
+  if(t&&t.matches&&t.matches('input,select,textarea')&&t.id!=='eotm-com')return; // colar texto noutros campos fica como sempre
+  const fs=imgsDoEvento(e.clipboardData);if(!fs.length)return;e.preventDefault();const ta=document.getElementById('eotm-com');if(ta)S.eotCom=ta.value;eotImgJuntar(fs);});
+document.addEventListener('dragover',e=>{if(typeof S!=='undefined'&&S.eotAberto&&e.target&&e.target.closest&&e.target.closest('.eotm'))e.preventDefault();});
+document.addEventListener('drop',e=>{if(typeof S==='undefined'||!S.eotAberto||!(e.target&&e.target.closest&&e.target.closest('.eotm')))return;const fs=imgsDoEvento(e.dataTransfer);if(!fs.length)return;e.preventDefault();const ta=document.getElementById('eotm-com');if(ta)S.eotCom=ta.value;eotImgJuntar(fs);});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&typeof S!=='undefined'&&S.eotImgVer){S.eotImgVer=null;render();return;}if(e.key==='Escape'&&typeof S!=='undefined'&&S.eotAberto){eotFechar();return;}if(e.key==='Escape'&&typeof S!=='undefined'&&(S.contaAberto||S.gppMais)){S.contaAberto=false;S.gppMais=false;render();}});
 function icE(x){const n=EMO_IC[x];return n?ico(n):x;}
 // ---- Tema (claro / escuro) ----
 function temaAtual(){try{return localStorage.getItem('bm_tema')||'claro'}catch(e){return'claro'}}
@@ -2177,7 +2198,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-22-b';
+const APP_VERSION='2026-10-22-c';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -4844,7 +4865,7 @@ function encView(){
   const porTipo=ENC_TIPOS.map(t=>[t,arr.filter(x=>x.processing_type===t).length]).filter(([,n])=>n);
   return`${encEscolherHTML()}<div class="seq-wrap enc-wrap">
     <div class="seq-head">
-      <div><div class="seq-tit">Encomendas BMW</div><div class="seq-sub">${esc(O==='tudo'?'Tudo':encOrigemLb(O))} · ${todos.length} mota${todos.length!==1?'s':''}${ult&&O!=='tudo'?' · carregado a '+esc(new Date(ult).toLocaleString('pt-PT',{dateStyle:'short',timeStyle:'short'})):''}${isAdmin()?'':' · só leitura'}</div></div>
+      <div><div class="seq-tit">Stock BMW Novas</div><div class="seq-sub">${esc(O==='tudo'?'Tudo':encOrigemLb(O))} · ${todos.length} mota${todos.length!==1?'s':''}${ult&&O!=='tudo'?' · carregado a '+esc(new Date(ult).toLocaleString('pt-PT',{dateStyle:'short',timeStyle:'short'})):''}${isAdmin()?'':' · só leitura'}</div></div>
       ${isAdmin()?`<label class="btn btn-orange btn-sm" style="cursor:pointer;margin:0" title="Podes escolher os três ficheiros de uma vez">${S.encBusy&&!P?'A ler…':'📥 Carregar ficheiros (Aveiro, Rede, BMW)'}<input type="file" id="enc-file" multiple accept=".csv,.xls,.xlsx,text/csv" style="display:none"></label>`:''}
     </div>
     ${separadores}
@@ -5014,7 +5035,7 @@ function encDicaHTML(v,id){
 }
 function renderEncVend(){
   return`<div class="app-layout"><div class="main-panel" style="width:100%">
-  <div class="hdr"><button class="hdr-back" data-action="back-to-list">←</button><div class="hdr-accent"></div><div class="hdr-title">Encomendas BMW</div></div>
+  <div class="hdr"><button class="hdr-back" data-action="back-to-list">←</button><div class="hdr-accent"></div><div class="hdr-title">Stock BMW Novas</div></div>
   <div class="content">${encView()}</div></div></div>`;
 }
 
@@ -5101,7 +5122,7 @@ function vSidebarHTML(A){
       ${vNavItem({act:'go-vcom',ic:'💶',lb:'Comissões',on:A==='vcom'})}
       <div class="vnav-sec">Ferramentas</div>
       ${vNavItem({act:'go-ficha',ic:'🧮',lb:'Ficha de margem',on:A==='ficha'&&!S.fmNeg})}
-      ${vNavItem({act:'go-vencomendas',ic:'🏭',lb:'Encomendas BMW',on:A==='vencomendas'})}
+      ${vNavItem({act:'go-vencomendas',ic:'🏭',lb:'Stock BMW Novas',on:A==='vencomendas'})}
       ${vNavItem({act:'go-vstockeq',ic:'🧥',lb:'Stock equipamento / lifestyle',on:A==='vstockeq'})}
       ${vNavItem({act:'go-stock-vend',ic:'🏍️',lb:'Stock usadas / demos',on:A==='stockvend'})}
       ${vNavItem({act:'go-escala',ic:'📅',lb:'Escala',on:A==='escala'})}
@@ -5687,7 +5708,8 @@ function eotPodeTudo(){return isAdmin()||isFinanceiro();}
 function eotPodeCampo(k){if(eotPodeTudo())return true;return ['fase','temperatura','proxima_acao','proxima_data','notas'].includes(k);}
 function eotAbrir(c){S.eotAberto=String(c);S.eotEd={};S.eotCom='';render();loadEotHist(c);}
 function eotFechar(force){if(!force&&S.eotEd&&Object.keys(eotPatch()).length&&!confirm('Tens alterações por guardar. Fechar sem guardar?'))return;
-  const fim=()=>{S._eotmFecha=false;S._eotmAnim=null;S.eotAberto=null;S.eotEd={};S.eotCom='';render();};
+  if(!force&&(S.eotImgs||[]).length&&!confirm('Tens imagens por enviar. Fechar sem as enviar?'))return;
+  const fim=()=>{S._eotmFecha=false;S._eotmAnim=null;S.eotAberto=null;S.eotEd={};S.eotCom='';S.eotImgVer=null;eotImgLimpar();render();};
   if(S._eotmFecha)return;const m=document.querySelector('.eotm'),bd=document.querySelector('.eotm-bd');
   if(!force&&m&&!movReduzido()){S._eotmFecha=true;m.classList.remove('eotm-in');bd&&bd.classList.remove('eotm-in');m.classList.add('eotm-out');bd&&bd.classList.add('eotm-out');setTimeout(fim,170);}else fim();}
 function movReduzido(){try{return window.matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){return false;}}
@@ -5705,17 +5727,82 @@ async function eotModalGuardar(){
   if(!Object.keys(p).length){toast('Nada para guardar');return;}
   await eotGuardar(c,p);S.eotEd={};await loadEotHist(c);
 }
+// ---- Imagens nos comentários das EOTs: Storage privado "eot-imagens", uma pasta por contrato ----
+// Colar um print (Ctrl+V) ou anexar. A imagem é reduzida no browser (máx. 1600 px, WebP) antes de seguir.
+const EOT_IMG_LADO=1600,EOT_IMG_MAXN=6,EOT_IMG_BUCKET='eot-imagens';
+const _eotImgUrl=new Map(),_eotImgPend=new Map();
+async function imgComprimir(file){
+  const url=URL.createObjectURL(file);
+  try{
+    const img=await new Promise((ok,ko)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>ko(new Error('imagem inválida'));i.src=url;});
+    const k=Math.min(1,EOT_IMG_LADO/Math.max(img.naturalWidth||1,img.naturalHeight||1));const w=Math.max(1,Math.round(img.naturalWidth*k)),h=Math.max(1,Math.round(img.naturalHeight*k));
+    const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,w,h);g.drawImage(img,0,0,w,h);
+    let b=await new Promise(r=>c.toBlob(r,'image/webp',0.82));
+    if(!b||b.type!=='image/webp')b=await new Promise(r=>c.toBlob(r,'image/jpeg',0.85));
+    if(!b)throw new Error('não consegui converter a imagem');
+    return b;
+  }finally{URL.revokeObjectURL(url);}
+}
+function storageUrl(bucket,path,leitura){return`${S.config.url}/storage/v1/object/${leitura?'authenticated/':''}${bucket}/${String(path).split('/').map(encodeURIComponent).join('/')}`;}
+async function storagePedido(metodo,bucket,path,blob){
+  const fazer=tok=>fetchT(storageUrl(bucket,path,metodo==='GET'),{method:metodo,headers:Object.assign({'apikey':S.config.key,'Authorization':`Bearer ${tok}`},blob?{'Content-Type':blob.type,'x-upsert':'false','cache-control':'31536000'}:{}),body:blob||undefined},metodo==='GET'?25000:60000);
+  let r=await fazer(S.token);
+  if(r.status===401||r.status===403||r.status===400){const tx=await r.clone().text();if(/jwt|token|expired|unauthori/i.test(tx)){const nt=await refreshSession();if(nt){S.token=nt;r=await fazer(nt);}}}
+  if(!r.ok){let tx='';try{tx=await r.text();}catch(e){}let m=tx;try{const j=JSON.parse(tx);m=j.message||j.error||tx;}catch(e){}
+    if(/bucket not found/i.test(m))m='Falta correr o SQL "2026-10-22_eot_imagens" no Supabase.';
+    else if(/row-level security|unauthorized|403/i.test(m+r.status))m='Não tens permissão para imagens desta EOT.';
+    throw new Error(m||('HTTP '+r.status));}
+  return r;
+}
+async function eotImgJuntar(files){
+  const L=[...(files||[])].filter(f=>f&&/^image\//.test(f.type));if(!L.length)return false;
+  const atual=(S.eotImgs||[]).slice();const vagas=EOT_IMG_MAXN-atual.length;
+  if(vagas<=0){toast(`Máximo ${EOT_IMG_MAXN} imagens por comentário`);return true;}
+  if(L.length>vagas)toast(`Só entram mais ${vagas} imagem${vagas>1?'ns':''} neste comentário`);
+  for(const f of L.slice(0,vagas)){
+    try{const b=await imgComprimir(f);if(b.size>5*1024*1024){toast('Imagem demasiado grande, mesmo reduzida');continue;}
+      atual.push({id:Math.random().toString(36).slice(2,10),blob:b,url:URL.createObjectURL(b)});}
+    catch(e){toast('Não consegui ler a imagem: '+((e&&e.message)||e));}
+  }
+  S.eotImgs=atual;render();return true;
+}
+function eotImgTirar(id){const L=S.eotImgs||[];const x=L.find(i=>i.id===id);if(x)URL.revokeObjectURL(x.url);S.eotImgs=L.filter(i=>i.id!==id);render();}
+function eotImgLimpar(){(S.eotImgs||[]).forEach(i=>{try{URL.revokeObjectURL(i.url);}catch(e){}});S.eotImgs=[];}
 async function eotComentar(){
-  const c=S.eotAberto;const t=String(S.eotCom||'').trim();if(!t)return;
-  try{await supabaseApi('POST','/eot_historico',{contrato:c,tipo:'comentario',texto:t});S.eotCom='';await loadEotHist(c);}
-  catch(e){alert('Erro ao gravar o comentário: '+erroTexto(e)+(/eot_historico|42P01|schema cache/i.test(String(e&&e.message))?'\n\nFalta correr o SQL eot_historico.sql no Supabase.':''));}
+  const c=S.eotAberto;const ta=document.getElementById('eotm-com');if(ta)S.eotCom=ta.value;
+  const t=String(S.eotCom||'').trim();const imgs=S.eotImgs||[];if((!t&&!imgs.length)||S._eotEnviando)return;
+  S._eotEnviando=true;render();
+  const feitos=[];
+  try{
+    for(const im of imgs){const ext=im.blob.type==='image/webp'?'webp':im.blob.type==='image/png'?'png':'jpg';
+      const path=`${c}/${Date.now()}-${im.id}.${ext}`;await storagePedido('POST',EOT_IMG_BUCKET,path,im.blob);feitos.push(path);
+      _eotImgUrl.set(path,im.url);} // a pré-visualização passa a servir de imagem já carregada
+    const body={contrato:c,tipo:'comentario',texto:t||null};if(feitos.length)body.imagens=feitos;
+    await supabaseApi('POST','/eot_historico',body);
+    S.eotImgs=[];S.eotCom='';await loadEotHist(c);
+  }catch(e){
+    for(const p of feitos){_eotImgUrl.delete(p);try{await storagePedido('DELETE',EOT_IMG_BUCKET,p);}catch(_){}}
+    const m=(e&&e.message)||String(e);
+    alert('Erro ao gravar o comentário: '+(/imagens|PGRST204|42703/i.test(m)?'falta correr o SQL "2026-10-22_eot_imagens" no Supabase.':erroTexto(e)));
+  }finally{S._eotEnviando=false;render();}
+}
+// carrega as imagens do histórico com a sessão (não há links públicos) e mostra-as como blob:
+function eotImgsAplicar(){
+  const els=[...document.querySelectorAll('img[data-eot-img]:not([src])')];if(!els.length)return;
+  els.forEach(el=>{const p=el.dataset.eotImg;const u=_eotImgUrl.get(p);if(u){el.src=u;return;}
+    if(_eotImgPend.has(p))return;
+    _eotImgPend.set(p,storagePedido('GET',EOT_IMG_BUCKET,p).then(r=>r.blob()).then(b=>{const url=URL.createObjectURL(b);_eotImgUrl.set(p,url);
+        document.querySelectorAll('img[data-eot-img]').forEach(i=>{if(i.dataset.eotImg===p)i.src=url;});})
+      .catch(()=>{document.querySelectorAll('img[data-eot-img]').forEach(i=>{if(i.dataset.eotImg===p){i.alt='Imagem indisponível';i.closest('.eoth-img')&&i.closest('.eoth-img').classList.add('falhou');}});})
+      .finally(()=>_eotImgPend.delete(p)));});
 }
 function eotHistValor(k,v){if(v==null||v==='')return'(vazio)';if(k==='responsavel_id')return vendName(v)||'?';if(k==='no_mapa')return String(v)==='true'?'Sim':'Não';if(EOT_DATA.includes(k))return eotDataPT(v);if(['prestacao','residual','despesas','total'].includes(k))return eotEur(v);return String(v);}
 function eotHistHTML(h){
   const d=new Date(h.criado_em);const p=n=>String(n).padStart(2,'0');
   const quando=isNaN(d)?'':`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
   const quem=h.tipo==='sistema'?'Importação do mapa':`${esc(h.autor_nome||'?')}${h.autor_role?` (${esc(EOT_ROLE_LB[h.autor_role]||h.autor_role)})`:''}`;
-  const txt=h.tipo==='comentario'?`<span class="eoth-com">${esc(h.texto||'').replace(/\n/g,'<br>')}</span>`:
+  const imgs=Array.isArray(h.imagens)&&h.imagens.length?`<div class="eoth-imgs">${h.imagens.map((p,i)=>`<button type="button" class="eoth-img" data-action="eot-img-ver" data-p="${esc(p)}" aria-label="Abrir imagem ${i+1}"><img data-eot-img="${esc(p)}" alt="Imagem ${i+1} do comentário"></button>`).join('')}</div>`:'';
+  const txt=h.tipo==='comentario'?`<span class="eoth-com">${esc(h.texto||'').replace(/\n/g,'<br>')}</span>${imgs}`:
     `alterou <b>${esc(EOT_CAMPOS[h.campo]||h.campo)}</b>: ${esc(eotHistValor(h.campo,h.valor_antes))} → <b>${esc(eotHistValor(h.campo,h.valor_depois))}</b>`;
   return`<div class="eoth-it ${esc(h.tipo)}"><div class="eoth-q">${esc(quando)}${h.tipo==='comentario'?' · comentário':''}</div><div class="eoth-t">${quem}: ${txt}</div></div>`;
 }
@@ -5757,10 +5844,14 @@ function eotModalHTML(){
         <div class="eotm-g">${EOT_GRP_CONTRATO.map(k=>eotCampoHTML(x,k)).join('')}</div>
       </details>
       <div class="eotm-sec">Comentários e histórico</div>
-      <div class="eotm-com"><textarea class="norma-inp" id="eotm-com" rows="2" placeholder="Escreve um comentário (fica registado com o teu nome e a hora)">${esc(S.eotCom||'')}</textarea><button class="btn btn-dark btn-sm" data-action="eotm-comentar">Comentar</button></div>
+      <div class="eotm-com"><textarea class="norma-inp" id="eotm-com" rows="2" placeholder="Escreve um comentário ou cola um print (Ctrl+V). Fica registado com o teu nome e a hora.">${esc(S.eotCom||'')}</textarea>
+        <div class="eotm-com-b"><label class="btn btn-outline btn-sm eot-anexo" title="Anexar imagens (também podes colar com Ctrl+V)">${ico('plus','ic-sm')}<span>Imagem</span><input type="file" id="eot-img-file" accept="image/*" multiple hidden></label>
+        <button class="btn btn-dark btn-sm" data-action="eotm-comentar" ${S._eotEnviando?'disabled':''}>${S._eotEnviando?((S.eotImgs||[]).length?'A enviar imagens…':'A gravar…'):'Comentar'}</button></div></div>
+      ${(S.eotImgs||[]).length?`<div class="eot-pend" aria-label="Imagens por enviar">${S.eotImgs.map(i=>`<div class="eot-pend-i"><img src="${esc(i.url)}" alt="Imagem por enviar"><button type="button" class="eot-pend-x" data-action="eot-img-tirar" data-id="${esc(i.id)}" aria-label="Tirar imagem">${ico('x')}</button><small>${Math.max(1,Math.round(i.blob.size/1024))} KB</small></div>`).join('')}<div class="eot-pend-n">${S.eotImgs.length} imagem${S.eotImgs.length>1?'ns':''} por enviar: carrega em Comentar.</div></div>`:''}
       ${S.eotHistErr?`<div class="mg-aviso" style="margin:8px 0">${esc(S.eotHistErr)}</div>`:''}
       <div class="eoth">${S.eotHistLoad===String(x.contrato)&&!H?'<div class="eoth-v">A carregar…</div>':(H&&H.length?H.map(eotHistHTML).join(''):(S.eotHistErr?'':'<div class="eoth-v">Ainda sem registos. As alterações e comentários a partir de agora ficam aqui.</div>'))}</div>
     </div>
+    ${S.eotImgVer?`<div class="eot-lb" data-action="eot-img-fechar" role="dialog" aria-label="Imagem"><img data-eot-img="${esc(S.eotImgVer)}" ${_eotImgUrl.get(S.eotImgVer)?`src="${esc(_eotImgUrl.get(S.eotImgVer))}"`:''} alt="Imagem do comentário"><button type="button" class="eot-lb-x" data-action="eot-img-fechar" aria-label="Fechar">${ico('x')}</button></div>`:''}
     <div class="eotm-foot">
       <button class="btn btn-orange" data-action="eotm-guardar" id="eotm-guardar">Guardar${nAlt?` (${nAlt})`:''}</button>
       <button class="btn btn-ghost" data-action="eotm-fechar">Cancelar</button>
@@ -6951,7 +7042,7 @@ function EXPORT_FOLHAS(){
       {c:'ult_saida',l:'Última saída',f:d},{c:'qtd',l:'Qtd'},{c:'custo_unit',l:'Custo unitário'},{c:'custo_total',l:'Custo total'},{c:'procura',l:'Procura média mensal'},
       {c:'desc_max',l:'Desconto máx. s/ PVP',f:v=>v==null?'':Math.round(v*100)+'%'},{c:'importado_em',l:'Mapa de',f:dt},
     ]},
-    {nome:'Encomendas BMW',path:'/encomendas_bmw?select=*&order=origem.asc,model_code.asc,production_number.asc',cols:[
+    {nome:'Stock BMW Novas',path:'/encomendas_bmw?select=*&order=origem.asc,model_code.asc,production_number.asc',cols:[
       {c:'origem',l:'Origem',f:v=>encOrigemLb(v||'aveiro')},...ENC_COLS.map(([c,h,,t])=>({c,l:h,f:t==='d'?d:undefined})),{c:'importado_em',l:'Mapa de',f:dt},
     ]},
     {nome:'EOTs',path:'/eot_contratos?select=*&order=data_fim.asc',cols:[
@@ -6965,7 +7056,7 @@ function EXPORT_FOLHAS(){
     ]},
     {nome:'EOTs histórico',path:'/eot_historico?select=*&order=criado_em.asc,id.asc',cols:[
       {c:'contrato',l:'Contrato'},{c:'criado_em',l:'Quando',f:dt},{c:'autor_nome',l:'Quem'},{c:'autor_role',l:'Papel'},{c:'tipo',l:'Tipo'},
-      {c:'campo',l:'Campo',f:v=>v?(EOT_CAMPOS[v]||v):''},{c:'valor_antes',l:'Antes'},{c:'valor_depois',l:'Depois'},{c:'texto',l:'Comentário'},
+      {c:'campo',l:'Campo',f:v=>v?(EOT_CAMPOS[v]||v):''},{c:'valor_antes',l:'Antes'},{c:'valor_depois',l:'Depois'},{c:'texto',l:'Comentário'},{c:'imagens',l:'Imagens',f:v=>Array.isArray(v)&&v.length?v.length:''},
     ]},
     {nome:'Negócios histórico',path:'/negocio_historico?select=*&order=criado_em.asc,id.asc',cols:[
       {c:'negocio_id',l:'Negócio ID'},{c:'criado_em',l:'Quando',f:dt},{c:'autor_nome',l:'Quem'},{c:'autor_role',l:'Papel'},{c:'tipo',l:'Tipo'},
@@ -7246,7 +7337,7 @@ function renderDashboard(){
     ['comissoes','💰','Resumo Comissões'],
     ['evento','🎟️','Evento'],
     ['stockeq','🧥','Stock Equipamento'],
-    ['encomendas','🏭','Encomendas BMW'],
+    ['encomendas','🏭','Stock BMW Novas'],
     ['ficha','🧮','Ficha de Margem'],
     ['trimestre','📐','Controlo trimestral'],
     ['exportar','⬇️','Exportar'],
@@ -8717,6 +8808,7 @@ function render0(){
   if(ps===S.screen){const nc=app.querySelector('.content');if(nc)nc.scrollTop=st}
   bindEvents();
   try{tblAplicar();}catch(e){}
+  try{eotImgsAplicar();}catch(e){}
   try{cardsAplicar();}catch(e){}
   try{tecladoAplicar();}catch(e){}
   try{numAplicar();}catch(e){}
@@ -8790,6 +8882,7 @@ function bindEvents(){
     if(el.dataset&&el.dataset.pmK){savePremioMes(el.dataset.pmMes,el.dataset.pmK,el.value);return;}
     if(el.dataset&&el.dataset.mrgId){saveMargem(el.dataset.mrgId,el.value);return;}
     if(el.dataset&&el.dataset.entId){const v=el.value;saveEntrega(el.dataset.entId,{[el.dataset.entF]:(v===''?null:v)});return;}
+    if(el.id==='eot-img-file'){const fs=[...(el.files||[])];el.value='';const ta=document.getElementById('eotm-com');if(ta)S.eotCom=ta.value;eotImgJuntar(fs);return;}
     if(el.id==='enc-file'){const fs=[...(el.files||[])];el.value='';encFicheiros(fs);return;}
     if(el.dataset&&el.dataset.encOrI!=null){const P=S.encPrev;if(P&&P.ficheiros[+el.dataset.encOrI]){const f=P.ficheiros[+el.dataset.encOrI];f.origem=el.value||null;f.porque=el.value?'escolhida por ti':f.porque;f.aviso='';encPrevComparar([f]);setState({encPrev:P,encErrImp:''});}return;}
     if(el.dataset&&el.dataset.encG){const F=Object.assign({q:'',ex:{}},S.encF||{});F.ex=Object.assign({},F.ex||{});const g=el.dataset.encG,v=el.value;const L=(F.ex[g]||[]).filter(x=>x!==v);if(!el.checked)L.push(v);F.ex[g]=L;setState({encF:F});return;}
@@ -8969,6 +9062,9 @@ function bindEvents(){
       case'eotm-fechar':eotFechar();break;
       case'eotm-guardar':eotModalGuardar();break;
       case'eotm-comentar':eotComentar();break;
+      case'eot-img-tirar':eotImgTirar(el.dataset.id);break;
+      case'eot-img-ver':setState({eotImgVer:el.dataset.p});break;
+      case'eot-img-fechar':setState({eotImgVer:null});break;
       case'seqf-fechar':setState({seqFora:null});break;
       case'seqf-registar':seqForaRegistar();break;
       case'seqf-preco-set':{const F=Object.assign({},S.seqFora||{});const v=Number(el.dataset.v);F.preco=String(v).replace('.',',');const pvp=numPT(F.pvp);F.pct=pvp?String(Math.round((1-v/pvp)*1000)/10):'';setState({seqFora:F});break;}

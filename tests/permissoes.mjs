@@ -31,6 +31,7 @@ await db.query("insert into public.precos_ref(ref,pvp) values('REF1',20)");
 await db.query("insert into public.equipamento(vendedor_id,data,custo,venda) values($1,'2026-09-10',10,20)",[U.vend]);
 await db.query("insert into public.encomendas_bmw(production_number,model_code,customer_last) values('8000001','0M21','Cliente')");
 N.v2q=await neg(U.vend2,'Quente');
+await db.query("insert into storage.objects(bucket_id,name,owner) values('eot-imagens','C1/foto.webp',$1),('eot-imagens','C2/foto.webp',$2)",[U.vend,U.vend2]);
 await db.exec("set session_replication_role = replica"); // dados de partida: inclui uma encomenda repetida antiga, como existe em produção
 await db.query(`update public.baviera_control set enc='7000001' where id=${N.v2q}`);
 await db.query(`update public.baviera_control set enc='7000005' where id in (${N.carteira},${N.retail2})`);
@@ -157,6 +158,17 @@ const C=[ // [área, perfil, descrição, função, esperado]
   ['vendedor','vend','grava outro campo em negócio com encomenda repetida antiga',()=>n(`with u as (update public.baviera_control set obs='ok' where id=${N.carteira} returning 1) select count(*) n from u`),1],
   ['chefe','chefe','passa a mota do colega para outro negócio',()=>n(`with u as (update public.baviera_control set enc='7000001' where id=${N.comFicha} returning 1) select count(*) n from u`),1],
   ['chefe','chefe','substitui encomendas BMW (fica só o ficheiro novo)',async()=>{await db.query(`select public.encomendas_bmw_substituir('[{"production_number":"1","ts_order_status":"2026-10-03"},{"production_number":"2"}]')`);return n("select count(*) n from public.encomendas_bmw");},2],
+  ['anónimo','anon','vê imagens de EOT (nenhuma)',()=>n("select count(*) n from storage.objects where bucket_id='eot-imagens'"),0],
+  ['vendedor','vend','junta imagem à sua EOT',()=>ok("insert into storage.objects(bucket_id,name) values('eot-imagens','C1/nova.webp')"),'consegue'],
+  ['vendedor','vend','junta imagem à EOT do colega',()=>ok("insert into storage.objects(bucket_id,name) values('eot-imagens','C2/intrusa.webp')"),'recusado'],
+  ['vendedor','vend','vê imagens (só as da sua EOT)',()=>n("select count(*) n from storage.objects where bucket_id='eot-imagens'"),1],
+  ['vendedor','vend','apaga imagem enviada pelo colega',()=>n("with d as (delete from storage.objects where name='C2/foto.webp' returning 1) select count(*) n from d"),0],
+  ['vendedor','vend','comentário só com imagem',()=>ok("insert into public.eot_historico(contrato,tipo,imagens) values('C1','comentario',array['C1/a.webp'])"),'consegue'],
+  ['vendedor','vend','comentário sem texto nem imagem',()=>ok("insert into public.eot_historico(contrato,tipo,texto) values('C1','comentario','  ')"),'recusado'],
+  ['vendedor','vend','comentário que aponta para imagem de outra EOT',()=>ok("insert into public.eot_historico(contrato,tipo,imagens) values('C1','comentario',array['C2/foto.webp'])"),'recusado'],
+  ['secretário','sec','vê imagens de EOT',()=>n("select count(*) n from storage.objects where bucket_id='eot-imagens'"),0],
+  ['financeiro','fin','vê imagens de todas as EOTs',()=>n("select count(*) n from storage.objects where bucket_id='eot-imagens'"),2],
+  ['chefe','chefe','apaga imagem de EOT',()=>n("with d as (delete from storage.objects where name='C2/foto.webp' returning 1) select count(*) n from d"),1],
   ['chefe','chefe','carrega Stock Rede sem mexer no Stock Aveiro',async()=>{await db.query(`select public.encomendas_bmw_substituir('[{"production_number":"5000001","customer_last":"Cliente de outro concessionário","salesperson":"XX","dealer_nome":"J&M Motos"}]','rede')`);return (await n("select count(*) n from public.encomendas_bmw where origem='aveiro'"))+'/'+await n("select count(*) n from public.encomendas_bmw where origem='rede'");},'1/1'],
   ['chefe','chefe','Stock Rede não guarda cliente nem vendedor de outro concessionário',async()=>{await db.query(`select public.encomendas_bmw_substituir('[{"production_number":"5000001","customer_last":"Nome","salesperson":"XX"}]','rede')`);return n("select count(*) n from public.encomendas_bmw where origem='rede' and (customer_last is not null or salesperson is not null)");},0],
   ['chefe','chefe','origem inventada é recusada',async()=>{await db.exec('savepoint s');try{await db.query(`select public.encomendas_bmw_substituir('[{"production_number":"1"}]','lisboa')`);return 'aceitou';}catch(e){await db.exec('rollback to savepoint s');return /Origem desconhecida/.test(e.message)?'recusada':'ERRO '+e.message.slice(0,60);}},'recusada'],
