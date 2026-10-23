@@ -1,6 +1,7 @@
 // Alertas aos vendedores: declaração de circulação (mota nova vendida, 90 dias depois da matrícula; resposta rápida no
 // negócio, "Por atualizar" mantém o aviso, "Atualizada" tira-o) e aniversário dos clientes (um aviso por cliente,
-// hoje e, à segunda, o fim de semana; 29/02 a 28/02 nos anos comuns; aviso se não há RGPD). Sem o SQL, gravar o
+// hoje e, à segunda, o fim de semana; 29/02 a 28/02 nos anos comuns; o RGPD do negócio não entra). Sem o SQL, os campos novos
+// não aparecem e gravar o
 // negócio não manda as colunas novas.
 const {chromium}=require('playwright');const http=require('http');const fs=require('fs');const path=require('path');
 const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'));
@@ -57,21 +58,24 @@ const recs=[
  const campos=async id=>{await p.evaluate(i=>{setState({selected:S.records.find(x=>x.id===i)});setState({form:recordToForm(S.selected),screen:'edit',openGroups:{INFO:true,'Identificação':true,Datas:true}});},id);await p.waitForTimeout(250);
    return p.evaluate(()=>({nasc:!!document.querySelector('[data-field="data_nascimento"]'),decl:!!document.querySelector('[data-field="decl_circ"]')}));};
  const fMN=await campos(1),fMU=await campos(3);
+ const fSemSql=await p.evaluate(()=>{const R=S.records;S.records=R.map(r=>{const c=Object.assign({},r);delete c.data_nascimento;delete c.decl_circ;return c;});setState({selected:S.records[0]});setState({form:recordToForm(S.selected),screen:'edit',openGroups:{INFO:true,'Identificação':true,Datas:true}});
+   const o={nasc:!!document.querySelector('[data-field="data_nascimento"]'),decl:!!document.querySelector('[data-field="decl_circ"]')};S.records=R;return o;});
  // regras de datas
  const datas=await p.evaluate(()=>({f28:anivCai('1992-02-29',new Date(2027,1,28)),f28bis:anivCai('1992-02-29',new Date(2028,1,28)),f29bis:anivCai('1992-02-29',new Date(2028,1,29)),
    seg:anivDatas(new Date(2026,9,26)).map(d=>d.getDate()),sex:anivDatas(new Date(2026,9,23)).map(d=>d.getDate())}));
  // sem o SQL: não manda as colunas novas; com o SQL manda (vazias como null)
  const semSql=await p.evaluate(()=>{const R=S.records;S.records=[{id:1,status:'Frio'}];const b=negColunasNovas({data_nascimento:null,decl_circ:null,x:1});S.records=R;const c=negColunasNovas({data_nascimento:null,decl_circ:null,x:1});return {sem:Object.keys(b),com:Object.keys(c)};});
  await p.evaluate(()=>{S.screen='list';S.statusFilter='_hoje';S.alertFilter=null;render();});await p.waitForTimeout(250);await p.screenshot({path:path.join(__dirname,'alertas_cliente.png')});
- const R={decl0,aniv0,filtrado,det1,det2,log1,alerta2,det3:!!det3,alerta3,anivDet,fMN,fMU,datas,semSql,erros};console.log(JSON.stringify(R,null,1));
+ const R={decl0,aniv0,filtrado,det1,det2,log1,alerta2,det3:!!det3,alerta3,anivDet,fMN,fMU,fSemSql,datas,semSql,erros};console.log(JSON.stringify(R,null,1));
  const ok={
   'declaração: só motas novas vendidas com +90 dias (sem resposta até 1 ano) ou por atualizar':decl0.ids==='1,5'&&/1 declaração de circulação a verificar \(matrícula há \+90 dias\) · 1 por atualizar/.test(decl0.t),
   'clicar no alerta filtra esses negócios':filtrado.f==='decl_circ'&&JSON.stringify(filtrado.ids)==='[1,5]',
   'no negócio pergunta se está atualizada':/Matriculada há 95 dias: a declaração de circulação está atualizada\?/.test(det1),
   '"Não": grava Por atualizar e o aviso continua':log1.id===1&&log1.body.decl_circ==='Por atualizar'&&Object.keys(log1.body).length===1&&/por atualizar desde/i.test(det2)&&/2 declarações de circulação por atualizar/.test(alerta2),
   '"Atualizada": o aviso sai':!R.det3&&!/a verificar/.test(alerta3)&&/1 declaração de circulação por atualizar/.test(alerta3),
-  'aniversário: um aviso por cliente (mesmo NIF em dois negócios) e diz que falta RGPD':aniv0.ids==='7'&&/1 cliente faz anos (hoje|\(hoje e no fim de semana\)) · 1 sem RGPD/.test(aniv0.t),
-  'aniversário no negócio, com telefone e aviso de RGPD':/Cliente Anos faz anos hoje/.test(anivDet)&&/912 345 678/.test(anivDet)&&/Sem RGPD/.test(anivDet),
+  'aniversário: um aviso por cliente (mesmo NIF em dois negócios), sem falar de RGPD':aniv0.ids==='7'&&/^Aniversário ?1 cliente faz anos (hoje|\(hoje e no fim de semana\))$/.test(aniv0.t),
+  'aniversário no negócio, com telefone':/Cliente Anos faz anos hoje/.test(anivDet)&&/912 345 678/.test(anivDet)&&!/RGPD/.test(anivDet),
+  'antes do SQL os campos novos não aparecem (não se perde o que se escreve)':!fSemSql.nasc&&!fSemSql.decl,
   'formulário: data de nascimento sempre, declaração só nas novas matriculadas':fMN.nasc&&fMN.decl&&fMU.nasc&&!fMU.decl,
   '29/02 faz anos a 28/02 nos anos comuns':datas.f28&&!datas.f28bis&&datas.f29bis,
   'à segunda-feira avisa também os do fim de semana':JSON.stringify(datas.seg)==='[26,25,24]'&&JSON.stringify(datas.sex)==='[23]',

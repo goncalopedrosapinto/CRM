@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-23-a">
+<meta name="app-version" content="2026-10-23-b">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2213,7 +2213,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-23-a';
+const APP_VERSION='2026-10-23-b';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -2303,7 +2303,7 @@ const MOTIVOS_PERDA=['Preço','Concorrência','Prazo de entrega','Financiamento'
 const TYPES=['MN','MD','MU'],ORIGINS=['','Cliente','Recom.','Stand','Evento','Lead'],PROFILES=['','Particular','Empresa','Protocolo','Estado'],GAR_PERIODOS=['1 ano','2 anos','3 anos','4 anos','5 anos'],FINS=['','PP','Fext','Fint'];
 const FIELD_GROUPS=[
   {g:'INFO',fields:[{k:'status',l:'Status',t:'select',o:STATUSES},{k:'motivo_perda',l:'Motivo da Perda',t:'select',o:MOTIVOS_PERDA,show:'perdido'},{k:'recontactar_em',l:'Re-contactar a partir de (6 meses depois de perdido)',t:'date',show:'perdido'},{k:'alert_date',l:'Alertar no dia (sugerido — podes mudar)',t:'date',show:'funil'}]},
-  {g:'Identificação',fields:[{k:'id_cliente',l:'Cliente',t:'text'},{k:'local',l:'Código Postal',t:'text'},{k:'nif',l:'NIF',t:'text'},{k:'morada',l:'Morada',t:'text'},{k:'cc',l:'CC',t:'text'},{k:'data_nascimento',l:'Data de nascimento',t:'date'},{k:'email',l:'Email',t:'text'},{k:'contacto',l:'Contacto',t:'text'}]},
+  {g:'Identificação',fields:[{k:'id_cliente',l:'Cliente',t:'text'},{k:'local',l:'Código Postal',t:'text'},{k:'nif',l:'NIF',t:'text'},{k:'morada',l:'Morada',t:'text'},{k:'cc',l:'CC',t:'text'},{k:'data_nascimento',l:'Data de nascimento (aniversário)',t:'date'},{k:'email',l:'Email',t:'text'},{k:'contacto',l:'Contacto',t:'text'}]},
   {g:'Negócio',fields:[{k:'neg',l:'Data Negócio',t:'date'},{k:'mes1',l:'Mês Referência',t:'month'},{k:'type',l:'Tipo',t:'select',o:TYPES},{k:'pvp',l:'PVP (€)',t:'number'},{k:'origin',l:'Origem',t:'select',o:ORIGINS},{k:'lead_webapp',l:'Nº Lead (WebApp)',t:'text',show:'lead'},{k:'campanha',l:'Campanha / lote (ex: P6 08/26)',t:'text',show:'lead'},{k:'profile',l:'Perfil',t:'select',o:PROFILES},{k:'retoma',l:'Retoma?',t:'select',o:['Não','Sim']},{k:'retoma_modelo',l:'Modelo da Retoma',t:'text',show:'retoma'},{k:'retoma_mat',l:'Matrícula da Retoma',t:'text',show:'retoma'},{k:'biz',l:'Bizagi',t:'text'},{k:'fin',l:'Financiamento',t:'select',o:FINS}]},
   {g:'Viatura',fields:[{k:'stock_id',l:'Mota do Stock (modelo · matrícula)',t:'stockpick',show:'stockpick'},{k:'model',l:'Modelo',t:'text'},{k:'version',l:'Versão',t:'text'},{k:'stock',l:'Em Stock?',t:'select',o:['Não','Sim']},{k:'enc',l:'Encomenda',t:'text'},{k:'chas',l:'Chassis',t:'text'},{k:'mat',l:'Matrícula',t:'text'},{k:'gar',l:'Garantia?',t:'select',o:['Não','Sim']},{k:'gar_periodo',l:'Período de Garantia',t:'select',o:GAR_PERIODOS,show:'garantia'}]},
   {g:'Extras',fields:[{k:'flag_ccgo',l:'CC Go',t:'toggle'},{k:'flag_rgpd',l:'RGPD',t:'toggle'},{k:'flag_seguro',l:'Seguro Nosso',t:'toggle'},{k:'flag_lifestyle',l:'Lifestyle',t:'toggle'}]},
@@ -3883,6 +3883,7 @@ function funilAtrasado(r){
 // ---- Declaração de circulação (motas novas, 90 dias depois da matrícula) e aniversários dos clientes ----
 const DECL_CIRC_DIAS=90,DECL_CIRC_MAX=365;
 // antes de correr o SQL "2026-10-23_declaracao_aniversario" estas colunas não existem: não as manda ao gravar
+function negTemColuna(k){return (S.records||[]).some(r=>r&&(k in r));}
 function negColunasNovas(b){const R=S.records||[];['data_nascimento','decl_circ'].forEach(k=>{if(R.length?!R.some(r=>r&&(k in r)):(b[k]==null||b[k]===''))delete b[k];});return b;}
 function declCircDias(r){if(!r||!r.dmat)return null;const t=new Date(String(r.dmat).slice(0,10)+'T00:00:00');if(isNaN(t))return null;const h=new Date();h.setHours(0,0,0,0);return Math.round((h-t)/864e5);}
 // mota nova vendida, matriculada há 90 dias ou mais, sem resposta (até 1 ano) ou marcada "Por atualizar" (até resolver)
@@ -3905,7 +3906,7 @@ function anivLista(records){const dias=anivDatas();const porCli=new Map();const 
   return [...porCli.values()];}
 function negAvisosHTML(r){let h='';
   if(anivHoje(r)){const tel=r.contacto?String(r.contacto).trim():'';
-    h+=`<div class="neg-aviso aniv">🎂 <b>${esc(r.id_cliente||'O cliente')} faz anos hoje</b>${tel?` · <a href="tel:${esc(tel.replace(/\s/g,''))}">${esc(tel)}</a>`:''}${r.flag_rgpd?'':'<span class="neg-aviso-sub">Sem RGPD assinado: confirma o consentimento antes de mandar mensagem.</span>'}</div>`;}
+    h+=`<div class="neg-aviso aniv">🎂 <b>${esc(r.id_cliente||'O cliente')} faz anos hoje</b>${tel?` · <a href="tel:${esc(tel.replace(/\s/g,''))}">${esc(tel)}</a>`:''}</div>`;}
   if(declCircPendente(r)){const d=declCircDias(r);
     if(r.decl_circ==='Por atualizar')h+=`<div class="neg-aviso decl por">📄 <span><b>Declaração de circulação por atualizar</b>${r.decl_circ_em?' desde '+esc(fmtDate(String(r.decl_circ_em).slice(0,10))):''} · matriculada há ${d} dias.</span><button class="btn btn-green btn-sm" data-action="decl-circ" data-id="${r.id}" data-v="Atualizada">Já está atualizada</button></div>`;
     else h+=`<div class="neg-aviso decl">📄 <span><b>Matriculada há ${d} dias: a declaração de circulação está atualizada?</b></span><button class="btn btn-green btn-sm" data-action="decl-circ" data-id="${r.id}" data-v="Atualizada">Sim, está</button><button class="btn btn-outline btn-sm" data-action="decl-circ" data-id="${r.id}" data-v="Por atualizar">Não, está por atualizar</button></div>`;}
@@ -3980,8 +3981,8 @@ function calcAlerts(records){
     alerts.push({id:'decl_circ',icon:'📄',label:txt,count:decl.length,ids:decl.map(r=>r.id)});}
   // ANIVERSÁRIOS dos clientes (hoje; à segunda também os do fim de semana)
   const aniv=anivLista(records);
-  if(aniv.length){const h0=anivDatas()[0].getTime();const soHoje=aniv.every(x=>x.dia.getTime()===h0);const semR=aniv.filter(x=>!x.r.flag_rgpd).length;
-    alerts.push({id:'aniv',icon:'🎂',label:`${aniv.length} cliente${aniv.length>1?'s fazem':' faz'} anos ${soHoje?'hoje':'(hoje e no fim de semana)'}${semR?` · ${semR} sem RGPD`:''}`,count:aniv.length,ids:aniv.map(x=>x.r.id)});}
+  if(aniv.length){const h0=anivDatas()[0].getTime();const soHoje=aniv.every(x=>x.dia.getTime()===h0);
+    alerts.push({id:'aniv',icon:'🎂',label:`${aniv.length} cliente${aniv.length>1?'s fazem':' faz'} anos ${soHoje?'hoje':'(hoje e no fim de semana)'}`,count:aniv.length,ids:aniv.map(x=>x.r.id)});}
   return alerts;
 }
 // Ritmo do mês: compara % do objetivo com % do mês já decorrido (dias úteis)
@@ -6484,7 +6485,7 @@ function renderDetail(){
         <span class="section-arrow ${S.openGroups[g.g]?'open':''}">›</span>
       </div>
       ${S.openGroups[g.g]?`<div class="section-body"><div class="detail-grid ${g.g==='Flags'?'flags':''}">
-        ${g.fields.filter(fd=>fd.k!=='decl_circ'||r.type==='MN').map(fd=>`<div><div class="detail-label">${esc(fd.l)}</div><div class="detail-value">${fd.t==='toggle'?(r[fd.k]?'<span style="color:var(--green)">✓ Sim</span>':'<span style="color:var(--text3)">✗ Não</span>'):fd.t==='date'?fmtDate(fd.k==='recontactar_em'?recontData(r):r[fd.k]):esc(r[fd.k])||'<span style="color:var(--text4)">—</span>'}</div></div>`).join('')}
+        ${g.fields.filter(fd=>(fd.k!=='decl_circ'||r.type==='MN')&&(!['data_nascimento','decl_circ'].includes(fd.k)||negTemColuna(fd.k))).map(fd=>`<div><div class="detail-label">${esc(fd.l)}</div><div class="detail-value">${fd.t==='toggle'?(r[fd.k]?'<span style="color:var(--green)">✓ Sim</span>':'<span style="color:var(--text3)">✗ Não</span>'):fd.t==='date'?fmtDate(fd.k==='recontactar_em'?recontData(r):r[fd.k]):esc(r[fd.k])||'<span style="color:var(--text4)">—</span>'}</div></div>`).join('')}
       </div></div>`:''}
     </div>`).join('')}
     ${S.confirmDelete?`<div class="confirm-bar"><p>Apagar este registo?</p><button class="btn btn-sm" data-action="confirm-delete" ${S.loading?'disabled':''} style="background:var(--red);color:#fff">${S.loading?'…':'Sim'}</button><button class="btn btn-outline btn-sm" data-action="cancel-delete">Não</button></div>`:''}
@@ -6640,7 +6641,7 @@ function renderEdit(){
       </div>
       ${S.openGroups[g.g]?`<div class="section-body">
         ${g.g==='Extras'?`<div class="toggles">${g.fields.map(fd=>`<button class="toggle-btn ${S.form[fd.k]?'on':''}" data-action="toggle-flag" data-field="${fd.k}">${S.form[fd.k]?'✓ ':''}${esc(fd.l)}</button>`).join('')}</div>`:`
-        ${g.fields.filter(fd=>!fd.show||(fd.show==='funil'&&FUNIL.includes(S.form.status))||(fd.show==='retoma'&&S.form.retoma==='Sim')||(fd.show==='perdido'&&S.form.status==='Perdido')||(fd.show==='garantia'&&S.form.gar==='Sim')||(fd.show==='stockpick'&&(S.form.type==='MD'||S.form.type==='MU'))||(fd.show==='lead'&&S.form.origin==='Lead')||(fd.show==='declcirc'&&S.form.type==='MN'&&!!S.form.dmat)).map(fd=>`<div class="field"><label class="field-label">${esc(fd.l)}${fd.show==='funil'?' (padrão: 10)':''}</label>${
+        ${g.fields.filter(fd=>!['data_nascimento','decl_circ'].includes(fd.k)||negTemColuna(fd.k)).filter(fd=>!fd.show||(fd.show==='funil'&&FUNIL.includes(S.form.status))||(fd.show==='retoma'&&S.form.retoma==='Sim')||(fd.show==='perdido'&&S.form.status==='Perdido')||(fd.show==='garantia'&&S.form.gar==='Sim')||(fd.show==='stockpick'&&(S.form.type==='MD'||S.form.type==='MU'))||(fd.show==='lead'&&S.form.origin==='Lead')||(fd.show==='declcirc'&&S.form.type==='MN'&&!!S.form.dmat)).map(fd=>`<div class="field"><label class="field-label">${esc(fd.l)}${fd.show==='funil'?' (padrão: 10)':''}</label>${
           fd.t==='vendedores'?renderVendedorSelect(fd.k):
           (fd.k==='obs_gestor'&&!isAdmin())?`<div class="obs-chefe-ro">${S.form.obs_gestor?esc(S.form.obs_gestor):'<span style="color:var(--text3)">— sem nota —</span>'}</div>`:
           fd.t==='stockpick'?renderStockPick():
