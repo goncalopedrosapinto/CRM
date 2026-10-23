@@ -48,11 +48,16 @@ const jwt=sub=>b64({alg:'ES256'})+'.'+b64({sub,exp:Math.floor(Date.now()/1000)+3
  await p.evaluate(()=>{S.eotHist={};});await p.evaluate(()=>{_eotImgUrl.clear();loadEotHist('ABC123');});await p.waitForTimeout(800);
  const outro={gets:est.gets.length,src:await p.$$eval('.eoth-img img',x=>x.map(i=>(i.getAttribute('src')||'').slice(0,5)))};
  await colar('#eotm-com');await p.waitForTimeout(600);await p.screenshot({path:path.join(__dirname,'eot_imagens.png')});
- await p.click('.eoth-img');await p.waitForTimeout(300);const lb=await p.$('.eot-lb img')!==null;
+ await p.click('.eoth-img');await p.waitForTimeout(400);const lb=await p.$('.eot-lb img')!==null;
+ // a imagem em grande cabe toda no ecrã (não fica presa/cortada dentro da janela da EOT) e dá para ver em tamanho real
+ const medir=()=>p.evaluate(()=>{const i=document.querySelector('.eot-lb img');if(!i)return null;const r=i.getBoundingClientRect();
+   return {dentroJanela:!!i.closest('.eotm'),l:Math.round(r.left),t:Math.round(r.top),r:Math.round(r.right),b:Math.round(r.bottom),w:Math.round(r.width),nat:i.naturalWidth,vw:innerWidth,vh:innerHeight,zoom:!!document.querySelector('.eot-lb.zoom')};});
+ const ajust=await medir();await p.click('.eot-lb img');await p.waitForTimeout(250);const real=await medir();
+ await p.screenshot({path:path.join(__dirname,'eot_imagens_grande.png')});await p.click('.eot-lb img');await p.waitForTimeout(200);const deVolta=await medir();
  await p.keyboard.press('Escape');await p.waitForTimeout(250);
  const aposEsc={lb:await p.$('.eot-lb')!==null,modal:await p.$('.eotm')!==null};
  await p.evaluate(()=>{eotImgLimpar();render();});
- const R={rotulos,adenda,tamOriginal,pend,pendNotas,up:{url:up.url,tipo:up.tipo,tam:up.tam,auth:up.auth},post,depois,outro,lb,aposEsc,erros};
+ const R={ajust,real,deVolta,rotulos,adenda,tamOriginal,pend,pendNotas,up:{url:up.url,tipo:up.tipo,tam:up.tam,auth:up.auth},post,depois,outro,lb,aposEsc,erros};
  console.log(JSON.stringify(R,null,1));
  const ok={
   'Ctrl+V de um print junta a imagem ao comentário':pend===1,
@@ -62,6 +67,8 @@ const jwt=sub=>b64({alg:'ES256'})+'.'+b64({sub,exp:Math.floor(Date.now()/1000)+3
   'depois de enviar: sem pendentes e imagem no histórico':depois.pend===0&&depois.thumbs.length===1&&depois.thumbs[0]==='blob:'&&/Cliente mandou print/.test(depois.texto),
   'noutro computador: imagem pedida com sessão e mostrada como blob':outro.gets>=1&&outro.src[0]==='blob:',
   'abre a imagem em grande':lb,
+  'imagem em grande inteira no ecrã (fora da janela da EOT)':!!ajust&&!ajust.dentroJanela&&ajust.l>=0&&ajust.t>=0&&ajust.r<=ajust.vw&&ajust.b<=ajust.vh&&ajust.w>900,
+  'clicar na imagem mostra em tamanho real e volta a ajustar':!!real&&real.zoom&&real.w===real.nat&&!!deVolta&&!deVolta.zoom&&deVolta.w===ajust.w,
   'Escape fecha a imagem e não a EOT':!aposEsc.lb&&aposEsc.modal,
   'fase Adenda: escolhe-se no contrato, fecha a EOT e conta como renovado':adenda.opcao&&adenda.fecha&&adenda.semAcao&&adenda.verde&&adenda.ganho,
   'EOT: botão "Submeter" e secção de indicações (não "comentar")':rotulos.botao.trim()==='Submeter'&&/Indicações e histórico/.test(rotulos.sec)&&!/Coment/.test(rotulos.sec),

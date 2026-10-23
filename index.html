@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-23-c">
+<meta name="app-version" content="2026-10-23-d">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1940,7 +1940,9 @@ a{color:var(--blue)}
 .eoth-img{width:112px;height:80px;padding:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;cursor:zoom-in;background:var(--bg)}
 .eoth-img img{width:100%;height:100%;object-fit:cover;display:block}.eoth-img.falhou{cursor:default;opacity:.5}
 .eot-lb{position:fixed;inset:0;z-index:400;background:rgba(2,6,23,.85);display:flex;align-items:center;justify-content:center;padding:24px;cursor:zoom-out}
-.eot-lb img{max-width:min(1600px,94vw);max-height:90vh;border-radius:6px;box-shadow:0 12px 40px rgba(0,0,0,.5);background:#fff}
+.eot-lb img{max-width:94vw;max-height:calc(100vh - 80px);object-fit:contain;border-radius:6px;box-shadow:0 12px 40px rgba(0,0,0,.5);background:#fff;cursor:zoom-in}
+.eot-lb.zoom{display:block;overflow:auto;padding:24px}.eot-lb.zoom img{display:block;margin:0 auto;max-width:none;max-height:none;cursor:zoom-out}
+.eot-lb-dica{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);color:#fff;font-size:12px;opacity:.85;background:rgba(0,0,0,.45);padding:4px 10px;border-radius:999px;white-space:nowrap;pointer-events:none}
 .eot-lb-x{position:fixed;top:14px;right:14px;width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.15);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .eoth{display:flex;flex-direction:column;gap:8px;margin-top:10px}
 .eoth-it{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px}
@@ -2213,7 +2215,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-23-c';
+const APP_VERSION='2026-10-23-d';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -6052,16 +6054,16 @@ function eotModalHTML(){
       <div class="eotm-com"><textarea class="norma-inp" id="eotm-com" rows="2" aria-label="Nova indicação" placeholder="Escreve a indicação ou cola um print (Ctrl+V). Fica registada com o teu nome e a hora.">${esc(S.eotCom||'')}</textarea>
         <div class="eotm-com-b"><label class="btn btn-outline btn-sm eot-anexo" title="Anexar imagens (também podes colar com Ctrl+V)">${ico('plus','ic-sm')}<span>Imagem</span><input type="file" id="eot-img-file" accept="image/*" multiple hidden></label>
         <button class="btn btn-dark btn-sm" data-action="eotm-comentar" ${S._eotEnviando?'disabled':''}>${S._eotEnviando?((S.eotImgs||[]).length?'A enviar imagens…':'A submeter…'):'Submeter'}</button></div></div>
-      ${(S.eotImgs||[]).length?`<div class="eot-pend" aria-label="Imagens por enviar">${S.eotImgs.map(i=>`<div class="eot-pend-i"><img src="${esc(i.url)}" alt="Imagem por enviar"><button type="button" class="eot-pend-x" data-action="eot-img-tirar" data-id="${esc(i.id)}" aria-label="Tirar imagem">${ico('x')}</button><small>${Math.max(1,Math.round(i.blob.size/1024))} KB</small></div>`).join('')}<div class="eot-pend-n">${S.eotImgs.length} imagem${S.eotImgs.length>1?'ns':''} por enviar: carrega em Comentar.</div></div>`:''}
+      ${(S.eotImgs||[]).length?`<div class="eot-pend" aria-label="Imagens por enviar">${S.eotImgs.map(i=>`<div class="eot-pend-i"><img src="${esc(i.url)}" alt="Imagem por enviar"><button type="button" class="eot-pend-x" data-action="eot-img-tirar" data-id="${esc(i.id)}" aria-label="Tirar imagem">${ico('x')}</button><small>${Math.max(1,Math.round(i.blob.size/1024))} KB</small></div>`).join('')}<div class="eot-pend-n">${S.eotImgs.length} imagem${S.eotImgs.length>1?'ns':''} por enviar: carrega em Submeter.</div></div>`:''}
       ${S.eotHistErr?`<div class="mg-aviso" style="margin:8px 0">${esc(S.eotHistErr)}</div>`:''}
       <div class="eoth">${S.eotHistLoad===String(x.contrato)&&!H?'<div class="eoth-v">A carregar…</div>':(H&&H.length?H.map(eotHistHTML).join(''):(S.eotHistErr?'':'<div class="eoth-v">Ainda sem registos. As alterações e indicações a partir de agora ficam aqui.</div>'))}</div>
     </div>
-    ${S.eotImgVer?`<div class="eot-lb" data-action="eot-img-fechar" role="dialog" aria-label="Imagem"><img data-eot-img="${esc(S.eotImgVer)}" ${_eotImgUrl.get(S.eotImgVer)?`src="${esc(_eotImgUrl.get(S.eotImgVer))}"`:''} alt="Imagem da indicação"><button type="button" class="eot-lb-x" data-action="eot-img-fechar" aria-label="Fechar">${ico('x')}</button></div>`:''}
     <div class="eotm-foot">
       <button class="btn btn-orange" data-action="eotm-guardar" id="eotm-guardar">Guardar${nAlt?` (${nAlt})`:''}</button>
       <button class="btn btn-ghost" data-action="eotm-fechar">Cancelar</button>
     </div>
-  </div>`;
+  </div>
+  ${S.eotImgVer?`<div class="eot-lb${S.eotImgZoom?' zoom':''}" data-action="eot-img-fechar" role="dialog" aria-label="Imagem"><img data-eot-img="${esc(S.eotImgVer)}" ${_eotImgUrl.get(S.eotImgVer)?`src="${esc(_eotImgUrl.get(S.eotImgVer))}"`:''} alt="Imagem da indicação" data-action="eot-img-zoom" title="${S.eotImgZoom?'Ajustar ao ecrã':'Ver em tamanho real'}"><button type="button" class="eot-lb-x" data-action="eot-img-fechar" aria-label="Fechar">${ico('x')}</button><div class="eot-lb-dica">${S.eotImgZoom?'Tamanho real · clica na imagem para ajustar ao ecrã':'Clica na imagem para ver em tamanho real'} · Esc fecha</div></div>`:''}`;
 }
 function eotModalInput(el){const k=el.dataset.eotm;S.eotEd=Object.assign({},S.eotEd||{},{[k]:el.value});const b=document.getElementById('eotm-guardar');if(b){const n=Object.keys(eotPatch()).length;b.textContent='Guardar'+(n?` (${n})`:'');}}
 function eotFaseHTML(x){const f=x.fase||'Por contactar';const c=f==='Por contactar'?'neu':(EOT_GANHO.includes(f)?'ok':(['Liquidado','Perdido'].includes(f)?'mut':'mn'));return`<span class="atag atag-${c==='ok'?'ok':c}">${esc(f)}</span>${x.adenda_em&&f!=='Adenda'?`<span class="eot-ad" title="Contrato prolongado por adenda: conta como renovado">adenda ${esc(eotDataPT(x.adenda_em))}</span>`:''}`;}
@@ -9272,8 +9274,9 @@ function bindEvents(){
       case'eotm-guardar':eotModalGuardar();break;
       case'eotm-comentar':eotComentar();break;
       case'eot-img-tirar':eotImgTirar(el.dataset.id);break;
-      case'eot-img-ver':setState({eotImgVer:el.dataset.p});break;
-      case'eot-img-fechar':setState({eotImgVer:null});break;
+      case'eot-img-ver':setState({eotImgVer:el.dataset.p,eotImgZoom:false});break;
+      case'eot-img-fechar':setState({eotImgVer:null,eotImgZoom:false});break;
+      case'eot-img-zoom':setState({eotImgZoom:!S.eotImgZoom});break;
       case'seqf-fechar':setState({seqFora:null});break;
       case'seqf-registar':seqForaRegistar();break;
       case'seqf-preco-set':{const F=Object.assign({},S.seqFora||{});const v=Number(el.dataset.v);F.preco=String(v).replace('.',',');const pvp=numPT(F.pvp);F.pct=pvp?String(Math.round((1-v/pvp)*1000)/10):'';setState({seqFora:F});break;}
