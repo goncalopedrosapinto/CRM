@@ -54,7 +54,7 @@ const dias=n=>new Date(Date.now()-n*864e5).toISOString();
      return r.fulfill({status:204,body:''});}
    if(t==='baviera_control'&&r.request().method()==='POST'){const body=JSON.parse(r.request().postData());est.posts.push(body);const novo=Object.assign({id:200+est.posts.length,updated_at:new Date().toISOString()},body);est.negocios.push(novo);return r.fulfill({status:201,contentType:'application/json',body:JSON.stringify([novo])});}
    if(t==='baviera_control')return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(est.negocios)});
-   const body=t==='profiles'?[{id:'u1',nome:'Teste',role,linha:'motorrad',areas:[]},{id:'g1',nome:'Gonçalo Mendes',role:'vendedor',linha:'motorrad'},{id:'a1',nome:'António Felipe Gomes',role:'vendedor',linha:'motorrad'}]:t==='encomendas_bmw'?(u.includes('offset=0')?est.tabela:[]):[];
+   const body=t==='profiles'?[{id:'u1',nome:'Teste',role,linha:'motorrad',areas:[]},{id:'g1',nome:'Gonçalo Mendes',role:'vendedor',linha:'motorrad'},{id:'a1',nome:'António Felipe Gomes',role:'vendedor',linha:'motorrad'}]:t==='encomendas_bmw'?(u.includes('offset=0')?est.tabela:[]):t==='encomendas_chegadas'?(u.includes('offset=0')?(est.chegadas||[]):[]):[];
    return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(body)});});
   const p=await ctx.newPage();const erros=[];p.on('pageerror',e=>erros.push(e.message));
   return{ctx,p,est,erros,ir:async()=>{await p.goto(`http://localhost:${PORTA}/`);await p.waitForTimeout(1500);}};}
@@ -118,6 +118,7 @@ const dias=n=>new Date(Date.now()-n*864e5).toISOString();
     {id:102,vendedor_id:'u1',status:'Carteira',id_cliente:'Cliente C',model:'F 900 R',type:'MN',enc:'1234567',mes1:'2027/01',updated_at:dias(1)},
     {id:103,vendedor_id:'u1',status:'Morno',id_cliente:'Cliente M',model:'S 1000 RR',enc:'9000002',updated_at:dias(10)}];
   est.reservas=[{enc:'9000003',negocio_id:900,vendedor_id:'g1',status:'Morno',atualizado:dias(10)},{enc:'9000002',negocio_id:103,vendedor_id:'u1',status:'Morno',atualizado:dias(10)}];
+  est.chegadas=[{production_number:'9000005',data_193:'2026-06-20',data_198:'2026-07-03'}];
   await ir();
   const temMenu=await p.$('[data-action="go-vencomendas"]')!==null;
   await p.evaluate(()=>{document.querySelector('[data-action="go-vencomendas"]').click();});await p.waitForTimeout(600);
@@ -134,7 +135,7 @@ const dias=n=>new Date(Date.now()-n*864e5).toISOString();
   const vendCel=await p.evaluate(()=>{const ths=[...document.querySelectorAll('.enc-t th')].map(t=>t.textContent);const iV=ths.indexOf('Negociação'),iP=ths.indexOf('Produção');const o={};
     document.querySelectorAll('.enc-t tbody tr:not(.enc-grp)').forEach(tr=>{const td=tr.children;const s=td[iV].querySelector('.vtag');o[td[iP].textContent]=s?s.textContent+'|'+(s.title||''):'';});return o;});
   const diasSt=await p.evaluate(()=>{const ths=[...document.querySelectorAll('.enc-t th')].map(t=>t.textContent);const iD=ths.findIndex(t=>/^Data do estado/.test(t)),iP=ths.indexOf('Produção');const o={};
-    document.querySelectorAll('.enc-t tbody tr:not(.enc-grp)').forEach(tr=>{const td=tr.children;const b=iD>=0?td[iD].querySelector('.enc-ds'):null;o[td[iP].textContent]=iD<0?'(sem coluna)':(b?b.textContent.trim():'');});return {o,resumo:((document.querySelector('.enc-stock')||{}).textContent||'').replace(/\s+/g,' ').trim()};});
+    document.querySelectorAll('.enc-t tbody tr:not(.enc-grp)').forEach(tr=>{const td=tr.children;const b=iD>=0?[...td[iD].querySelectorAll('.enc-ds')].map(e=>e.textContent.trim()).join(' | '):'';o[td[iP].textContent]=iD<0?'(sem coluna)':b;});return {o,resumo:((document.querySelector('.enc-stock')||{}).textContent||'').replace(/\s+/g,' ').trim()};});
   await p.click('[data-action="enc-ordem"]');await p.waitForTimeout(250);
   const porStock=await p.evaluate(()=>[...document.querySelectorAll('.enc-t tbody tr')].map(tr=>tr.classList.contains('enc-grp')?'#'+tr.textContent.replace(/\s+/g,' ').trim():tr.children[0].textContent));
   // sem a reserva do 103, a 9000002 fica livre
@@ -214,8 +215,8 @@ const dias=n=>new Date(Date.now()-n*864e5).toISOString();
   '"Nenhum" num grupo esconde tudo':v.nNenhum===0,
   'coluna Opcionais escondida':!v.colOpcionais,
   'sem scroll horizontal da página no telemóvel':!v.scrollPagina,
-  'ordem das colunas':JSON.stringify(v.cab)===JSON.stringify(['Produção','Chassis','Código','Modelo','Cor','Opcionais','Estado','Data do estadodias em stock','Tipo','Produzida a','Semana de entrega','Entrega prevista de','Entrega prevista até','Cliente','Negociação']),
-  'dias em stock só nas motas no stand (193/198), desde a data do estado':v.diasSt.o['9000002']===diasDe('01.09.2026')+' dias'&&v.diasSt.o['9000005']===diasDe('03.07.2026')+' dias'&&v.diasSt.o['9000001']===diasDe('16.10.2026')+' dias'&&v.diasSt.o['9000004']===''&&v.diasSt.o['9000003']===''&&v.diasSt.o['9000006']==='',
+  'ordem das colunas':JSON.stringify(v.cab)===JSON.stringify(['Produção','Chassis','Código','Modelo','Cor','Opcionais','Estado','Data do estadodias desde 193 / 198','Tipo','Produzida a','Semana de entrega','Entrega prevista de','Entrega prevista até','Cliente','Negociação']),
+  'dias em stock: desde 193 e, se passou a 198, também desde 198 (datas guardadas)':v.diasSt.o['9000002']==='193 · '+diasDe('01.09.2026')+' d'&&v.diasSt.o['9000005']==='193 · '+diasDe('20.06.2026')+' d | 198 · '+diasDe('03.07.2026')+' d'&&v.diasSt.o['9000001']==='198 · '+diasDe('16.10.2026')+' d'&&v.diasSt.o['9000004']===''&&v.diasSt.o['9000003']===''&&v.diasSt.o['9000006']==='',
   'resumo: motas no stand; com cliente ou em negociação não contam como livres':v.diasSt.resumo==='3 no stand (193/198) · 0 livres'&&new RegExp('3 no stand \\(193/198\\) · 1 livre · média '+diasDe('01.09.2026')+' dias').test(v.livre.resumo)&&new RegExp('Mais antiga livre: R 1300 GS · cor N52 · '+diasDe('01.09.2026')+' dias · prod. 9000002').test(v.livre.resumo),
   'ordenar por tempo em stock: livres primeiro, depois as ocupadas, as mais antigas no topo':JSON.stringify(v.porStock.slice(0,5))===JSON.stringify(['#Em stock · vendidas ou em negociação 3 motas','9000005','9000002','9000001','#Ainda não chegaram ao stand 3 motas'])&&JSON.stringify(v.livre.linhas)===JSON.stringify(['#Em stock · livres para vender 1 mota','9000002','#Em stock · vendidas ou em negociação 2 motas','9000005','9000001']),
   'sem coluna Vendedor: sigla BMW (GM/FG) em Negociação, cm0… escondido':v.vendCel['9000005']==='GM|Gonçalo Mendes (sigla BMW)'&&v.vendCel['9000001']==='FG|António Felipe Gomes (sigla BMW)'&&v.vendCel['9000004']===''&&!v.cab.includes('Vendedor'),

@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-23-f">
+<meta name="app-version" content="2026-10-23-g">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1446,8 +1446,8 @@ html,body{overflow-x:hidden;max-width:100vw}
 .enc-pf{border-top:1px solid var(--border);padding:10px 0 4px}.enc-pf:first-of-type{border-top:0}
 .enc-pf-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}.enc-pf-h b{font-size:13px;word-break:break-all}
 @media(max-width:700px){.enc-origens{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.enc-ds{display:table;margin-top:3px;padding:1px 6px;border-radius:999px;background:var(--bg3);font-size:11px;white-space:nowrap;font-variant-numeric:tabular-nums}.enc-ds b{font-weight:800}
-.enc-ds-m{color:var(--amber)}.enc-ds-v{color:var(--red)}.enc-ds.enc-ds-m{background:var(--amber-bg,rgba(217,119,6,.12))}.enc-ds.enc-ds-v{background:var(--red-bg,rgba(220,38,38,.12))}.enc-th-sub{display:block;font-weight:600;color:var(--text3)}
+.enc-ds{display:table;margin-top:3px;padding:1px 5px;border-radius:999px;background:var(--bg3);font-size:11px;line-height:1.35;white-space:nowrap;font-variant-numeric:tabular-nums}.enc-ds b{font-weight:800}
+.enc-ds-m{color:var(--amber)}.enc-ds-v{color:var(--red)}.enc-ds.enc-ds-m{background:var(--amber-bg,rgba(217,119,6,.12))}.enc-ds.enc-ds-v{background:var(--red-bg,rgba(220,38,38,.12))}.enc-ds-2{background:none;padding-left:6px;color:var(--text2)}.enc-th-sub{display:block;font-weight:600;color:var(--text3)}
 .enc-stock{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;margin:8px 0 0;padding:8px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);font-size:13px;color:var(--text2)}
 .enc-stock b{color:var(--text)}.enc-stock b.enc-ds-m{color:var(--amber)}.enc-stock b.enc-ds-v{color:var(--red)}.enc-stock-m{margin-left:auto}
 .enc-tw{overflow:auto;max-height:calc(100vh - 250px);border:1px solid var(--border);border-radius:var(--r2);background:var(--surface);margin-top:8px}
@@ -1456,7 +1456,7 @@ html,body{overflow-x:hidden;max-width:100vw}
 .enc-t th.enc-th-opt{width:34%}
 .enc-t td{padding:6px 5px;border-bottom:1px solid var(--border);vertical-align:top;white-space:nowrap}
 .enc-t td.enc-cli{white-space:normal;min-width:90px}.enc-t td.enc-wk small{display:block;color:var(--text3);font-size:10.5px}
-.enc-t td.enc-opt{white-space:normal;min-width:150px;word-spacing:1px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;color:var(--text2);line-height:1.45}
+.enc-t td.enc-opt{white-space:normal;min-width:130px;word-spacing:1px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;color:var(--text2);line-height:1.45}
 .enc-t td.enc-mod{font-weight:700;white-space:normal;min-width:72px}.enc-t td.enc-d{font-variant-numeric:tabular-nums}
 .enc-t tr.enc-grp td{background:var(--bg);font-size:12px;padding:7px 10px;color:var(--text)}
 .enc-grp span{color:var(--text3);margin-left:6px;font-size:11px}
@@ -2243,7 +2243,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-23-f';
+const APP_VERSION='2026-10-23-g';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -4894,8 +4894,14 @@ function encColsDe(O,ocultas){const fora=O==='aveiro'?['dealer_nome','regiao']:O
 // ---- Dias em stock: motas já no concessionário (estado 193 ou 198), contados desde a data do estado ----
 const ENC_EM_STOCK=['193','198'];
 function encEmStock(x){return !!x&&ENC_EM_STOCK.includes(String(x.order_status||'').trim());}
-function encDiasStock(x){if(!encEmStock(x)||!x.ts_order_status)return null;const t=new Date(String(x.ts_order_status).slice(0,10)+'T00:00:00');if(isNaN(t))return null;
-  const h=new Date();h.setHours(0,0,0,0);return Math.max(0,Math.round((h-t)/864e5));}
+function encDiasDesde(d){if(!d)return null;const t=new Date(String(d).slice(0,10)+'T00:00:00');if(isNaN(t))return null;const h=new Date();h.setHours(0,0,0,0);return Math.max(0,Math.round((h-t)/864e5));}
+// quando chegou a 193 e a 198: o que ficou guardado dos carregamentos anteriores (tabela encomendas_chegadas) + a data do estado atual
+function encChegada(x){if(!encEmStock(x))return null;const st=String(x.order_status).trim();const g=(S.encCheg&&S.encCheg.get(String(x.production_number)))||{};
+  const ts=x.ts_order_status?String(x.ts_order_status).slice(0,10):null;const menor=(a,b)=>!a?b:(!b?a:(a<b?a:b));
+  const d193=st==='193'?menor(g.data_193||null,ts):(g.data_193||null);const d198=st==='198'?menor(g.data_198||null,ts):null;
+  return d193||d198?{d193,d198}:null;}
+// dias em stock = desde a primeira chegada (193; se não se sabe, 198)
+function encDiasStock(x){const c=encChegada(x);if(!c)return null;const a=c.d193,b=c.d198;return encDiasDesde(!a?b:(!b?a:(a<b?a:b)));}
 // livre = em stock, sem cliente no ficheiro BMW e sem negócio a negociar/vendido na plataforma
 function encLivre(x,M){return encEmStock(x)&&!String(x.customer_last||'').trim()&&!['Vendida','Em negociação'].includes(encNegEstado(x,M));}
 function encDiasCls(n){return n==null?'':(n>=180?'enc-ds-v':(n>=90?'enc-ds-m':''));}
@@ -4990,7 +4996,8 @@ function encOrdenar(arr){const t=x=>{const i=ENC_TIPOS.indexOf(x.processing_type
   const e=x=>{const n=parseInt(x.order_status,10);return isNaN(n)?-1:n;};
   return arr.slice().sort((a,b)=>e(b)-e(a)||String(a.model_code||'').localeCompare(String(b.model_code||''))||t(a)-t(b)||String(a.processing_type||'').localeCompare(String(b.processing_type||''))||String(a.production_number).localeCompare(String(b.production_number),undefined,{numeric:true}));}
 async function loadEnc(){
-  try{const [d]=await Promise.all([apiTodos('/encomendas_bmw?select=*'),loadEncRes()]);S.enc=encOrdenar(d);S.encErr='';}
+  try{const [d,ch]=await Promise.all([apiTodos('/encomendas_bmw?select=*'),apiTodos('/encomendas_chegadas?select=production_number,data_193,data_198').catch(()=>null),loadEncRes()]);
+    S.enc=encOrdenar(d);S.encErr='';S.encCheg=Array.isArray(ch)?new Map(ch.map(c=>[String(c.production_number),c])):null;}
   catch(e){S.enc=S.enc||[];S.encErr=erroTexto(e);}
   S.encLoaded=true;
 }
@@ -5066,8 +5073,11 @@ function encView(){
     return`<button class="enc-or ${o===O?'on':''}" role="tab" aria-selected="${o===O}" data-action="enc-origem" data-o="${o}"><span class="enc-or-t">${esc(lb)}</span><span class="enc-or-n">${n}</span><small>${o==='tudo'?'as três origens':(u?'carregado a '+esc(fData(u)):'sem ficheiro')}</small></button>`;}).join('')}</div>`;
   const P=S.encPrev;
   const celula=(x,[c,,,t])=>{const v=x[c];
-    if(t==='d'&&c==='ts_order_status'&&O==='aveiro'){const n=encDiasStock(x);
-      return`<td class="enc-d">${esc(encDataPT(v))}${n==null?'':`<div class="enc-ds ${encDiasCls(n)}" title="Em stock desde ${esc(encDataPT(v))} (estado ${esc(x.order_status)})"><b>${n}</b> dias</div>`}</td>`;}
+    if(t==='d'&&c==='ts_order_status'&&O==='aveiro'){const ch=encChegada(x),n=encDiasStock(x);let ds='';
+      const lin=(e,d,cls)=>`<div class="enc-ds ${cls}" title="Desde ${e} (${esc(encDataPT(d))}): ${encDiasDesde(d)} dias">${e} · <b>${encDiasDesde(d)}</b> d</div>`;
+      if(ch&&ch.d193&&ch.d198)ds=lin('193',ch.d193,encDiasCls(n))+lin('198',ch.d198,'enc-ds-2');
+      else if(ch)ds=lin(ch.d193?'193':'198',ch.d193||ch.d198,encDiasCls(n));
+      return`<td class="enc-d">${esc(encDataPT(v))}${ds}</td>`;}
     if(t==='d')return`<td class="enc-d">${esc(encDataPT(v))}</td>`;
     if(t==='w'){const w=encSemana(v),i=w.indexOf(' · ');return`<td class="enc-d enc-wk" title="${esc(v||'')}">${i>0?esc(w.slice(0,i))+'<small>'+esc(w.slice(i+3))+'</small>':esc(w)}</td>`;}
     if(c==='customer_last'||c==='dealer_nome')return`<td class="enc-cli">${esc(v||'')}</td>`;
@@ -5142,8 +5152,8 @@ function encView(){
     ${painel}
     ${ativos?`<div class="vchips" style="padding:8px 0 0">${ativos}</div>`:''}
     <div class="seq-res"><b>${arr.length}</b> de ${todos.length} motas ${esc(O==='tudo'?'em todas as origens':'no '+encOrigemLb(O))}${porTipo.length?' · '+porTipo.map(([t,n])=>`${t} ${n}`).join(' · '):''}</div>
-    ${arr.length?`<div class="enc-tw"><table class="enc-t"><thead><tr>${cols.map(([c,h,lb])=>`<th title="${esc(h)}"${c==='options'?' class="enc-th-opt"':''}>${esc(lb)}${c==='ts_order_status'&&O==='aveiro'?'<small class="enc-th-sub">dias em stock</small>':''}</th>`).join('')}<th>Negociação</th></tr></thead><tbody>${corpo}</tbody></table></div>`:'<div class="gpp-empty">Nada com esta pesquisa ou filtros.</div>'}
-    <div class="seq-nota" style="margin-top:12px">${O==='aveiro'?'Dias em stock (por baixo da data do estado): dias desde essa data, para as motas já no stand (estado 193 ou 198); amarelo a partir de 90 dias, vermelho a partir de 180. ':''}Ordenado por estado (o mais avançado primeiro), depois por código de modelo e por tipo (ST, US, DE, CS). “Negociação” vem dos negócios da plataforma: Quente/Morno = em negociação, Carteira/Retail = vendida. “Entrega prevista de/até” são as datas F3 da BMW; “Semana de entrega” é a Exp. Del. Wk. O mapa é o do dia em que foi carregado: confirma no portal BMW antes de prometer uma data ao cliente.</div>`}
+    ${arr.length?`<div class="enc-tw"><table class="enc-t"><thead><tr>${cols.map(([c,h,lb])=>`<th title="${esc(h)}"${c==='options'?' class="enc-th-opt"':''}>${esc(lb)}${c==='ts_order_status'&&O==='aveiro'?'<small class="enc-th-sub">dias desde 193 / 198</small>':''}</th>`).join('')}<th>Negociação</th></tr></thead><tbody>${corpo}</tbody></table></div>`:'<div class="gpp-empty">Nada com esta pesquisa ou filtros.</div>'}
+    <div class="seq-nota" style="margin-top:12px">${O==='aveiro'?'Dias em stock (por baixo da data do estado): desde que a mota chegou a 193 e, se já passou a 198, também desde 198; amarelo a partir de 90 dias, vermelho a partir de 180 (conta a primeira chegada). ':''}Ordenado por estado (o mais avançado primeiro), depois por código de modelo e por tipo (ST, US, DE, CS). “Negociação” vem dos negócios da plataforma: Quente/Morno = em negociação, Carteira/Retail = vendida. “Entrega prevista de/até” são as datas F3 da BMW; “Semana de entrega” é a Exp. Del. Wk. O mapa é o do dia em que foi carregado: confirma no portal BMW antes de prometer uma data ao cliente.</div>`}
   </div>`;
 }
 // ---- Encomendas BMW · "estou a negociar esta mota" ----
@@ -7422,6 +7432,9 @@ function EXPORT_FOLHAS(){
       {c:'marca',l:'Marca'},{c:'familia',l:'Família'},{c:'subfamilia',l:'Sub-família'},{c:'qualidade',l:'Qualidade stock'},{c:'antig_saida',l:'Antiguidade última saída'},
       {c:'ult_saida',l:'Última saída',f:d},{c:'qtd',l:'Qtd'},{c:'custo_unit',l:'Custo unitário'},{c:'custo_total',l:'Custo total'},{c:'procura',l:'Procura média mensal'},
       {c:'desc_max',l:'Desconto máx. s/ PVP',f:v=>v==null?'':Math.round(v*100)+'%'},{c:'importado_em',l:'Mapa de',f:dt},
+    ]},
+    {nome:'Stock Aveiro chegadas',path:'/encomendas_chegadas?select=*&order=production_number.asc',cols:[
+      {c:'production_number',l:'Production Number'},{c:'data_193',l:'Chegou a 193',f:d},{c:'data_198',l:'Chegou a 198',f:d},{c:'atualizado_em',l:'Atualizado',f:dt},
     ]},
     {nome:'Stock BMW Novas',path:'/encomendas_bmw?select=*&order=origem.asc,model_code.asc,production_number.asc',cols:[
       {c:'origem',l:'Origem',f:v=>encOrigemLb(v||'aveiro')},...ENC_COLS.map(([c,h,,t])=>({c,l:h,f:t==='d'?d:undefined})),{c:'importado_em',l:'Mapa de',f:dt},
