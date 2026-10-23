@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-23-g">
+<meta name="app-version" content="2026-10-23-h">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1446,6 +1446,7 @@ html,body{overflow-x:hidden;max-width:100vw}
 .enc-pf{border-top:1px solid var(--border);padding:10px 0 4px}.enc-pf:first-of-type{border-top:0}
 .enc-pf-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}.enc-pf-h b{font-size:13px;word-break:break-all}
 @media(max-width:700px){.enc-origens{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.enc-us{display:block;margin-top:3px;font-size:10.5px;font-weight:800;color:var(--red);white-space:nowrap}
 .enc-ds{display:table;margin-top:3px;padding:1px 5px;border-radius:999px;background:var(--bg3);font-size:11px;line-height:1.35;white-space:nowrap;font-variant-numeric:tabular-nums}.enc-ds b{font-weight:800}
 .enc-ds-m{color:var(--amber)}.enc-ds-v{color:var(--red)}.enc-ds.enc-ds-m{background:var(--amber-bg,rgba(217,119,6,.12))}.enc-ds.enc-ds-v{background:var(--red-bg,rgba(220,38,38,.12))}.enc-ds-2{background:none;padding-left:6px;color:var(--text2)}.enc-th-sub{display:block;font-weight:600;color:var(--text3)}
 .enc-stock{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;margin:8px 0 0;padding:8px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);font-size:13px;color:var(--text2)}
@@ -2243,7 +2244,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-23-g';
+const APP_VERSION='2026-10-23-h';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -4904,6 +4905,22 @@ function encChegada(x){if(!encEmStock(x))return null;const st=String(x.order_sta
 function encDiasStock(x){const c=encChegada(x);if(!c)return null;const a=c.d193,b=c.d198;return encDiasDesde(!a?b:(!b?a:(a<b?a:b)));}
 // livre = em stock, sem cliente no ficheiro BMW e sem negócio a negociar/vendido na plataforma
 function encLivre(x,M){return encEmStock(x)&&!String(x.customer_last||'').trim()&&!['Vendida','Em negociação'].includes(encNegEstado(x,M));}
+// ---- Lembrete ao chefe: motas ST de Aveiro com 90+ dias em stock → pedir à BMW a mudança para US ----
+const ENC_ST_US_DIAS=90;
+function encUsFeitos(){try{return JSON.parse(localStorage.getItem('bm_enc_us_feito')||'{}')||{};}catch(e){return{};}}
+function encStUsAplica(x){return encOrigemDe(x)==='aveiro'&&String(x.processing_type||'').trim()==='ST'&&(encDiasStock(x)||0)>=ENC_ST_US_DIAS;}
+// "Já pedi" esconde até chegar um ficheiro novo; se ainda vier em ST, volta a aparecer
+function encStParaUs(){if(!isAdmin())return[];const f=encUsFeitos();
+  return (S.enc||[]).filter(x=>encStUsAplica(x)&&f[String(x.production_number)]!==String(x.importado_em||''))
+    .sort((a,b)=>(encDiasStock(b)||0)-(encDiasStock(a)||0));}
+function encStParaUsHTML(){const L=encStParaUs();if(!L.length)return'';const M=encResMapa();
+  return`<div class="mr-box us-box"><div class="mr-h"><span>Mudar de ST para US · <b>${L.length}</b></span><small>Motas de stock (ST) de Aveiro com ${ENC_ST_US_DIAS} dias ou mais no stand. Quando o ficheiro as trouxer em US, saem daqui sozinhas.</small></div>
+  ${L.map(x=>{const n=encDiasStock(x);const ne=encNegEstado(x,M);return`<div class="mr-row"><span class="atag atag-al">ST → US</span>
+    <div class="mr-txt"><div><b>${esc(x.model_desc||x.model_code||'—')}</b> · cor ${esc(x.color_code||'—')} · prod. <span class="sec-mono">${esc(x.production_number)}</span>${ne!=='Livre'?` <span class="gpp-tipo-badge">${esc(ne)}</span>`:''}</div>
+    <span class="mr-sub"><b class="${encDiasCls(n)}">${n} dias</b> em stock · estado ${esc(x.order_status||'')} desde ${esc(encDataPT(x.ts_order_status))}</span></div>
+    <div class="mr-acts"><button class="btn btn-outline btn-sm" data-action="us-ver" data-pn="${esc(x.production_number)}">Ver no stock</button><button class="btn btn-green btn-sm" data-action="us-feito" data-pn="${esc(x.production_number)}" title="Esconde até ao próximo ficheiro; se ainda vier em ST, volta a aparecer">Já pedi a mudança</button></div></div>`;}).join('')}</div>`;}
+function encUsMarcar(pn){const x=(S.enc||[]).find(e=>String(e.production_number)===String(pn));if(!x)return;const f=encUsFeitos();f[String(pn)]=String(x.importado_em||'');
+  try{localStorage.setItem('bm_enc_us_feito',JSON.stringify(f));}catch(e){}toast('Fica escondida até ao próximo ficheiro de Aveiro');render();}
 function encDiasCls(n){return n==null?'':(n>=180?'enc-ds-v':(n>=90?'enc-ds-m':''));}
 // "Salesperson Number": as siglas dos vendedores (GM, FG/AG…) aparecem; os códigos cm0… são utilizadores do portal BMW e não se mostram
 function encSigla(v){const s=String(v||'').trim().toUpperCase();return /^[A-Z]{2,3}$/.test(s)?s:'';}
@@ -5085,7 +5102,7 @@ function encView(){
     if(c==='options')return`<td class="enc-opt">${esc(v||'')}</td>`;
     if(t==='v'){const sig=encSigla(v);if(!sig)return'<td></td>';const p=encVendDe(sig);
       return p?`<td><span class="vtag" style="background:${corVend(p.id)}" title="${esc(p.nome||'')}">${esc(sig)}</span></td>`:`<td><span class="enc-tp">${esc(sig)}</span></td>`;}
-    if(c==='processing_type')return`<td><span class="enc-tp enc-tp-${esc(String(v||'').toLowerCase())}">${esc(v||'')}</span></td>`;
+    if(c==='processing_type')return`<td><span class="enc-tp enc-tp-${esc(String(v||'').toLowerCase())}">${esc(v||'')}</span>${isAdmin()&&encStUsAplica(x)?'<span class="enc-us" title="90+ dias em stock: pedir à BMW a mudança para US">→ US</span>':''}</td>`;
     if(c==='model_desc'){const m=String(v||'');return`<td class="enc-mod">${esc(m.length<=10?m.replace(/ /g,'\u00a0'):m)}</td>`;}
     if(c==='production_number')return`<td class="sec-mono enc-pn">${esc(v||'')}${O==='tudo'?`<small class="enc-pn-or">${esc(encOrigemLb(encOrigemDe(x)).replace('Stock ',''))}</small>`:''}</td>`;
     if(['chassis','model_code','color_code','order_status'].includes(c))return`<td class="sec-mono">${esc(v||'')}</td>`;
@@ -5148,7 +5165,7 @@ function encView(){
     </div>
     ${O==='aveiro'?(()=>{const st=todos.filter(encEmStock);if(!st.length)return'';const liv=st.filter(x=>encLivre(x,M)).sort((a,b)=>(encDiasStock(b)??-1)-(encDiasStock(a)??-1));
       const media=Math.round(liv.reduce((a,x)=>a+(encDiasStock(x)||0),0)/(liv.length||1));const v90=liv.filter(x=>(encDiasStock(x)||0)>=90).length;const m=liv[0];
-      return`<div class="enc-stock"><span><b>${st.length}</b> no stand (193/198) · <b>${liv.length}</b> livre${liv.length!==1?'s':''}${liv.length?` · média <b>${media}</b> dias`:''}${v90?` · <b class="enc-ds-m">${v90}</b> com 90+ dias`:''}</span>${m?`<span class="enc-stock-m">Mais antiga livre: <b>${esc(m.model_desc||m.model_code||'')}</b> · cor ${esc(m.color_code||'—')} · <b class="${encDiasCls(encDiasStock(m))}">${encDiasStock(m)} dias</b> · prod. <span class="sec-mono">${esc(m.production_number)}</span></span>`:''}</div>`;})():''}
+      return`<div class="enc-stock"><span><b>${st.length}</b> no stand (193/198) · <b>${liv.length}</b> livre${liv.length!==1?'s':''}${liv.length?` · média <b>${media}</b> dias`:''}${v90?` · <b class="enc-ds-m">${v90}</b> com 90+ dias`:''}${isAdmin()&&st.filter(encStUsAplica).length?` · <b class="enc-ds-v">${st.filter(encStUsAplica).length}</b> ST para passar a US`:''}</span>${m?`<span class="enc-stock-m">Mais antiga livre: <b>${esc(m.model_desc||m.model_code||'')}</b> · cor ${esc(m.color_code||'—')} · <b class="${encDiasCls(encDiasStock(m))}">${encDiasStock(m)} dias</b> · prod. <span class="sec-mono">${esc(m.production_number)}</span></span>`:''}</div>`;})():''}
     ${painel}
     ${ativos?`<div class="vchips" style="padding:8px 0 0">${ativos}</div>`:''}
     <div class="seq-res"><b>${arr.length}</b> de ${todos.length} motas ${esc(O==='tudo'?'em todas as origens':'no '+encOrigemLb(O))}${porTipo.length?' · '+porTipo.map(([t,n])=>`${t} ${n}`).join(' · '):''}</div>
@@ -7750,7 +7767,7 @@ function renderDashboard(){
 
   const alertasNav=calcAlerts(recs);
   const nSem298=recs.filter(r=>r.status==='Retail'&&!r.col_298).length;
-  const nPend=alertasNav.filter(x=>!String(x.id).startsWith('funil_')).reduce((a,x)=>a+(x.count||0),0)+nSem298+lembretesChefe().length+mesRefLista().length+fichasAprovarLista().length;
+  const nPend=alertasNav.filter(x=>!String(x.id).startsWith('funil_')).reduce((a,x)=>a+(x.count||0),0)+nSem298+lembretesChefe().length+mesRefLista().length+fichasAprovarLista().length+encStParaUs().length;
   const nPerd=recs.filter(r=>r.status==='Perdido').length;const nNotif=notifLista().length;
   const badgeDe=id=>{
     if(id==='atratar'&&(nPend+nNotif))return`<span class="gpp-nav-badge alert">${nPend+nNotif}</span>`;
@@ -9144,7 +9161,7 @@ function renderDashboard(){
           <td>${vendTag(r.vendedor_id)}</td></tr>`).join('')}</tbody>
       </table></div>`}`;
   }
-  else if(sec==='home')body=lembretesHTML()+notifBannerHTML()+fichasAprovarHTML()+mesRefHTML()+mesBar+(recs.filter(r=>r.status==='Retail'&&!r.col_298).length?`${(()=>{const semData=recs.filter(r=>r.status==='Retail'&&!r.col_298);return`<div class="gpp-alerta ${S.dashAlertOpen==='sem298'?'open':''}"><div class="gpp-alerta-head" data-action="dash-alert-toggle" data-id="sem298"><span>⚠️</span><span><b>${semData.length}</b> mota${semData.length>1?'s':''} em Retail sem data 298 — não contam nos totais</span><span class="gpp-alerta-arrow">${S.dashAlertOpen==='sem298'?'▾':'▸'}</span></div>${S.dashAlertOpen==='sem298'?`<div class="gpp-alerta-lista">${semData.map(r=>`<div class="gpp-alerta-item" data-action="open-record-from-dash" data-id="${r.id}"><b>${esc(r.id_cliente||'(sem cliente)')}</b><span>${esc(r.model||'')} ${esc(r.version||'')}</span><span class="gpp-alerta-tipo">${esc(r.type||'?')}</span><span style="color:var(--text3)">${esc(vendName(r.vendedor_id)||'')}</span></div>`).join('')}</div>`:''}</div>`})()}`:'')+tabelaResumo()+homeAcoes();
+  else if(sec==='home')body=lembretesHTML()+notifBannerHTML()+fichasAprovarHTML()+encStParaUsHTML()+mesRefHTML()+mesBar+(recs.filter(r=>r.status==='Retail'&&!r.col_298).length?`${(()=>{const semData=recs.filter(r=>r.status==='Retail'&&!r.col_298);return`<div class="gpp-alerta ${S.dashAlertOpen==='sem298'?'open':''}"><div class="gpp-alerta-head" data-action="dash-alert-toggle" data-id="sem298"><span>⚠️</span><span><b>${semData.length}</b> mota${semData.length>1?'s':''} em Retail sem data 298 — não contam nos totais</span><span class="gpp-alerta-arrow">${S.dashAlertOpen==='sem298'?'▾':'▸'}</span></div>${S.dashAlertOpen==='sem298'?`<div class="gpp-alerta-lista">${semData.map(r=>`<div class="gpp-alerta-item" data-action="open-record-from-dash" data-id="${r.id}"><b>${esc(r.id_cliente||'(sem cliente)')}</b><span>${esc(r.model||'')} ${esc(r.version||'')}</span><span class="gpp-alerta-tipo">${esc(r.type||'?')}</span><span style="color:var(--text3)">${esc(vendName(r.vendedor_id)||'')}</span></div>`).join('')}</div>`:''}</div>`})()}`:'')+tabelaResumo()+homeAcoes();
   else if(sec==='funil')body=funilView();
   else if(sec==='fechados')body=fechadosView();
   else if(sec==='saude')body=saudeEquipa();
@@ -9161,7 +9178,7 @@ function renderDashboard(){
   else if(sec==='carteira')body=carteiraChart()+listaEstado('Carteira',r=>r.mes1);
   else if(sec==='retail')body=retailView();
   else if(sec==='comercio')body=comercioView();
-  else if(sec==='pendentes')body=lembretesHTML()+fichasAprovarHTML()+mesRefHTML()+acoesHoje()+pendentesView();
+  else if(sec==='pendentes')body=lembretesHTML()+fichasAprovarHTML()+encStParaUsHTML()+mesRefHTML()+acoesHoje()+pendentesView();
   else if(sec==='notificacoes')body=`<div class="nt-pad">${notifView()}</div>`;
   else if(sec==='stock')body=stockView('usada');
   else if(sec==='depreciacao')body=depreciacaoView();
@@ -9494,6 +9511,8 @@ function bindEvents(){
       case'enc-libertar':encLibertar(el.dataset.id,el.dataset.pn);break;
       case'enc-cancelar':setState({encPrev:null,encErrImp:''});break;
       case'enc-painel':setState({encPainel:!S.encPainel});break;
+      case'us-feito':encUsMarcar(el.dataset.pn);break;
+      case'us-ver':{S.gppBusca='';S.gppMais=false;try{localStorage.setItem('bm_enc_origem','aveiro');}catch(e){}setState({screen:'dashboard',gppSec:'encomendas',encOrigem:'aveiro',encF:{q:String(el.dataset.pn||''),ex:{}},encPainel:false});break;}
       case'enc-ordem':{const v=S.encOrdem==='stock'?'':'stock';try{localStorage.setItem('bm_enc_ordem',v);}catch(e){}setState({encOrdem:v});break;}
       case'enc-origem':{const o=el.dataset.o;try{localStorage.setItem('bm_enc_origem',o);}catch(e){}setState({encOrigem:o,encMsg:''});break;}
       case'enc-todos':{const F=Object.assign({q:'',ex:{}},S.encF||{});F.ex=Object.assign({},F.ex||{});const g=el.dataset.g;
@@ -9697,7 +9716,7 @@ function bindEvents(){
 
 function collectFormData(){document.querySelectorAll('input[data-field],select[data-field],textarea[data-field]').forEach(el=>{const k=el.dataset.field;let v=el.value;if(el.dataset.fmt==='month'&&v)v=v.replace('-','/');S.form[k]=v})}
 
-function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadComsRecentes(),loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes(),loadTransicoes(),loadNorma(),loadFichasIdx(),loadFichasAprovar(),loadEot(),loadComFecho()]):(isVendedor()?Promise.all([loadComsRecentes(),loadTeam(),loadEventos(),loadInscricoes(),loadInscricoesAll(),loadMargens(),loadEntregas(),loadEquipamento(),loadFichasIdx(),loadEot(),loadComFecho()]):(S.me&&S.me.role==='secretario'?Promise.all([loadTeam(),loadEntregas(),...(isFinanceiro()?[loadEot()]:[])]):(S.me&&S.me.role==='assessor'?Promise.all([loadTeam(),loadEquipamento(),...(isSecretaria()?[loadEntregas()]:[])]):(S.me&&S.me.role==='financeiro'?Promise.all([loadTeam(),loadEot()]):Promise.all([loadTeam()])))));return Promise.all([extra,(!isAdmin()&&temArea('previsao'))?loadObjEquipa():null])}).then(function(){return loadRecords()}).then(function(){/* notificações não atrasam a entrada */loadNotif().then(function(){if(S.screen&&S.screen!=='loading'){if(typeof aEscrever==='function'&&aEscrever())S._renderPend=true;else renderSeguro();}});}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:ecraInicial(),loading:false,statusFilter:isAdmin()?S.statusFilter:'_hoje'});_ultimoAuto=Date.now();restaurarRascunho();})}
+function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadComsRecentes(),loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes(),loadTransicoes(),loadNorma(),loadFichasIdx(),loadFichasAprovar(),loadEot(),loadComFecho()]):(isVendedor()?Promise.all([loadComsRecentes(),loadTeam(),loadEventos(),loadInscricoes(),loadInscricoesAll(),loadMargens(),loadEntregas(),loadEquipamento(),loadFichasIdx(),loadEot(),loadComFecho()]):(S.me&&S.me.role==='secretario'?Promise.all([loadTeam(),loadEntregas(),...(isFinanceiro()?[loadEot()]:[])]):(S.me&&S.me.role==='assessor'?Promise.all([loadTeam(),loadEquipamento(),...(isSecretaria()?[loadEntregas()]:[])]):(S.me&&S.me.role==='financeiro'?Promise.all([loadTeam(),loadEot()]):Promise.all([loadTeam()])))));return Promise.all([extra,(!isAdmin()&&temArea('previsao'))?loadObjEquipa():null])}).then(function(){return loadRecords()}).then(function(){/* notificações e stock não atrasam a entrada */const _rs=function(){if(S.screen&&S.screen!=='loading'){if(typeof aEscrever==='function'&&aEscrever())S._renderPend=true;else renderSeguro();}};loadNotif().then(_rs);if(isAdmin()&&!S.encLoaded&&!S._encLoading){S._encLoading=true;loadEnc().finally(function(){S._encLoading=false;_rs();});}}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:ecraInicial(),loading:false,statusFilter:isAdmin()?S.statusFilter:'_hoje'});_ultimoAuto=Date.now();restaurarRascunho();})}
 (function(){
   S.screen='loading';render();
   // Link de recuperacao do Supabase: #access_token=...&type=recovery

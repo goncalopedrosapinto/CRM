@@ -54,5 +54,6 @@ jobs:
       - run: npm run adenda
       - run: npm run alertas
       - run: npm run notificacoes
+      - run: npm run stus
       - run: npm run xss
       - run: npm run integridade
