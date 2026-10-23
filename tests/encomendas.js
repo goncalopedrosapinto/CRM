@@ -4,6 +4,7 @@
 // Dados 100% fictícios (o repositório é público: nunca pôr aqui um ficheiro real, tem apelidos de clientes).
 const {chromium}=require('playwright');const http=require('http');const fs=require('fs');const path=require('path');const XLSX=require('xlsx');
 const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'));
+const diasDe=s=>{const [d,m,y]=s.split('.').map(Number);const t=new Date(y,m-1,d);const h=new Date();h.setHours(0,0,0,0);return Math.max(0,Math.round((h-t)/864e5));};
 const PORTA=8766;
 const srv=http.createServer((q,s)=>{s.writeHead(200,{'content-type':'text/html; charset=utf-8'});s.end(fs.readFileSync(FILE));}).listen(PORTA);
 const b64=o=>Buffer.from(JSON.stringify(o)).toString('base64url');
@@ -132,6 +133,15 @@ const dias=n=>new Date(Date.now()-n*864e5).toISOString();
   const cab=await p.$$eval('.enc-t th',x=>x.map(t=>t.textContent));
   const vendCel=await p.evaluate(()=>{const ths=[...document.querySelectorAll('.enc-t th')].map(t=>t.textContent);const iV=ths.indexOf('Negociação'),iP=ths.indexOf('Produção');const o={};
     document.querySelectorAll('.enc-t tbody tr:not(.enc-grp)').forEach(tr=>{const td=tr.children;const s=td[iV].querySelector('.vtag');o[td[iP].textContent]=s?s.textContent+'|'+(s.title||''):'';});return o;});
+  const diasSt=await p.evaluate(()=>{const ths=[...document.querySelectorAll('.enc-t th')].map(t=>t.textContent);const iD=ths.findIndex(t=>/^Data do estado/.test(t)),iP=ths.indexOf('Produção');const o={};
+    document.querySelectorAll('.enc-t tbody tr:not(.enc-grp)').forEach(tr=>{const td=tr.children;const b=iD>=0?td[iD].querySelector('.enc-ds'):null;o[td[iP].textContent]=iD<0?'(sem coluna)':(b?b.textContent.trim():'');});return {o,resumo:((document.querySelector('.enc-stock')||{}).textContent||'').replace(/\s+/g,' ').trim()};});
+  await p.click('[data-action="enc-ordem"]');await p.waitForTimeout(250);
+  const porStock=await p.evaluate(()=>[...document.querySelectorAll('.enc-t tbody tr')].map(tr=>tr.classList.contains('enc-grp')?'#'+tr.textContent.replace(/\s+/g,' ').trim():tr.children[0].textContent));
+  // sem a reserva do 103, a 9000002 fica livre
+  const livre=await p.evaluate(()=>{const r=S.records.find(x=>x.id===103);const e=r.enc;const R0=S.encRes;r.enc='';S.encRes=(S.encRes||[]).filter(x=>x.enc!=='9000002');render();
+    const o={resumo:((document.querySelector('.enc-stock')||{}).textContent||'').replace(/\s+/g,' ').trim(),linhas:[...document.querySelectorAll('.enc-t tbody tr')].slice(0,5).map(tr=>tr.classList.contains('enc-grp')?'#'+tr.textContent.replace(/\s+/g,' ').trim():tr.children[0].textContent)};
+    r.enc=e;S.encRes=R0;render();return o;});
+  await p.click('[data-action="enc-ordem"]');await p.waitForTimeout(200);
   const filtroVend=await p.evaluate(()=>[...new Set(S.enc.map(x=>encValor(x,'_vend')))].sort());
   await p.click('[data-action="enc-painel"]');await p.waitForTimeout(200);
   await p.uncheck('input[data-enc-g="processing_type"][value="ST"]');await p.waitForTimeout(300);
@@ -172,7 +182,7 @@ const dias=n=>new Date(Date.now()-n*864e5).toISOString();
   await p.click('.qf [data-action="save-record"]');await p.waitForTimeout(800);
   const novoPost=est.posts.slice(-1)[0]||null;
   R.neg={novoForm,novoPost,neg1,modal,patch,neg2,modalFechou,alertas,opcoes,dicaOcupada,dicaFora};
-  R.vendedor={nPesqVend,cab,vendCel,filtroVend,temMenu,ecra,temBotao,nTodos,nPesq,nPesq2,nSemST,nNenhum,colOpcionais,ordem,scrollPagina,erros};
+  R.vendedor={diasSt,porStock,livre,nPesqVend,cab,vendCel,filtroVend,temMenu,ecra,temBotao,nTodos,nPesq,nPesq2,nSemST,nNenhum,colOpcionais,ordem,scrollPagina,erros};
   await ctx.close();}
 
  console.log(JSON.stringify(R,null,1));
@@ -204,7 +214,10 @@ const dias=n=>new Date(Date.now()-n*864e5).toISOString();
   '"Nenhum" num grupo esconde tudo':v.nNenhum===0,
   'coluna Opcionais escondida':!v.colOpcionais,
   'sem scroll horizontal da página no telemóvel':!v.scrollPagina,
-  'ordem das colunas':JSON.stringify(v.cab)===JSON.stringify(['Produção','Chassis','Código','Modelo','Cor','Opcionais','Estado','Data do estado','Tipo','Produzida a','Semana de entrega','Entrega prevista de','Entrega prevista até','Cliente','Negociação']),
+  'ordem das colunas':JSON.stringify(v.cab)===JSON.stringify(['Produção','Chassis','Código','Modelo','Cor','Opcionais','Estado','Data do estadodias em stock','Tipo','Produzida a','Semana de entrega','Entrega prevista de','Entrega prevista até','Cliente','Negociação']),
+  'dias em stock só nas motas no stand (193/198), desde a data do estado':v.diasSt.o['9000002']===diasDe('01.09.2026')+' dias'&&v.diasSt.o['9000005']===diasDe('03.07.2026')+' dias'&&v.diasSt.o['9000001']===diasDe('16.10.2026')+' dias'&&v.diasSt.o['9000004']===''&&v.diasSt.o['9000003']===''&&v.diasSt.o['9000006']==='',
+  'resumo: motas no stand; com cliente ou em negociação não contam como livres':v.diasSt.resumo==='3 no stand (193/198) · 0 livres'&&new RegExp('3 no stand \\(193/198\\) · 1 livre · média '+diasDe('01.09.2026')+' dias').test(v.livre.resumo)&&new RegExp('Mais antiga livre: R 1300 GS · cor N52 · '+diasDe('01.09.2026')+' dias · prod. 9000002').test(v.livre.resumo),
+  'ordenar por tempo em stock: livres primeiro, depois as ocupadas, as mais antigas no topo':JSON.stringify(v.porStock.slice(0,5))===JSON.stringify(['#Em stock · vendidas ou em negociação 3 motas','9000005','9000002','9000001','#Ainda não chegaram ao stand 3 motas'])&&JSON.stringify(v.livre.linhas)===JSON.stringify(['#Em stock · livres para vender 1 mota','9000002','#Em stock · vendidas ou em negociação 2 motas','9000005','9000001']),
   'sem coluna Vendedor: sigla BMW (GM/FG) em Negociação, cm0… escondido':v.vendCel['9000005']==='GM|Gonçalo Mendes (sigla BMW)'&&v.vendCel['9000001']==='FG|António Felipe Gomes (sigla BMW)'&&v.vendCel['9000004']===''&&!v.cab.includes('Vendedor'),
   'filtro Vendedor junta negociação e sigla BMW':JSON.stringify(v.filtroVend)===JSON.stringify(['(ninguém)','FG · António Felipe Gomes','GM · Gonçalo Mendes','Teste']),
   'pesquisa pelo nome do vendedor (BMW e quem negoceia)':v.nPesqVend===2,

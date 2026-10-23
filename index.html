@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-23-e">
+<meta name="app-version" content="2026-10-23-f">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1446,6 +1446,10 @@ html,body{overflow-x:hidden;max-width:100vw}
 .enc-pf{border-top:1px solid var(--border);padding:10px 0 4px}.enc-pf:first-of-type{border-top:0}
 .enc-pf-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}.enc-pf-h b{font-size:13px;word-break:break-all}
 @media(max-width:700px){.enc-origens{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.enc-ds{display:table;margin-top:3px;padding:1px 6px;border-radius:999px;background:var(--bg3);font-size:11px;white-space:nowrap;font-variant-numeric:tabular-nums}.enc-ds b{font-weight:800}
+.enc-ds-m{color:var(--amber)}.enc-ds-v{color:var(--red)}.enc-ds.enc-ds-m{background:var(--amber-bg,rgba(217,119,6,.12))}.enc-ds.enc-ds-v{background:var(--red-bg,rgba(220,38,38,.12))}.enc-th-sub{display:block;font-weight:600;color:var(--text3)}
+.enc-stock{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;margin:8px 0 0;padding:8px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);font-size:13px;color:var(--text2)}
+.enc-stock b{color:var(--text)}.enc-stock b.enc-ds-m{color:var(--amber)}.enc-stock b.enc-ds-v{color:var(--red)}.enc-stock-m{margin-left:auto}
 .enc-tw{overflow:auto;max-height:calc(100vh - 250px);border:1px solid var(--border);border-radius:var(--r2);background:var(--surface);margin-top:8px}
 .enc-t{border-collapse:separate;border-spacing:0;width:100%;font-size:12px}
 .enc-t th{position:sticky;top:0;z-index:1;background:var(--bg2);text-align:left;vertical-align:bottom;font-weight:700;font-size:11px;line-height:1.25;color:var(--text2);padding:7px 5px;border-bottom:1px solid var(--border);white-space:normal}
@@ -2239,7 +2243,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-23-e';
+const APP_VERSION='2026-10-23-f';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -4887,6 +4891,14 @@ const ENC_FILTROS=[['_neg','Negociação'],['model_desc','Modelo'],['processing_
 function encFiltrosDe(O){return ENC_FILTROS.filter(([g])=>O==='aveiro'?!['dealer_nome','_zona'].includes(g):O==='bmw'?!['dealer_nome','_zona','_cliente'].includes(g):O==='rede'?g!=='_cliente':true);}
 function encColsDe(O,ocultas){const fora=O==='aveiro'?['dealer_nome','regiao']:O==='bmw'?['dealer_nome','regiao','customer_last']:O==='rede'?['customer_last']:[];
   return ENC_COLS.filter(([c])=>!ocultas.includes(c)&&!ENC_SO_DADOS.includes(c)&&!fora.includes(c));}
+// ---- Dias em stock: motas já no concessionário (estado 193 ou 198), contados desde a data do estado ----
+const ENC_EM_STOCK=['193','198'];
+function encEmStock(x){return !!x&&ENC_EM_STOCK.includes(String(x.order_status||'').trim());}
+function encDiasStock(x){if(!encEmStock(x)||!x.ts_order_status)return null;const t=new Date(String(x.ts_order_status).slice(0,10)+'T00:00:00');if(isNaN(t))return null;
+  const h=new Date();h.setHours(0,0,0,0);return Math.max(0,Math.round((h-t)/864e5));}
+// livre = em stock, sem cliente no ficheiro BMW e sem negócio a negociar/vendido na plataforma
+function encLivre(x,M){return encEmStock(x)&&!String(x.customer_last||'').trim()&&!['Vendida','Em negociação'].includes(encNegEstado(x,M));}
+function encDiasCls(n){return n==null?'':(n>=180?'enc-ds-v':(n>=90?'enc-ds-m':''));}
 // "Salesperson Number": as siglas dos vendedores (GM, FG/AG…) aparecem; os códigos cm0… são utilizadores do portal BMW e não se mostram
 function encSigla(v){const s=String(v||'').trim().toUpperCase();return /^[A-Z]{2,3}$/.test(s)?s:'';}
 function encVendDe(sig){if(!sig)return null;const sub=(a,b)=>{let k=0;for(const ch of b){if(ch===a[k])k++;}return k===a.length;};
@@ -5031,6 +5043,7 @@ async function encConfirmar(){
   }catch(e){await loadEnc().catch(()=>{});setState({encBusy:false,encErrImp:(feitos.length?`Gravado: ${feitos.join(' · ')}. `:'')+'Erro ao gravar o resto (essa origem ficou como estava): '+erroTexto(e)});}
 }
 function encValor(x,g){if(g==='_neg')return encNegEstado(x);if(g==='_zona')return encZona(x.regiao)||'(vazio)';if(g==='_vend')return encQuemTxt(x);return g==='_cliente'?(x.customer_last?'Com cliente':'Sem cliente'):(x[g]==null||x[g]===''?'(vazio)':String(x[g]));}
+function encOrdemGuardada(){if(S.encOrdem===undefined){try{S.encOrdem=localStorage.getItem('bm_enc_ordem')||'';}catch(e){S.encOrdem='';}}return S.encOrdem;}
 function encColsOcultas(){if(S.encCols)return S.encCols;let v=[];try{v=JSON.parse(localStorage.getItem('bm_enc_cols')||'[]')||[];}catch(e){}S.encCols=Array.isArray(v)?v:[];return S.encCols;}
 function encFiltrar(todos,F,grupos){
   const ex=F.ex||{};
@@ -5040,7 +5053,7 @@ function encFiltrar(todos,F,grupos){
   return arr;
 }
 function encView(){
-  encGarantirCarga();
+  encGarantirCarga();encOrdemGuardada();
   const tudo=S.enc||[];const O=S.encOrigem||'aveiro';const todos=O==='tudo'?tudo:tudo.filter(x=>encOrigemDe(x)===O);
   const F=Object.assign({q:'',ex:{}},S.encF||{});const ex=F.ex||{};const grupos=encFiltrosDe(O);
   const ocultas=encColsOcultas();const cols=encColsDe(O,ocultas);
@@ -5053,6 +5066,8 @@ function encView(){
     return`<button class="enc-or ${o===O?'on':''}" role="tab" aria-selected="${o===O}" data-action="enc-origem" data-o="${o}"><span class="enc-or-t">${esc(lb)}</span><span class="enc-or-n">${n}</span><small>${o==='tudo'?'as três origens':(u?'carregado a '+esc(fData(u)):'sem ficheiro')}</small></button>`;}).join('')}</div>`;
   const P=S.encPrev;
   const celula=(x,[c,,,t])=>{const v=x[c];
+    if(t==='d'&&c==='ts_order_status'&&O==='aveiro'){const n=encDiasStock(x);
+      return`<td class="enc-d">${esc(encDataPT(v))}${n==null?'':`<div class="enc-ds ${encDiasCls(n)}" title="Em stock desde ${esc(encDataPT(v))} (estado ${esc(x.order_status)})"><b>${n}</b> dias</div>`}</td>`;}
     if(t==='d')return`<td class="enc-d">${esc(encDataPT(v))}</td>`;
     if(t==='w'){const w=encSemana(v),i=w.indexOf(' · ');return`<td class="enc-d enc-wk" title="${esc(v||'')}">${i>0?esc(w.slice(0,i))+'<small>'+esc(w.slice(i+3))+'</small>':esc(w)}</td>`;}
     if(c==='customer_last'||c==='dealer_nome')return`<td class="enc-cli">${esc(v||'')}</td>`;
@@ -5065,10 +5080,15 @@ function encView(){
     if(c==='production_number')return`<td class="sec-mono enc-pn">${esc(v||'')}${O==='tudo'?`<small class="enc-pn-or">${esc(encOrigemLb(encOrigemDe(x)).replace('Stock ',''))}</small>`:''}</td>`;
     if(['chassis','model_code','color_code','order_status'].includes(c))return`<td class="sec-mono">${esc(v||'')}</td>`;
     return`<td>${esc(v||'')}</td>`;};
-  // linhas agrupadas por código de modelo (a ordem já vem por Model Code e depois ST, US, DE, CS)
+  // linhas agrupadas por estado (a ordem já vem por estado, Model Code e depois ST, US, DE, CS);
+  // em "mais tempo em stock": grupos livres / vendidas ou em negociação / ainda não chegaram
+  const porStock=O==='aveiro'&&S.encOrdem==='stock';
+  const grpStock=x=>encLivre(x,M)?'livre':(encEmStock(x)?'ocupada':'fora');
+  const GRP_LB={livre:'Em stock · livres para vender',ocupada:'Em stock · vendidas ou em negociação',fora:'Ainda não chegaram ao stand'};
+  if(porStock){const ord={livre:0,ocupada:1,fora:2};const base=arr.slice();arr.sort((a,b)=>ord[grpStock(a)]-ord[grpStock(b)]||(encDiasStock(b)??-1)-(encDiasStock(a)??-1)||base.indexOf(a)-base.indexOf(b));}
   let corpo='',grpAnt=null;
-  arr.forEach(x=>{const g=String(x.order_status||'');if(g!==grpAnt){grpAnt=g;const n=arr.filter(y=>String(y.order_status||'')===g).length;
-      corpo+=`<tr class="enc-grp"><td colspan="${cols.length+1}">Estado <b class="sec-mono">${esc(g||'—')}</b> <span>${n} encomenda${n!==1?'s':''}</span></td></tr>`;}
+  arr.forEach(x=>{const g=porStock?grpStock(x):String(x.order_status||'');if(g!==grpAnt){grpAnt=g;const n=arr.filter(y=>(porStock?grpStock(y):String(y.order_status||''))===g).length;
+      corpo+=porStock?`<tr class="enc-grp"><td colspan="${cols.length+1}"><b>${esc(GRP_LB[g])}</b> <span>${n} mota${n!==1?'s':''}</span></td></tr>`:`<tr class="enc-grp"><td colspan="${cols.length+1}">Estado <b class="sec-mono">${esc(g||'—')}</b> <span>${n} encomenda${n!==1?'s':''}</span></td></tr>`;}
     const ne=encNegEstado(x,M);
     corpo+=`<tr class="${ne==='Em negociação'?'enc-r-n':ne==='Vendida'?'enc-r-v':''}">${cols.map(c=>celula(x,c)).join('')}${encNegCel(x,M)}</tr>`;});
   const painel=S.encPainel?`<div class="enc-painel">
@@ -5114,12 +5134,16 @@ function encView(){
     <div class="seq-bar">
       <input class="sec-q" id="enc-q" placeholder="Pesquisar ${esc(O==='tudo'?'em tudo':'no '+encOrigemLb(O))}: modelo, chassis, ${O==='rede'?'concessionário':'cliente'}, opcional, cor…" aria-label="Pesquisar encomendas" value="${esc(F.q||'')}">
       <button class="btn ${S.encPainel?'btn-dark':'btn-outline'} btn-sm" data-action="enc-painel" aria-expanded="${S.encPainel?'true':'false'}">${ico('sliders','ic-sm')}<span>Filtros${nFiltros?' ('+nFiltros+')':''}</span></button>
+      ${O==='aveiro'?`<button class="btn ${porStock?'btn-dark':'btn-outline'} btn-sm" data-action="enc-ordem" aria-pressed="${porStock?'true':'false'}" title="${porStock?'Voltar à ordem por estado':'As que estão há mais tempo no stand primeiro'}">⏳ <span>${porStock?'Mais tempo em stock':'Ordenar por tempo em stock'}</span></button>`:''}
     </div>
+    ${O==='aveiro'?(()=>{const st=todos.filter(encEmStock);if(!st.length)return'';const liv=st.filter(x=>encLivre(x,M)).sort((a,b)=>(encDiasStock(b)??-1)-(encDiasStock(a)??-1));
+      const media=Math.round(liv.reduce((a,x)=>a+(encDiasStock(x)||0),0)/(liv.length||1));const v90=liv.filter(x=>(encDiasStock(x)||0)>=90).length;const m=liv[0];
+      return`<div class="enc-stock"><span><b>${st.length}</b> no stand (193/198) · <b>${liv.length}</b> livre${liv.length!==1?'s':''}${liv.length?` · média <b>${media}</b> dias`:''}${v90?` · <b class="enc-ds-m">${v90}</b> com 90+ dias`:''}</span>${m?`<span class="enc-stock-m">Mais antiga livre: <b>${esc(m.model_desc||m.model_code||'')}</b> · cor ${esc(m.color_code||'—')} · <b class="${encDiasCls(encDiasStock(m))}">${encDiasStock(m)} dias</b> · prod. <span class="sec-mono">${esc(m.production_number)}</span></span>`:''}</div>`;})():''}
     ${painel}
     ${ativos?`<div class="vchips" style="padding:8px 0 0">${ativos}</div>`:''}
     <div class="seq-res"><b>${arr.length}</b> de ${todos.length} motas ${esc(O==='tudo'?'em todas as origens':'no '+encOrigemLb(O))}${porTipo.length?' · '+porTipo.map(([t,n])=>`${t} ${n}`).join(' · '):''}</div>
-    ${arr.length?`<div class="enc-tw"><table class="enc-t"><thead><tr>${cols.map(([c,h,lb])=>`<th title="${esc(h)}"${c==='options'?' class="enc-th-opt"':''}>${esc(lb)}</th>`).join('')}<th>Negociação</th></tr></thead><tbody>${corpo}</tbody></table></div>`:'<div class="gpp-empty">Nada com esta pesquisa ou filtros.</div>'}
-    <div class="seq-nota" style="margin-top:12px">Ordenado por estado (o mais avançado primeiro), depois por código de modelo e por tipo (ST, US, DE, CS). “Negociação” vem dos negócios da plataforma: Quente/Morno = em negociação, Carteira/Retail = vendida. “Entrega prevista de/até” são as datas F3 da BMW; “Semana de entrega” é a Exp. Del. Wk. O mapa é o do dia em que foi carregado: confirma no portal BMW antes de prometer uma data ao cliente.</div>`}
+    ${arr.length?`<div class="enc-tw"><table class="enc-t"><thead><tr>${cols.map(([c,h,lb])=>`<th title="${esc(h)}"${c==='options'?' class="enc-th-opt"':''}>${esc(lb)}${c==='ts_order_status'&&O==='aveiro'?'<small class="enc-th-sub">dias em stock</small>':''}</th>`).join('')}<th>Negociação</th></tr></thead><tbody>${corpo}</tbody></table></div>`:'<div class="gpp-empty">Nada com esta pesquisa ou filtros.</div>'}
+    <div class="seq-nota" style="margin-top:12px">${O==='aveiro'?'Dias em stock (por baixo da data do estado): dias desde essa data, para as motas já no stand (estado 193 ou 198); amarelo a partir de 90 dias, vermelho a partir de 180. ':''}Ordenado por estado (o mais avançado primeiro), depois por código de modelo e por tipo (ST, US, DE, CS). “Negociação” vem dos negócios da plataforma: Quente/Morno = em negociação, Carteira/Retail = vendida. “Entrega prevista de/até” são as datas F3 da BMW; “Semana de entrega” é a Exp. Del. Wk. O mapa é o do dia em que foi carregado: confirma no portal BMW antes de prometer uma data ao cliente.</div>`}
   </div>`;
 }
 // ---- Encomendas BMW · "estou a negociar esta mota" ----
@@ -9457,6 +9481,7 @@ function bindEvents(){
       case'enc-libertar':encLibertar(el.dataset.id,el.dataset.pn);break;
       case'enc-cancelar':setState({encPrev:null,encErrImp:''});break;
       case'enc-painel':setState({encPainel:!S.encPainel});break;
+      case'enc-ordem':{const v=S.encOrdem==='stock'?'':'stock';try{localStorage.setItem('bm_enc_ordem',v);}catch(e){}setState({encOrdem:v});break;}
       case'enc-origem':{const o=el.dataset.o;try{localStorage.setItem('bm_enc_origem',o);}catch(e){}setState({encOrigem:o,encMsg:''});break;}
       case'enc-todos':{const F=Object.assign({q:'',ex:{}},S.encF||{});F.ex=Object.assign({},F.ex||{});const g=el.dataset.g;
         if(el.dataset.v==='1')F.ex[g]=[];else F.ex[g]=[...new Set((S.enc||[]).map(x=>encValor(x,g)))];setState({encF:F});break;}
