@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-23-b">
+<meta name="app-version" content="2026-10-23-c">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2169,7 +2169,7 @@ const ICO={
 function ico(n,cls){const p=ICO[n];if(!p)return'';return`<svg class="ic${cls?' '+cls:''}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${p}</svg>`;}
 const EMO_IC={'🏭':'factory','🏠':'home','📋':'inbox','✅':'check','🔻':'filter','📦':'package','🔁':'repeat','☰':'more','🎯':'target','🏍️':'bike','🏍':'bike','🧥':'shirt','⭐':'star','🎟️':'ticket','🎟':'ticket','📅':'calendar','🧮':'calc','💰':'coins','💶':'coins','⬇️':'download','⬇':'download','🚚':'truck','✕':'xcircle','❌':'xcircle','🔑':'key','🚪':'logout','🤝':'store','📉':'trend','🏁':'flag','❤️':'heart','🏆':'trophy','⚠️':'alert','📐':'chart','🧾':'receipt','🔒':'lock'};
 document.addEventListener('keydown',e=>{const t=e.target;if((e.key==='Enter'||e.key===' ')&&t&&t.matches&&t.matches('[data-action][tabindex]:not(button):not(a):not(input):not(select):not(textarea)')){e.preventDefault();t.click();}});
-// Ctrl+V de um print, ou arrastar uma imagem, com uma EOT aberta: junta ao comentário
+// Ctrl+V de um print, ou arrastar uma imagem, com uma EOT aberta: junta à indicação
 function imgsDoEvento(dt){if(!dt)return[];const fs=[...(dt.files||[])].filter(f=>/^image\//.test(f.type));if(fs.length)return fs;
   return[...(dt.items||[])].filter(it=>it.kind==='file'&&/^image\//.test(it.type)).map(it=>it.getAsFile()).filter(Boolean);}
 document.addEventListener('paste',e=>{if(typeof S==='undefined'||!S.eotAberto||S.screen==='login')return;const t=e.target;
@@ -2213,7 +2213,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-23-b';
+const APP_VERSION='2026-10-23-c';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -5962,7 +5962,7 @@ async function storagePedido(metodo,bucket,path,blob){
 async function eotImgJuntar(files){
   const L=[...(files||[])].filter(f=>f&&/^image\//.test(f.type));if(!L.length)return false;
   const atual=(S.eotImgs||[]).slice();const vagas=EOT_IMG_MAXN-atual.length;
-  if(vagas<=0){toast(`Máximo ${EOT_IMG_MAXN} imagens por comentário`);return true;}
+  if(vagas<=0){toast(`Máximo ${EOT_IMG_MAXN} imagens por indicação`);return true;}
   if(L.length>vagas)toast(`Só entram mais ${vagas} imagem${vagas>1?'ns':''} neste comentário`);
   for(const f of L.slice(0,vagas)){
     try{const b=await imgComprimir(f);if(b.size>5*1024*1024){toast('Imagem demasiado grande, mesmo reduzida');continue;}
@@ -5988,7 +5988,7 @@ async function eotComentar(){
   }catch(e){
     for(const p of feitos){_eotImgUrl.delete(p);try{await storagePedido('DELETE',EOT_IMG_BUCKET,p);}catch(_){}}
     const m=(e&&e.message)||String(e);
-    alert('Erro ao gravar o comentário: '+(/imagens|PGRST204|42703/i.test(m)?'falta correr o SQL "2026-10-22_eot_imagens" no Supabase.':erroTexto(e)));
+    alert('Erro ao submeter a indicação: '+(/imagens|PGRST204|42703/i.test(m)?'falta correr o SQL "2026-10-22_eot_imagens" no Supabase.':erroTexto(e)));
   }finally{S._eotEnviando=false;render();}
 }
 // carrega as imagens do histórico com a sessão (não há links públicos) e mostra-as como blob:
@@ -6009,7 +6009,7 @@ function eotHistHTML(h){
   const imgs=Array.isArray(h.imagens)&&h.imagens.length?`<div class="eoth-imgs">${h.imagens.map((p,i)=>`<button type="button" class="eoth-img" data-action="eot-img-ver" data-p="${esc(p)}" aria-label="Abrir imagem ${i+1}"><img data-eot-img="${esc(p)}" alt="Imagem ${i+1} do comentário"></button>`).join('')}</div>`:'';
   const txt=h.tipo==='comentario'?`<span class="eoth-com">${esc(h.texto||'').replace(/\n/g,'<br>')}</span>${imgs}`:
     `alterou <b>${esc(EOT_CAMPOS[h.campo]||h.campo)}</b>: ${esc(eotHistValor(h.campo,h.valor_antes))} → <b>${esc(eotHistValor(h.campo,h.valor_depois))}</b>`;
-  return`<div class="eoth-it ${esc(h.tipo)}"><div class="eoth-q">${esc(quando)}${h.tipo==='comentario'?' · comentário':''}</div><div class="eoth-t">${quem}: ${txt}</div></div>`;
+  return`<div class="eoth-it ${esc(h.tipo)}"><div class="eoth-q">${esc(quando)}${h.tipo==='comentario'?' · indicação':''}</div><div class="eoth-t">${quem}: ${txt}</div></div>`;
 }
 function eotCampoHTML(x,k){
   const ed=S.eotEd||{};const v=(k in ed)?ed[k]:x[k];const pode=eotPodeCampo(k);const lb=EOT_CAMPOS[k]||k;const wide=['notas','proxima_acao'].includes(k)?' eotm-w2':'';
@@ -6048,15 +6048,15 @@ function eotModalHTML(){
       <details class="eotm-det" ${S.eotDetAberto?'open':''} data-eot-det="1"><summary>Dados do contrato${eotPodeTudo()?' (editáveis)':' (só leitura)'} · telefone, prazo, prestação, residual…</summary>
         <div class="eotm-g">${EOT_GRP_CONTRATO.map(k=>eotCampoHTML(x,k)).join('')}</div>
       </details>
-      <div class="eotm-sec">Comentários e histórico</div>
-      <div class="eotm-com"><textarea class="norma-inp" id="eotm-com" rows="2" placeholder="Escreve um comentário ou cola um print (Ctrl+V). Fica registado com o teu nome e a hora.">${esc(S.eotCom||'')}</textarea>
+      <div class="eotm-sec">Indicações e histórico</div>
+      <div class="eotm-com"><textarea class="norma-inp" id="eotm-com" rows="2" aria-label="Nova indicação" placeholder="Escreve a indicação ou cola um print (Ctrl+V). Fica registada com o teu nome e a hora.">${esc(S.eotCom||'')}</textarea>
         <div class="eotm-com-b"><label class="btn btn-outline btn-sm eot-anexo" title="Anexar imagens (também podes colar com Ctrl+V)">${ico('plus','ic-sm')}<span>Imagem</span><input type="file" id="eot-img-file" accept="image/*" multiple hidden></label>
-        <button class="btn btn-dark btn-sm" data-action="eotm-comentar" ${S._eotEnviando?'disabled':''}>${S._eotEnviando?((S.eotImgs||[]).length?'A enviar imagens…':'A gravar…'):'Comentar'}</button></div></div>
+        <button class="btn btn-dark btn-sm" data-action="eotm-comentar" ${S._eotEnviando?'disabled':''}>${S._eotEnviando?((S.eotImgs||[]).length?'A enviar imagens…':'A submeter…'):'Submeter'}</button></div></div>
       ${(S.eotImgs||[]).length?`<div class="eot-pend" aria-label="Imagens por enviar">${S.eotImgs.map(i=>`<div class="eot-pend-i"><img src="${esc(i.url)}" alt="Imagem por enviar"><button type="button" class="eot-pend-x" data-action="eot-img-tirar" data-id="${esc(i.id)}" aria-label="Tirar imagem">${ico('x')}</button><small>${Math.max(1,Math.round(i.blob.size/1024))} KB</small></div>`).join('')}<div class="eot-pend-n">${S.eotImgs.length} imagem${S.eotImgs.length>1?'ns':''} por enviar: carrega em Comentar.</div></div>`:''}
       ${S.eotHistErr?`<div class="mg-aviso" style="margin:8px 0">${esc(S.eotHistErr)}</div>`:''}
-      <div class="eoth">${S.eotHistLoad===String(x.contrato)&&!H?'<div class="eoth-v">A carregar…</div>':(H&&H.length?H.map(eotHistHTML).join(''):(S.eotHistErr?'':'<div class="eoth-v">Ainda sem registos. As alterações e comentários a partir de agora ficam aqui.</div>'))}</div>
+      <div class="eoth">${S.eotHistLoad===String(x.contrato)&&!H?'<div class="eoth-v">A carregar…</div>':(H&&H.length?H.map(eotHistHTML).join(''):(S.eotHistErr?'':'<div class="eoth-v">Ainda sem registos. As alterações e indicações a partir de agora ficam aqui.</div>'))}</div>
     </div>
-    ${S.eotImgVer?`<div class="eot-lb" data-action="eot-img-fechar" role="dialog" aria-label="Imagem"><img data-eot-img="${esc(S.eotImgVer)}" ${_eotImgUrl.get(S.eotImgVer)?`src="${esc(_eotImgUrl.get(S.eotImgVer))}"`:''} alt="Imagem do comentário"><button type="button" class="eot-lb-x" data-action="eot-img-fechar" aria-label="Fechar">${ico('x')}</button></div>`:''}
+    ${S.eotImgVer?`<div class="eot-lb" data-action="eot-img-fechar" role="dialog" aria-label="Imagem"><img data-eot-img="${esc(S.eotImgVer)}" ${_eotImgUrl.get(S.eotImgVer)?`src="${esc(_eotImgUrl.get(S.eotImgVer))}"`:''} alt="Imagem da indicação"><button type="button" class="eot-lb-x" data-action="eot-img-fechar" aria-label="Fechar">${ico('x')}</button></div>`:''}
     <div class="eotm-foot">
       <button class="btn btn-orange" data-action="eotm-guardar" id="eotm-guardar">Guardar${nAlt?` (${nAlt})`:''}</button>
       <button class="btn btn-ghost" data-action="eotm-fechar">Cancelar</button>
@@ -7265,7 +7265,7 @@ function EXPORT_FOLHAS(){
     ]},
     {nome:'EOTs histórico',path:'/eot_historico?select=*&order=criado_em.asc,id.asc',cols:[
       {c:'contrato',l:'Contrato'},{c:'criado_em',l:'Quando',f:dt},{c:'autor_nome',l:'Quem'},{c:'autor_role',l:'Papel'},{c:'tipo',l:'Tipo'},
-      {c:'campo',l:'Campo',f:v=>v?(EOT_CAMPOS[v]||v):''},{c:'valor_antes',l:'Antes'},{c:'valor_depois',l:'Depois'},{c:'texto',l:'Comentário'},{c:'imagens',l:'Imagens',f:v=>Array.isArray(v)&&v.length?v.length:''},
+      {c:'campo',l:'Campo',f:v=>v?(EOT_CAMPOS[v]||v):''},{c:'valor_antes',l:'Antes'},{c:'valor_depois',l:'Depois'},{c:'texto',l:'Indicação'},{c:'imagens',l:'Imagens',f:v=>Array.isArray(v)&&v.length?v.length:''},
     ]},
     {nome:'Negócios histórico',path:'/negocio_historico?select=*&order=criado_em.asc,id.asc',cols:[
       {c:'negocio_id',l:'Negócio ID'},{c:'criado_em',l:'Quando',f:dt},{c:'autor_nome',l:'Quem'},{c:'autor_role',l:'Papel'},{c:'tipo',l:'Tipo'},
