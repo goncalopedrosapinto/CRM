@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-24-b">
+<meta name="app-version" content="2026-10-24-c">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2100,6 +2100,10 @@ body.a-gravar [data-action]{cursor:progress}
 .fm-conflito{margin:10px 16px;padding:12px 14px;border-radius:10px;border:1px solid var(--red);background:var(--red-bg);color:var(--text);font-size:13px}
 .fm-conflito-acoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .inp-erro{border-color:var(--red)!important;box-shadow:0 0 0 2px var(--red-bg)!important}
+.fin-tabs{padding:0 0 10px}.fin-ind-td{white-space:nowrap}
+.fin-ind{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:999px}
+.fin-ind.ok{color:var(--green);background:var(--green-bg)}.fin-ind.ag{color:var(--red);background:var(--red-bg)}
+.fin-ind.novo{color:var(--blue);background:var(--blue-bg)}.fin-ind.pt{color:var(--amber);background:var(--amber-bg)}
 .nt-wrap{display:flex;flex-direction:column;gap:12px}.nt-pad{padding:14px 16px}.nt-pad0{padding:0 16px}
 .nt-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .nt-tit{font-size:16px;font-weight:800;color:var(--text)}.nt-tit2{font-size:14px;font-weight:800;color:var(--text);margin-top:6px}
@@ -2257,7 +2261,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-24-b';
+const APP_VERSION='2026-10-24-c';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -3376,6 +3380,30 @@ function prevObjetivo(sel,rN,cN){
     <div class="gpp-obj-bar"><div class="gpp-obj-bar-fill ${cls}" style="width:${Math.min(100,pct)}%"></div></div>
   </div>`;
 }
+// ---- Financeiros: "já demos indicação nesta EOT?" (sai do histórico de indicações, sem dados novos) ----
+// resposta: a última indicação é do vendedor/chefe (e não a marcaste como lida) · tratado: a última é de um financeiro
+// reaberto: adenda com data de fim nova, sem indicação depois disso · novo: entrou no último mapa e ainda ninguém dos financeiros escreveu · por tratar: sem indicação dos financeiros
+function finIndEstado(x){const k=String(x.contrato);const cs=notifThreads().get(k)||[];const ult=cs[0];const ultF=cs.find(c=>notifLado(c.autor_role)==='F');
+  // reaberto: o mapa trouxe data de fim nova a um contrato com adenda e ainda não há indicação vossa depois disso
+  const reab=!!x.adenda_em&&!EOT_FECHO.includes(x.fase)&&!cs.some(c=>notifLado(c.autor_role)==='F'&&String(c.criado_em||'').slice(0,10)>=String(x.adenda_em).slice(0,10));
+  if(ult&&notifLado(ult.autor_role)==='C'){const lida=(S.notifLidas||[]).some(l=>l.user_id===(S.me&&S.me.id)&&String(l.contrato)===k&&Number(l.hist_id)>=Number(ult.id));
+    if(!lida)return{k:'resposta',quem:ult.autor_nome,quando:ult.criado_em,antes:!!ultF};
+    if(!reab)return{k:'tratado',quem:(S.me&&S.me.nome)||'',quando:null,visto:true};}
+  if(reab)return{k:'reaberto',quando:x.data_fim};
+  if(ultF)return{k:'tratado',quem:ultF.autor_nome,quando:ultF.criado_em};
+  if(EOT_FECHO.includes(x.fase))return{k:'fechado'};
+  const ultImp=(S.eot||[]).map(e=>e.ultima_import).filter(Boolean).sort().pop();
+  if(x.criado_em&&ultImp&&new Date(x.criado_em).getTime()>=new Date(ultImp).getTime()-36e5)return{k:'novo',quando:x.criado_em};
+  return{k:'por_tratar'};}
+const FIN_PRECISA=['resposta','reaberto','novo','por_tratar'];
+function finIndHTML(e){const fD=v=>v?String(v).slice(0,10).split('-').reverse().join('/'):'';const nome=v=>String(v||'').trim().split(/\s+/)[0]||'';
+  if(e.k==='tratado')return`<span class="fin-ind ok">✓ Tratado</span><div class="fin-sub">${e.visto?'marcada como lida':esc(nome(e.quem))+' · '+esc(fD(e.quando))}</div>`;
+  if(e.k==='resposta')return`<span class="fin-ind ag">🔔 ${e.antes?'Resposta':'Pergunta'}</span><div class="fin-sub">${esc(nome(e.quem))} · ${esc(notifHa(e.quando))}</div>`;
+  if(e.k==='reaberto')return`<span class="fin-ind novo">↻ Reaberto</span><div class="fin-sub">adenda · novo fim ${esc(fD(e.quando))}</div>`;
+  if(e.k==='novo')return`<span class="fin-ind novo">Novo</span><div class="fin-sub">entrou no mapa a ${esc(fD(e.quando))}</div>`;
+  if(e.k==='por_tratar')return'<span class="fin-ind pt">Por tratar</span><div class="fin-sub">sem indicação vossa</div>';
+  return'<span class="fin-sub">fechado</span>';}
+function finTabAtual(){if(!S.finTab){try{S.finTab=localStorage.getItem('bm_fin_tab')||'precisa';}catch(e){S.finTab='precisa';}}return S.finTab;}
 function renderFinanceiro(){
   const F=Object.assign({prazo:'',fase:'',resp:'',mapa:'1'},S.finF||{});
   const fE=n=>n==null?'—':Number(n).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
@@ -3390,6 +3418,10 @@ function renderFinanceiro(){
   else if(F.prazo==='fim')L=L.filter(x=>{const d=dd(x);return d!=null&&d<0;});
   if(F.fase)L=L.filter(x=>(x.fase||'Por contactar')===F.fase);
   if(F.resp==='_sem')L=L.filter(x=>!x.responsavel_id);else if(F.resp)L=L.filter(x=>String(x.responsavel_id)===F.resp);
+  // separadores: o que precisa dos financeiros / o que já tem indicação / tudo
+  const T=finTabAtual();const EST=new Map(L.map(x=>[x,finIndEstado(x)]));
+  const nPrec=L.filter(x=>FIN_PRECISA.includes(EST.get(x).k)).length,nTrat=L.filter(x=>EST.get(x).k==='tratado').length,nTodos=L.length;
+  if(T==='precisa')L=L.filter(x=>FIN_PRECISA.includes(EST.get(x).k));else if(T==='tratados')L=L.filter(x=>EST.get(x).k==='tratado');
   L.sort((a,b)=>String(a.data_fim||'9999').localeCompare(String(b.data_fim||'9999')));
   const n90=noMapa.filter(x=>{const d=dd(x);return d!=null&&d>=0&&d<=90;}).length;
   const n180=noMapa.filter(x=>{const d=dd(x);return d!=null&&d>90&&d<=180;}).length;
@@ -3403,6 +3435,7 @@ function renderFinanceiro(){
       <td>${fD(x.data_fim)}<div class="fin-sub">${eotDiasHTML(x)}</div></td>
       <td style="text-align:right"><b>${fE(x.residual)}</b></td>
       <td>${eotFaseHTML(x)}${x.no_mapa===false?'<div class="fin-sub">saiu do mapa</div>':''}</td>
+      <td class="fin-ind-td">${finIndHTML(EST.get(x)||finIndEstado(x))}</td>
       <td>${x.responsavel_id?vendTag(x.responsavel_id):'<span style="color:var(--text3)">por atribuir</span>'}</td>
       <td class="eot-chev">${ico('chevr','ic-sm')}</td>
     </tr>`).join('');
@@ -3421,6 +3454,11 @@ function renderFinanceiro(){
         <div class="kpi-c"><span class="kpi-k">91–180 dias</span><span class="kpi-v ${n180?'warn':''}">${n180}</span><span class="kpi-s">no mapa</span></div>
         <div class="kpi-c"><span class="kpi-k">Residual (lista abaixo)</span><span class="kpi-v">${fE(resT)}</span><span class="kpi-s">${L.length} contrato${L.length!==1?'s':''}</span></div>
       </div>
+      <div class="vchips fin-tabs" role="tablist" aria-label="Indicações dos financeiros">
+        <button class="vchip ${T==='precisa'?'on':''}" role="tab" aria-selected="${T==='precisa'}" data-action="fin-tab" data-t="precisa">Precisa de vocês <span>${nPrec}</span></button>
+        <button class="vchip ${T==='tratados'?'on':''}" role="tab" aria-selected="${T==='tratados'}" data-action="fin-tab" data-t="tratados">Já tratados <span>${nTrat}</span></button>
+        <button class="vchip ${T==='todos'?'on':''}" role="tab" aria-selected="${T==='todos'}" data-action="fin-tab" data-t="todos">Todos <span>${nTodos}</span></button>
+      </div>
       <div class="seq-bar" style="margin-bottom:10px">
         ${sel('prazo',[['','Todos os prazos'],['90','≤ 90 dias'],['180','91–180 dias'],['mais','> 180 dias'],['fim','Já terminaram']])}
         ${sel('fase',[['','Todas as fases'],...EOT_FASES.map(f=>[f,f])])}
@@ -3428,8 +3466,8 @@ function renderFinanceiro(){
         ${sel('mapa',[['1','Só no mapa atual'],['','Incluir os que saíram do mapa']])}
       </div>
       ${L.length?`<div class="gpp-card" style="overflow-x:auto"><table class="gpp-ltable fin-tbl">
-        <thead><tr><th>Cliente</th><th>Mota</th><th>Fim</th><th style="text-align:right">Residual</th><th>Fase</th><th>Responsável</th><th></th></tr></thead>
-        <tbody>${linhas}</tbody></table></div>`:vazioHTML('inboxEmpty',todos.length?'Nada com estes filtros':'Ainda não há EOTs carregadas',todos.length?'Muda os filtros acima.':'O mapa é carregado pelo chefe de vendas.')}
+        <thead><tr><th>Cliente</th><th>Mota</th><th>Fim</th><th style="text-align:right">Residual</th><th>Fase</th><th>Indicações</th><th>Responsável</th><th></th></tr></thead>
+        <tbody>${linhas}</tbody></table></div>`:(T==='precisa'&&nTodos?vazioHTML('check','Nada à vossa espera','Todas as EOTs desta lista já têm indicação vossa ou estão fechadas. Vê em “Já tratados”.'):vazioHTML('inboxEmpty',todos.length?'Nada com estes filtros':'Ainda não há EOTs carregadas',todos.length?'Muda os filtros acima.':'O mapa é carregado pelo chefe de vendas.'))}
       <div class="sec-nota">Contratos BMW Motorrad de Aveiro (inclui BMW Bank com concessionário responsável Aveiro), ordenados pela data de fim. Atualizado quando o chefe de vendas carrega o mapa.</div>
     </div></div></div></div>`;
 }
@@ -5391,7 +5429,7 @@ function notifMeuLado(){return isFinanceiro()&&!isAdmin()?'F':'C';}
 function notifLado(role){return role==='financeiro'?'F':'C';}
 async function loadNotif(){
   if(!notifAtivo())return;
-  try{const h=await supabaseApi('GET','/eot_historico?select=id,contrato,autor_id,autor_nome,autor_role,criado_em,texto,imagens&tipo=eq.comentario&order=id.desc&limit=300');
+  try{const h=await supabaseApi('GET','/eot_historico?select=id,contrato,autor_id,autor_nome,autor_role,criado_em,texto,imagens&tipo=eq.comentario&order=id.desc&limit=1000');
     S.notifHist=Array.isArray(h)?h:[];S.notifMax=S.notifHist.length?Number(S.notifHist[0].id):0;}catch(e){return;}
   try{S.notifLidas=(await supabaseApi('GET','/eot_notif_lidas?select=user_id,contrato,hist_id,lido_em'+(isAdmin()?'':'&user_id=eq.'+S.me.id)))||[];}
   catch(e){S.notifLidas=null;} // antes do SQL: sem «Lido»
@@ -9547,6 +9585,7 @@ function bindEvents(){
       case'eot-img-tirar':eotImgTirar(el.dataset.id);break;
       case'eot-img-ver':setState({eotImgVer:el.dataset.p,eotImgZoom:false});break;
       case'eot-img-fechar':setState({eotImgVer:null,eotImgZoom:false});break;
+      case'fin-tab':{const t=el.dataset.t;try{localStorage.setItem('bm_fin_tab',t);}catch(e){}setState({finTab:t});break;}
       case'nt-abrir':notifAbrir(el.dataset.c);break;
       case'nt-lido':notifMarcarLido([String(el.dataset.c)]);break;
       case'nt-todas':{const L=notifLista();if(L.length&&confirm(`Marcar as ${L.length} notificações como lidas?`))notifMarcarLido(L.map(x=>x.contrato));break;}
