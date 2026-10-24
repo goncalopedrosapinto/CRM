@@ -10,8 +10,9 @@ const P={c1:{id:'c1',nome:'Chefe Teste',role:'admin',linha:'motorrad',areas:[]},
   s1:{id:'s1',nome:'Sofia Secretaria',role:'secretario',linha:'motorrad',areas:[],financeiro:false},f1:{id:'f1',nome:'Filipa Financeira',role:'financeiro',linha:'motorrad',areas:[]},a1:{id:'a1',nome:'Artur Assessor',role:'assessor',linha:'motorrad',areas:[]}};
 const R=(id,v,status,extra)=>Object.assign({id,vendedor_id:v,status,id_cliente:'Cliente '+id,model:'R 1300 GS',version:'Trophy',type:'MN',neg:d(id*3),mes1:ym,pvp:24500,contacto:'912 000 00'+id,updated_at:new Date().toISOString(),status_updated_at:d(id)},extra||{});
 const recs=[R(1,'v1','Quente'),R(2,'v1','Morno',{alert_date:d(2)}),R(3,'v1','Frio'),R(4,'v1','Carteira',{enc:'9100001'}),R(5,'v1','Retail',{col_298:d(5),dmat:d(100)}),R(6,'v2','Quente'),R(7,'v2','Carteira'),R(8,'v2','Retail',{col_298:d(9)}),R(9,'v1','Perdido',{motivo_perda:'Preço'}),R(10,'v2','Retail',{type:'MU',col_298:d(2)})];
-const eot=[{contrato:'E1',cliente:'Cliente EOT Um',modelo:'F 900 GS',matricula:'AA-11-BB',data_fim:d(-60),fase:'Contactado',responsavel_id:'v1',no_mapa:true,residual:4500,prestacao:120,total:4800},
-  {contrato:'E2',cliente:'Cliente EOT Dois',modelo:'R 1250 RT',data_fim:d(-150),fase:'Por contactar',responsavel_id:null,no_mapa:true,residual:7000}];
+const eot=[{contrato:'E1',cliente:'Cliente EOT Um',modelo:'F 900 GS',matricula:'AA-11-BB',data_fim:d(-60),fase:'Contactado',responsavel_id:'v1',no_mapa:true,residual:4500,prestacao:120,total:4800,fin_visto_em:null},
+  {contrato:'E2',cliente:'Cliente EOT Dois',modelo:'R 1250 RT',data_fim:d(-150),fase:'Por contactar',responsavel_id:null,no_mapa:true,residual:7000,fin_visto_em:null},
+  {contrato:'E3',cliente:'Cliente EOT Três',modelo:'R 1300 GS',data_fim:d(-200),fase:'Por contactar',responsavel_id:'v1',no_mapa:true,residual:9000,fin_visto_em:new Date(Date.now()-3600e3).toISOString(),fin_visto_por:'f1',fin_visto_nome:'Filipa Financeira'}];
 const hist=[{id:1,contrato:'E1',tipo:'comentario',autor_id:'v1',autor_nome:'Vera Vendas',autor_role:'vendedor',criado_em:new Date(Date.now()-3600e3).toISOString(),texto:'Cliente quer saber o valor para refinanciar'}];
 const enc=[1,2,3,4].map(i=>({origem:'aveiro',production_number:String(9100000+i),chassis:'6N1000'+i,model_code:'0M21',model_desc:'R 1300 GS',color_code:'N52',options:'20B 389 7A8 413 5AG',order_status:i<3?'198':'150',ts_order_status:d(i*40),processing_type:['ST','US','DE','CS'][i-1],conf_f3_from:d(-10),conf_f3_to:d(-17),customer_last:i===4?'Apelido':'',importado_em:new Date().toISOString()}));
 const seq=[1,2,3].map(i=>({id:i,lote:'L1',ponto_venda:'Caetano Aveiro',ref:'7622852610'+i,descricao:'Botas Teste '+i,categoria:'botas',qualidade:['Vivo','Moribundo','Morto'][i-1],antig_saida:['Últ. Saída até 3 meses','Últ. Saída de 1 a 2 anos','Sem Movimento de Saída'][i-1],ult_saida:i<3?d(i*200):null,qtd:i,custo_unit:80,desc_max:i/10,importado_em:new Date().toISOString()}));
@@ -47,7 +48,7 @@ const ECRAS={
       ['Ficha de Margem','()=>{setState({screen:"ficha"});}'],['Comissões','()=>{setState({screen:"vcom"});}'],['Janela EOT','()=>{setState({screen:"veot"});eotAbrir("E1");}'],
       ['Stock usadas/demos','()=>{setState({screen:"stockvend"});}'],['Escala','()=>{setState({screen:"escala"});}'],['Menu aberto','()=>{setState({screen:"list",statusFilter:"_hoje",sidebarOpen:true});}'],['Alterar password','()=>{setState({screen:"password"});}']],
   s1:[['Secretaria','()=>{setState({screen:"secretaria"});}']],
-  f1:[['EOTs','()=>{setState({screen:"financeiro"});}'],['Notificações','()=>{setState({screen:"notificacoes"});}'],['Janela EOT','()=>{setState({screen:"financeiro"});eotAbrir("E1");}']],
+  f1:[['EOTs','()=>{setState({screen:"financeiro",finTab:"todos"});}'],['Notificações','()=>{setState({screen:"notificacoes"});}'],['Janela EOT','()=>{setState({screen:"financeiro"});eotAbrir("E1");}']],
   a1:[['Assessor','()=>{setState({screen:"assessor"});}']],
   '':[['Entrada (login)','()=>{}']]};
 const PERFIL={c1:'Chefe',v1:'Vendedor',s1:'Secretário',f1:'Financeiro',a1:'Assessor','':'Sem sessão'};
@@ -59,7 +60,7 @@ const PERFIL={c1:'Chefe',v1:'Vendedor',s1:'Secretário',f1:'Financeiro',a1:'Asse
     try{await p.evaluate(`(${fn})()`);}catch(e){erros.push(nome+': '+e.message);}
     await p.waitForTimeout(500);
     if(await p.evaluate(()=>typeof axe==='undefined'))await p.evaluate(AXE);
-    const r=await p.evaluate(async()=>{const x=await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']},resultTypes:['violations','incomplete']});
+    const r=await p.evaluate(async()=>{document.getAnimations().forEach(a=>{try{a.finish();}catch(e){}}); /* avisos a meio da animação (ex.: "Gravado") medem-se no estado final */const x=await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']},resultTypes:['violations','incomplete']});
       const mp=(L,inc)=>L.map(v=>({id:(inc?'?':'')+v.id,impact:v.impact,help:v.help,nodes:v.nodes.map(n=>({t:n.target.join(' '),h:n.html.slice(0,160),d:(n.any[0]||n.all[0]||{}).data||null}))}));return mp(x.violations).concat(mp(x.incomplete.filter(v=>v.id==='color-contrast'),true));});
 
     const med=await p.evaluate((sels)=>{
@@ -89,6 +90,7 @@ const PERFIL={c1:'Chefe',v1:'Vendedor',s1:'Secretário',f1:'Financeiro',a1:'Asse
  // resumo por regra
  const porRegra={};res.forEach(x=>(x.v||[]).forEach(v=>{const k=v.id;porRegra[k]=porRegra[k]||{impact:v.impact,help:v.help,nos:0,ecras:new Set(),ex:new Map()};porRegra[k].nos+=v.nodes.length;porRegra[k].ecras.add(x.perfil+'·'+x.ecra+'·'+x.vp+'·'+x.tema);v.nodes.forEach(n=>{const key=n.t.replace(/:nth-child\(\d+\)/g,'');if(!porRegra[k].ex.has(key))porRegra[k].ex.set(key,{h:n.h,d:n.d});});}));
  for(const [k,v] of Object.entries(porRegra).filter(([k])=>!k.startsWith('?')).sort((a,b)=>b[1].nos-a[1].nos)){console.log(`\n## ${k} [${v.impact}] ${v.help} — ${v.nos} nós em ${v.ecras.size} ecrãs`);
+   console.log('  em: '+[...v.ecras].slice(0,6).join(' ; '));
    [...v.ex.entries()].slice(0,25).forEach(([t,e])=>console.log('  · '+t.slice(0,110)+' | '+(e.d&&e.d.contrastRatio?`${e.d.fgColor} sobre ${e.d.bgColor} = ${e.d.contrastRatio} (${e.d.fontSize},${e.d.fontWeight})`:'')+' | '+e.h.slice(0,90)));}
  const errs=res.filter(x=>x.erros);if(errs.length)console.log('\nERROS JS:',JSON.stringify(errs).slice(0,800));
  console.log('\nIncompletos do axe (medidos à mão acima): '+Object.entries(porRegra).filter(([k])=>k.startsWith('?')).reduce((a,[,v])=>a+v.nos,0)+' nós; '+res.filter(x=>x.v).length+' medições');

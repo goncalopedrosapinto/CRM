@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-24-c">
+<meta name="app-version" content="2026-10-24-d">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2104,6 +2104,11 @@ body.a-gravar [data-action]{cursor:progress}
 .fin-ind{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:999px}
 .fin-ind.ok{color:var(--green);background:var(--green-bg)}.fin-ind.ag{color:var(--red);background:var(--red-bg)}
 .fin-ind.novo{color:var(--blue);background:var(--blue-bg)}.fin-ind.pt{color:var(--amber);background:var(--amber-bg)}
+.fin-ind.ec{color:var(--slate);background:var(--slate-bg)}
+.fin-visto-th,.fin-visto-td{width:52px;text-align:center}
+.fin-visto{width:28px;height:28px;border-radius:8px;border:2px solid var(--text3);background:var(--surface);color:var(--green);font-size:16px;font-weight:800;line-height:1;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;vertical-align:middle}
+.fin-visto:hover{border-color:var(--green)}.fin-visto.on{background:var(--green-bg);border-color:var(--green)}
+.fin-visto-linha{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 10px}
 .nt-wrap{display:flex;flex-direction:column;gap:12px}.nt-pad{padding:14px 16px}.nt-pad0{padding:0 16px}
 .nt-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .nt-tit{font-size:16px;font-weight:800;color:var(--text)}.nt-tit2{font-size:14px;font-weight:800;color:var(--text);margin-top:6px}
@@ -2261,7 +2266,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-24-c';
+const APP_VERSION='2026-10-24-d';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -3380,29 +3385,62 @@ function prevObjetivo(sel,rN,cN){
     <div class="gpp-obj-bar"><div class="gpp-obj-bar-fill ${cls}" style="width:${Math.min(100,pct)}%"></div></div>
   </div>`;
 }
-// ---- Financeiros: "já demos indicação nesta EOT?" (sai do histórico de indicações, sem dados novos) ----
-// resposta: a última indicação é do vendedor/chefe (e não a marcaste como lida) · tratado: a última é de um financeiro
-// reaberto: adenda com data de fim nova, sem indicação depois disso · novo: entrou no último mapa e ainda ninguém dos financeiros escreveu · por tratar: sem indicação dos financeiros
+// ---- Financeiros: visto "tratado" dado à mão, que cai sozinho quando há novidade no contrato ----
+// tratado: visto válido · resposta: o vendedor/chefe escreveu (depois do visto, ou sem visto) e não marcaste como lida
+// reaberto: adenda com data de fim nova depois do vosso visto/indicação · em curso: já há indicação vossa mas falta o visto
+// novo: entrou no último mapa · por tratar: ainda nada vosso. Sem o SQL do visto, conta como tratado o que tem indicação vossa.
+function finVistoAtivo(){const L=S.eot||[];return !L.length||L.some(x=>'fin_visto_em' in x);}
+function finVistoValido(x,cs){if(!x||!x.fin_visto_em)return false;const t=new Date(x.fin_visto_em).getTime();
+  cs=cs||notifThreads().get(String(x.contrato))||[];
+  if(cs.some(c=>notifLado(c.autor_role)==='C'&&new Date(c.criado_em).getTime()>t))return false; // escreveram depois do visto
+  if(x.adenda_em&&String(x.adenda_em).slice(0,10)>String(x.fin_visto_em).slice(0,10))return false; // o mapa reabriu depois do visto
+  return true;}
 function finIndEstado(x){const k=String(x.contrato);const cs=notifThreads().get(k)||[];const ult=cs[0];const ultF=cs.find(c=>notifLado(c.autor_role)==='F');
-  // reaberto: o mapa trouxe data de fim nova a um contrato com adenda e ainda não há indicação vossa depois disso
-  const reab=!!x.adenda_em&&!EOT_FECHO.includes(x.fase)&&!cs.some(c=>notifLado(c.autor_role)==='F'&&String(c.criado_em||'').slice(0,10)>=String(x.adenda_em).slice(0,10));
-  if(ult&&notifLado(ult.autor_role)==='C'){const lida=(S.notifLidas||[]).some(l=>l.user_id===(S.me&&S.me.id)&&String(l.contrato)===k&&Number(l.hist_id)>=Number(ult.id));
-    if(!lida)return{k:'resposta',quem:ult.autor_nome,quando:ult.criado_em,antes:!!ultF};
-    if(!reab)return{k:'tratado',quem:(S.me&&S.me.nome)||'',quando:null,visto:true};}
-  if(reab)return{k:'reaberto',quando:x.data_fim};
-  if(ultF)return{k:'tratado',quem:ultF.autor_nome,quando:ultF.criado_em};
+  const ativo=finVistoAtivo();const visto=ativo&&finVistoValido(x,cs);const caiu=ativo&&!!x.fin_visto_em&&!visto;
+  const desdeAd=v=>String(v||'').slice(0,10)>=String(x.adenda_em).slice(0,10);
+  const reab=!visto&&!!x.adenda_em&&!EOT_FECHO.includes(x.fase)&&!cs.some(c=>notifLado(c.autor_role)==='F'&&desdeAd(c.criado_em))&&!(x.fin_visto_em&&desdeAd(x.fin_visto_em));
+  if(!visto&&ult&&notifLado(ult.autor_role)==='C'){const lida=(S.notifLidas||[]).some(l=>l.user_id===(S.me&&S.me.id)&&String(l.contrato)===k&&Number(l.hist_id)>=Number(ult.id));
+    if(!lida)return{k:'resposta',quem:ult.autor_nome,quando:ult.criado_em,antes:!!ultF,caiu};}
+  if(!ativo&&ultF&&!reab)return{k:'tratado',quem:ultF.autor_nome,quando:ultF.criado_em}; // antes do SQL do visto: como até agora
+  if(visto)return{k:'tratado',quem:x.fin_visto_nome,quando:x.fin_visto_em};
   if(EOT_FECHO.includes(x.fase))return{k:'fechado'};
+  if(reab)return{k:'reaberto',quando:x.data_fim};
+  if(ultF)return{k:'em_curso',quem:ultF.autor_nome,quando:ultF.criado_em,caiu};
   const ultImp=(S.eot||[]).map(e=>e.ultima_import).filter(Boolean).sort().pop();
   if(x.criado_em&&ultImp&&new Date(x.criado_em).getTime()>=new Date(ultImp).getTime()-36e5)return{k:'novo',quando:x.criado_em};
-  return{k:'por_tratar'};}
-const FIN_PRECISA=['resposta','reaberto','novo','por_tratar'];
+  return{k:'por_tratar',caiu};}
+const FIN_PRECISA=['resposta','reaberto','em_curso','novo','por_tratar'];
 function finIndHTML(e){const fD=v=>v?String(v).slice(0,10).split('-').reverse().join('/'):'';const nome=v=>String(v||'').trim().split(/\s+/)[0]||'';
-  if(e.k==='tratado')return`<span class="fin-ind ok">✓ Tratado</span><div class="fin-sub">${e.visto?'marcada como lida':esc(nome(e.quem))+' · '+esc(fD(e.quando))}</div>`;
-  if(e.k==='resposta')return`<span class="fin-ind ag">🔔 ${e.antes?'Resposta':'Pergunta'}</span><div class="fin-sub">${esc(nome(e.quem))} · ${esc(notifHa(e.quando))}</div>`;
+  const cai=e.caiu?' · o visto caiu':'';
+  if(e.k==='tratado')return`<span class="fin-ind ok">✓ Tratado</span><div class="fin-sub">${esc(nome(e.quem))}${e.quem?' · ':''}${esc(fD(e.quando))}</div>`;
+  if(e.k==='resposta')return`<span class="fin-ind ag">🔔 ${e.antes?'Resposta':'Pergunta'}</span><div class="fin-sub">${esc(nome(e.quem))} · ${esc(notifHa(e.quando))}${cai}</div>`;
   if(e.k==='reaberto')return`<span class="fin-ind novo">↻ Reaberto</span><div class="fin-sub">adenda · novo fim ${esc(fD(e.quando))}</div>`;
+  if(e.k==='em_curso')return`<span class="fin-ind ec">Em curso</span><div class="fin-sub">indicação de ${esc(nome(e.quem))} · ${esc(fD(e.quando))} · ${e.caiu?'o visto caiu':'falta o visto'}</div>`;
   if(e.k==='novo')return`<span class="fin-ind novo">Novo</span><div class="fin-sub">entrou no mapa a ${esc(fD(e.quando))}</div>`;
-  if(e.k==='por_tratar')return'<span class="fin-ind pt">Por tratar</span><div class="fin-sub">sem indicação vossa</div>';
+  if(e.k==='por_tratar')return`<span class="fin-ind pt">Por tratar</span><div class="fin-sub">sem indicação vossa${cai}</div>`;
   return'<span class="fin-sub">fechado</span>';}
+function finVistoDH(v){const d=new Date(v);if(isNaN(d))return'';const p=n=>String(n).padStart(2,'0');return`${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;}
+function finVistoBtn(x){const v=finVistoValido(x);
+  return`<button type="button" class="fin-visto${v?' on':''}" data-action="fin-visto" data-c="${esc(x.contrato)}" aria-pressed="${v}" aria-label="Tratado: ${esc(x.cliente||x.contrato)}" title="${v?'Tratado por '+esc(x.fin_visto_nome||'?')+' a '+esc(finVistoDH(x.fin_visto_em))+'. Clica para tirar o visto.':'Dar como tratado (já não falta nada vosso neste contrato)'}">${v?'✓':''}</button>`;}
+function finVistoModalHTML(x){if(!finVistoAtivo())return'';const v=finVistoValido(x);
+  const quem=v?`<span class="fin-ind ok">✓ Tratado</span><span class="fin-sub">por ${esc(x.fin_visto_nome||'?')} · ${esc(finVistoDH(x.fin_visto_em))}</span>`:'';
+  if(isFinanceiro())return`<div class="fin-visto-linha">${v?`${quem}<button type="button" class="btn btn-ghost btn-sm" data-action="fin-visto" data-c="${esc(x.contrato)}">Tirar o visto</button>`
+    :`<button type="button" class="btn btn-outline btn-sm" data-action="fin-visto" data-c="${esc(x.contrato)}">✓ Dar como tratado</button><span class="fin-sub">${x.fin_visto_em?'O visto anterior caiu: houve novidade depois dele. ':''}Dá o visto quando já não faltar nada vosso neste contrato.</span>`}</div>`;
+  if(isAdmin())return`<div class="fin-visto-linha"><span class="fin-sub">Financeiros:</span>${v?quem:`<span class="fin-sub">sem visto${x.fin_visto_em?' (caiu: houve novidade depois)':''}</span>`}</div>`;
+  return'';}
+async function finVistoAlternar(c){c=String(c);const i=(S.eot||[]).findIndex(y=>String(y.contrato)===c);if(i<0||S._finVisto===c)return;
+  const x=S.eot[i];const tirar=finVistoValido(x);const agora=new Date().toISOString();
+  const pos=tirar?{fin_visto_em:null,fin_visto_por:null,fin_visto_nome:null}:{fin_visto_em:agora,fin_visto_por:S.me&&S.me.id,fin_visto_nome:(S.me&&S.me.nome)||''};
+  const por=(o)=>{const k=(S.eot||[]).findIndex(y=>String(y.contrato)===c);if(k>=0){S.eot=S.eot.slice();S.eot[k]=Object.assign({},S.eot[k],o);}};
+  S._finVisto=c;por(pos);render();
+  try{const r=await supabaseApi('PATCH','/eot_contratos?contrato=eq.'+encodeURIComponent(c),{fin_visto_em:tirar?null:agora});
+    if(Array.isArray(r)&&!r.length)throw new Error('sem permissão para alterar este contrato');
+    if(Array.isArray(r)&&r[0])por({fin_visto_em:r[0].fin_visto_em,fin_visto_por:r[0].fin_visto_por,fin_visto_nome:r[0].fin_visto_nome});
+    if(String(S.eotAberto||'')===c){try{await loadEotHist(c);}catch(_){}} // o visto fica no histórico do contrato
+  }catch(e){por({fin_visto_em:x.fin_visto_em,fin_visto_por:x.fin_visto_por,fin_visto_nome:x.fin_visto_nome});const m=(e&&e.message)||String(e);
+    alert('Erro ao gravar o visto: '+(/fin_visto|PGRST204|42703/i.test(m)?'falta correr o SQL "2026-10-24_eot_visto_financeiro" no Supabase.':erroTexto(e)));}
+  finally{S._finVisto=null;render();}
+}
 function finTabAtual(){if(!S.finTab){try{S.finTab=localStorage.getItem('bm_fin_tab')||'precisa';}catch(e){S.finTab='precisa';}}return S.finTab;}
 function renderFinanceiro(){
   const F=Object.assign({prazo:'',fase:'',resp:'',mapa:'1'},S.finF||{});
@@ -3419,7 +3457,7 @@ function renderFinanceiro(){
   if(F.fase)L=L.filter(x=>(x.fase||'Por contactar')===F.fase);
   if(F.resp==='_sem')L=L.filter(x=>!x.responsavel_id);else if(F.resp)L=L.filter(x=>String(x.responsavel_id)===F.resp);
   // separadores: o que precisa dos financeiros / o que já tem indicação / tudo
-  const T=finTabAtual();const EST=new Map(L.map(x=>[x,finIndEstado(x)]));
+  const T=finTabAtual();const VA=finVistoAtivo();const EST=new Map(L.map(x=>[x,finIndEstado(x)]));
   const nPrec=L.filter(x=>FIN_PRECISA.includes(EST.get(x).k)).length,nTrat=L.filter(x=>EST.get(x).k==='tratado').length,nTodos=L.length;
   if(T==='precisa')L=L.filter(x=>FIN_PRECISA.includes(EST.get(x).k));else if(T==='tratados')L=L.filter(x=>EST.get(x).k==='tratado');
   L.sort((a,b)=>String(a.data_fim||'9999').localeCompare(String(b.data_fim||'9999')));
@@ -3430,7 +3468,7 @@ function renderFinanceiro(){
   const resps=[...new Set(todos.map(x=>x.responsavel_id).filter(Boolean))];
   const sel=(k,opts)=>`<select class="seq-sel" data-fin-f="${k}" aria-label="${k}">${opts.map(([v,l])=>`<option value="${esc(v)}" ${String(F[k])===String(v)?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
   const linhas=L.map(x=>`<tr class="gpp-lrow2 eot-click" data-action="eot-abrir" data-c="${esc(x.contrato)}" tabindex="0" title="Abrir ficha da EOT">
-      <td><b>${esc(x.cliente||'—')}</b>${notifMarca(x.contrato)}<div class="fin-sub">${esc(x.contrato||'')}${x.tipo?' · '+esc(x.tipo):''}</div></td>
+      ${VA?`<td class="fin-visto-td">${finVistoBtn(x)}</td>`:''}<td><b>${esc(x.cliente||'—')}</b>${notifMarca(x.contrato)}<div class="fin-sub">${esc(x.contrato||'')}${x.tipo?' · '+esc(x.tipo):''}</div></td>
       <td>${esc(x.modelo||'—')}${x.matricula?`<div class="fin-sub">${esc(x.matricula)}</div>`:''}</td>
       <td>${fD(x.data_fim)}<div class="fin-sub">${eotDiasHTML(x)}</div></td>
       <td style="text-align:right"><b>${fE(x.residual)}</b></td>
@@ -3445,7 +3483,7 @@ function renderFinanceiro(){
       ${contaHTML()}</div>
     ${secFinTabs(S.screen==='financeiro'?'fin':'sec')}
     <div class="content"><div class="sec-wrap">
-      <div class="sec-top"><span class="fin-ctx">BMW Motorrad · Aveiro</span><span class="sec-ro">Clica num contrato para ver, editar e comentar</span></div>
+      <div class="sec-top"><span class="fin-ctx">BMW Motorrad · Aveiro</span><span class="sec-ro">${VA?'Dá o visto (✓) quando já não faltar nada vosso · clica no contrato para ver e submeter indicações':'Clica num contrato para ver, editar e comentar'}</span></div>
       ${S.eotErr?`<div class="mg-aviso">Não consegui ler as EOTs (${esc(S.eotErr)}). Fala com o chefe de vendas.</div>`:''}
       ${notifBannerHTML()}
       <div class="kpi-strip" style="margin:0 0 14px">
@@ -3454,6 +3492,7 @@ function renderFinanceiro(){
         <div class="kpi-c"><span class="kpi-k">91–180 dias</span><span class="kpi-v ${n180?'warn':''}">${n180}</span><span class="kpi-s">no mapa</span></div>
         <div class="kpi-c"><span class="kpi-k">Residual (lista abaixo)</span><span class="kpi-v">${fE(resT)}</span><span class="kpi-s">${L.length} contrato${L.length!==1?'s':''}</span></div>
       </div>
+      ${VA?'':'<div class="mg-aviso" style="margin:0 0 10px">O visto de tratado ainda não está ativo: o chefe de vendas tem de correr o SQL «2026-10-24_eot_visto_financeiro» no Supabase. Até lá, conta como tratado o que já tem indicação vossa.</div>'}
       <div class="vchips fin-tabs" role="tablist" aria-label="Indicações dos financeiros">
         <button class="vchip ${T==='precisa'?'on':''}" role="tab" aria-selected="${T==='precisa'}" data-action="fin-tab" data-t="precisa">Precisa de vocês <span>${nPrec}</span></button>
         <button class="vchip ${T==='tratados'?'on':''}" role="tab" aria-selected="${T==='tratados'}" data-action="fin-tab" data-t="tratados">Já tratados <span>${nTrat}</span></button>
@@ -3466,8 +3505,8 @@ function renderFinanceiro(){
         ${sel('mapa',[['1','Só no mapa atual'],['','Incluir os que saíram do mapa']])}
       </div>
       ${L.length?`<div class="gpp-card" style="overflow-x:auto"><table class="gpp-ltable fin-tbl">
-        <thead><tr><th>Cliente</th><th>Mota</th><th>Fim</th><th style="text-align:right">Residual</th><th>Fase</th><th>Indicações</th><th>Responsável</th><th></th></tr></thead>
-        <tbody>${linhas}</tbody></table></div>`:(T==='precisa'&&nTodos?vazioHTML('check','Nada à vossa espera','Todas as EOTs desta lista já têm indicação vossa ou estão fechadas. Vê em “Já tratados”.'):vazioHTML('inboxEmpty',todos.length?'Nada com estes filtros':'Ainda não há EOTs carregadas',todos.length?'Muda os filtros acima.':'O mapa é carregado pelo chefe de vendas.'))}
+        <thead><tr>${VA?'<th class="fin-visto-th">Tratado</th>':''}<th>Cliente</th><th>Mota</th><th>Fim</th><th style="text-align:right">Residual</th><th>Fase</th><th>Indicações</th><th>Responsável</th><th></th></tr></thead>
+        <tbody>${linhas}</tbody></table></div>`:(T==='precisa'&&nTodos?vazioHTML('check','Nada à vossa espera',VA?'Todas as EOTs desta lista têm o vosso visto ou estão fechadas. Vê em “Já tratados”.':'Todas as EOTs desta lista já têm indicação vossa ou estão fechadas. Vê em “Já tratados”.'):vazioHTML('inboxEmpty',todos.length?'Nada com estes filtros':'Ainda não há EOTs carregadas',todos.length?'Muda os filtros acima.':'O mapa é carregado pelo chefe de vendas.'))}
       <div class="sec-nota">Contratos BMW Motorrad de Aveiro (inclui BMW Bank com concessionário responsável Aveiro), ordenados pela data de fim. Atualizado quando o chefe de vendas carrega o mapa.</div>
     </div></div></div></div>`;
 }
@@ -6196,7 +6235,7 @@ function eotDistribuicao(ativos,vend,sel){
 const EOT_CAMPOS={cliente:'Cliente',contacto_nome:'Contacto',telemovel:'Telemóvel',telefone:'Telefone',tipo:'Tipo de contrato',modelo:'Modelo',matricula:'Matrícula',kms:'Km contratados',
   data_fim:'Data de fim',prazo:'Prazo (meses)',prestacao:'Prestação',residual:'Valor residual',despesas:'Despesas finais',total:'Total a pagar',seguro:'Seguro',manutencao:'Manutenção',
   concessionario:'Concessionário',conc_resp:'Conc. responsável',vendedor_origem:'Vendedor original',no_mapa:'No mapa',
-  responsavel_id:'Responsável',fase:'Fase',temperatura:'Temperatura',proxima_acao:'Próxima ação',proxima_data:'Data da próxima ação',notas:'Notas',negocio_id:'Negócio no funil',adenda_em:'Adenda (contrato prolongado)'};
+  responsavel_id:'Responsável',fase:'Fase',temperatura:'Temperatura',proxima_acao:'Próxima ação',proxima_data:'Data da próxima ação',notas:'Notas',negocio_id:'Negócio no funil',adenda_em:'Adenda (contrato prolongado)',fin_visto_em:'Tratado (visto dos financeiros)'};
 const EOT_NUM=['prazo','prestacao','residual','despesas','total'],EOT_DATA=['data_fim','proxima_data','adenda_em'];
 const EOT_GRP_CONTRATO=['cliente','contacto_nome','telemovel','telefone','tipo','modelo','matricula','kms','data_fim','prazo','prestacao','residual','despesas','total','seguro','manutencao','concessionario','conc_resp','vendedor_origem','no_mapa'];
 const EOT_GRP_ACOMP=['responsavel_id','fase','temperatura','proxima_acao','proxima_data','notas'];
@@ -6293,7 +6332,7 @@ function eotImgsAplicar(){
       .catch(()=>{document.querySelectorAll('img[data-eot-img]').forEach(i=>{if(i.dataset.eotImg===p){i.alt='Imagem indisponível';i.closest('.eoth-img')&&i.closest('.eoth-img').classList.add('falhou');}});})
       .finally(()=>_eotImgPend.delete(p)));});
 }
-function eotHistValor(k,v){if(v==null||v==='')return'(vazio)';if(k==='responsavel_id')return vendName(v)||'?';if(k==='no_mapa')return String(v)==='true'?'Sim':'Não';if(EOT_DATA.includes(k))return eotDataPT(v);if(['prestacao','residual','despesas','total'].includes(k))return eotEur(v);return String(v);}
+function eotHistValor(k,v){if(v==null||v==='')return'(vazio)';if(k==='fin_visto_em')return finVistoDH(v)||String(v);if(k==='responsavel_id')return vendName(v)||'?';if(k==='no_mapa')return String(v)==='true'?'Sim':'Não';if(EOT_DATA.includes(k))return eotDataPT(v);if(['prestacao','residual','despesas','total'].includes(k))return eotEur(v);return String(v);}
 function eotHistHTML(h){
   const d=new Date(h.criado_em);const p=n=>String(n).padStart(2,'0');
   const quando=isNaN(d)?'':`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
@@ -6341,6 +6380,7 @@ function eotModalHTML(){
         <div class="eotm-g">${EOT_GRP_CONTRATO.map(k=>eotCampoHTML(x,k)).join('')}</div>
       </details>
       <div class="eotm-sec">Indicações e histórico</div>
+      ${finVistoModalHTML(x)}
       ${notifModalHTML(x.contrato)}
       <div class="eotm-com"><textarea class="norma-inp" id="eotm-com" rows="2" aria-label="Nova indicação" placeholder="Escreve a indicação ou cola um print (Ctrl+V). Fica registada com o teu nome e a hora.">${esc(S.eotCom||'')}</textarea>
         <div class="eotm-com-b"><label class="btn btn-outline btn-sm eot-anexo" title="Anexar imagens (também podes colar com Ctrl+V)">${ico('plus','ic-sm')}<span>Imagem</span><input type="file" id="eot-img-file" accept="image/*" multiple hidden></label>
@@ -7558,7 +7598,7 @@ function EXPORT_FOLHAS(){
       {c:'data_fim',l:'Data fim',f:d},{c:'prazo',l:'Prazo'},{c:'prestacao',l:'Prestação'},{c:'kms',l:'Km contratados'},{c:'matricula',l:'Matrícula'},{c:'modelo',l:'Modelo'},
       {c:'seguro',l:'Seguro'},{c:'manutencao',l:'Manutenção'},{c:'residual',l:'Valor residual'},{c:'despesas',l:'Despesas finais'},{c:'total',l:'Total a pagar'},
       {c:'concessionario',l:'Concessionário'},{c:'conc_resp',l:'Conc. responsável'},{c:'vendedor_origem',l:'Vendedor original'},
-      {c:'responsavel_id',l:'Responsável',f:nome},{c:'fase',l:'Fase'},{c:'adenda_em',l:'Adenda em',f:d},{c:'temperatura',l:'Temperatura'},{c:'proxima_acao',l:'Próxima ação'},{c:'proxima_data',l:'Data próx. ação',f:d},
+      {c:'responsavel_id',l:'Responsável',f:nome},{c:'fase',l:'Fase'},{c:'adenda_em',l:'Adenda em',f:d},{c:'fin_visto_em',l:'Visto financeiros',f:dt},{c:'fin_visto_nome',l:'Visto por'},{c:'temperatura',l:'Temperatura'},{c:'proxima_acao',l:'Próxima ação'},{c:'proxima_data',l:'Data próx. ação',f:d},
       {c:'notas',l:'Notas'},{c:'negocio_id',l:'Negócio ID'},{c:'no_mapa',l:'No mapa',f:sn},{c:'saiu_em',l:'Saiu do mapa',f:dt},
       {c:'criado_em',l:'Criado',f:dt},{c:'ultima_import',l:'Última importação',f:dt},{c:'updated_at',l:'Atualizado',f:dt},
     ]},
@@ -9585,6 +9625,7 @@ function bindEvents(){
       case'eot-img-tirar':eotImgTirar(el.dataset.id);break;
       case'eot-img-ver':setState({eotImgVer:el.dataset.p,eotImgZoom:false});break;
       case'eot-img-fechar':setState({eotImgVer:null,eotImgZoom:false});break;
+      case'fin-visto':finVistoAlternar(el.dataset.c);break;
       case'fin-tab':{const t=el.dataset.t;try{localStorage.setItem('bm_fin_tab',t);}catch(e){}setState({finTab:t});break;}
       case'nt-abrir':notifAbrir(el.dataset.c);break;
       case'nt-lido':notifMarcarLido([String(el.dataset.c)]);break;
