@@ -9,7 +9,7 @@
     "ecras": "node ecras_seguranca.js ../index.html",
     "xss": "node xss.js ../index.html A 120 && node xss.js ../index.html B 120",
     "integridade": "node integridade.js ../index.html 8",
-    "todos": "npm run permissoes && npm run csp && npm run erros && npm run ecras && npm run esforco && npm run pdf && npm run navegacao && npm run fichas && npm run sessao && npm run encomendas && npm run comercio && npm run eotimg && npm run adenda && npm run alertas && npm run notificacoes && npm run stus && npm run xss && npm run integridade",
+    "todos": "npm run permissoes && npm run csp && npm run erros && npm run ecras && npm run esforco && npm run pdf && npm run navegacao && npm run fichas && npm run sessao && npm run encomendas && npm run comercio && npm run eotimg && npm run adenda && npm run alertas && npm run notificacoes && npm run stus && npm run equip && npm run xss && npm run integridade",
     "esforco": "node ficha_esforco.js ../index.html",
     "pdf": "node ficha_pdf.js ../index.html",
     "navegacao": "node ficha_navegacao.js ../index.html",
@@ -21,6 +21,7 @@
     "alertas": "node alertas_cliente.js ../index.html",
     "notificacoes": "node eot_notificacoes.js ../index.html",
     "stus": "node stock_st_us.js ../index.html",
+    "equip": "node stock_equip.js ../index.html",
     "fichas": "node fichas_varias.js ../index.html"
   },
   "dependencies": {

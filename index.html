@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-23-h">
+<meta name="app-version" content="2026-10-24-a">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1405,6 +1405,11 @@ html,body{overflow-x:hidden;max-width:100vw}
 .sec-nota{font-size:12px;color:var(--text3);margin-top:16px}
 @media(max-width:700px){.sec-wrap{padding:12px 12px 24px}.sec-kpis{grid-template-columns:1fr 1fr}.sec-kpis .sec-kpi:last-child{grid-column:1/-1}.sec-q{min-width:100%;order:3}.sec-quem{display:none}}
 /* ---- Stock Equipamento & Lifestyle ---- */
+.seq-siteres{margin:8px 0 12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}.seq-siteres.ok{border-left:4px solid var(--green)}
+.seq-sr-t{font-size:13.5px}.seq-sr-s{font-size:13px;color:var(--text2)}.seq-sr-n{font-size:14px}
+.seq-sr-p{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--text2)}.seq-sr-p b{color:var(--text)}.seq-sr-p em{font-style:normal;color:var(--green);font-weight:700}.seq-sr-p .ok{color:var(--green);font-weight:700}.seq-sr-p .neg{color:var(--red);font-weight:700}
+.seq-sr-a{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:2px}
+.seq-noutros{margin:6px 0 10px;padding:8px 12px;border:1px dashed var(--border2);border-radius:10px;font-size:13px;color:var(--text2);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .seq-wrap{padding:14px 20px 28px}
 .seq-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
 .seq-tit{font-size:18px;font-weight:800;letter-spacing:-.3px}
@@ -2244,7 +2249,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-23-h';
+const APP_VERSION='2026-10-24-a';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -4489,7 +4494,7 @@ function seqLojaCurta(l){return String(l||'').replace(/^\d+\s*-\s*/,'').replace(
 function seqLojaPadrao(){const lojas=[...new Set((S.stockEq||[]).map(x=>x.ponto_venda).filter(Boolean))];return lojas.find(l=>/aveiro/i.test(l))||'';}
 function seqDescHTML(x){if(x.desc_max==null)return'';const p=Math.round(x.desc_max*100);const c=p>=50?'seq-d50':(p>=40?'seq-d40':(p>=20?'seq-d20':'seq-d10'));return`<span class="seq-d ${c}" title="Desconto máximo sobre o PVP">até −${p}%</span>`;}
 function seqEstadoHTML(x){const q=String(x.qualidade||'');const c={Vivo:'seq-e-vivo',Moribundo:'seq-e-mor',Morto:'seq-e-morto',Analisar:'seq-e-an'}[q]||'seq-e-an';
-  const t=String(x.antig_saida||'').replace(/^Últ\. Saída /,'última saída ').replace(/^Sem Movimento de Saída$/,'nunca vendeu');return`<span class="seq-e ${c}" title="${esc(x.antig_saida||'')}">${esc(q||'—')}</span>${t?`<span class="seq-ant">${esc(t)}</span>`:''}`;}
+  const t=String(x.antig_saida||'').replace(/^Últ\. Saída /,'última saída ').replace(/^Sem Movimento de Saída$/,'nunca vendeu');return`<span class="seq-e ${c}" title="${esc((x.antig_saida||'')+(x.ult_saida?' · última venda a '+String(x.ult_saida).slice(0,10).split('-').reverse().join('/'):''))}">${esc(q||'—')}</span>${t?`<span class="seq-ant">${esc(t)}</span>`:''}`;}
 function seqQuemPode(){return isAdmin()||isVendedor()||(S.me&&S.me.role==='assessor');}
 // ---- Cruzamento com lifestyle.caetano.pt (preço, tamanho, categoria) ----
 const SITE_BASE='https://lifestyle.caetano.pt/wp-json/wc/store/v1';
@@ -4626,8 +4631,8 @@ async function seqRegistar(){
 }
 // ===== Venda de equipamento FORA DO STOCK (artigo que não está no mapa) =====
 function seqForaAbrir(){
-  const q=String((S.seqF||{}).q||'').trim();const pareceRef=/^[0-9A-Z]{8,14}$/i.test(q);
-  S.seqFora={qtd:1,data:new Date().toISOString().slice(0,10),ref:pareceRef?q.toUpperCase():'',campanha:''};S.seqVender=null;S.seqMsg='';render();
+  const q0=String((S.seqF||{}).q||'').trim();const pareceRef=seqPareceRef(q0);const q=pareceRef?seqRefKey(q0):q0;
+  S.seqFora={qtd:1,data:new Date().toISOString().slice(0,10),ref:pareceRef?q:'',campanha:''};S.seqVender=null;S.seqMsg='';render();
   if(pareceRef)seqForaRef(q);
   setTimeout(()=>{const el=document.getElementById(pareceRef?'seqf-preco':'seqf-ref');if(el)el.focus();},30);
 }
@@ -4664,6 +4669,7 @@ async function seqForaRef(v){
   const aplicar=s=>{if(!s)return;if(!F.descricao&&s.nome_site)F.descricao=s.nome_site;if(!F.tamanho&&s.tamanho)F.tamanho=s.tamanho;
     const p=s.preco_aveiro!=null?s.preco_aveiro:s.pvp;if(p!=null&&!F.pvp)F.pvp=String(p).replace('.',',');F._vsite=s.venda_site!=null?Number(s.venda_site):null;F._url=s.url||null;};
   if(pre&&pre.no_site!==false&&(pre.nome_site||pre.pvp!=null)){aplicar(pre);F._site='ok';S.seqFora=F;render();return;}
+  const ja=(S.seqSiteRes||{})[seqRefKey(ref)];if(ja&&ja.estado==='ok'&&ja.dados){const s=ja.dados;aplicar({nome_site:s.nome_site,tamanho:seqTamCor(s),pvp:s.pvp,venda_site:s.venda_site,url:s.url});F._site='ok';S.seqFora=F;render();return;}
   F._site='busca';S.seqFora=F;render();
   try{const d=await siteConsultar([ref]);const s=d&&d[ref];
     const G=Object.assign({},S.seqFora||{});if(String(G.ref)!==ref)return;
@@ -4725,6 +4731,40 @@ function seqForaHTML(){
     <div class="seq-nota">Comissão = 20% da margem (preço s/IVA − custo). Na lista de Comissões a linha aparece marcada “fora do stock”.</div>
   </div>`;
 }
+// ---- Pesquisa: referência sem espaços/pontos; antiguidade (meses sem vender); desconto mínimo ----
+function seqRefKey(v){return String(v||'').toUpperCase().replace(/[^0-9A-Z]/g,'');}
+function seqPareceRef(q){const k=seqRefKey(q);return k.length>=7&&k.length<=14&&/\d{5}/.test(k)&&/^[\d\sA-Z.\-\/]+$/i.test(String(q||'').trim());}
+const SEQ_ANT_MESES={'Últ. Saída até 3 meses':0,'Últ. Saída de 3 a 6 meses':3,'Últ. Saída de 6 meses a 1 ano':6,'Últ. Saída de 1 a 2 anos':12,'Últ. Saída de 2 a 3 anos':24,'Últ. Saída há mais de 3 anos':36};
+// meses desde a última venda; nunca vendeu: o estado do mapa diz se é novo (Vivo) ou antigo (Moribundo/Morto)
+function seqMesesParado(x){if(x.ult_saida){const d=new Date(String(x.ult_saida).slice(0,10)+'T00:00:00');if(!isNaN(d))return Math.max(0,(Date.now()-d.getTime())/(30.44*864e5));}
+  if(x.antig_saida==='Sem Movimento de Saída')return({Vivo:0,Analisar:6,Moribundo:12,Morto:36})[x.qualidade]??12;
+  const b=SEQ_ANT_MESES[x.antig_saida];return b==null?null:b;}
+function seqNuncaVendeu(x){return !x.ult_saida&&x.antig_saida==='Sem Movimento de Saída';}
+const SEQ_ANT_OPC=[['','Qualquer antiguidade'],['3','Sem vender há +3 meses'],['6','Sem vender há +6 meses'],['12','Sem vender há +1 ano'],['24','Sem vender há +2 anos'],['36','Sem vender há +3 anos'],['nunca','Nunca vendeu (desde que entrou)']];
+const SEQ_DESC_OPC=[['','Qualquer desconto'],['0.1','Desconto máx. ≥ 10%'],['0.2','Desconto máx. ≥ 20%'],['0.3','Desconto máx. ≥ 30%'],['0.4','Desconto máx. ≥ 40%'],['0.5','Desconto máx. ≥ 50%']];
+function seqPassaAnt(x,ant){if(!ant)return true;if(ant==='nunca')return seqNuncaVendeu(x);const m=seqMesesParado(x);return m!=null&&m>=Number(ant);}
+function seqPesquisa(arr,q){const n=eotNorm(q);if(!n)return arr;const k=seqRefKey(q);const porRef=k.length>=4&&/\d/.test(k);
+  return arr.filter(x=>{const si=seqSi(x)||{};return eotNorm([x.descricao,x.ref,x.subfamilia,si.nome_site,si.tamanho].join(' ')).includes(n)||(porRef&&seqRefKey(x.ref).includes(k));});}
+// referência que não está em nenhuma loja do mapa: vai ao site (lifestyle.caetano.pt), como no cruzamento de preços
+let _seqSiteT=null;
+function seqSiteAgendar(){clearTimeout(_seqSiteT);_seqSiteT=setTimeout(()=>{const q=String((S.seqF||{}).q||'');if(!seqPareceRef(q))return;const k=seqRefKey(q);
+  if(seqPesquisa(S.stockEq||[],q).length)return;const R=S.seqSiteRes||{};if(R[k]&&R[k].estado!=='erro')return;seqSiteProcurar(k);},650);}
+async function seqSiteProcurar(ref){S.seqSiteRes=Object.assign({},S.seqSiteRes||{},{[ref]:{estado:'busca'}});render();
+  let st;try{const d=await siteConsultar([ref]);const x=d&&d[ref];st=x?{estado:'ok',dados:x}:{estado:'nao'};}catch(e){st={estado:'erro',erro:(e&&e.message)||String(e)};}
+  S.seqSiteRes=Object.assign({},S.seqSiteRes||{},{[ref]:st});if(typeof aEscrever==='function'&&aEscrever()&&!document.getElementById('seq-q'))S._renderPend=true;else{const el=document.getElementById('seq-q');const p=el?el.selectionStart:null;render();const n=document.getElementById('seq-q');if(n&&p!=null&&el===document.activeElement){n.focus();n.setSelectionRange(p,p);}}}
+function seqSiteResHTML(q){if(!seqPareceRef(q))return'';const k=seqRefKey(q);const r=(S.seqSiteRes||{})[k];
+  const fE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+  const t=`<div class="seq-sr-t">A referência <b class="sec-mono">${esc(k)}</b> não está no mapa de stock (em nenhuma loja).</div>`;
+  if(!r)return`<div class="gpp-card seq-siteres">${t}<button class="btn btn-outline btn-sm" data-action="seq-site-ref" data-ref="${esc(k)}">Procurar no site</button></div>`;
+  if(r.estado==='busca')return`<div class="gpp-card seq-siteres">${t}<div class="seq-sr-s">⏳ A procurar em lifestyle.caetano.pt…</div></div>`;
+  if(r.estado==='erro')return`<div class="gpp-card seq-siteres">${t}<div class="seq-sr-s neg">Não consegui ligar ao site agora. <button class="btn btn-outline btn-sm" data-action="seq-site-ref" data-ref="${esc(k)}">Tentar outra vez</button></div></div>`;
+  const vender=seqQuemPode()&&!S.seqFora?`<button class="btn btn-orange btn-sm" data-action="seqf-abrir">Vender fora do stock</button>`:'';
+  if(r.estado==='nao')return`<div class="gpp-card seq-siteres">${t}<div class="seq-sr-s">Também não aparece no site. Confirma a referência ou pede ao fornecedor.</div>${vender}</div>`;
+  const x=r.dados||{};const tam=seqTamCor(x);const desc=x.pvp&&x.venda_site!=null&&x.venda_site<x.pvp?Math.round((1-x.venda_site/x.pvp)*100):0;
+  return`<div class="gpp-card seq-siteres ok">${t}
+    <div class="seq-sr-n"><b>${esc(x.nome_site||'—')}</b>${tam?' · Tamanho '+esc(tam):''}</div>
+    <div class="seq-sr-p"><span>PVP <b>${x.pvp!=null?fE(x.pvp):'—'}</b></span><span>Venda no site <b>${x.venda_site!=null?fE(x.venda_site):'—'}</b>${desc?` <em>−${desc}%</em>`:''}</span><span class="${x.site_stock?'ok':'neg'}">${x.site_stock?'✓ em stock online':'esgotado online'}</span></div>
+    <div class="seq-sr-a">${x.url?`<a class="seq-link" href="${esc(x.url)}" target="_blank" rel="noopener">Ver no site ↗</a>`:''}${vender}</div></div>`;}
 function seqGrupos(arr,rede){
   const m=new Map();
   arr.forEach(x=>{const si=seqSi(x);const k=(si&&si.parent?'p'+si.parent:'d'+eotNorm(x.descricao))+(rede?'':'|'+x.ponto_venda);
@@ -4738,7 +4778,7 @@ function stockEqView(){
   seqGarantirCarga();
   const fE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
   const faixa=a=>{if(!a.length)return'—';const mn=Math.min(...a),mx=Math.max(...a);return mn===mx?fE(mn):fE(mn)+' – '+fE(mx);};
-  const F=Object.assign({tab:'equip',cat:'',loja:null,q:'',ord:'desc'},S.seqF||{});
+  const F=Object.assign({tab:'equip',cat:'',loja:null,q:'',ord:'desc',ant:'',dmin:''},S.seqF||{});
   if(F.loja==null)F.loja=seqLojaPadrao();
   const todos=S.stockEq||[];
   const lojas=[...new Set(todos.map(x=>x.ponto_venda).filter(Boolean))].sort((a,b)=>(/aveiro/i.test(b)?1:0)-(/aveiro/i.test(a)?1:0)||a.localeCompare(b));
@@ -4748,14 +4788,19 @@ function stockEqView(){
   let arr=daLoja.filter(x=>F.tab==='lifestyle'?isLife(x):!isLife(x));
   const porCat={};arr.forEach(x=>{const c=seqCategoriaEf(x);porCat[c]=(porCat[c]||0)+1;});
   if(F.tab!=='lifestyle'&&F.cat)arr=arr.filter(x=>seqCategoriaEf(x)===F.cat);
-  const q=eotNorm(F.q);if(q)arr=arr.filter(x=>{const si=seqSi(x)||{};return eotNorm([x.descricao,x.ref,x.subfamilia,si.nome_site,si.tamanho].join(' ')).includes(q);});
+  if(F.q)arr=seqPesquisa(arr,F.q);
+  if(F.ant)arr=arr.filter(x=>seqPassaAnt(x,F.ant));
+  if(F.dmin)arr=arr.filter(x=>(Number(x.desc_max)||0)+1e-9>=Number(F.dmin));
+  // a pesquisa não encontra nesta loja/separador mas há noutros sítios do mapa
+  const noutros=F.q?seqPesquisa(todos,F.q).filter(x=>!arr.includes(x)):[];
   if(F.so==='site')arr=arr.filter(x=>(seqSi(x)||{}).no_site);
   if(F.so==='outlet')arr=arr.filter(x=>(seqSi(x)||{}).outlet);
   const G=seqGrupos(arr,!F.loja);
   const ordAnt={'Sem Movimento de Saída':9,'Últ. Saída há mais de 3 anos':8,'Últ. Saída de 2 a 3 anos':7,'Últ. Saída de 1 a 2 anos':6,'Últ. Saída de 6 meses a 1 ano':5,'Últ. Saída de 3 a 6 meses':4,'Últ. Saída até 3 meses':3};
   const alfa=(a,b)=>String(a.nome).localeCompare(String(b.nome),'pt');
-  G.sort(F.ord==='alfa'?alfa:F.ord==='parado'?((a,b)=>Math.max(...b.L.map(x=>ordAnt[x.antig_saida]||0))-Math.max(...a.L.map(x=>ordAnt[x.antig_saida]||0))||alfa(a,b)):
-    F.ord==='preco'?((a,b)=>(Math.max(0,...b.av)-Math.max(0,...a.av))||alfa(a,b)):((a,b)=>b.desc-a.desc||alfa(a,b)));
+  const mesesG=g=>Math.max(-1,...g.L.map(x=>{const m=seqMesesParado(x);return m==null?-1:m;}));
+  G.sort(F.ord==='alfa'?alfa:F.ord==='parado'?((a,b)=>mesesG(b)-mesesG(a)||b.desc-a.desc||alfa(a,b)):
+    F.ord==='preco'?((a,b)=>(Math.max(0,...b.av)-Math.max(0,...a.av))||alfa(a,b)):((a,b)=>b.desc-a.desc||mesesG(b)-mesesG(a)||alfa(a,b)));
   const pecas=arr.reduce((a,x)=>a+(Number(x.qtd)||0),0);
   const comSite=todos.filter(x=>(seqSi(x)||{}).no_site).length;
   const ult=todos.map(x=>x.importado_em).filter(Boolean).sort().pop();
@@ -4795,7 +4840,7 @@ function stockEqView(){
         <div class="seq-main"><div class="seq-desc">${esc(g.nome)}${si.outlet?' <span class="seq-flag">Outlet</span>':''}${si.dress_code?' <span class="seq-flag dc">Dress Code</span>':''}</div>
           <div class="seq-meta">${esc(seqCatLabel(g.cat))}${F.loja?'':' · '+[...new Set(g.L.map(y=>seqLojaCurta(y.ponto_venda)))].map(esc).join(', ')} · ${g.qtd} un.${g.si&&!g.si.no_site?' · <span class="seq-nosite">não está no site</span>':''}</div>
         </div>
-        <div class="seq-tags">${seqDescHTML({desc_max:g.desc||null})}<div class="seq-est">${seqEstadoHTML(x0)}</div></div>
+        <div class="seq-tags">${seqDescHTML({desc_max:g.desc||null})}<div class="seq-est">${seqEstadoHTML(g.L.reduce((m,y)=>(seqMesesParado(y)??-1)>(seqMesesParado(m)??-1)?y:m,x0))}</div></div>
         ${seqQuemPode()?`<button class="btn ${aberto?'btn-dark':'btn-orange'} btn-sm seq-vbtn" data-action="seq-vender" data-id="${aberto?'':x0.id}">${aberto?'Fechar':'Vender'}</button>`:''}
       </div>
       <div class="seq-refs">
@@ -4839,12 +4884,17 @@ function stockEqView(){
     <div class="seq-bar">
       <div class="sec-tabs2"><button class="sec-tab2 ${F.tab!=='lifestyle'?'on':''}" data-action="seq-f" data-k="tab" data-v="equip">🧥 Equipamento <span>${nEq}</span></button><button class="sec-tab2 ${F.tab==='lifestyle'?'on':''}" data-action="seq-f" data-k="tab" data-v="lifestyle">👕 Stock Lifestyle <span>${nLs}</span></button></div>
       <select class="seq-sel" data-seq-f="loja"><option value="" ${!F.loja?'selected':''}>Toda a rede</option>${lojas.map(l=>`<option value="${esc(l)}" ${F.loja===l?'selected':''}>${esc(seqLojaCurta(l))}</option>`).join('')}</select>
-      <select class="seq-sel" data-seq-f="ord"><option value="desc" ${F.ord==='desc'?'selected':''}>Maior desconto primeiro</option><option value="parado" ${F.ord==='parado'?'selected':''}>Mais parado primeiro</option><option value="preco" ${F.ord==='preco'?'selected':''}>Mais caro primeiro</option><option value="alfa" ${F.ord==='alfa'?'selected':''}>A → Z</option></select>
+      <select class="seq-sel" data-seq-f="ord"><option value="desc" ${F.ord==='desc'?'selected':''}>Maior desconto primeiro</option><option value="parado" ${F.ord==='parado'?'selected':''}>Mais tempo sem vender primeiro</option><option value="preco" ${F.ord==='preco'?'selected':''}>Mais caro primeiro</option><option value="alfa" ${F.ord==='alfa'?'selected':''}>A → Z</option></select>
       <select class="seq-sel" data-seq-f="so"><option value="" ${!F.so?'selected':''}>Todos</option><option value="site" ${F.so==='site'?'selected':''}>Só os que estão no site</option><option value="outlet" ${F.so==='outlet'?'selected':''}>Só Outlet do site</option></select>
-      <input class="sec-q" id="seq-q" placeholder="Procurar artigo, referência, tamanho…" aria-label="Procurar" value="${esc(F.q||'')}">
+      <select class="seq-sel" data-seq-f="ant" aria-label="Antiguidade">${SEQ_ANT_OPC.map(([v,l])=>`<option value="${v}" ${String(F.ant||'')===v?'selected':''}>${l}</option>`).join('')}</select>
+      <select class="seq-sel" data-seq-f="dmin" aria-label="Desconto mínimo">${SEQ_DESC_OPC.map(([v,l])=>`<option value="${v}" ${String(F.dmin||'')===v?'selected':''}>${l}</option>`).join('')}</select>
+      <input class="sec-q" id="seq-q" placeholder="Procurar artigo ou referência (com ou sem espaços), tamanho…" aria-label="Procurar" value="${esc(F.q||'')}">
+      ${F.q||F.ant||F.dmin||F.so||F.cat?'<button class="btn btn-ghost btn-sm" data-action="seq-limpar">Limpar filtros</button>':''}
     </div>
     ${F.tab!=='lifestyle'?`<div class="vchips" style="padding:8px 0 0"><button class="vchip ${!F.cat?'on':''}" data-action="seq-f" data-k="cat" data-v="">Tudo <span>${Object.values(porCat).reduce((a,b)=>a+b,0)}</span></button>${SEQ_CATS.filter(([k])=>porCat[k]).map(([k,l])=>`<button class="vchip ${F.cat===k?'on':''}" data-action="seq-f" data-k="cat" data-v="${k}">${l} <span>${porCat[k]}</span></button>`).join('')}</div>`:''}
     <div class="seq-res"><b>${G.length}</b> artigo${G.length!==1?'s':''} · ${arr.length} referências · ${pecas} peça${pecas!==1?'s':''}</div>
+    ${noutros.length?`<div class="seq-noutros">🔎 Esta pesquisa também encontra <b>${noutros.length}</b> referência${noutros.length!==1?'s':''} ${[...new Set(noutros.map(x=>seqLojaCurta(x.ponto_venda)))].length?'em '+[...new Set(noutros.map(x=>seqLojaCurta(x.ponto_venda)))].map(esc).join(', '):''}${noutros.some(x=>(seqCategoriaEf(x)==='lifestyle')!==(F.tab==='lifestyle'))?' (noutro separador)':''}${F.ant||F.dmin||F.cat||F.so?' ou fora dos filtros':''}. <button class="btn btn-outline btn-sm" data-action="seq-ver-tudo">Ver todas</button></div>`:''}
+    ${F.q&&!arr.length&&!noutros.length?seqSiteResHTML(F.q):''}
     <div class="seq-list">${G.slice(0,lim).map(grupo).join('')||`<div class="gpp-empty">Nada com estes filtros.${seqQuemPode()&&!S.seqFora&&F.q?' <button class="btn btn-orange btn-sm" data-action="seqf-abrir" style="margin-left:8px">Vender fora do stock</button>':''}</div>`}</div>
     ${G.length>lim?`<div style="padding:10px 0"><button class="btn btn-outline btn-block" data-action="seq-mais">Mostrar mais (${G.length-lim})</button></div>`:''}
     <div class="seq-nota" style="margin-top:12px">Cada artigo junta os vários tamanhos (o site diz qual é o tamanho de cada referência). O <b>PVP</b> vem do site, salvo se o Excel trouxer outro PVP ou se o chefe o tiver alterado. O stock é o do dia do mapa — confirma antes de prometer ao cliente.</div>`:''}
@@ -9241,7 +9291,7 @@ function bindEvents(){
     if(el.dataset&&el.dataset.tblQ){const k=el.dataset.tblQ;S.tblQ=Object.assign({},S.tblQ||{},{[k]:el.value});const tb=tblPorChave(k);if(tb)tblFiltrar(tb,el.value);return;}
     if(el.dataset&&el.dataset.field==='enc'&&S.screen==='edit'){S.form.enc=el.value;const d=document.getElementById('enc-dica');if(d)d.innerHTML=encDicaHTML(el.value,encFormId());return;}
     if(el.id==='enc-q'){S.encF=Object.assign({q:'',ex:{}},S.encF||{},{q:el.value});const p=el.selectionStart;render();const n=document.getElementById('enc-q');if(n){n.focus();n.setSelectionRange(p,p);}return;}
-    if(el.id==='seq-q'){const F=Object.assign({},S.seqF||{});F.q=el.value;S.seqF=F;S.seqLim=80;const p=el.selectionStart;render();const n=document.getElementById('seq-q');if(n){n.focus();n.setSelectionRange(p,p);}return;}
+    if(el.id==='seq-q'){const F=Object.assign({},S.seqF||{});F.q=el.value;S.seqF=F;S.seqLim=80;const p=el.selectionStart;render();seqSiteAgendar();const n=document.getElementById('seq-q');if(n){n.focus();n.setSelectionRange(p,p);}return;}
     if(el.id==='seq-pct'){seqPctInput(el);return;}
     if(el.dataset&&el.dataset.eotm){eotModalInput(el);return;}
     if(el.id==='eotm-com'){S.eotCom=el.value;return;}
@@ -9468,6 +9518,9 @@ function bindEvents(){
       case'seq-pav-repor':seqPrecoManual(el.dataset.ref,'');break;
       case'seq-registar':seqRegistar();break;
       case'seqf-abrir':seqForaAbrir();break;
+      case'seq-site-ref':seqSiteProcurar(el.dataset.ref);break;
+      case'seq-limpar':setState({seqF:Object.assign({},S.seqF||{},{q:'',ant:'',dmin:'',so:'',cat:''}),seqLim:80});break;
+      case'seq-ver-tudo':setState({seqF:Object.assign({},S.seqF||{},{loja:'',ant:'',dmin:'',so:'',cat:'',tab:(()=>{const n=seqPesquisa(S.stockEq||[],(S.seqF||{}).q||'');const life=n.filter(x=>seqCategoriaEf(x)==='lifestyle').length;return life>n.length-life?'lifestyle':'equip';})()}),seqLim:80});break;
       case'lemb-feito':lembMarcar(el.dataset.k,el.dataset.ym);render();toast('Lembrete arrumado até ao próximo mês');break;
       case'lemb-abrir':{const a=el.dataset.alvo;if(el.dataset.k==='com'){setState({screen:'dashboard',gppSec:'comissoes',dashMes:a,perTipo:'mes',gppMais:false});}
         else{S.escalaMes=a.replace('/','-');setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}break;}

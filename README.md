@@ -28,6 +28,7 @@ Correm sozinhos no GitHub (separador **Actions**) a cada alteração. Localmente
 - **alertas** — declaração de circulação (mota nova vendida, 90 dias depois da matrícula; "Por atualizar" mantém o aviso, "Atualizada" tira-o) e aniversários dos clientes (um aviso por cliente; à segunda inclui o fim de semana; 29/02 a 28/02). Sem o SQL, os campos novos não aparecem e o negócio grava sem eles.
 - **notificacoes** — notificações das EOTs: a última indicação espera pelo outro lado (vendedor/chefe → financeiros; financeiro → responsável e chefe se escreveu); «Lido» por pessoa; responder passa a notificação; o chefe vê as conversas penduradas; aviso do computador com a página em segundo plano.
 - **stus** — lembrete ao chefe: motas ST de Aveiro com 90+ dias no stand (desde 193) para pedir a mudança para US; Home e A tratar, "→ US" na tabela, "Já pedi" esconde até ao próximo ficheiro.
+- **equip** — Stock Equipamento: referência com ou sem espaços; aviso quando está noutra loja; referência fora do mapa procurada no site (e a venda fora do stock já vem preenchida); filtros de antiguidade e desconto mínimo; ordenar por mais tempo sem vender.
 - **fichas** — várias fichas de margem no mesmo negócio (uma por mota): cada uma grava na sua linha, troca sem misturar dados, marcar a vendida arquiva as outras, alerta enquanto não se escolhe; e aprovação quando o esforço passa a margem variável.
 - **integridade** — escreve números à portuguesa a velocidades aleatórias, com rede lenta e falhas, e confirma que o gravado é igual ao escrito.
 
