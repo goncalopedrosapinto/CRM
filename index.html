@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-25-e">
+<meta name="app-version" content="2026-10-25-f">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2271,6 +2271,10 @@ body.a-gravar [data-action]{cursor:progress}
 .reu-c-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
 .reu-c-t small{font-size:11px;color:var(--text3)}
 .reu-c.atras small{color:var(--red)}
+.reu-c.repetido{border-width:2px;padding:7px 9px}
+.reu-c-rep{min-width:0}
+.reu-c-data{display:flex;flex-direction:column;gap:2px;flex-shrink:0;width:150px;font-size:11px;font-weight:600;color:var(--text3)}
+.reu-c-data input{padding:5px 8px;font-size:12px}
 .reu-c-x{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border:0;border-radius:var(--r);background:none;color:var(--text3)}
 .reu-c-x:hover{background:var(--surface2);color:var(--red)}
 .reu-cform{display:grid;grid-template-columns:160px minmax(0,1fr) 150px auto;gap:8px;align-items:center;margin-top:12px}
@@ -2291,7 +2295,7 @@ body.a-gravar [data-action]{cursor:progress}
 .reu-ptempo b{color:var(--text2);font-variant-numeric:tabular-nums}
 .reu-nav{display:flex;justify-content:space-between;gap:10px;margin-top:4px}
 .reu-nav .btn{display:inline-flex;align-items:center;gap:6px}
-@media(max-width:700px){.reu{padding:4px 10px 90px}.reu-cform{grid-template-columns:1fr}.reu-corpo{grid-template-columns:1fr}.reu-rn{max-width:none}.reu-usada{flex-wrap:wrap}.reu-usada .reu-rn{flex:1}.reu-usada .reu-rs{order:3;flex-basis:100%;white-space:normal}.reu-nav .btn span{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+@media(max-width:700px){.reu{padding:4px 10px 90px}.reu-cform{grid-template-columns:1fr}.reu-corpo{grid-template-columns:1fr}.reu-rn{max-width:none}.reu-usada{flex-wrap:wrap}.reu-usada .reu-rn{flex:1}.reu-c{flex-wrap:wrap}.reu-c-t{flex:1 1 180px}.reu-c-data{width:auto;flex:1 1 140px}.reu-usada .reu-rs{order:3;flex-basis:100%;white-space:normal}.reu-nav .btn span{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
 </style>
 </head>
 <body>
@@ -2409,7 +2413,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-25-e';
+const APP_VERSION='2026-10-25-f';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -7001,7 +7005,7 @@ function travar(nome){const fn=window[nome];if(typeof fn!=='function'||fn._trava
   const w=async function(...a){let k;try{k=nome+'|'+JSON.stringify(a);}catch(_){k=nome;}if(_emCurso.has(k))return;_emCurso.add(k);document.body.classList.add('a-gravar');
     try{return await fn.apply(this,a);}finally{_emCurso.delete(k);if(!_emCurso.size)document.body.classList.remove('a-gravar');}};
   w._travado=true;window[nome]=w;}
-['mrConfirmar','mrRecusar','addStockMotaFull','addStockMota','comissaoAdd','premioAdd','saveInscricaoNova','saveEventoNovo','saveLead','saveAutomatricula','saveVendaDireta','saveRecord','deleteRecord','seqConfirmar','seqRegistar','seqForaRegistar','recontReabrir','recontAdiar','eotConfirmar','eotGuardar','eotModalGuardar','eotAtribuirLote','eotCriarNegocio','eotComentar','eqAdd','eqColar','comFechoToggle','negComentar','vhNovoRegistar','vhContactei','vhAdiar','vhPerdido','fmGuardarNovo','fmAssociar','reuCompAdd','reuCompFeito','reuCompApagar'].forEach(n=>{try{travar(n);}catch(e){}});
+['mrConfirmar','mrRecusar','addStockMotaFull','addStockMota','comissaoAdd','premioAdd','saveInscricaoNova','saveEventoNovo','saveLead','saveAutomatricula','saveVendaDireta','saveRecord','deleteRecord','seqConfirmar','seqRegistar','seqForaRegistar','recontReabrir','recontAdiar','eotConfirmar','eotGuardar','eotModalGuardar','eotAtribuirLote','eotCriarNegocio','eotComentar','eqAdd','eqColar','comFechoToggle','negComentar','vhNovoRegistar','vhContactei','vhAdiar','vhPerdido','fmGuardarNovo','fmAssociar','reuCompAdd','reuCompFeito','reuCompApagar','reuCompNovaData'].forEach(n=>{try{travar(n);}catch(e){}});
 // ---- Teclado: tudo o que é clicável recebe foco e abre com Enter/Espaço; campos ganham nome para leitores de ecrã ----
 function tecladoAplicar(){
   const raiz=document.getElementById('app');if(!raiz)return;
@@ -7060,6 +7064,14 @@ function reuEur(n){return Math.round(Number(n)||0).toLocaleString('pt-PT')+' €
 function reuMMSS(ms){const s=Math.max(0,Math.floor(ms/1000));return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;}
 function reuNome(id){if(!id)return'Equipa';const n=vendName(id);return n&&n!=='?'?String(n).split(/\s+/)[0]:'?';}
 function reuVendedores(){return (S.team||[]).filter(p=>p.role==='vendedor');}
+// estado de um compromisso na reunião «dia»: por cumprir = prazo até ao dia da reunião (ou levou nova data nesta reunião);
+// vez = quantas vezes já ficou por cumprir (novas datas + semanas passadas do prazo); 2 ou mais = repetido
+function reuCompEstado(c,dia){
+  if(c.feito)return{k:'feito',vez:0};
+  const p=String(c.prazo||'').slice(0,10),ad=Number(c.adiamentos)||0;let vez=0;
+  if(p&&p<=dia)vez=ad+1+Math.floor(Math.round((new Date(dia+'T12:00:00')-new Date(p+'T12:00:00'))/864e5)/7);
+  else if(c.adiado_em&&String(c.adiado_em).slice(0,10)===dia)vez=ad;
+  return{k:vez>=2?'repetido':(vez===1?'falhou':'aberto'),vez};}
 function reuEstado(){
   const dia=reuISO(reuData());
   if(!S.reu||S.reu.dia!==dia){let g=null;try{g=JSON.parse(localStorage.getItem('bm_reuniao')||'null');}catch(e){}
@@ -7067,7 +7079,8 @@ function reuEstado(){
   return S.reu;}
 function reuGuardar(){try{localStorage.setItem('bm_reuniao',JSON.stringify(S.reu));}catch(e){}}
 async function loadReuComp(){
-  try{S.reuComp=(await supabaseApi('GET','/reuniao_compromissos?select=*&order=criado_em.asc'))||[];S.reuCompErr='';}
+  try{S.reuComp=(await supabaseApi('GET','/reuniao_compromissos?select=*&order=criado_em.asc'))||[];S.reuCompErr='';
+    S.reuSemAdiam=S.reuComp.length>0&&!Object.prototype.hasOwnProperty.call(S.reuComp[0],'adiamentos');}
   catch(e){S.reuComp=[];const m=String((e&&e.message)||e);S.reuCompErr=/reuniao_compromissos|42P01|PGRST20[05]|schema cache/i.test(m)?'sem-sql':erroTexto(e);}
 }
 function reuCVals(){const C=Object.assign({texto:'',vend:'',prazo:''},S.reuC||{});
@@ -7092,6 +7105,16 @@ async function reuCompApagar(id){const c=(S.reuComp||[]).find(x=>String(x.id)===
   if(!confirm(`Apagar o compromisso «${c.texto}»? Deixa de aparecer nas próximas reuniões.`))return;
   try{await supabaseApi('DELETE','/reuniao_compromissos?id=eq.'+encodeURIComponent(id));S.reuComp=(S.reuComp||[]).filter(x=>x!==c);render();}
   catch(e){toast('Não apaguei: '+erroTexto(e),'erro');}}
+// nova data: se já estava por cumprir conta um adiamento (uma vez por reunião)
+async function reuCompNovaData(el){const id=el.dataset.reuPrazo,v=String(el.value||'');const c=(S.reuComp||[]).find(x=>String(x.id)===String(id));if(!c)return;
+  const dia=reuISO(reuData()),atual=String(c.prazo||'').slice(0,10);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(v)||v<=dia){el.value=atual;toast(`A nova data tem de ser depois da reunião (${reuDM(dia)}).`,'erro');return;}
+  if(v===atual)return;
+  const conta=!c.feito&&!!atual&&atual<=dia;
+  const body={prazo:v};if(conta&&!S.reuSemAdiam){body.adiamentos=(Number(c.adiamentos)||0)+1;body.adiado_em=dia;}
+  const antes={prazo:c.prazo,adiamentos:c.adiamentos,adiado_em:c.adiado_em};Object.assign(c,body);render();
+  try{await supabaseApi('PATCH','/reuniao_compromissos?id=eq.'+encodeURIComponent(id),body);}
+  catch(e){Object.assign(c,antes);render();toast('Não gravei a data: '+erroTexto(e),'erro');}}
 // preço das usadas alterado na própria reunião
 function reuPrecoGuardar(el){const id=el.dataset.reuPreco,campo=el.dataset.campo;const raw=String(el.value||'').trim();const v=raw===''?null:numPT(raw);
   if(raw!==''&&(v==null||!isFinite(v)||v<0)){el.classList.add('num-erro');toast('Valor inválido: escreve só o número (ex: 9 500).','erro');return;}
@@ -7164,13 +7187,17 @@ function reuBloco(k,d){
   const row=(attrs,a,b,c)=>`<div class="reu-row"${attrs?' '+attrs:''}><span class="reu-rn">${a}</span><span class="reu-rs">${b||''}</span>${c!=null?`<span class="reu-rv">${c}</span>`:''}</div>`;
   const lista=(tit,itens,vazio)=>`<div class="reu-lista"><div class="reu-lt">${tit}</div>${itens.length?itens.join(''):`<div class="reu-vazio">${vazio}</div>`}</div>`;
   const negAttr=r=>`data-action="open-record-from-dash" data-id="${esc(r.id)}" role="button" tabindex="0"`;
-  const F=[],P=[];let corpo='';
+  const F=[],P=[],A=[];let corpo='';
   if(k==='compromissos'){
-    if(S.reuCompErr==='sem-sql'){corpo='<div class="mg-aviso">Para guardar compromissos falta correr o SQL «2026-10-25_reuniao_compromissos» no Supabase.</div>';}
-    else{const ab=d.compAnt.filter(c=>!c.feito),feitos=d.compAnt.filter(c=>c.feito);const atras=ab.filter(c=>c.prazo&&c.prazo<d.hISO);
-      const nA=d.compAnt.length;F.push(nA?`<b>${feitos.length}</b> de ${nA} compromisso${nA!==1?'s':''} cumprido${nA!==1?'s':''}${atras.length?` · <b>${atras.length}</b> fora do prazo`:''}.`:'Sem compromissos das reuniões anteriores.');
-      corpo=d.compAnt.length?`<div class="reu-comp">${d.compAnt.map(reuCompHTML).join('')}</div>`:'';
-      atras.slice(0,2).forEach(c=>P.push(`${esc(reuNome(c.vendedor_id))}: o que impediu «${esc(c.texto)}»? Qual é a data nova?`));}
+    if(S.reuCompErr==='sem-sql'){A.push('Para guardar compromissos falta correr o SQL «2026-10-25_reuniao_compromissos» no Supabase.');}
+    else{const dia=reuISO(reuData());const E=new Map(d.compAnt.map(c=>[c,reuCompEstado(c,dia)]));const ord={repetido:0,falhou:1,aberto:2,feito:3};
+      const L=d.compAnt.slice().sort((a,b)=>ord[E.get(a).k]-ord[E.get(b).k]||E.get(b).vez-E.get(a).vez||String(a.criado_em||'').localeCompare(String(b.criado_em||'')));
+      const nA=L.length,feitos=L.filter(c=>c.feito).length,rep=L.filter(c=>E.get(c).k==='repetido'),fal=L.filter(c=>E.get(c).k==='falhou'),nPC=rep.length+fal.length;
+      F.push(nA?`<b>${feitos}</b> de ${nA} compromisso${nA!==1?'s':''} cumprido${nA!==1?'s':''}${nPC?` · <b>${nPC}</b> por cumprir${rep.length?`, <b>${rep.length}</b> repetido${rep.length!==1?'s':''}`:''}`:''}.`:'Sem compromissos das reuniões anteriores.');
+      if(S.reuSemAdiam)A.push('Para contar as novas datas nos repetidos falta correr o SQL «2026-10-25_reuniao_repetidos» no Supabase. A data muda na mesma.');
+      corpo=nA?`<div class="reu-comp">${L.map(c=>reuCompHTML(c,E.get(c),'Nova data')).join('')}</div>`:'';
+      rep.slice(0,2).forEach(c=>{const v=E.get(c).vez;P.push(`${esc(reuNome(c.vendedor_id))}: é a ${v}.ª vez que «${esc(c.texto)}» fica por cumprir. O que muda esta semana para não haver ${v+1}.ª?`);});
+      fal.filter(c=>String(c.adiado_em||'').slice(0,10)!==dia).slice(0,Math.max(0,3-P.length)).forEach(c=>P.push(`${esc(reuNome(c.vendedor_id))}: o que impediu «${esc(c.texto)}»? Qual é a data nova?`));}
   }else if(k==='resultados'){
     const pct=d.obj?Math.round(d.rN/d.obj*100):null;
     F.push(d.obj?`Retail novas: <b>${d.rN}</b> de ${d.obj} (${pct}%)${d.rN<d.obj?` — faltam <b>${d.obj-d.rN}</b> em ${d.diasRest} dias`:' — objetivo atingido'}.`:`Retail novas: <b>${d.rN}</b> (sem objetivo marcado para este mês).`);
@@ -7224,15 +7251,19 @@ function reuBloco(k,d){
       reuVendedores().filter(p=>!pv[p.id]).slice(0,2).forEach(p=>P.push(`${esc(reuNome(p.id))}: ainda não inscreveste ninguém em ${esc(e.nome||'evento')}. Que clientes do teu funil convidas?`));});
   }else if(k==='fecho'){
     F.push(d.compHoje.length?`<b>${d.compHoje.length}</b> compromisso${d.compHoje.length!==1?'s':''} registado${d.compHoje.length!==1?'s':''} nesta reunião.`:'Ainda não registaste compromissos nesta reunião.');
-    corpo=(d.compHoje.length?`<div class="reu-comp">${d.compHoje.map(reuCompHTML).join('')}</div>`:'')
+    corpo=(d.compHoje.length?`<div class="reu-comp">${d.compHoje.map(c=>reuCompHTML(c,null,'Prazo')).join('')}</div>`:'')
       +`<div class="reu-resumo"><div class="reu-lt">Resumo para enviar à equipa (sem margens)</div><textarea class="norma-inp" id="reu-resumo" rows="9" readonly aria-label="Resumo da reunião">${esc(reuResumoTexto(d))}</textarea>
         <button type="button" class="btn btn-dark btn-sm" data-action="reu-copiar">Copiar resumo</button></div>`;
   }
-  return{F,P,corpo};
+  return{F,P,A,corpo};
 }
-function reuCompHTML(c){const atras=!c.feito&&c.prazo&&c.prazo<reuISO(new Date());
-  return`<div class="reu-c${c.feito?' feito':''}${atras?' atras':''}"><button type="button" class="reu-c-ok" data-action="reu-comp-feito" data-id="${esc(c.id)}" aria-pressed="${!!c.feito}" aria-label="Feito: ${esc(c.texto)}">${c.feito?'✓':''}</button>
-    <span class="reu-c-t"><b>${esc(reuNome(c.vendedor_id))}</b><span class="reu-c-tx">${esc(c.texto)}</span><small>${c.prazo?'até '+esc(reuDM(c.prazo)):''}${atras?' · fora do prazo':''}${c.feito&&c.feito_em?' · feito a '+esc(reuDM(c.feito_em)):''}</small></span>
+function reuCompHTML(c,est,rot){const dia=reuISO(reuData());est=est||reuCompEstado(c,dia);const pc=est.k==='falhou'||est.k==='repetido';
+  const amanha=new Date(dia+'T12:00:00');amanha.setDate(amanha.getDate()+1);
+  const info=c.feito?(c.feito_em?'feito a '+reuDM(c.feito_em):'feito'):(pc?'por cumprir'+(est.k==='repetido'?` pela ${est.vez}.ª vez`:'')+(String(c.prazo||'').slice(0,10)<=dia?' desde '+reuDM(c.prazo):' · nova data dada hoje'):'');
+  return`<div class="reu-c${c.feito?' feito':''}${pc?' atras':''}${est.k==='repetido'?' repetido':''}"><button type="button" class="reu-c-ok" data-action="reu-comp-feito" data-id="${esc(c.id)}" aria-pressed="${!!c.feito}" aria-label="Feito: ${esc(c.texto)}">${c.feito?'✓':''}</button>
+    <span class="reu-c-t"><b>${esc(reuNome(c.vendedor_id))}</b><span class="reu-c-tx">${esc(c.texto)}</span>${info?`<small>${esc(info)}</small>`:''}</span>
+    ${est.k==='repetido'?`<span class="atag atag-al reu-c-rep">Repetido · ${est.vez}.ª vez</span>`:''}
+    ${c.feito?'':`<label class="reu-c-data"><span>${esc(rot||'Prazo')}</span><input type="date" class="norma-inp" data-reu-prazo="${esc(c.id)}" value="${esc(String(c.prazo||'').slice(0,10))}" min="${reuISO(amanha)}" aria-label="${esc((rot||'Prazo')+': '+c.texto)}"></label>`}
     <button type="button" class="reu-c-x" data-action="reu-comp-apagar" data-id="${esc(c.id)}" aria-label="Apagar compromisso" title="Apagar">${ico('x','ic-sm')}</button></div>`;}
 function reuResumoTexto(d){
   const dia=reuData();const L=[`Reunião comercial · ${dia.toLocaleDateString('pt-PT',{weekday:'long',day:'2-digit',month:'2-digit'})}`,''];
@@ -7258,6 +7289,7 @@ function reuBlocoHTML(p,i,d,emPasso){
   return`<section class="reu-bloco${emPasso?' passo':''}" aria-labelledby="reu-h-${p.k}">
     <div class="reu-bh"><span class="reu-bn">${i+1}</span><h3 id="reu-h-${p.k}">${esc(p.lb)}</h3><span class="reu-bmin">${p.min} min</span></div>
     ${b.F.length?`<ul class="reu-frases">${b.F.map(f=>`<li>${f}</li>`).join('')}</ul>`:''}
+    ${(b.A||[]).map(a=>`<div class="mg-aviso">${esc(a)}</div>`).join('')}
     ${b.corpo?`<div class="reu-corpo">${b.corpo}</div>`:''}
     ${b.P.length?`<div class="reu-perg"><div class="reu-lt">Perguntas para fazer</div><ul>${b.P.map(q=>`<li>${q}</li>`).join('')}</ul></div>`:''}
     ${emPasso&&p.k!=='compromissos'?reuCompFormHTML(p.k):''}
@@ -8215,7 +8247,7 @@ function EXPORT_FOLHAS(){
     ]},
     {nome:'Reunião compromissos',path:'/reuniao_compromissos?select=*&order=id.asc',cols:[
       {c:'reuniao',l:'Reunião',f:d},{c:'vendedor_id',l:'Quem',f:v=>v?(vendName(v)||v):'Equipa'},{c:'ponto',l:'Ponto'},{c:'texto',l:'Compromisso'},{c:'prazo',l:'Prazo',f:d},
-      {c:'feito',l:'Feito',f:sn},{c:'feito_em',l:'Feito em',f:dt},{c:'criado_em',l:'Registado em',f:dt},
+      {c:'feito',l:'Feito',f:sn},{c:'feito_em',l:'Feito em',f:dt},{c:'adiamentos',l:'Novas datas'},{c:'adiado_em',l:'Última nova data em',f:d},{c:'criado_em',l:'Registado em',f:dt},
     ]},
     {nome:'EOTs notificações lidas',path:'/eot_notif_lidas?select=*&order=lido_em.asc',cols:[
       {c:'user_id',l:'Quem',f:v=>vendName(v)&&vendName(v)!=='?'?vendName(v):(v||'')},{c:'contrato',l:'Contrato'},{c:'hist_id',l:'Indicação (id)'},{c:'lido_em',l:'Lido em',f:dt},
@@ -10046,6 +10078,7 @@ function bindEvents(){
     const el=e.target;
     if(el.id==='reu-c-vend'||el.id==='reu-c-prazo'){S.reuC=Object.assign({texto:'',vend:'',prazo:''},S.reuC||{},{[el.id==='reu-c-vend'?'vend':'prazo']:el.value});return;}
     if(el.dataset&&el.dataset.reuPreco){reuPrecoGuardar(el);return;}
+    if(el.dataset&&el.dataset.reuPrazo){reuCompNovaData(el);return;}
     if(el.id==='fm-g-vend'){S.fmGVend=el.value;return;}
     if(el.dataset&&el.dataset.eotm){eotModalInput(el);return;}
     if(el.dataset&&el.dataset.finF){S.finF=Object.assign({},S.finF||{},{[el.dataset.finF]:el.value});render();return;}

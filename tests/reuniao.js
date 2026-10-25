@@ -60,7 +60,11 @@ const base=()=>({seq:900,patches:[],posts:[],deletes:[],falhar:null,semSql:false
   comp:[{id:1,reuniao:'2026-10-13',vendedor_id:'v1',ponto:'eots',texto:'Ligar aos 3 clientes EOT',prazo:'2026-10-17',feito:false,feito_em:null,criado_em:'2026-10-13T14:10:00Z'},
     {id:2,reuniao:'2026-10-13',vendedor_id:'v2',ponto:'resultados',texto:'Fechar a F 900 R do cliente Beta',prazo:'2026-10-20',feito:true,feito_em:'2026-10-19T10:00:00Z',criado_em:'2026-10-13T14:12:00Z'},
     {id:3,reuniao:'2026-10-06',vendedor_id:'v1',ponto:'stock',texto:'Rever preços das usadas',prazo:'2026-10-10',feito:true,feito_em:'2026-10-08T10:00:00Z',criado_em:'2026-10-06T14:10:00Z'},
-    {id:4,reuniao:'2026-10-13',vendedor_id:null,ponto:'eventos',texto:'Inscrever clientes no test-ride',prazo:'2026-10-24',feito:false,feito_em:null,criado_em:'2026-10-13T14:15:00Z'}]});
+    {id:4,reuniao:'2026-10-13',vendedor_id:null,ponto:'eventos',texto:'Inscrever clientes no test-ride',prazo:'2026-10-24',feito:false,feito_em:null,criado_em:'2026-10-13T14:15:00Z'},
+    {id:5,reuniao:'2026-10-06',vendedor_id:'v2',ponto:'eots',texto:'Enviar proposta ao cliente Mu',prazo:'2026-10-13',feito:false,feito_em:null,criado_em:'2026-10-06T14:20:00Z'},          // por cumprir há uma semana
+    {id:6,reuniao:'2026-09-29',vendedor_id:'v1',ponto:'equip',texto:'Rever stock de capacetes',prazo:'2026-10-20',feito:false,feito_em:null,adiamentos:1,adiado_em:'2026-10-13',criado_em:'2026-09-29T14:10:00Z'},   // já levou nova data
+    {id:7,reuniao:'2026-10-13',vendedor_id:'v2',ponto:'eots',texto:'Ligar ao cliente Xi',prazo:'2026-10-20',feito:false,feito_em:null,criado_em:'2026-10-13T14:20:00Z'}   // vence no dia da reunião
+  ].map(c=>Object.assign({adiamentos:0,adiado_em:null},c))});
 const P=[{id:'c1',nome:'Gonçalo Pinto',role:'admin',linha:'motorrad'},{id:'v1',nome:'Felipe Gomes',role:'vendedor',linha:'motorrad'},{id:'v2',nome:'Rui Costa',role:'vendedor',linha:'motorrad'},{id:'f1',nome:'Ana Ribeiro',role:'financeiro',linha:'motorrad'}];
 const AXE=fs.readFileSync(require.resolve('axe-core/axe.min.js'),'utf8');
 // axe (WCAG 2.2 AA) só na zona da reunião + contraste medido à mão nos textos com cor própria (o axe às vezes não decide)
@@ -116,7 +120,8 @@ const nb=s=>String(s||'').replace(/[  ]/g,' ').replace(/[ \t]+/g,' ').trim();
    const tx=e=>e.innerText.replace(/\s+/g,' ').trim();
    return {frases:[...s.querySelectorAll('.reu-frases li')].map(tx),perg:[...s.querySelectorAll('.reu-perg li')].map(tx),
      listas:[...s.querySelectorAll('.reu-lista')].map(l=>({t:tx(l.querySelector('.reu-lt')),rows:[...l.querySelectorAll('.reu-row')].map(r=>[...r.querySelectorAll('.reu-rn,.reu-rs,.reu-rv')].map(tx).join(' | ')),vazio:l.querySelector('.reu-vazio')?tx(l.querySelector('.reu-vazio')):''})),
-     comp:[...s.querySelectorAll('.reu-c')].map(c=>tx(c.querySelector('.reu-c-t'))+(c.classList.contains('feito')?' [feito]':'')+(c.classList.contains('atras')?' [atras]':'')),
+     comp:[...s.querySelectorAll('.reu-c')].map(c=>tx(c.querySelector('.reu-c-t'))+(c.classList.contains('feito')?' [feito]':'')+(c.classList.contains('atras')?' [atras]':'')+(c.querySelector('.reu-c-rep')?' ['+tx(c.querySelector('.reu-c-rep'))+']':'')),
+     datas:[...s.querySelectorAll('.reu-c-data')].map(l=>tx(l.querySelector('span'))+' '+l.querySelector('input').value),
      aviso:s.querySelector('.mg-aviso')?tx(s.querySelector('.mg-aviso')):'',form:!!s.querySelector('#reu-c-texto')};},k).then(x=>x&&JSON.parse(JSON.stringify(x).replace(/[  ]/g,' ')));
  const toastTxt=async(pg)=>{pg=pg||p;await pg.waitForTimeout(800);return nb(await pg.evaluate(()=>((document.getElementById('bm-toast')||{}).textContent||'')));};
 
@@ -151,6 +156,12 @@ const nb=s=>String(s||'').replace(/[  ]/g,' ').replace(/[ \t]+/g,' ').trim();
  T.feitoFalha={toast:await toastTxt(),feito:await p.evaluate(()=>S.reuComp.find(c=>c.id===4).feito),classe:await p.evaluate(()=>document.querySelector('[data-action="reu-comp-feito"][data-id="4"]').closest('.reu-c').classList.contains('feito'))};db.falhar=null;
  await p.click('.reu-bloco[aria-labelledby="reu-h-compromissos"] [data-action="reu-comp-apagar"][data-id="4"]');await p.waitForTimeout(400);
  T.apagar={dialogo:dialogos.slice(-1)[0]||'',del:db.deletes.slice(-1)[0],bloco:await bloco(p,'compromissos')};
+ const inpData='.reu-bloco[aria-labelledby="reu-h-compromissos"] input[data-reu-prazo="7"]';const nPD=()=>db.patches.filter(x=>x[0]==='reuniao_compromissos');
+ await p.fill(inpData,'2026-10-28');await p.waitForTimeout(400);
+ T.novaData={patch:nPD().slice(-1)[0],bloco:await bloco(p,'compromissos')};
+ await p.fill(inpData,'2026-10-27');await p.waitForTimeout(400);T.novaData.corrigir=nPD().slice(-1)[0];
+ const nAntes=nPD().length;await p.fill(inpData,'2026-10-19');
+ T.novaData.invalida={toast:await toastTxt(),patches:nPD().length-nAntes,valor:await p.evaluate(s=>document.querySelector(s).value,inpData)};
 
  // ---------- 4) conduzir
  await p.click('[data-action="reu-comecar"]');await p.waitForTimeout(400);
@@ -189,12 +200,17 @@ const nb=s=>String(s||'').replace(/[  ]/g,' ').replace(/[ \t]+/g,' ').trim();
  // que reunião é «esta»: segunda a quarta = a de terça (quarta serve para feriados); quinta a domingo = a da terça seguinte
  T.dias=[];for(const iso of ['2026-10-19T09:00:00Z','2026-10-20T20:00:00Z','2026-10-21T16:00:00Z','2026-10-22T09:00:00Z','2026-10-25T12:00:00Z']){await ctx.clock.setFixedTime(new Date(iso));
    T.dias.push(await p.evaluate(()=>reuISO(reuData())+' desde '+reuISO(reuJanela().ini)+' '+reuJanela().ini.getHours()+'h'));}
+ await ctx.clock.setFixedTime(new Date('2026-10-27T13:30:00Z'));await entrar(p);T.semanaSeguinte=await bloco(p,'compromissos');
  await ctx.close();
 
  // ---------- 5) antes de correr o SQL
  const db2=base();db2.semSql=true;const s2=await contexto({width:1440,height:1000},db2);await entrar(s2.p);
  T.semSql={comp:await bloco(s2.p,'compromissos'),form:await s2.p.evaluate(()=>!!document.getElementById('reu-c-texto')),resultados:((await bloco(s2.p,'resultados'))||{frases:[]}).frases[0]};
  await s2.ctx.close();
+ const db4=base();db4.comp.forEach(c=>{delete c.adiamentos;delete c.adiado_em;});const s4=await contexto({width:1440,height:1000},db4);await entrar(s4.p);
+ const b4=await bloco(s4.p,'compromissos');await s4.p.fill('.reu-bloco[aria-labelledby="reu-h-compromissos"] input[data-reu-prazo="7"]','2026-10-27');await s4.p.waitForTimeout(400);
+ T.semAdiam={aviso:b4.aviso,frase:b4.frases[0],patch:db4.patches.filter(x=>x[0]==='reuniao_compromissos').slice(-1)[0]};
+ await s4.ctx.close();
 
  // ---------- 6) telemóvel
  const db3=base();const t=await contexto({width:390,height:844},db3);await entrar(t.p);
@@ -210,9 +226,12 @@ const nb=s=>String(s||'').replace(/[  ]/g,' ').replace(/[ \t]+/g,' ').trim();
   'menu do chefe: Reunião semanal no Diário, a seguir a A tratar':T.menu.tem&&T.menu.depoisAtratar&&T.menu.ativo==='reuniao',
   'topo: dia e hora da reunião, desde quando contam os números':T.topo.t==='Reunião semanal'&&T.topo.sub==='terça-feira, 20/10 às 15:00 · 20 min · números desde terça-feira, 13/10 às 15:00'&&T.topo.btn==='Começar a reunião'&&!T.topo.carga,
   'agenda: 8 pontos que somam 20 minutos':T.topo.agenda.length===8&&T.topo.agenda.reduce((a,x)=>a+Number((x.match(/(\d+) min$/)||[])[1]||0),0)===20&&T.topo.blocos===9,
-  'compromissos da semana passada: cumpridos, fora do prazo e pergunta':F(T.compromissos)[0]==='1 de 3 compromissos cumpridos · 1 fora do prazo.'&&
-    JSON.stringify(T.compromissos.comp)===JSON.stringify(['Felipe Ligar aos 3 clientes EOT até 17/10 · fora do prazo [atras]','Rui Fechar a F 900 R do cliente Beta até 20/10 · feito a 19/10 [feito]','Equipa Inscrever clientes no test-ride até 24/10'])&&
-    PG(T.compromissos)[0]==='Felipe: o que impediu «Ligar aos 3 clientes EOT»? Qual é a data nova?',
+  'compromissos da semana passada: cumpridos, por cumprir (o que vence no dia da reunião também) e repetidos primeiro':F(T.compromissos)[0]==='1 de 6 compromissos cumpridos · 4 por cumprir, 2 repetidos.'&&
+    JSON.stringify(T.compromissos.comp)===JSON.stringify(['Felipe Rever stock de capacetes por cumprir pela 2.ª vez desde 20/10 [atras] [Repetido · 2.ª vez]','Rui Enviar proposta ao cliente Mu por cumprir pela 2.ª vez desde 13/10 [atras] [Repetido · 2.ª vez]',
+      'Felipe Ligar aos 3 clientes EOT por cumprir desde 17/10 [atras]','Rui Ligar ao cliente Xi por cumprir desde 20/10 [atras]','Equipa Inscrever clientes no test-ride','Rui Fechar a F 900 R do cliente Beta feito a 19/10 [feito]'])&&
+    JSON.stringify(T.compromissos.datas)===JSON.stringify(['Nova data 2026-10-20','Nova data 2026-10-13','Nova data 2026-10-17','Nova data 2026-10-20','Nova data 2026-10-24']),
+  'perguntas: repetidos com pergunta própria, depois o que impediu':JSON.stringify(PG(T.compromissos))===JSON.stringify(['Felipe: é a 2.ª vez que «Rever stock de capacetes» fica por cumprir. O que muda esta semana para não haver 3.ª?',
+      'Rui: é a 2.ª vez que «Enviar proposta ao cliente Mu» fica por cumprir. O que muda esta semana para não haver 3.ª?','Felipe: o que impediu «Ligar aos 3 clientes EOT»? Qual é a data nova?']),
   'resultados: objetivo, mês anterior até ao mesmo dia, ritmo e Carteira':F(T.resultados)[0]==='Retail novas: 3 de 10 (30%) — faltam 7 em 11 dias.'&&F(T.resultados)[1]==='Contra set. até ao dia 20: novas +2, usadas +1 (usadas no mês: 1).'&&
     F(T.resultados)[2]==='A este ritmo o mês fecha com ~5 novas. Se a Carteira deste mês entregar toda (1 nova), chega a 4.'&&F(T.resultados)[3]==='Desde a última reunião: 3 retail (Felipe 1 · Rui 2).',
   'resultados: margem do último mês lançado só nesta vista (sem demos)':F(T.resultados)[4]==='Só para ti Margem de Ago 26 (último mês com comissões fechadas): 730 € em 2 motas, 1 com margem negativa.',
@@ -239,9 +258,16 @@ const nb=s=>String(s||'').replace(/[  ]/g,' ').replace(/[ \t]+/g,' ').trim();
   'compromisso com Enter: grava quem, o quê, a reunião e o prazo (próxima terça)':T.registo.post&&T.registo.post.reuniao==='2026-10-20'&&T.registo.post.vendedor_id==='v2'&&T.registo.post.ponto===null&&T.registo.post.texto==='Ligar à Cliente Teta sobre a S 1000 XR'&&T.registo.post.prazo==='2026-10-27'&&
     /Compromisso registado/.test(T.registo.toast)&&T.registo.campos.texto===''&&T.registo.campos.vend==='v2',
   'compromisso aparece no fecho e no resumo':F(T.registo.fecho)[0]==='1 compromisso registado nesta reunião.'&&/\nCompromissos:\n- Rui: Ligar à Cliente Teta sobre a S 1000 XR \(até 27\/10\)$/.test(T.registo.resumo),
-  'marcar feito: grava, conta e deixa de estar fora do prazo':T.feito.patch&&T.feito.patch[1]==='1'&&T.feito.patch[2].feito===true&&!!T.feito.patch[2].feito_em&&F(T.feito.bloco)[0]==='2 de 3 compromissos cumpridos.'&&T.feito.pressed==='true'&&!PG(T.feito.bloco).length,
+  'marcar feito: grava, conta e sai dos por cumprir':T.feito.patch&&T.feito.patch[1]==='1'&&T.feito.patch[2].feito===true&&!!T.feito.patch[2].feito_em&&F(T.feito.bloco)[0]==='2 de 6 compromissos cumpridos · 3 por cumprir, 2 repetidos.'&&T.feito.pressed==='true'&&
+    !PG(T.feito.bloco).some(q=>/Ligar aos 3 clientes/.test(q))&&PG(T.feito.bloco).length===3,
   'servidor recusa o feito: volta atrás e avisa':/Não gravei/.test(T.feitoFalha.toast)&&T.feitoFalha.feito===false&&!T.feitoFalha.classe,
-  'apagar compromisso: pergunta antes e apaga':/Apagar o compromisso «Inscrever clientes no test-ride»/.test(T.apagar.dialogo)&&T.apagar.del&&T.apagar.del[1]==='4'&&T.apagar.bloco.comp.length===2,
+  'apagar compromisso: pergunta antes e apaga':/Apagar o compromisso «Inscrever clientes no test-ride»/.test(T.apagar.dialogo)&&T.apagar.del&&T.apagar.del[1]==='4'&&T.apagar.bloco.comp.length===5,
+  'nova data num compromisso por cumprir: conta o adiamento e continua contado nesta reunião':T.novaData.patch&&T.novaData.patch[1]==='7'&&JSON.stringify(T.novaData.patch[2])==='{"prazo":"2026-10-28","adiamentos":1,"adiado_em":"2026-10-20"}'&&
+    F(T.novaData.bloco)[0]==='2 de 5 compromissos cumpridos · 3 por cumprir, 2 repetidos.'&&T.novaData.bloco.comp.includes('Rui Ligar ao cliente Xi por cumprir · nova data dada hoje [atras]')&&!PG(T.novaData.bloco).some(q=>/cliente Xi/.test(q)),
+  'corrigir a nova data na mesma reunião não conta outra vez; data antes da reunião recusada':JSON.stringify(T.novaData.corrigir[2])==='{"prazo":"2026-10-27"}'&&/A nova data tem de ser depois da reunião \(20\/10\)/.test(T.novaData.invalida.toast)&&T.novaData.invalida.patches===0&&T.novaData.invalida.valor==='2026-10-27',
+  'semana seguinte: o adiado que volta a falhar é repetido; os outros sobem para a 3.ª vez':F(T.semanaSeguinte)[0]==='0 de 5 compromissos cumpridos · 5 por cumprir, 3 repetidos.'&&
+    JSON.stringify(T.semanaSeguinte.comp.slice(0,3).map(x=>x.replace(/^(\S+) .*\[(Repetido · \d\.ª vez)\]$/,'$1 $2')))===JSON.stringify(['Felipe Repetido · 3.ª vez','Rui Repetido · 3.ª vez','Rui Repetido · 2.ª vez'])&&/não haver 4\.ª\?$/.test(PG(T.semanaSeguinte)[0]),
+  'antes do SQL dos repetidos: aviso, a data muda na mesma e a contagem fica pelas semanas':/falta correr o SQL «2026-10-25_reuniao_repetidos»/.test(T.semAdiam.aviso)&&T.semAdiam.frase==='1 de 6 compromissos cumpridos · 4 por cumprir, 1 repetido.'&&JSON.stringify(T.semAdiam.patch[2])==='{"prazo":"2026-10-27"}',
   'conduzir: um ponto de cada vez, 8 passos, relógios a zero':T.c1.n===8&&T.c1.on==='1'&&T.c1.titulo==='Compromissos da semana passada'&&T.c1.blocos===1&&!T.c1.form&&T.c1.antDis===true&&/^Próximo: Resultados contra o objetivo/.test(T.c1.prox)&&/^0:0\d \/ 20:00$/.test(T.c1.total)&&/^0:0\d \/ 2:00$/.test(T.c1.passoT),
   'relógio: conta o total e o ponto; o ponto fica vermelho quando passa do tempo':/^1:0[5-8] \/ 20:00$/.test(T.c1t.total)&&/^1:0[5-8] \/ 2:00$/.test(T.c1t.passoT)&&!T.c1t.overP&&/^2:0[5-8] \/ 2:00$/.test(T.c1over.passoT)&&T.c1over.overP&&!T.c1over.overT,
   'próximo ponto: relógio do ponto recomeça e há formulário de compromisso do ponto':T.c2.on==='2'&&T.c2.titulo==='Resultados contra o objetivo'&&/^0:0\d \/ 3:00$/.test(T.c2.passoT)&&/^2:\d\d \/ 20:00$/.test(T.c2.total)&&T.c2.form&&T.c2.formP==='resultados'&&T.c2.antDis===false,

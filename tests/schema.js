@@ -23,7 +23,7 @@ precos_ref:'ref:t,nome_site:t,tamanho:t,pvp:n,venda_site:n,url:t,site_stock:b,no
 premios_config:'id:n,escopo:t,pct_min:n,valor:n,nota:t,created_at:ts',
 premios_mes:'mes:t,dados:j,updated_at:ts',
 profiles:'id:u,nome:t,role:t,created_at:ts,linha:t,financeiro:b',
-reuniao_compromissos:'id:n,reuniao:d,vendedor_id:u,ponto:t,texto:t,prazo:d,feito:b,feito_em:ts,criado_em:ts,criado_por:u',
+reuniao_compromissos:'id:n,reuniao:d,vendedor_id:u,ponto:t,texto:t,prazo:d,feito:b,feito_em:ts,criado_em:ts,criado_por:u,adiamentos:n,adiado_em:d',
 status_historico:'id:n,negocio_id:n,de:t,para:t,quem:u,quando:ts',
 status_log:'id:n,registo_id:n,status_antigo:t,status_novo:t,changed_at:ts,changed_by:u',
 stock_equip:'id:n,lote:t,ponto_venda:t,polo:t,ref:t,descricao:t,marca:t,familia:t,subfamilia:t,categoria:t,qualidade:t,antig_saida:t,ult_saida:d,qtd:n,custo_unit:n,custo_total:n,procura:n,desc_max:n,importado_em:ts',

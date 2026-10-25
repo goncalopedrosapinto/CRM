@@ -17,3 +17,4 @@
 2026-10-23_eot_notificacoes.sql
 2026-10-23_encomendas_chegadas.sql
 2026-10-24_eot_visto_financeiro.sql
+2026-10-25_reuniao_compromissos.sql
