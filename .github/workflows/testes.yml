@@ -55,6 +55,7 @@ jobs:
       - run: npm run alertas
       - run: npm run notificacoes
       - run: npm run financeiros
+      - run: npm run hoje
       - run: npm run stus
       - run: npm run equip
       - run: npm run acessibilidade

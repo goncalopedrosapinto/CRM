@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-24-d">
+<meta name="app-version" content="2026-10-25-a">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1339,6 +1339,59 @@ html,body{overflow-x:hidden;max-width:100vw}
 .vh-tel{font-size:12px;font-weight:700;color:var(--blue);text-decoration:none;white-space:nowrap;padding:6px 10px;border-radius:8px;background:var(--blue-bg);flex-shrink:0}
 .vh-ok{padding:14px;color:var(--green);font-size:13px;font-weight:600}
 .vh-mais{padding:10px 14px;font-size:12px;color:var(--orange);font-weight:700;cursor:pointer}
+.vh-sec-sub{font-size:12px;font-weight:500;color:var(--text3)}
+.vh-novo{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1.2fr) auto auto;gap:8px;align-items:center;padding:10px;overflow:visible}
+.vh-novo .field-input{padding:8px 11px;font-size:13.5px;min-height:38px}
+.vh-n-chips{display:flex;gap:6px}
+.vh-novo .qf-chip{min-height:38px;padding:0 12px;font-size:12.5px}
+.vh-n-ok{min-height:38px;padding:0 18px;font-weight:700}
+.vh-n-err{margin:6px 2px 0;font-size:12px;font-weight:600;color:var(--red)}
+.vh-novo-abrir{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:14px;min-height:44px;border:1.5px dashed var(--border2);border-radius:var(--r2);background:var(--surface);color:var(--orange);font-size:13.5px;font-weight:700}
+.vh-crow{flex-wrap:wrap}
+.vh-acts{display:flex;gap:6px;flex-shrink:0}
+.vh-act{display:inline-flex;align-items:center;gap:4px;min-height:32px;padding:0 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text2);font-size:12px;font-weight:600;white-space:nowrap}
+.vh-act:hover{background:var(--surface2);color:var(--text)}
+.vh-act.ok{color:var(--green)}
+.vh-act.on{border-color:var(--text2);background:var(--surface2);color:var(--text)}
+.vh-painel{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 14px 10px 80px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:12px}
+.vh-p-t{color:var(--text2);font-weight:600;margin-right:2px}
+.vh-pchip{min-height:30px;padding:0 11px;border:1px solid var(--border2);border-radius:var(--rp);background:var(--surface);color:var(--text);font-size:12px;font-weight:600}
+.vh-pchip:hover{border-color:var(--orange);color:var(--orange)}
+.vh-pfechar{min-height:30px;padding:0 8px;background:none;border:0;color:var(--text3);font-size:12px;font-weight:600;margin-left:auto}
+.hdr-btn.hdr-pri{background:var(--orange);border-color:var(--orange);color:#fff}
+.hdr-btn.hdr-pri.on{background:var(--orange2,#9A3412);border-color:var(--orange2,#9A3412)}
+:root[data-theme="dark"] .hdr-btn.hdr-pri{color:#0B1220}
+.hdr-pri .hp-s{display:none}
+.fm-guardar{margin:0 16px 12px;padding:12px 14px 14px;border:1px solid var(--border2);border-left:3px solid var(--orange);border-radius:var(--r2);background:var(--surface);box-shadow:var(--elev1)}
+.fm-g-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;font-size:13.5px}
+.fm-g-x{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:0;border-radius:var(--r);background:none;color:var(--text3)}
+.fm-g-x:hover{background:var(--surface2);color:var(--text)}
+.fm-g-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:14px}
+.fm-g-op{display:flex;flex-direction:column;gap:8px;min-width:0}
+.fm-g-t{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text2)}
+.fm-g-t span{text-transform:none;letter-spacing:0;font-weight:600;color:var(--text3);margin-left:4px}
+.fm-g-d{font-size:12.5px;color:var(--text2);line-height:1.45}
+.fm-g-vend{display:flex;flex-direction:column;gap:4px;font-size:11.5px;font-weight:700;color:var(--text2)}
+.fm-g-lista{border:1px solid var(--border);border-radius:var(--r);max-height:300px;overflow:auto}
+.fm-g-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--border)}
+.fm-g-row:last-child{border-bottom:0}
+.fm-g-row .card-status{flex-shrink:0;min-width:62px;text-align:center}
+.fm-g-nome{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;font-size:13px}
+.fm-g-nome small{font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fm-g-nome em{font-style:normal;font-weight:700;color:var(--orange)}
+.fm-g-vazio,.fm-g-mais{padding:10px;font-size:12px;color:var(--text3)}
+@media(max-width:700px){
+  .vh{padding-bottom:84px}
+  .vh-novo{grid-template-columns:1fr;padding:12px}
+  .vh-n-chips .qf-chip{flex:1}
+  .vh-acts{width:100%;padding-left:66px}
+  .vh-act{flex:1;justify-content:center;min-height:36px}
+  .vh-painel{padding:8px 12px 10px}
+  .hdr-pri .hp-l{display:none}.hdr-pri .hp-s{display:inline}
+  .fm-guardar{margin:0 10px 12px}
+  .fm-g-grid{grid-template-columns:1fr}
+}
+@media(max-width:760px) and (pointer:coarse){.vh-novo .field-input{font-size:16px}}
 .vh-ev{margin-top:12px;background:var(--orange-bg);border:1px solid var(--orange-light);border-radius:var(--r2);padding:10px 14px;font-size:13px;cursor:pointer;display:flex;gap:6px;align-items:center}
 .vchips{display:flex;gap:6px;padding:12px 16px 0;overflow-x:auto;scrollbar-width:none}
 .vchip{border:1px solid var(--border2);background:var(--surface);border-radius:var(--rp);padding:6px 12px;font-size:12px;font-weight:600;color:var(--text2);white-space:nowrap;cursor:pointer}
@@ -2221,6 +2274,11 @@ const ICO={
 };
 function ico(n,cls){const p=ICO[n];if(!p)return'';return`<svg class="ic${cls?' '+cls:''}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${p}</svg>`;}
 const EMO_IC={'🔔':'bell','🏭':'factory','🏠':'home','📋':'inbox','✅':'check','🔻':'filter','📦':'package','🔁':'repeat','☰':'more','🎯':'target','🏍️':'bike','🏍':'bike','🧥':'shirt','⭐':'star','🎟️':'ticket','🎟':'ticket','📅':'calendar','🧮':'calc','💰':'coins','💶':'coins','⬇️':'download','⬇':'download','🚚':'truck','✕':'xcircle','❌':'xcircle','🔑':'key','🚪':'logout','🤝':'store','📉':'trend','🏁':'flag','❤️':'heart','🏆':'trophy','⚠️':'alert','📐':'chart','🧾':'receipt','🔒':'lock'};
+// Enter no registo rápido regista; Esc fecha os painéis em linha (Hoje e ficha)
+document.addEventListener('keydown',e=>{if(typeof S==='undefined')return;const t=e.target;
+  if(e.key==='Enter'&&t&&t.dataset&&t.dataset.vhnovo){e.preventDefault();vhNovoRegistar();return;}
+  if(e.key==='Escape'&&S.vhAcao){S.vhAcao=null;render();return;}
+  if(e.key==='Escape'&&S.fmGuardar&&!S.eotAberto){S.fmGuardar=false;render();}});
 document.addEventListener('keydown',e=>{const t=e.target;if((e.key==='Enter'||e.key===' ')&&t&&t.matches&&t.matches('[data-action][tabindex]:not(button):not(a):not(input):not(select):not(textarea)')){e.preventDefault();t.click();}});
 // Ctrl+V de um print, ou arrastar uma imagem, com uma EOT aberta: junta à indicação
 function imgsDoEvento(dt){if(!dt)return[];const fs=[...(dt.files||[])].filter(f=>/^image\//.test(f.type));if(fs.length)return fs;
@@ -2266,7 +2324,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-24-d';
+const APP_VERSION='2026-10-25-a';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -3066,6 +3124,79 @@ function fmPDF(){
   w.document.open();w.document.write(html);w.document.close();w.focus();
   setTimeout(()=>{try{w.print();}catch(e){}},350);
 }
+// ---- Ficha solta → negócio: criar um negócio novo ou juntar a um negócio em curso (funil ou Carteira) ----
+function fmPodeGuardar(){return !S.fmNeg&&(isAdmin()||(S.me&&S.me.role==='vendedor'));}
+function fmNorm(v){return String(v||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim();}
+const FM_G_ORDEM={Quente:0,Morno:1,Carteira:2,Frio:3};
+function fmGuardarCandidatos(){
+  const toks=fmNorm((S.fm||{}).cliente).split(' ').filter(t=>t.length>=3);const q=fmNorm(S.fmAssocQ);
+  let L=(S.records||[]).filter(r=>FM_G_ORDEM[r.status]!=null);
+  if(q)L=L.filter(r=>fmNorm((r.id_cliente||'')+' '+(r.model||'')).includes(q));
+  // "mesmo nome": todas as palavras do cliente da ficha estão no nome do negócio (não chega o primeiro nome)
+  const sc=r=>{const n=fmNorm(r.id_cliente);const ps=n.split(' ');const pts=toks.reduce((a,t)=>a+(ps.includes(t)?2:(n.includes(t)?1:0)),0);
+    return {pts,igual:toks.length>0&&toks.every(t=>ps.includes(t))};};
+  return L.map(r=>{const x=sc(r);return {r,s:x.pts,igual:x.igual};}).sort((a,b)=>(b.igual-a.igual)||b.s-a.s||(FM_G_ORDEM[a.r.status]-FM_G_ORDEM[b.r.status])||String(b.r.updated_at||'').localeCompare(String(a.r.updated_at||'')));
+}
+function fmGuardarHTML(){
+  if(!S.fmGuardar||!fmPodeGuardar())return'';
+  const cli=String((S.fm||{}).cliente||'').trim();const C=fmGuardarCandidatos();const top=C.slice(0,8);
+  const vendSel=isAdmin()?`<label class="fm-g-vend"><span>Vendedor</span><select class="norma-inp" id="fm-g-vend" aria-label="Vendedor do negócio novo"><option value="">— escolher —</option>${(S.team||[]).filter(p=>p.role==='vendedor').map(p=>`<option value="${esc(p.id)}" ${String(S.fmGVend||S.viewVendedor||'')===String(p.id)?'selected':''}>${esc(p.nome||'?')}</option>`).join('')}</select></label>`:'';
+  const linha=x=>{const r=x.r;const sub=[[r.model,r.version].filter(Boolean).join(' ')||'sem modelo',isAdmin()&&r.vendedor_id?vendName(r.vendedor_id):''].filter(Boolean).join(' · ');
+    return`<div class="fm-g-row"><span class="card-status s-${esc(r.status)}">${esc(r.status)}</span><span class="fm-g-nome"><b>${esc(r.id_cliente||'—')}</b><small>${esc(sub)}${x.igual?' · <em>mesmo nome</em>':''}</small></span><button type="button" class="btn btn-outline btn-sm" data-action="fm-associar" data-id="${r.id}" aria-label="Juntar a ficha ao negócio de ${esc(r.id_cliente||'')}">Juntar a este</button></div>`;};
+  return`<div class="fm-guardar" role="region" aria-label="Guardar esta ficha num negócio">
+    <div class="fm-g-h"><b>Guardar esta ficha num negócio</b><button type="button" class="fm-g-x" data-action="fm-guardar-fechar" aria-label="Fechar" title="Fechar">${ico('x','ic-sm')}</button></div>
+    <div class="fm-g-grid">
+      <div class="fm-g-op">
+        <div class="fm-g-t">Negócio novo</div>
+        <div class="fm-g-d">${cli?`Cria <b>${esc(cli)}</b> no funil como <b>Quente</b>, com contacto marcado para ${vhDataPT(sugereAlerta('Quente'))}.`:'Escreve primeiro o nome do cliente no campo <b>Cliente</b> da ficha.'}</div>
+        ${vendSel}
+        <div><button type="button" class="btn btn-orange btn-sm" data-action="fm-guardar-novo" ${cli?'':'disabled'}>Criar negócio novo</button></div>
+      </div>
+      <div class="fm-g-op">
+        <div class="fm-g-t">Negócio em curso <span>funil ou Carteira</span></div>
+        <input class="norma-inp" id="fm-assoc-q" value="${esc(S.fmAssocQ||'')}" placeholder="Procurar pelo nome do cliente" aria-label="Procurar negócio em curso pelo nome do cliente" autocomplete="off">
+        <div class="fm-g-lista">${top.length?top.map(linha).join(''):`<div class="fm-g-vazio">${S.fmAssocQ?'Nenhum negócio em curso com esse nome.':'Não há negócios no funil nem em Carteira.'}</div>`}${C.length>top.length?`<div class="fm-g-mais">Mais ${C.length-top.length}: escreve o nome para procurar.</div>`:''}</div>
+      </div>
+    </div>
+  </div>`;
+}
+// grava a ficha no negócio, passa a ficha deste negócio (grava sozinha a partir daqui) e limpa o rascunho deste computador
+async function fmLigarFicha(id){
+  const k=String(id);const dados=Object.assign({},S.fm||{});
+  const res=await supabaseApi('POST','/fichas_margem',{negocio_id:Number(k),dados,updated_at:new Date().toISOString()});
+  const f=Array.isArray(res)&&res[0];
+  try{localStorage.removeItem('bc_fm');}catch(e){}
+  S.fichasIdx=Object.assign({},S.fichasIdx||{},{[k]:(f&&f.updated_at)||new Date().toISOString()});
+  S.fichasN=Object.assign({},S.fichasN||{},{[k]:((S.fichasN||{})[k]||0)+1});
+  S.fmGuardar=false;S.fmAssocQ='';
+  await fmAbrirNegocio(k,f&&f.id!=null?f.id:undefined);
+  S.fmVolta=null;   // "voltar" leva à lista, não à ficha solta (que ficou vazia)
+  return f;
+}
+async function fmGuardarNovo(){
+  const fm=S.fm||{};const cli=String(fm.cliente||'').trim();
+  if(!cli){toast('Escreve o nome do cliente na ficha antes de criar o negócio.','erro');return;}
+  const b={status:'Quente',id_cliente:cli,type:['MN','MD','MU'].includes(fm.natureza)?fm.natureza:'MN',model:String(fm.modelo||'').trim()||null,
+    alert_date:sugereAlerta('Quente'),status_updated_at:new Date().toISOString()};
+  try{const c=fmCalc();if(c&&c.pvpTab>0)b.pvp=Math.round(c.pvpTab*100)/100;}catch(e){}
+  if(String(fm.proposta||'').trim())b.biz=String(fm.proposta).trim();
+  if(fm.pagamento&&FINS.includes(fm.pagamento))b.fin=fm.pagamento;
+  if(isAdmin()){const el=document.getElementById('fm-g-vend');const v=(el&&el.value)||S.fmGVend||'';
+    if(!v){toast('Escolhe o vendedor do negócio novo.','erro');return;}b.vendedor_id=v;b.resp=vendName(v)||null;}
+  else b.resp=(S.me&&S.me.nome)||null;
+  let neg=null;
+  try{const res=await supabaseApi('POST','/baviera_control',b);neg=Array.isArray(res)&&res[0];if(!neg||neg.id==null)throw new Error('o negócio não foi criado');}
+  catch(e){toast('Não criei o negócio: '+erroTexto(e),'erro');return;}
+  if(!(S.records||[]).some(x=>String(x.id)===String(neg.id)))S.records=[neg,...(S.records||[])];
+  try{await fmLigarFicha(neg.id);setTimeout(()=>toast(`Negócio de ${cli} criado em Quente, com esta ficha`),450);}
+  catch(e){toast('O negócio foi criado, mas a ficha não ficou ligada: '+erroTexto(e)+'. Abre o negócio e junta a ficha outra vez.','erro');}
+  loadRecords().then(()=>render()).catch(()=>{});
+}
+async function fmAssociar(id){
+  const r=(S.records||[]).find(x=>String(x.id)===String(id));if(!r)return;
+  try{await fmLigarFicha(id);setTimeout(()=>toast(`Ficha junta ao negócio de ${r.id_cliente||'cliente'} (${r.status})`),450);}
+  catch(e){toast('Não juntei a ficha: '+erroTexto(e),'erro');}
+}
 function fmSet(k,v){S.fm=Object.assign({},S.fm||{},{[k]:v});
   if(S.fmNeg==='novo')S.fmRascunho=S.fm;
   else if(S.fmNeg)fmGuardarNegocio();
@@ -3109,8 +3240,10 @@ function renderFichaMargem(){
   return`<div class="app-layout"><div class="main-panel" style="width:100%">
   <div class="hdr"><button class="hdr-back" data-action="fm-voltar">←</button><div class="hdr-accent"></div>
     <div class="hdr-title">Ficha de Margem${S.fmNeg?` <span class="fm-lig">${S.fmNeg==='novo'?'novo registo':'negócio'}</span>`:' <span class="fm-lig solta">solta</span>'}</div>
+    ${fmPodeGuardar()?`<button class="hdr-btn hdr-pri${S.fmGuardar?' on':''}" data-action="fm-guardar-abrir" aria-expanded="${!!S.fmGuardar}" title="Guardar esta ficha num negócio novo ou num negócio em curso">${ico('plus','ic-sm')}<span class="hp-l">Guardar num negócio</span><span class="hp-s">Guardar</span></button>`:''}
     <button class="hdr-btn" data-action="fm-pdf" title="Exportar PDF">${ico('download','ic-sm')}<span>PDF</span></button><button class="hdr-btn" data-action="fm-limpar">Limpar</button></div>
   <div class="content"><div style="padding:12px 0">
+    ${fmGuardarHTML()}
     <div class="fm-id">
       <label>Natureza<select class="norma-inp" data-fm="natureza">${['MN','MD','MU'].map(t=>`<option value="${t}" ${(fm.natureza||'MN')===t?'selected':''}>${t}</option>`).join('')}</select></label>
       <label>Modelo<input class="norma-inp" data-fm="modelo" value="${esc(fm.modelo||'')}" placeholder="Ex: F 900 GS"></label>
@@ -5581,6 +5714,81 @@ function vPendentes(){const al=calcAlerts(recsInContext());const eot=eotMeus().f
 function vEntregasSemana(){const h=new Date();h.setHours(0,0,0,0);const lim=new Date(h);lim.setDate(lim.getDate()+7);
   return recsInContext().filter(r=>{if(r.status!=='Carteira')return false;const e=(typeof entOf==='function'?entOf(r.id):null)||{};if(!e.data_entrega)return false;const d=new Date(String(e.data_entrega).slice(0,10)+'T00:00:00');return d>=h&&d<=lim;});}
 function vDiasDesde(iso){if(!iso)return null;return Math.floor((Date.now()-new Date(iso).getTime())/864e5);}
+// ---- Hoje (vendedor): registo rápido e ações na linha "Para contactar hoje", sem abrir o negócio ----
+function vhDataMais(dias){const d=new Date();d.setDate(d.getDate()+dias);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function vhDataPT(iso){return String(iso||'').slice(0,10).split('-').reverse().join('/');}
+const VH_ADIAR=[[7,'1 semana'],[14,'2 semanas'],[30,'1 mês']];
+function vhNovoVals(){const N=Object.assign({nome:'',tel:'',modelo:'',fase:'Morno'},S.vhNovo||{});
+  ['nome','tel','modelo'].forEach(k=>{const el=document.querySelector('[data-vhnovo="'+k+'"]');if(el)N[k]=el.value;});return N;}
+function vhNovoHTML(){
+  if(isAdmin())return'';
+  const N=Object.assign({nome:'',tel:'',modelo:'',fase:'Morno'},S.vhNovo||{});
+  const aberto=S.vhNovoAberto||(typeof window!=='undefined'&&window.innerWidth>700)||N.nome||N.tel||N.modelo;
+  if(!aberto)return`<button type="button" class="vh-novo-abrir" data-action="vh-novo-abrir">${ico('plus','ic-sm')}<span>Registar contacto</span></button>`;
+  const chip=f=>`<button type="button" class="qf-chip vh-n-chip qf-st-${f}${N.fase===f?' on':''}" data-action="vh-novo-fase" data-f="${f}" aria-pressed="${N.fase===f}">${f}</button>`;
+  return`<div class="vh-sec"><span>Registar contacto</span><span class="vh-sec-sub">fica no funil, com o lembrete de contacto marcado</span></div>
+    <div class="vh-box vh-novo">
+      <input class="field-input" id="vh-novo-nome" data-vhnovo="nome" value="${esc(N.nome)}" placeholder="Nome do cliente" aria-label="Nome do cliente" autocomplete="off">
+      <input class="field-input" id="vh-novo-tel" data-vhnovo="tel" value="${esc(N.tel)}" placeholder="Telemóvel" aria-label="Telemóvel" inputmode="tel" autocomplete="off">
+      <input class="field-input" id="vh-novo-mod" data-vhnovo="modelo" value="${esc(N.modelo)}" placeholder="Modelo (ex: R 1300 GS)" aria-label="Modelo" autocomplete="off">
+      <div class="vh-n-chips" role="group" aria-label="Fase">${['Quente','Morno','Frio'].map(chip).join('')}</div>
+      <button type="button" class="btn btn-orange vh-n-ok" data-action="vh-novo-registar">Registar</button>
+    </div>
+    ${S.vhNovoErr?`<div class="vh-n-err" role="alert">${esc(S.vhNovoErr)}</div>`:''}`;
+}
+async function vhNovoRegistar(){
+  const N=vhNovoVals();const nome=String(N.nome||'').trim();
+  if(!nome){S.vhNovo=N;S.vhNovoErr='Escreve o nome do cliente para registar.';render();const i=document.getElementById('vh-novo-nome');if(i)i.focus();return;}
+  const fase=FUNIL.includes(N.fase)?N.fase:'Morno';
+  const b={status:fase,id_cliente:nome,contacto:String(N.tel||'').trim()||null,model:String(N.modelo||'').trim()||null,
+    alert_date:sugereAlerta(fase),status_updated_at:new Date().toISOString(),resp:(S.me&&S.me.nome)||null};
+  S.vhNovo=N;S.vhNovoErr='';
+  try{
+    const res=await supabaseApi('POST','/baviera_control',b);const novo=Array.isArray(res)&&res[0];
+    S.vhNovo={nome:'',tel:'',modelo:'',fase};   // a fase escolhida fica para o próximo
+    if(novo&&novo.id!=null&&!(S.records||[]).some(x=>String(x.id)===String(novo.id)))S.records=[novo,...(S.records||[])];
+    // o campo onde se carregou Enter já foi gravado: não é texto por guardar a repor depois do redesenho
+    const a=document.activeElement;if(a&&a.dataset&&a.dataset.vhnovo){a.value='';a._valFoco='';a.blur();}
+    render();{const nm=document.getElementById('vh-novo-nome');if(nm)nm.focus();}   // pronto para o próximo contacto
+    setTimeout(()=>toast(`${nome} registado em ${fase} · contactar a ${vhDataPT(b.alert_date)}`),450);
+    loadRecords().then(()=>render()).catch(()=>{});
+  }catch(e){S.vhNovoErr='Não registei: '+erroTexto(e);render();}
+}
+function vhAcoesHTML(r){
+  const a=S.vhAcao&&String(S.vhAcao.id)===String(r.id)?S.vhAcao.t:'';
+  const prox=vhDataPT(vhDataMais(DIAS_ALERTA[r.status]||7));const cli=esc(r.id_cliente||'negócio');
+  return`<span class="vh-acts">
+      <button type="button" class="vh-act ok" data-action="vh-contactei" data-id="${r.id}" title="Já falei com o cliente: volta a lembrar a ${prox}" aria-label="Contactei ${cli}: próximo contacto a ${prox}">${ico('check','ic-sm')}<span>Contactei</span></button>
+      <button type="button" class="vh-act${a==='adiar'?' on':''}" data-action="vh-acao" data-t="adiar" data-id="${r.id}" aria-expanded="${a==='adiar'}" aria-label="Adiar o contacto com ${cli}">Adiar</button>
+      <button type="button" class="vh-act${a==='perdido'?' on':''}" data-action="vh-acao" data-t="perdido" data-id="${r.id}" aria-expanded="${a==='perdido'}" aria-label="Marcar ${cli} como perdido">Perdido</button>
+    </span>`;
+}
+function vhPainelHTML(r){
+  const a=S.vhAcao;if(!a||String(a.id)!==String(r.id))return'';const cli=esc(r.id_cliente||'');
+  const fechar=`<button type="button" class="vh-pfechar" data-action="vh-acao-fechar">Cancelar</button>`;
+  if(a.t==='adiar')return`<div class="vh-painel" role="group" aria-label="Adiar o contacto com ${cli}"><span class="vh-p-t">Voltar a lembrar daqui a</span>${VH_ADIAR.map(([d,l])=>`<button type="button" class="vh-pchip" data-action="vh-adiar" data-id="${r.id}" data-dias="${d}">${l}</button>`).join('')}${fechar}</div>`;
+  return`<div class="vh-painel" role="group" aria-label="Motivo da perda de ${cli}"><span class="vh-p-t">Porque se perdeu?</span>${MOTIVOS_PERDA.map(m=>`<button type="button" class="vh-pchip" data-action="vh-perdido" data-id="${r.id}" data-m="${esc(m)}">${esc(m)}</button>`).join('')}${fechar}</div>`;
+}
+// grava logo no ecrã (a linha sai da lista) e repõe se o servidor recusar
+async function vhGravar(id,patch,msg){
+  const k=String(id);const i=(S.records||[]).findIndex(x=>String(x.id)===k);if(i<0)return false;
+  const antes=S.records[i];S.records=S.records.slice();S.records[i]=Object.assign({},antes,patch);S.vhAcao=null;render();
+  try{
+    const res=await supabaseApi('PATCH','/baviera_control?id=eq.'+encodeURIComponent(k),patch);
+    if(Array.isArray(res)&&!res.length)throw new Error('sem permissão para alterar este negócio');
+    const j=S.records.findIndex(x=>String(x.id)===k);if(j>=0&&Array.isArray(res)&&res[0]){S.records=S.records.slice();S.records[j]=Object.assign({},S.records[j],res[0]);}
+    render();setTimeout(()=>toast(msg),450);return true;
+  }catch(e){
+    const j=S.records.findIndex(x=>String(x.id)===k);if(j>=0){S.records=S.records.slice();S.records[j]=antes;}
+    render();toast('Não gravei: '+erroTexto(e),'erro');return false;
+  }
+}
+async function vhContactei(id){const r=(S.records||[]).find(x=>String(x.id)===String(id));if(!r)return;
+  const d=vhDataMais(DIAS_ALERTA[r.status]||7);await vhGravar(id,{alert_date:d},`Contacto registado · próximo a ${vhDataPT(d)}`);}
+async function vhAdiar(id,dias){const d=vhDataMais(Number(dias)||7);await vhGravar(id,{alert_date:d},`Adiado · volta a lembrar a ${vhDataPT(d)}`);}
+async function vhPerdido(id,motivo){const r=(S.records||[]).find(x=>String(x.id)===String(id));if(!r||!MOTIVOS_PERDA.includes(motivo))return;
+  const ok=await vhGravar(id,{status:'Perdido',motivo_perda:motivo,status_updated_at:new Date().toISOString()},`${r.id_cliente||'Negócio'} passou a Perdido (${motivo}) · re-contactar daqui a 6 meses`);
+  if(ok&&r.stock_id)await syncStockComNegocio(r.stock_id,'Perdido');}
 function vHoje(){
   const recs=recsInContext();const ym=curYM();
   const nomeP=String((isAdmin()&&S.viewVendedor?vendName(S.viewVendedor):(S.me&&S.me.nome))||'').trim().split(/\s+/)[0]||'';
@@ -5604,12 +5812,13 @@ function vHoje(){
     P.eot?linhaT('go-veot','','eot',`<b>${P.eot}</b> EOT${P.eot!==1?'s':''} a precisar de contacto`):'',
   ].filter(Boolean);
   const cRow=r=>{const desde=r.alert_date?('desde '+fmtDate(r.alert_date)):(r.status_updated_at?('sem mexer há '+vDiasDesde(r.status_updated_at)+' d'):'');
-    const tel=r.contacto?String(r.contacto).trim():'';
+    const tel=r.contacto?String(r.contacto).trim():'';const sub=[[r.model,r.version].filter(Boolean).join(' '),desde].filter(Boolean).join(' · ');
     return`<div class="vh-crow" data-action="open-detail" data-id="${r.id}" data-kbd="filho">
       <span class="card-status s-${esc(r.status)}">${esc(r.status)}</span>
-      <span class="vh-cnome" data-action="open-detail" data-id="${r.id}" aria-label="Abrir ${esc(r.id_cliente||'negócio')}"><b>${esc(r.id_cliente||'—')}</b><small>${esc([r.model,r.version].filter(Boolean).join(' '))}${desde?' · '+esc(desde):''}</small></span>
+      <span class="vh-cnome" data-action="open-detail" data-id="${r.id}" aria-label="Abrir ${esc(r.id_cliente||'negócio')}"><b>${esc(r.id_cliente||'—')}</b><small>${esc(sub)}</small></span>
       ${tel?`<a class="vh-tel" href="tel:${esc(tel.replace(/\s/g,''))}" onclick="event.stopPropagation()" aria-label="Ligar ${esc(tel)}">${ico('phone','ic-sm')}<span>${esc(tel)}</span></a>`:''}
-    </div>`;};
+      ${!isAdmin()?vhAcoesHTML(r):''}
+    </div>${!isAdmin()?vhPainelHTML(r):''}`;};
   const evs=(typeof eventosAtivos==='function'&&!isAdmin())?eventosAtivos():[];
   return`<div class="vh">
     <div class="vh-hello">Olá${nomeP?', '+esc(nomeP):''} <span>${esc(hojeTxt)}</span></div>
@@ -5619,6 +5828,7 @@ function vHoje(){
       ${kpi('sidebar-filter','Funil','Funil',fun.length,`<span style="color:var(--red)">${nQ} quentes</span> · ${nM} mornos · ${nF} frios`)}
       ${!isAdmin()?kpi('go-vcom','','Comissão do mês',fE(comTot),semMg?`${semMg} à espera de margem`:'estimativa do retail do mês'):''}
     </div>
+    ${vhNovoHTML()}
     ${evs.map(ev=>`<div class="vh-ev" data-action="go-evento" data-id="${ev.id}">🎟️ <b>${esc(ev.nome)}</b> — inscreve os teus clientes <span class="vh-chev">›</span></div>`).join('')}
     ${comsRecentesHTML('Comentários novos nos teus negócios')}
     <div class="vh-sec"><span>A tratar</span>${tRows.length?`<span class="vh-cnt">${tRows.length}</span>`:''}</div>
@@ -6659,7 +6869,7 @@ function travar(nome){const fn=window[nome];if(typeof fn!=='function'||fn._trava
   const w=async function(...a){let k;try{k=nome+'|'+JSON.stringify(a);}catch(_){k=nome;}if(_emCurso.has(k))return;_emCurso.add(k);document.body.classList.add('a-gravar');
     try{return await fn.apply(this,a);}finally{_emCurso.delete(k);if(!_emCurso.size)document.body.classList.remove('a-gravar');}};
   w._travado=true;window[nome]=w;}
-['mrConfirmar','mrRecusar','addStockMotaFull','addStockMota','comissaoAdd','premioAdd','saveInscricaoNova','saveEventoNovo','saveLead','saveAutomatricula','saveVendaDireta','saveRecord','deleteRecord','seqConfirmar','seqRegistar','seqForaRegistar','recontReabrir','recontAdiar','eotConfirmar','eotGuardar','eotModalGuardar','eotAtribuirLote','eotCriarNegocio','eotComentar','eqAdd','eqColar','comFechoToggle','negComentar'].forEach(n=>{try{travar(n);}catch(e){}});
+['mrConfirmar','mrRecusar','addStockMotaFull','addStockMota','comissaoAdd','premioAdd','saveInscricaoNova','saveEventoNovo','saveLead','saveAutomatricula','saveVendaDireta','saveRecord','deleteRecord','seqConfirmar','seqRegistar','seqForaRegistar','recontReabrir','recontAdiar','eotConfirmar','eotGuardar','eotModalGuardar','eotAtribuirLote','eotCriarNegocio','eotComentar','eqAdd','eqColar','comFechoToggle','negComentar','vhNovoRegistar','vhContactei','vhAdiar','vhPerdido','fmGuardarNovo','fmAssociar'].forEach(n=>{try{travar(n);}catch(e){}});
 // ---- Teclado: tudo o que é clicável recebe foco e abre com Enter/Espaço; campos ganham nome para leitores de ecrã ----
 function tecladoAplicar(){
   const raiz=document.getElementById('app');if(!raiz)return;
@@ -9375,6 +9585,8 @@ function bindEvents(){
   const app=document.getElementById('app');
   app.oninput=function(e){
     const el=e.target;
+    if(el.dataset&&el.dataset.vhnovo){S.vhNovo=Object.assign({nome:'',tel:'',modelo:'',fase:'Morno'},S.vhNovo||{},{[el.dataset.vhnovo]:el.value});if(S.vhNovoErr&&el.dataset.vhnovo==='nome'&&el.value.trim()){S.vhNovoErr='';const er=document.querySelector('.vh-n-err');if(er)er.remove();}return;}
+    if(el.id==='fm-assoc-q'){S.fmAssocQ=el.value;render();return;}
     if(el.dataset&&el.dataset.tblQ){const k=el.dataset.tblQ;S.tblQ=Object.assign({},S.tblQ||{},{[k]:el.value});const tb=tblPorChave(k);if(tb)tblFiltrar(tb,el.value);return;}
     if(el.dataset&&el.dataset.field==='enc'&&S.screen==='edit'){S.form.enc=el.value;const d=document.getElementById('enc-dica');if(d)d.innerHTML=encDicaHTML(el.value,encFormId());return;}
     if(el.id==='enc-q'){S.encF=Object.assign({q:'',ex:{}},S.encF||{},{q:el.value});const p=el.selectionStart;render();const n=document.getElementById('enc-q');if(n){n.focus();n.setSelectionRange(p,p);}return;}
@@ -9424,6 +9636,7 @@ function bindEvents(){
   };
   app.onchange=function(e){
     const el=e.target;
+    if(el.id==='fm-g-vend'){S.fmGVend=el.value;return;}
     if(el.dataset&&el.dataset.eotm){eotModalInput(el);return;}
     if(el.dataset&&el.dataset.finF){S.finF=Object.assign({},S.finF||{},{[el.dataset.finF]:el.value});render();return;}
     if(el.dataset&&el.dataset.seqf==='ref'){const v=el.value;if(String(v).trim().toUpperCase()===String((S.seqFora||{})._refFeita||''))return;S.seqFora=Object.assign({},S.seqFora||{},{_refFeita:String(v).trim().toUpperCase()});setTimeout(()=>seqForaRef(v),0);return;}
@@ -9625,6 +9838,18 @@ function bindEvents(){
       case'eot-img-tirar':eotImgTirar(el.dataset.id);break;
       case'eot-img-ver':setState({eotImgVer:el.dataset.p,eotImgZoom:false});break;
       case'eot-img-fechar':setState({eotImgVer:null,eotImgZoom:false});break;
+      case'vh-novo-abrir':S.vhNovoAberto=true;render();{const i=document.getElementById('vh-novo-nome');if(i)i.focus();}break;
+      case'vh-novo-fase':S.vhNovo=Object.assign(vhNovoVals(),{fase:el.dataset.f});render();break;
+      case'vh-novo-registar':vhNovoRegistar();break;
+      case'vh-contactei':vhContactei(el.dataset.id);break;
+      case'vh-acao':{const t=el.dataset.t,id=el.dataset.id;S.vhAcao=(S.vhAcao&&String(S.vhAcao.id)===String(id)&&S.vhAcao.t===t)?null:{id,t};render();break;}
+      case'vh-acao-fechar':S.vhAcao=null;render();break;
+      case'vh-adiar':vhAdiar(el.dataset.id,el.dataset.dias);break;
+      case'vh-perdido':vhPerdido(el.dataset.id,el.dataset.m);break;
+      case'fm-guardar-abrir':S.fmGuardar=!S.fmGuardar;render();break;
+      case'fm-guardar-fechar':S.fmGuardar=false;render();break;
+      case'fm-guardar-novo':fmGuardarNovo();break;
+      case'fm-associar':fmAssociar(el.dataset.id);break;
       case'fin-visto':finVistoAlternar(el.dataset.c);break;
       case'fin-tab':{const t=el.dataset.t;try{localStorage.setItem('bm_fin_tab',t);}catch(e){}setState({finTab:t});break;}
       case'nt-abrir':notifAbrir(el.dataset.c);break;
