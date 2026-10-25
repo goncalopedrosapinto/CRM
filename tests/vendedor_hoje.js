@@ -52,7 +52,7 @@ const db={seq:900,patches:[],posts:[],rpc:[],falhar:null,fichas:[],
  const toastTxt=async()=>{await p.waitForTimeout(700);return p.evaluate(()=>((document.getElementById('bm-toast')||{}).textContent||'').trim());};
  const kpiFunil=()=>p.evaluate(()=>{const k=[...document.querySelectorAll('.vh-kpi')].find(x=>/Funil/i.test(x.textContent));return k?k.querySelector('.vh-v').textContent.trim():'';});
  await hoje();
- R2.inicio={lista:await lista(),funil:await kpiFunil()};
+ R2.inicio={lista:await lista(),funil:await kpiFunil(),resumo:await p.evaluate(()=>((document.querySelector('.vh-resumo')||{}).textContent||'').trim())};
 
  // ---------- 1) registo rápido
  await p.click('[data-action="vh-novo-registar"]');await p.waitForTimeout(300);
@@ -143,7 +143,13 @@ const db={seq:900,patches:[],posts:[],rpc:[],falhar:null,fichas:[],
    acoes:await t.p.evaluate(()=>document.querySelectorAll('.vh-crow .vh-act').length),
    barra:await t.p.evaluate(()=>[...document.querySelectorAll('.vbn .vbn-i')].map(b=>b.textContent.replace(/\d+/g,'').trim()))};
  await t.ctx.close();
- // ---------- 5) chefe na ficha solta: escolhe o vendedor do negócio novo
+ // ---------- 5) chefe: Retail do mês contra o mês anterior (até ao mesmo dia), em motas
+ {const h=new Date(),ymA=`${h.getFullYear()}-${pad(h.getMonth()+1)}`,pd=new Date(h.getFullYear(),h.getMonth()-1,1),ymP=`${pd.getFullYear()}-${pad(pd.getMonth()+1)}`;
+  const ultP=new Date(pd.getFullYear(),pd.getMonth()+1,0).getDate(),dd=h.getDate();
+  db.recs.push(R(30,{status:'Retail',type:'MN',id_cliente:'Cliente R1',col_298:ymA+'-01'}),R(31,{status:'Retail',type:'MN',id_cliente:'Cliente R2',col_298:loc(0)}),
+    R(32,{status:'Retail',type:'MN',id_cliente:'Cliente R3',col_298:ymP+'-01'}),R(33,{status:'Retail',type:'MU',id_cliente:'Cliente R4',col_298:ymP+'-01'}));
+  if(dd<ultP)db.recs.push(R(34,{status:'Retail',type:'MN',id_cliente:'Cliente R5 (depois do dia)',col_298:ymP+'-'+pad(dd+1)}));}
+ // ---------- 6) chefe na ficha solta: escolhe o vendedor do negócio novo
  const c=await contexto({width:1440,height:1000},'c1');
  await c.p.evaluate(()=>{S.fm=fmParaCiva(fmMigra({natureza:'MU',iva:23,modo:'civa',fv:2,cliente:'Luís Matos',modelo:'R 1250 GS'}));setState({screen:'ficha'});});await c.p.waitForTimeout(400);
  await c.p.click('[data-action="fm-guardar-abrir"]');await c.p.waitForTimeout(250);
@@ -151,7 +157,10 @@ const db={seq:900,patches:[],posts:[],rpc:[],falhar:null,fichas:[],
  await c.p.click('[data-action="fm-guardar-novo"]');await c.p.waitForTimeout(400);
  const semVend={posts:db.posts.length-nC,toast:await c.p.evaluate(()=>((document.getElementById('bm-toast')||{}).textContent||''))};
  await c.p.selectOption('#fm-g-vend','v1');await c.p.click('[data-action="fm-guardar-novo"]');await c.p.waitForTimeout(800);
- R2.chefe={semVend,neg:(db.posts.slice(nC).find(x=>x[0]==='baviera_control')||[])[1],registoRapido:await c.p.evaluate(()=>{S.screen='list';S.statusFilter='_hoje';render();return !!document.getElementById('vh-novo-nome');})};
+ await c.p.evaluate(()=>{S.screen='dashboard';S.gppSec='home';render();});await c.p.waitForTimeout(500);
+ const deltas=await c.p.evaluate(()=>[...document.querySelectorAll('.gpp-table .gpp-delta')].map(x=>x.textContent.replace(/\s+/g,' ').trim()));
+ const nota=await c.p.evaluate(()=>((document.querySelector('.gpp-delta-nota')||{}).textContent||'').trim());
+ R2.chefe={semVend,deltas,nota,neg:(db.posts.slice(nC).find(x=>x[0]==='baviera_control')||[])[1],registoRapido:await c.p.evaluate(()=>{S.screen='list';S.statusFilter='_hoje';render();return !!document.getElementById('vh-novo-nome');})};
  await c.ctx.close();
  R2.erros=erros;console.log(JSON.stringify(R2,null,1));
  const ok={
@@ -180,6 +189,8 @@ const db={seq:900,patches:[],posts:[],rpc:[],falhar:null,fichas:[],
     R2.stock2.ecra==='stockvend'&&JSON.stringify(R2.stock2.tabs)==='["Novas BMW","Usadas e demos *","Equipamento"]'&&R2.stock2.titulo==='Stock'&&R2.stock3==='stockvend',
   'Vendidos e perdidos: um item, separadores Retail e Perdidos com as contagens':R2.arq1.sf==='Retail'&&R2.arq1.menuOn==='Vendidos e perdidos'&&R2.arq1.tabs[0]==='Retail 1 *'&&/^Perdidos \d+$/.test(R2.arq1.tabs[1])&&R2.arq2.sf==='Perdido'&&R2.arq2.menuOn==='Vendidos e perdidos'&&R2.arq2.tabs[1]==='Perdidos *',
   'telemóvel: barra de baixo igual (Hoje · Funil · Carteira · EOTs · Mais)':JSON.stringify(R2.tel.barra)==='["Hoje","Funil","Carteira","EOTs","Mais"]',
+  'Hoje: frase-resumo com os mesmos números':R2.inicio.resumo==='Hoje: 4 clientes para contactar.',
+  'chefe: Retail contra o mês anterior até ao mesmo dia, em motas':JSON.stringify(R2.chefe.deltas.map(x=>x.split(' vs ')[0]))==='["+1","−1","="]'&&/^Retail: diferença em motas para [a-z]{3}\.( até ao dia \d+)?$/.test(R2.chefe.nota),
   'chefe: tem de escolher o vendedor; o negócio fica em nome dele':R2.chefe.semVend.posts===0&&/Escolhe o vendedor/.test(R2.chefe.semVend.toast)&&R2.chefe.neg&&R2.chefe.neg.vendedor_id==='v1'&&R2.chefe.neg.resp==='Felipe Gomes'&&R2.chefe.neg.type==='MU'&&R2.chefe.neg.id_cliente==='Luís Matos'&&!R2.chefe.registoRapido,
   'sem erros JS nem alertas':!erros.length};
  let f=0;for(const [k,v] of Object.entries(ok)){console.log((v?'✓ ':'✗ ')+k);if(!v)f++;}

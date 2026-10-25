@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-25-b">
+<meta name="app-version" content="2026-10-25-c">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2208,6 +2208,26 @@ body.a-gravar [data-action]{cursor:progress}
 .lemb-row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--red);border-radius:var(--r2);box-shadow:var(--elev1)}
 .lemb-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.lemb-txt b{font-size:14px}.lemb-txt span{font-size:12.5px;color:var(--text2)}
 @media(max-width:700px){.lemb-row{flex-wrap:wrap}.lemb-txt{flex:1 1 100%;order:-1}.lemb-row .atag{order:-2}}
+
+/* ---- polimento Hoje e Funil (2026-10-25): 800 só nos números e títulos, 600 em nomes e botões; uma só etiqueta; escala 11·12·13 ---- */
+.vh-k{font-size:11px;font-weight:600}
+.vh-s{font-size:12px}
+.vh-sec{font-weight:700}
+.vh-cnome b{font-weight:600}
+.vh-cnome small{font-size:12px}
+.vh-mais{font-weight:600}
+.vcard-nome,.vcard-pvp{font-weight:600}
+.vcard-mod,.vcard-meta,.vcard-mat{font-size:12px}
+.vh .card-status,.vh .atag,.vcard .card-status,.vcard .tag{display:inline-flex;align-items:center;justify-content:center;height:20px;padding:0 8px;border-radius:var(--rp);font-size:11px;font-weight:700;line-height:1;letter-spacing:.2px;white-space:nowrap}
+.vh-novo .field-input,.vh-novo-abrir{font-size:13px}
+.vh-novo .qf-chip{font-size:12px}
+.vh-resumo{margin:-6px 0 14px;font-size:13px;line-height:1.5;color:var(--text2)}
+.vh-resumo b{font-weight:600;color:var(--text)}
+.gpp-delta{margin-top:3px;font-size:11px;font-weight:600;letter-spacing:0;font-variant-numeric:tabular-nums}
+.gpp-delta span{font-weight:500;color:var(--text3)}
+.gpp-delta.up{color:var(--green)}.gpp-delta.down{color:var(--red)}.gpp-delta.eq{color:var(--text3)}
+.gpp-delta-nota{padding:0 14px 10px;font-size:11px;color:var(--text3)}
+@media(max-width:760px) and (pointer:coarse){.vh-novo .field-input{font-size:16px}}
 </style>
 </head>
 <body>
@@ -2324,7 +2344,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-25-b';
+const APP_VERSION='2026-10-25-c';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -2479,14 +2499,21 @@ async function refreshSession(){
       catch(e){S._sessaoRede=true;return null;}
       S._sessaoRede=false;
       if(!r.ok){
-        // o token pode ter sido renovado por outro separador entretanto
+        // o token pode ter sido renovado por outro separador entretanto (dá tempo a que chegue a este separador)
+        if(r.status===400)await new Promise(z=>setTimeout(z,300));
         const s2=lerSessao();if(s2&&s2.refresh_token!==s.refresh_token&&s2.access_token&&s2.exp-Date.now()>60000){sessaoAgendar(s2.access_token);return s2.access_token;}
         if(r.status>=500){S._sessaoRede=true;return null;}
         clearSession();return null;
       }
       const d=await r.json();saveSession(d);return d.access_token;
     };
-    try{return (navigator.locks&&navigator.locks.request)?await navigator.locks.request('bc_refresh',fazer):await fazer();}
+    try{
+      if(navigator.locks&&navigator.locks.request){const t0=Date.now();
+        return await navigator.locks.request('bc_refresh',async()=>{
+          // esperou por outro separador que estava a renovar: o token novo dele demora uns ms a chegar aqui; ler logo daria o antigo
+          if(Date.now()-t0>20)await new Promise(z=>setTimeout(z,150));
+          return fazer();});}
+      return await fazer();}
     catch(e){return null;}
   })();
   try{return await _refreshP;}finally{_refreshP=null;}
@@ -3497,6 +3524,18 @@ function renderPrevisao(){
     </div></div></div></div>`;
 }
 // Vendas a comerciante (venda_direta): já contam nos números do mês; aqui ficam identificadas no mês de faturação (298)
+// Retail: diferença em unidades para o mês anterior; no mês corrente compara até ao mesmo dia
+function retailDelta(recs,ym,f){
+  const [y,m]=String(ym||'').split('/').map(Number);if(!y||!m)return null;
+  const py=m===1?y-1:y,pm=m===1?12:m-1;const prev=`${py}/${String(pm).padStart(2,'0')}`;
+  const ate=ym===curYM()?Math.min(new Date().getDate(),new Date(py,pm,0).getDate()):null;
+  const dia=r=>Number(String(r.col_298||'').slice(8,10))||0;
+  return{ant:recs.filter(r=>r.status==='Retail'&&retailYM(r)===prev&&f(r)&&(ate==null||dia(r)<=ate)).length,prev,ate};
+}
+function retailDeltaHTML(atual,d){if(!d)return'';const x=atual-d.ant;const nm=MONTH_NAMES[Number(d.prev.slice(5))-1]||d.prev;
+  return`<div class="gpp-delta ${x>0?'up':x<0?'down':'eq'}" title="${esc(nm+(d.ate?' até dia '+d.ate:'')+': '+d.ant)}">${x>0?'+'+x:(x<0?'−'+Math.abs(x):'=')} <span>vs ${esc(nm.toLowerCase())}.</span></div>`;}
+function retailDeltaNota(d){if(!d)return'';const nm=MONTH_NAMES[Number(d.prev.slice(5))-1]||d.prev;
+  return`<div class="gpp-delta-nota">Retail: diferença em motas para ${esc(nm.toLowerCase())}.${d.ate?` até ao dia ${d.ate}`:''}</div>`;}
 function comercioN(L,f){const n=L.filter(r=>r.venda_direta&&f(r)).length;return n?`<div class="gpp-num-sub">${n} comércio</div>`:'';}
 function comercioNotaHTML(retail,cart,ym,click){const L=[...retail,...cart].filter(r=>r.venda_direta);if(!L.length)return'';
   return`<div class="gpp-com-nota"><span class="gpp-com-ic">🤝</span><div><b>${L.length} mota${L.length>1?'s':''} para o comércio</b> em ${esc(ymLongo(ym))}, já incluída${L.length>1?'s':''} nos números acima:
@@ -5722,6 +5761,13 @@ function vDiasDesde(iso){if(!iso)return null;return Math.floor((Date.now()-new D
 function vhDataMais(dias){const d=new Date();d.setDate(d.getDate()+dias);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function vhDataPT(iso){return String(iso||'').slice(0,10).split('-').reverse().join('/');}
 const VH_ADIAR=[[7,'1 semana'],[14,'2 semanas'],[30,'1 mês']];
+// uma frase com o que espera pelo vendedor hoje: clientes atrasados, EOTs (o mesmo número do menu) e entregas da semana
+function vhResumoHTML(nC,nEot,nE){
+  const pl=(n,s,p)=>`<b>${n}</b> ${n===1?s:p}`;
+  const partes=[nC?pl(nC,'cliente para contactar','clientes para contactar'):'',nEot?pl(nEot,'EOT à tua espera','EOTs à tua espera'):'',nE?pl(nE,'entrega esta semana','entregas esta semana'):''].filter(Boolean);
+  if(!partes.length)return'<div class="vh-resumo">Hoje não há clientes por contactar nem EOTs à tua espera.</div>';
+  return`<div class="vh-resumo">Hoje: ${partes.length===1?partes[0]:partes.slice(0,-1).join(', ')+' e '+partes[partes.length-1]}.</div>`;
+}
 function vhNovoVals(){const N=Object.assign({nome:'',tel:'',modelo:'',fase:'Morno'},S.vhNovo||{});
   ['nome','tel','modelo'].forEach(k=>{const el=document.querySelector('[data-vhnovo="'+k+'"]');if(el)N[k]=el.value;});return N;}
 function vhNovoHTML(){
@@ -5825,6 +5871,7 @@ function vHoje(){
   const evs=(typeof eventosAtivos==='function'&&!isAdmin())?eventosAtivos():[];
   return`<div class="vh">
     <div class="vh-hello">Olá${nomeP?', '+esc(nomeP):''} <span>${esc(hojeTxt)}</span></div>
+    ${vhResumoHTML(contactar.length,vEotEspera(),vEntregasSemana().length)}
     <div class="vh-kpis">
       ${kpi('sidebar-filter','Retail','Retail este mês',ret.length,`${retN} novas · ${retU} usadas`,'var(--green)')}
       ${kpi('sidebar-filter','Carteira','Carteira',cart.length,cartMes?`<b style="color:var(--amber)">${cartMes}</b> para entregar até este mês`:'nada para este mês','var(--blue)')}
@@ -8312,10 +8359,10 @@ function renderDashboard(){
     return`<div class="gpp-card"><table class="gpp-table">
       <thead><tr><th></th><th class="gpp-th-novas">MN + MD<div class="gpp-th-sub">Novas</div></th><th class="gpp-th-usadas">MU<div class="gpp-th-sub">Usadas</div></th><th class="gpp-th-tot">Total</th></tr></thead>
       <tbody>
-        <tr><td class="gpp-rowlbl"><span class="gpp-dot" style="background:var(--green)"></span>Retail<div class="gpp-rowsub">entregue</div></td><td class="gpp-num">${rN}${comercioN(retail,isNovas)}</td><td class="gpp-num">${rU}${comercioN(retail,isUsadas)}</td><td class="gpp-num gpp-tot">${rN+rU}</td></tr>
+        <tr><td class="gpp-rowlbl"><span class="gpp-dot" style="background:var(--green)"></span>Retail<div class="gpp-rowsub">entregue</div></td><td class="gpp-num">${rN}${comercioN(retail,isNovas)}${retailDeltaHTML(rN,retailDelta(recs,mesSel,isNovas))}</td><td class="gpp-num">${rU}${comercioN(retail,isUsadas)}${retailDeltaHTML(rU,retailDelta(recs,mesSel,isUsadas))}</td><td class="gpp-num gpp-tot">${rN+rU}${retailDeltaHTML(rN+rU,retailDelta(recs,mesSel,r=>isNovas(r)||isUsadas(r)))}</td></tr>
         <tr><td class="gpp-rowlbl"><span class="gpp-dot" style="background:var(--blue)"></span>Carteira<div class="gpp-rowsub">a entregar</div></td><td class="gpp-num">${cN}${comercioN(carteira,isNovas)}</td><td class="gpp-num">${cU}${comercioN(carteira,isUsadas)}</td><td class="gpp-num gpp-tot">${cN+cU}</td></tr>
         <tr class="gpp-totrow"><td class="gpp-rowlbl">Total</td><td class="gpp-num gpp-tot">${rN+cN}</td><td class="gpp-num gpp-tot">${rU+cU}</td><td class="gpp-num gpp-tot gpp-grandtot">${rN+rU+cN+cU}</td></tr>
-      </tbody></table>${comercioNotaHTML(retail,carteira,mesSel,true)}</div>${objCard}`;
+      </tbody></table>${retailDeltaNota(retailDelta(recs,mesSel,()=>true))}${comercioNotaHTML(retail,carteira,mesSel,true)}</div>${objCard}`;
   }
 
   // ---- Gráfico de carteira por mês de entrega (novas vs usadas) ----
