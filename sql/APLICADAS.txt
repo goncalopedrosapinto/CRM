@@ -13,3 +13,6 @@
 2026-10-22_eot_imagens.sql
 2026-10-22_fichas_varias.sql
 2026-10-22_eot_adenda.sql
+2026-10-23_declaracao_aniversario.sql
+2026-10-23_eot_notificacoes.sql
+2026-10-23_encomendas_chegadas.sql
