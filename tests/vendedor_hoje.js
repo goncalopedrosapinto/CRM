@@ -77,7 +77,7 @@ const db={seq:900,patches:[],posts:[],rpc:[],falhar:null,fichas:[],
  R2.painelPerdido=await p.evaluate(()=>[...document.querySelectorAll('.vh-painel .vh-pchip')].map(x=>x.textContent));
  await p.click('.vh-painel [data-action="vh-perdido"][data-m="Preço"]');R2.perdidoToast=await toastTxt();await p.waitForTimeout(300);
  R2.perdido={patch:db.patches.slice(-1)[0],rpc:db.rpc.slice(-1)[0],lista:await lista(),
-   perdidos:await p.evaluate(()=>{const n=[...document.querySelectorAll('.sidebar [data-action="sidebar-filter"]')].find(x=>/Perdidos/.test(x.textContent));return n?n.textContent.replace(/\D+/g,' ').trim():'';})};
+   perdidos:await p.evaluate(()=>String(statusCounts()['Perdido']||0))};
  // servidor recusa: a linha volta e aparece o erro
  db.falhar='5';await p.click('.vh-crow:has-text("Pedro Almeida") [data-action="vh-contactei"]');await p.waitForTimeout(300);
  R2.falha={toast:await toastTxt(),lista:await lista(),alerta:await p.evaluate(()=>S.records.find(x=>String(x.id)==='5').alert_date)};db.falhar=null;
@@ -116,6 +116,21 @@ const db={seq:900,patches:[],posts:[],rpc:[],falhar:null,fichas:[],
  const novos=db.posts.slice(nPosts);
  R2.novo={neg:(novos.find(x=>x[0]==='baviera_control')||[])[1],ficha:(novos.find(x=>x[0]==='fichas_margem')||[])[1],
    estado:await p.evaluate(()=>({neg:S.fmNeg,barra:!!document.querySelector('.fm-negbar'),noFunil:S.records.some(r=>r.id_cliente==='Rita Sousa'&&r.status==='Quente')}))};
+ // ---------- menu do vendedor: Vender · Clientes · O meu mês; Stock e Vendidos e perdidos com separadores
+ await hoje();
+ const menu=()=>p.evaluate(()=>[...document.querySelectorAll('.sidebar .vnav > *')].map(e=>e.classList.contains('vnav-sec')?'#'+e.textContent.trim():e.querySelector('.vnav-lb').textContent.trim()));
+ R2.menu=await menu();
+ const tabs=()=>p.evaluate(()=>[...document.querySelectorAll('.top-tabs .top-tab')].map(b=>b.querySelector('.t-longo').textContent+(b.classList.contains('on')?' *':'')));
+ await p.click('.sidebar [data-action="go-vstock"]');await p.waitForTimeout(500);
+ R2.stock1={ecra:await p.evaluate(()=>S.screen),tabs:await tabs(),titulo:await p.evaluate(()=>(document.querySelector('.hdr-title')||{}).textContent),menuOn:await p.evaluate(()=>(document.querySelector('.vnav-item.on .vnav-lb')||{}).textContent)};
+ await p.click('.top-tabs [data-action="go-stock-vend"]');await p.waitForTimeout(600);
+ R2.stock2={ecra:await p.evaluate(()=>S.screen),tabs:await tabs(),titulo:await p.evaluate(()=>(document.querySelector('.hdr-title')||{}).textContent)};
+ await hoje();await p.click('.sidebar [data-action="go-vstock"]');await p.waitForTimeout(600);
+ R2.stock3=await p.evaluate(()=>S.screen);   // abre no último que se usou
+ await p.click('.sidebar .vnav-item:has-text("Vendidos e perdidos")');await p.waitForTimeout(400);
+ R2.arq1={sf:await p.evaluate(()=>S.statusFilter),tabs:await p.evaluate(()=>[...document.querySelectorAll('.top-tabs .top-tab')].map(b=>(b.querySelector('.t-longo').textContent+' '+((b.querySelector('.sec-tab-n')||{}).textContent||'')).trim()+(b.classList.contains('on')?' *':''))),menuOn:await p.evaluate(()=>(document.querySelector('.vnav-item.on .vnav-lb')||{}).textContent)};
+ await p.click('.top-tabs .top-tab:has-text("Perdidos")');await p.waitForTimeout(400);
+ R2.arq2={sf:await p.evaluate(()=>S.statusFilter),menuOn:await p.evaluate(()=>(document.querySelector('.vnav-item.on .vnav-lb')||{}).textContent),tabs:await tabs()};
  await ctx.close();
 
  // ---------- 4) telemóvel: registo rápido recolhido, sem scroll lateral
@@ -125,7 +140,8 @@ const db={seq:900,patches:[],posts:[],rpc:[],falhar:null,fichas:[],
  await t.p.click('[data-action="vh-novo-abrir"]');await t.p.waitForTimeout(300);
  R2.tel={recolhido,abriu:await t.p.evaluate(()=>!!document.getElementById('vh-novo-nome')),
    largura:await t.p.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth),
-   acoes:await t.p.evaluate(()=>document.querySelectorAll('.vh-crow .vh-act').length)};
+   acoes:await t.p.evaluate(()=>document.querySelectorAll('.vh-crow .vh-act').length),
+   barra:await t.p.evaluate(()=>[...document.querySelectorAll('.vbn .vbn-i')].map(b=>b.textContent.replace(/\d+/g,'').trim()))};
  await t.ctx.close();
  // ---------- 5) chefe na ficha solta: escolhe o vendedor do negócio novo
  const c=await contexto({width:1440,height:1000},'c1');
@@ -159,6 +175,11 @@ const db={seq:900,patches:[],posts:[],rpc:[],falhar:null,fichas:[],
   'criar negócio novo: Quente com o lembrete, e a ficha fica ligada':R2.novo.neg&&R2.novo.neg.status==='Quente'&&R2.novo.neg.id_cliente==='Rita Sousa'&&R2.novo.neg.type==='MN'&&R2.novo.neg.model==='F 900 XR'&&R2.novo.neg.alert_date===loc(3)&&R2.novo.neg.resp==='Felipe Gomes'&&
     R2.novo.ficha&&R2.novo.ficha.dados.cliente==='Rita Sousa'&&String(R2.novo.estado.neg)===String(R2.novo.ficha.negocio_id)&&R2.novo.estado.barra&&R2.novo.estado.noFunil&&/Negócio de Rita Sousa criado em Quente/.test(R2.novoToast),
   'telemóvel: registo recolhido num botão, abre, sem scroll lateral':R2.tel.recolhido&&R2.tel.abriu&&R2.tel.largura&&R2.tel.acoes>0,
+  'menu do vendedor: Vender · Clientes · O meu mês, sem Notificações, Retail e Perdidos soltos':JSON.stringify(R2.menu)===JSON.stringify(['Hoje','#Vender','Funil','Carteira','Ficha de margem','Stock','#Clientes','EOTs','Vendidos e perdidos','#O meu mês','Comissões','Escala']),
+  'Stock: abre em Novas BMW, separadores, título único e lembra o último':R2.stock1.ecra==='vencomendas'&&JSON.stringify(R2.stock1.tabs)==='["Novas BMW *","Usadas e demos","Equipamento"]'&&R2.stock1.titulo==='Stock'&&R2.stock1.menuOn==='Stock'&&
+    R2.stock2.ecra==='stockvend'&&JSON.stringify(R2.stock2.tabs)==='["Novas BMW","Usadas e demos *","Equipamento"]'&&R2.stock2.titulo==='Stock'&&R2.stock3==='stockvend',
+  'Vendidos e perdidos: um item, separadores Retail e Perdidos com as contagens':R2.arq1.sf==='Retail'&&R2.arq1.menuOn==='Vendidos e perdidos'&&R2.arq1.tabs[0]==='Retail 1 *'&&/^Perdidos \d+$/.test(R2.arq1.tabs[1])&&R2.arq2.sf==='Perdido'&&R2.arq2.menuOn==='Vendidos e perdidos'&&R2.arq2.tabs[1]==='Perdidos *',
+  'telemóvel: barra de baixo igual (Hoje · Funil · Carteira · EOTs · Mais)':JSON.stringify(R2.tel.barra)==='["Hoje","Funil","Carteira","EOTs","Mais"]',
   'chefe: tem de escolher o vendedor; o negócio fica em nome dele':R2.chefe.semVend.posts===0&&/Escolhe o vendedor/.test(R2.chefe.semVend.toast)&&R2.chefe.neg&&R2.chefe.neg.vendedor_id==='v1'&&R2.chefe.neg.resp==='Felipe Gomes'&&R2.chefe.neg.type==='MU'&&R2.chefe.neg.id_cliente==='Luís Matos'&&!R2.chefe.registoRapido,
   'sem erros JS nem alertas':!erros.length};
  let f=0;for(const [k,v] of Object.entries(ok)){console.log((v?'✓ ':'✗ ')+k);if(!v)f++;}

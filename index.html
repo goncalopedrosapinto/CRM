@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-25-a">
+<meta name="app-version" content="2026-10-25-b">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2324,7 +2324,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-25-a';
+const APP_VERSION='2026-10-25-b';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -2562,7 +2562,8 @@ window.addEventListener('error',function(ev){
 window.addEventListener('unhandledrejection',function(ev){const r=ev&&ev.reason;erroRegistar('promessa',r&&r.message?r.message:String(r),r&&r.stack,'');});
 document.addEventListener('securitypolicyviolation',function(ev){erroRegistar('csp','Bloqueado pela política de segurança: '+(ev.violatedDirective||'')+' '+(function(u){try{return new URL(u).origin}catch(e){return String(u||'').slice(0,40)}})(ev.blockedURI),'',(ev.sourceFile||'').split('?')[0]);});
 async function supabaseApi0(m,path,body,_retry){const h={'apikey':S.config.key,'Authorization':`Bearer ${S.token}`,'Content-Type':'application/json'};if(m==='POST'||m==='PATCH')h['Prefer']='return=representation';const o={method:m,headers:h};if(body)o.body=JSON.stringify(body);let r;try{r=await fetchT(`${S.config.url}/rest/v1${path}`,o,m==='GET'?20000:45000);}catch(e){if(m==='GET'&&!o._rep){o._rep=1;r=await fetchT(`${S.config.url}/rest/v1${path}`,o,25000).catch(()=>{throw new Error('Failed to fetch: o servidor demorou demasiado a responder')});}else throw new Error(e&&e.name==='AbortError'?'Failed to fetch: o servidor demorou demasiado a responder':String(e&&e.message||e));}if(r.status===401&&!_retry){const nt=await refreshSession();if(nt){S.token=nt;return supabaseApi(m,path,body,true)}}if(!r.ok){const e=await r.text();throw new Error(e)}const t=await r.text();if(m!=='GET'&&!_retry_silencio(path))toastGravado(m);return t?JSON.parse(t):null}
-function _retry_silencio(p){return /^\/(precos_ref|rpc\/inscricoes_ranking|comissoes_fecho|fichas_margem|eot_notif_lidas)/.test(String(p||''));}
+// sem o aviso «Gravado»: leituras feitas por RPC (POST) e gravações com estado próprio no ecrã
+function _retry_silencio(p){return /^\/(precos_ref|rpc\/inscricoes_ranking|rpc\/encomendas_reservas|comissoes_fecho|fichas_margem|eot_notif_lidas)/.test(String(p||''));}
 let _tgT=null;function toastGravado(m){clearTimeout(_tgT);_tgT=setTimeout(()=>{try{toast(m==='DELETE'?'Apagado':'Gravado')}catch(e){}},250);}
 const LINHA_LABELS={motorrad:'Motorrad',auto:'Equipa Teste'};
 const LINHA_ICONS={motorrad:'\u{1F3CD}',auto:'\u{1F697}'};
@@ -5702,13 +5703,16 @@ function renderNotificacoes(){return`<div class="app-layout"><div class="main-pa
     ${areaTabs()}
     <div class="content"><div class="sec-wrap">${notifView()}</div></div></div></div>`;}
 function renderVNotif(){return`<div class="app-layout"><div class="main-panel" style="width:100%">
-  <div class="hdr"><button class="hdr-back" data-action="back-to-list">←</button><div class="hdr-accent"></div><div class="hdr-title">Notificações</div>
+  <div class="hdr"><button class="hdr-back" data-action="back-to-list">←</button><div class="hdr-accent"></div><div class="hdr-title">EOTs · indicações</div>
     <button class="hdr-btn hdr-ic" data-action="nt-atualizar" title="Atualizar" aria-label="Atualizar">${ico('refresh')}</button></div>
   <div class="content"><div class="nt-pad">${notifView()}</div></div></div></div>`;}
+// EOTs à espera do vendedor: contratos a contactar + contratos com indicação dos financeiros por ler (cada contrato conta uma vez)
+function vEotEspera(){const s=new Set(eotMeus().filter(eotPrecisaAcao).map(x=>String(x.contrato)));
+  if(!isAdmin())notifLista().forEach(n=>s.add(String(n.contrato)));return s.size;}
 function vPendentes(){const al=calcAlerts(recsInContext());const eot=eotMeus().filter(eotPrecisaAcao).length;
   const recont=recontLista().length;
   const notif=isAdmin()?0:notifLista().length;
-  const grupos=al.filter(a=>!String(a.id).startsWith('funil_')).length+(eot?1:0)+(recont?1:0)+(notif?1:0);
+  const grupos=al.filter(a=>!String(a.id).startsWith('funil_')).length+((eot||notif)?1:0)+(recont?1:0);
   const contactar=recsInContext().filter(r=>FUNIL.includes(r.status)&&funilAtrasado(r)).length;
   return{al,eot,recont,notif,grupos,contactar,total:grupos+contactar};}
 function vEntregasSemana(){const h=new Date();h.setHours(0,0,0,0);const lim=new Date(h);lim.setDate(lim.getDate()+7);
@@ -5808,8 +5812,7 @@ function vHoje(){
   const tRows=[
     ...tarefas.map(a=>linhaT('alert-filter',`data-alert="${a.id}" data-ids="${a.ids.join(',')}"`,a.id,esc(a.label))),
     P.recont?linhaT('sidebar-filter','data-status="Perdido:recont"','recont',`<b>${P.recont}</b> perdido${P.recont!==1?'s':''} para re-contactar (6 meses)`):'',
-    P.notif?linhaT('go-vnotif','','notif',`<b>${P.notif}</b> indicaç${P.notif!==1?'ões':'ão'} dos financeiros nas EOTs à tua espera`):'',
-    P.eot?linhaT('go-veot','','eot',`<b>${P.eot}</b> EOT${P.eot!==1?'s':''} a precisar de contacto`):'',
+    (P.eot||P.notif)?linhaT(P.notif?'go-vnotif':'go-veot','','eot','EOTs: '+[P.notif?`<b>${P.notif}</b> indicaç${P.notif!==1?'ões':'ão'} dos financeiros por ler`:'',P.eot?`<b>${P.eot}</b> contrato${P.eot!==1?'s':''} a contactar`:''].filter(Boolean).join(' · ')):'',
   ].filter(Boolean);
   const cRow=r=>{const desde=r.alert_date?('desde '+fmtDate(r.alert_date)):(r.status_updated_at?('sem mexer há '+vDiasDesde(r.status_updated_at)+' d'):'');
     const tel=r.contacto?String(r.contacto).trim():'';const sub=[[r.model,r.version].filter(Boolean).join(' '),desde].filter(Boolean).join(' · ');
@@ -5839,25 +5842,22 @@ function vHoje(){
 }
 function vSidebarHTML(A){
   const c=statusCounts();const P=vPendentes();const nFun=(c['Quente']||0)+(c['Morno']||0)+(c['Frio']||0);const vend=!isAdmin();
+  // um número vermelho = uma coisa à espera do vendedor, contada uma só vez; as contagens ficam a cinzento
+  const stockOn=V_STOCK.some(x=>x[0]===A),arqOn=A==='Retail'||String(A||'').startsWith('Perdido');
   const nav=`<div class="sidebar-nav vnav">
       ${vNavItem({act:'sidebar-filter',status:'_hoje',ic:'🏠',lb:'Hoje',on:A==='_hoje',badge:P.total||''})}
-      <div class="vnav-sec">Negócios</div>
+      <div class="vnav-sec">Vender</div>
       ${vNavItem({act:'sidebar-filter',status:'Funil',ic:'🔻',lb:'Funil',n:nFun,on:A==='Funil'})}
       ${vNavItem({act:'sidebar-filter',status:'Carteira',ic:'📦',lb:'Carteira',n:c['Carteira']||0,on:A==='Carteira'})}
-      ${vNavItem({act:'sidebar-filter',status:'Retail',ic:'✅',lb:'Retail',n:c['Retail']||0,on:A==='Retail'})}
-      ${vNavItem({act:'sidebar-filter',status:'Perdido',ic:'✕',lb:'Perdidos',n:c['Perdido']||0,on:A==='Perdido'})}
+      ${vend?vNavItem({act:'go-ficha',ic:'🧮',lb:'Ficha de margem',on:A==='ficha'&&!S.fmNeg}):''}
+      ${vend?vNavItem({act:'go-vstock',ic:'🏍️',lb:'Stock',on:stockOn}):''}
       <div class="vnav-sec">Clientes</div>
-      ${vNavItem({act:'go-veot',ic:'🔁',lb:'EOTs',on:A==='veot',n:eotMeus().filter(x=>x.no_mapa!==false&&!EOT_FECHO.includes(x.fase)).length||'',badge:P.eot||''})}
-      ${vNavItem({act:'go-vnotif',ic:'🔔',lb:'Notificações',on:A==='vnotif',badge:P.notif||''})}
+      ${vNavItem({act:'go-veot',ic:'🔁',lb:'EOTs',on:A==='veot'||A==='vnotif',n:eotMeus().filter(x=>x.no_mapa!==false&&!EOT_FECHO.includes(x.fase)).length||'',badge:vEotEspera()||''})}
+      ${vNavItem({act:'sidebar-filter',status:'Retail',ic:'✅',lb:'Vendidos e perdidos',on:arqOn})}
+      ${vend?(eventosAtivos()||[]).map(evA=>vNavItem({act:'go-evento',id:evA.id,on:A==='evento'&&S.eventoSel===evA.id,ic:'🎟️',lb:esc(evA.nome),n:(S.inscricoes||[]).filter(i=>i.evento_id===evA.id).length})).join(''):''}
       ${vend?`<div class="vnav-sec">O meu mês</div>
       ${vNavItem({act:'go-vcom',ic:'💶',lb:'Comissões',on:A==='vcom'})}
-      <div class="vnav-sec">Ferramentas</div>
-      ${vNavItem({act:'go-ficha',ic:'🧮',lb:'Ficha de margem',on:A==='ficha'&&!S.fmNeg})}
-      ${vNavItem({act:'go-vencomendas',ic:'🏭',lb:'Stock BMW Novas',on:A==='vencomendas'})}
-      ${vNavItem({act:'go-vstockeq',ic:'🧥',lb:'Stock equipamento / lifestyle',on:A==='vstockeq'})}
-      ${vNavItem({act:'go-stock-vend',ic:'🏍️',lb:'Stock usadas / demos',on:A==='stockvend'})}
-      ${vNavItem({act:'go-escala',ic:'📅',lb:'Escala',on:A==='escala'})}
-      ${(eventosAtivos()||[]).map(evA=>vNavItem({act:'go-evento',id:evA.id,on:A==='evento'&&S.eventoSel===evA.id,ic:'🎟️',lb:esc(evA.nome),n:(S.inscricoes||[]).filter(i=>i.evento_id===evA.id).length})).join('')}`:''}
+      ${vNavItem({act:'go-escala',ic:'📅',lb:'Escala',on:A==='escala'})}`:''}
     </div>`;
   return`<div class="m-overlay ${S.sidebarOpen?'show':''}" data-action="toggle-sidebar"></div>
   <div class="sidebar ${S.sidebarOpen?'':'closed'}">
@@ -5886,17 +5886,32 @@ function vSidebarHTML(A){
 function vBottomNav(A){
   const P=vPendentes();
   const mob=(ic,lb,act,status,on,badge)=>`<button class="vbn-i ${on?'on':''}" data-action="${act}"${status?` data-status="${status}"`:''}><span class="vbn-ic">${icE(ic)}${badge?`<i>${badge}</i>`:''}</span><span>${lb}</span></button>`;
-  const outro=!['_hoje','Funil','Carteira','veot'].includes(A);
+  const outro=!['_hoje','Funil','Carteira','veot','vnotif'].includes(A);
   return`<nav class="vbn">
     ${mob('🏠','Hoje','sidebar-filter','_hoje',A==='_hoje',P.total>0?(P.total>99?'99+':P.total):'')}
     ${mob('🔻','Funil','sidebar-filter','Funil',A==='Funil')}
     ${mob('📦','Carteira','sidebar-filter','Carteira',A==='Carteira')}
-    ${mob('🔁','EOTs','go-veot','',A==='veot',P.eot||'')}
+    ${mob('🔁','EOTs','go-veot','',A==='veot'||A==='vnotif',vEotEspera()||'')}
     ${mob('☰','Mais','open-sidebar','',outro)}
   </nav>`;
 }
 // Páginas do vendedor (Entregas, Comissões, EOTs, Stock, Ficha, Escala, Evento) passam a ter o mesmo menu
 const V_SHELL={vnotif:'vnotif',vencomendas:'vencomendas',vstockeq:'vstockeq',ventregas:'ventregas',vcom:'vcom',veot:'veot',stockvend:'stockvend',ficha:'ficha',escala:'escala',evento:'evento'};
+const V_STOCK=[['vencomendas','go-vencomendas','Novas BMW','Novas','🏭'],['stockvend','go-stock-vend','Usadas e demos','Usadas','🏍️'],['vstockeq','go-vstockeq','Equipamento','Equip.','🧥']];
+function vStockLembrar(sc){try{localStorage.setItem('bm_v_stock',sc);}catch(e){}}
+function vIrStock(sc){vStockLembrar(sc);
+  if(sc==='stockvend'){setState({loading:true});Promise.all([loadStockPublico(),loadNormaPublico()]).then(()=>setState({screen:'stockvend',loading:false}));return;}
+  if(sc==='vstockeq'){setState({screen:'vstockeq',seqMsg:''});return;}
+  S.encLoaded=false;setState({screen:'vencomendas',encMsg:'',sidebarOpen:false});}
+function vStockUltimo(){let u='';try{u=localStorage.getItem('bm_v_stock')||'';}catch(e){}return V_STOCK.some(x=>x[0]===u)?u:'vencomendas';}
+// separadores no topo do ecrã (o mesmo desenho das áreas dos financeiros e da secretaria)
+function vTabsHTML(itens,aria){return`<nav class="top-tabs" aria-label="${esc(aria)}">${itens.map(t=>`<button class="top-tab ${t.on?'on':''}" data-action="${t.act}"${t.attrs||''}${t.on?' aria-current="page"':''}>${t.ic?icE(t.ic):''}<span class="t-longo">${esc(t.lb)}</span><span class="t-curto">${esc(t.cu||t.lb)}</span>${t.n?` <span class="sec-tab-n${t.mut?' mut':''}">${t.n}</span>`:''}</button>`).join('')}</nav>`;}
+function vTabsDoEcra(A){
+  if(V_STOCK.some(x=>x[0]===A))return vTabsHTML(V_STOCK.map(([sc,act,lb,cu,ic])=>({act,lb,cu,ic,on:A===sc})),'Stock');
+  if(A==='veot'||A==='vnotif'){const nC=eotMeus().filter(eotPrecisaAcao).length,nI=notifLista().length;
+    return vTabsHTML([{act:'go-veot',lb:'Contratos',ic:'🔁',on:A==='veot',n:nC},{act:'go-vnotif',lb:'Indicações dos financeiros',cu:'Indicações',ic:'🔔',on:A==='vnotif',n:nI}],'EOTs');}
+  return'';
+}
 function vEnvolver(html,A){
   if(isAdmin()||typeof html!=='string')return html;
   const m=html.match(/^\s*<div class="app-layout">\s*<div class="main-panel" style="width:100%">/);
@@ -5905,6 +5920,9 @@ function vEnvolver(html,A){
   body=body.replace(/<button class="hdr-back" data-action="[^"]*">←<\/button>/,'<button class="hamburger" data-action="open-sidebar" aria-label="Abrir menu"><span></span><span></span><span></span></button>');
   // atalhos repetidos no cabeçalho saem: estão no menu
   body=body.replace(/<button class="hdr-btn" data-action="(go-vcom|go-ventregas|go-password|logout)"[^>]*>[\s\S]*?<\/button>/g,'');
+  const tabs=vTabsDoEcra(A);
+  if(tabs){if(V_STOCK.some(x=>x[0]===A))body=body.replace(/<div class="hdr-title">[\s\S]*?<\/div>/,'<div class="hdr-title">Stock</div>');
+    body=body.replace('<div class="content">',tabs+'<div class="content">');}
   return'<div class="app-layout">'+vSidebarHTML(A)+'<div class="main-panel">'+vBottomNav(A)+body;
 }
 function renderList(){
@@ -5953,6 +5971,7 @@ function renderList(){
         <div class="cards">${g.records.map(r=>renderCard(r)).join('')}</div>`).join(''):
       (()=>{const lim=S.renderLimit||50;const shown=f.slice(0,lim);let html=`<div class="cards">${shown.map(r=>renderCard(r)).join('')}</div>`;if(f.length>lim)html+=`<div style="padding:8px 16px 20px"><button class="btn btn-outline btn-block" data-action="load-more">Carregar mais (${f.length-lim} restantes)</button></div>`;return html})();
   const _A=S.alertFilter?'_hoje':(['Funil','Carteira','Retail'].includes(grp)?grp:sf);
+  const arqTabs=(grp==='Retail'||grp==='Perdido')&&!S.alertFilter&&!emHoje?vTabsHTML([{act:'sidebar-filter',attrs:' data-status="Retail"',lb:'Retail',ic:'✅',on:grp==='Retail',n:c['Retail']||0,mut:true},{act:'sidebar-filter',attrs:' data-status="Perdido"',lb:'Perdidos',ic:'✕',on:grp==='Perdido',n:c['Perdido']||0,mut:true}],'Vendidos e perdidos'):'';
   return`
   <div class="app-layout">
 ${vSidebarHTML(_A)}
@@ -5965,6 +5984,7 @@ ${vSidebarHTML(_A)}
     ${S.alertFilter?`<button class="hdr-btn" data-action="sidebar-filter" data-status="_hoje">✕ Fechar alerta</button>`:''}
     <button class="hdr-btn hdr-ic" data-action="refresh" ${S.loading?'disabled':''} aria-label="Atualizar" title="Atualizar">${S.loading?'…':ico('refresh')}</button>
   </div>
+  ${arqTabs}
   <div class="content">
     <div class="search-wrap"><input class="search-input" id="f-search" placeholder="${emHoje?'Procurar em todos os teus negócios…':'Pesquisar cliente, modelo, matrícula...'}" value="${esc(S.search)}"></div>
     ${emHoje&&!procura?vHoje():`
@@ -9766,7 +9786,7 @@ function bindEvents(){
       case'export-tudo':exportarTudo();break;
       case'export-comissoes':exportComissoes();break;
       case'go-escala':{setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false})).catch(e=>setState({error:e.message,loading:false,screen:'escala'}));break}
-      case'go-stock-vend':{setState({loading:true});Promise.all([loadStockPublico(),loadNormaPublico()]).then(()=>setState({screen:'stockvend',loading:false}));break}
+      case'go-stock-vend':vIrStock('stockvend');break;
       case'go-evento':{setState({loading:true});const id=el.dataset.id?parseInt(el.dataset.id):null;const ev=id?(S.eventos||[]).find(e=>e.id===id):eventoAtual();S.eventoSel=ev?ev.id:null;recarregarEvento().then(()=>setState({screen:'evento',loading:false,inscAdding:false}));break}
       case'evento-voltar':setState({screen:isAdmin()?'dashboard':'list'});break;
       case'evento-sel-vend':{const id=parseInt(el.dataset.id);S.eventoSel=id;loadRanking(id).then(()=>render());break;}
@@ -9808,8 +9828,9 @@ function bindEvents(){
       case'sec-tab':setState({secTab:el.dataset.t,secAberto:null});break;
       case'sec-mes-nav':{const ms=secMesesDisp();const cur=(S.secMes&&ms.includes(S.secMes))?S.secMes:curYM();const i=ms.indexOf(cur)+Number(el.dataset.d);if(i>=0&&i<ms.length)setState({secMes:ms[i],secAberto:null});break;}
       case'sec-csv':secCSV();break;
-      case'go-vstockeq':setState({screen:'vstockeq',seqMsg:''});break;
-      case'go-vencomendas':S.encLoaded=false;setState({screen:'vencomendas',encMsg:'',sidebarOpen:false});break;
+      case'go-vstockeq':vIrStock('vstockeq');break;
+      case'go-vstock':vIrStock(vStockUltimo());break;
+      case'go-vencomendas':vIrStock('vencomendas');break;
       case'seq-f':{const F=Object.assign({},S.seqF||{});F[el.dataset.k]=el.dataset.v;if(el.dataset.k==='tab')F.cat='';setState({seqF:F,seqLim:80,seqVender:null});break;}
       case'seq-vender':{const id=el.dataset.id||null;const keep=el.dataset.keep&&S.seqVenda;setState({seqVender:id,seqVenda:id?(keep?Object.assign({},S.seqVenda,{preco:''}):{data:new Date().toISOString().slice(0,10),qtd:1}):null,seqMsg:''});break;}
       case'seq-preco-set':{const V=Object.assign({},S.seqVenda||{},{preco:String(el.dataset.v).replace('.',',')});delete V.pct;S.seqVenda=V;render();break;}

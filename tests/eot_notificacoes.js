@@ -60,7 +60,7 @@ const lista=p=>p.evaluate(()=>notifLista().map(x=>x.contrato));
  const bea=await abrir(b,'f1');r.beaInicio=await lista(bea);
  const fel=await abrir(b,'v1');r.felInicio=await lista(fel);
  r.felHoje=await fel.evaluate(()=>[...document.querySelectorAll('.vh-row')].map(x=>x.textContent.replace(/\s+/g,' ').trim()));
- r.felMenu=await fel.evaluate(()=>{const n=[...document.querySelectorAll('.vnav-item')].find(x=>/Notificações/.test(x.textContent));return n?n.textContent.replace(/\s+/g,' ').trim():'';});
+ r.felMenu=await fel.evaluate(()=>{const n=[...document.querySelectorAll('.vnav-item')].find(x=>/EOTs/.test(x.textContent));return n?n.textContent.replace(/\s+/g,' ').trim():'';});
  const chefe=await abrir(b,'c1');r.chefeInicio=await lista(chefe);
  await chefe.evaluate(()=>{S.screen='dashboard';S.gppSec='notificacoes';render();});await chefe.waitForTimeout(300);
  r.chefeEquipa=await chefe.$$eval('.nt-eqr',x=>x.map(e=>({t:e.textContent.replace(/\s+/g,' ').trim(),tarde:e.classList.contains('tarde')})));
@@ -90,7 +90,7 @@ const lista=p=>p.evaluate(()=>notifLista().map(x=>x.contrato));
   'número no separador "Notificações", no título da página e marca 🔔 na lista de EOTs':/Notificações.*\s2$/.test(r.franTab)&&/^\(2\) /.test(r.franTitulo)&&r.franBanner&&r.franMarca===2,
   'lista mostra quem, EOT, cliente e texto':r.franLinhas.length===2&&/Chefe GPP/.test(r.franLinhas[0])&&/EOT E3 · Cliente Três/.test(r.franLinhas[0])&&/Felipe Gomes/.test(r.franLinhas[1])&&/Preciso dos valores/.test(r.franLinhas[1]),
   '«Lido» tira só a quem carrega (fica gravado)':JSON.stringify(r.franDepoisLido)==='["E3"]'&&r.lidas.length===1&&r.lidas[0].user_id==='f2'&&r.lidas[0].contrato==='E1'&&r.lidas[0].hist_id===1&&JSON.stringify(r.beaInicio)==='["E3","E1"]',
-  'vendedor: recebe a resposta da financeira, no "A tratar" e no menu':JSON.stringify(r.felInicio)==='["E2"]'&&r.felHoje.some(t=>/1 indicação dos financeiros nas EOTs/.test(t))&&/Notificações\s*1/.test(r.felMenu),
+  'vendedor: recebe a resposta da financeira, no "A tratar" e no menu':JSON.stringify(r.felInicio)==='["E2"]'&&r.felHoje.some(t=>/EOTs: 1 indicação dos financeiros por ler/.test(t))&&/^EOTs\s*1$/.test(r.felMenu),
   'chefe: sem notificações próprias; vê as conversas penduradas (a lida pelo Francisco não)':r.chefeInicio.length===0&&r.chefeEquipa.length===2&&/Cliente Dois.*à espera de Felipe Gomes/.test(r.chefeEquipa[0].t)&&/Cliente Três.*à espera de financeiros/.test(r.chefeEquipa[1].t)&&r.chefeEquipa[1].tarde&&!r.chefeEquipa[0].tarde,
   'abrir a partir da notificação mostra o aviso na EOT':r.beaModal.aberto==='E3'&&/Por responder: indicação de Chefe GPP/.test(r.beaModal.banner),
   'responder tira a notificação a quem respondeu':JSON.stringify(r.beaDepois)==='["E1"]',
