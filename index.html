@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-25-c">
+<meta name="app-version" content="2026-10-25-d">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2228,6 +2228,69 @@ body.a-gravar [data-action]{cursor:progress}
 .gpp-delta.up{color:var(--green)}.gpp-delta.down{color:var(--red)}.gpp-delta.eq{color:var(--text3)}
 .gpp-delta-nota{padding:0 14px 10px;font-size:11px;color:var(--text3)}
 @media(max-width:760px) and (pointer:coarse){.vh-novo .field-input{font-size:16px}}
+
+/* ---- Reunião semanal (chefe) ---- */
+.reu{padding:4px 16px 24px;max-width:1100px}
+.reu-topo{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 12px}
+.reu-topo>div:first-child{flex:1;min-width:220px}
+.reu-t{font-size:20px;font-weight:800;letter-spacing:-.3px}
+.reu-sub{font-size:12px;color:var(--text3);margin-top:2px}
+.reu-carga{font-size:12px;color:var(--text3);margin:0 0 10px}
+.reu-fim{color:var(--green);font-weight:600}
+.reu-agenda{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--text2);margin:0 0 12px}
+.reu-agenda small{color:var(--text3)}
+.reu-bloco{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);box-shadow:var(--elev1);padding:14px 16px;margin:0 0 12px}
+.reu-bh{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.reu-bh h3{flex:1;margin:0;font-size:15px;font-weight:700}
+.reu-bn{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--surface2);color:var(--text2);font-size:12px;font-weight:700;flex-shrink:0}
+.reu-bmin{font-size:12px;font-weight:600;color:var(--text3)}
+.reu-frases{margin:0 0 10px;padding-left:18px;font-size:13px;line-height:1.55}
+.reu-frases li{margin:3px 0}
+.reu-priv{display:inline-flex;align-items:center;height:18px;padding:0 6px;margin-right:4px;border-radius:var(--rp);background:var(--purple-bg);color:var(--purple);font-size:11px;font-weight:700}
+.reu-corpo{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:10px}
+.reu-lista{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;min-width:0}
+.reu-lt{padding:8px 10px;background:var(--surface2);color:var(--text2);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.reu-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-top:1px solid var(--border);font-size:13px}
+.reu-row[data-action]{cursor:pointer}.reu-row[data-action]:hover{background:var(--surface2)}
+.reu-rn{flex:0 1 auto;min-width:0;max-width:45%;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.reu-rs{flex:1;min-width:0;color:var(--text3);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.reu-rv{font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.reu-vazio{padding:10px;font-size:12px;color:var(--text3)}
+.reu-usada.velha .reu-rs b{color:var(--red)}
+.reu-preco{display:flex;flex-direction:column;gap:2px;width:96px;flex-shrink:0;font-size:11px;font-weight:600;color:var(--text3)}
+.reu-preco input{padding:5px 8px;font-size:13px;text-align:right;font-variant-numeric:tabular-nums}
+.reu-perg{margin-top:10px;padding:0 0 6px;border-left:3px solid var(--orange);border-radius:var(--r);background:var(--orange-bg)}
+.reu-perg .reu-lt{background:none;color:var(--orange)}
+.reu-perg ul{margin:0;padding:0 12px 0 28px;font-size:13px;line-height:1.5}
+.reu-comp{display:flex;flex-direction:column;gap:6px}
+.reu-c{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r);font-size:13px}
+.reu-c.atras{border-color:var(--red)}
+.reu-c.feito .reu-c-t{color:var(--text3)}.reu-c.feito .reu-c-tx{text-decoration:line-through}
+.reu-c-ok{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:26px;height:26px;border:2px solid var(--text3);border-radius:7px;background:var(--surface);color:var(--green);font-weight:800}
+.reu-c.feito .reu-c-ok{border-color:var(--green);background:var(--green-bg)}
+.reu-c-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.reu-c-t small{font-size:11px;color:var(--text3)}
+.reu-c.atras small{color:var(--red)}
+.reu-c-x{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border:0;border-radius:var(--r);background:none;color:var(--text3)}
+.reu-c-x:hover{background:var(--surface2);color:var(--red)}
+.reu-cform{display:grid;grid-template-columns:160px minmax(0,1fr) 150px auto;gap:8px;align-items:center;margin-top:12px}
+.reu-resumo{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.reu-resumo textarea{font-family:inherit;font-size:12px;line-height:1.5}
+.reu-resumo .btn{align-self:flex-start}
+.reu-conduzir .reu-bloco.passo{padding:18px 20px}
+.reu-relogios{display:flex;gap:10px}
+.reu-rel{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--text2);font-variant-numeric:tabular-nums}
+#reu-total.over,#reu-passo-t.over{color:var(--red)}
+.reu-passos{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.reu-pt{width:30px;height:30px;border:1.5px solid var(--border2);border-radius:50%;background:var(--surface);color:var(--text2);font-size:12px;font-weight:700}
+.reu-pt.feito{background:var(--surface2);color:var(--text3)}
+.reu-pt.on{background:var(--orange);border-color:var(--orange);color:#fff}
+:root[data-theme="dark"] .reu-pt.on{color:#0B1220}
+.reu-ptempo{margin:0 0 8px;font-size:12px;color:var(--text3)}
+.reu-ptempo b{color:var(--text2);font-variant-numeric:tabular-nums}
+.reu-nav{display:flex;justify-content:space-between;gap:10px;margin-top:4px}
+.reu-nav .btn{display:inline-flex;align-items:center;gap:6px}
+@media(max-width:700px){.reu{padding:4px 10px 90px}.reu-cform{grid-template-columns:1fr}.reu-corpo{grid-template-columns:1fr}.reu-rn{max-width:none}.reu-usada{flex-wrap:wrap}.reu-nav .btn span{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
 </style>
 </head>
 <body>
@@ -2273,7 +2336,7 @@ const ICO={
   search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
   moon:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
   sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
-  chevd:'<path d="m6 9 6 6 6-6"/>',chevr:'<path d="m9 18 6-6-6-6"/>',chevl:'<path d="m15 18-6-6 6-6"/>',
+  chevd:'<path d="m6 9 6 6 6-6"/>',chevr:'<path d="m9 18 6-6-6-6"/>',chevl:'<path d="m15 18-6-6 6-6"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   x:'<path d="M18 6 6 18M6 6l12 12"/>',plus:'<path d="M12 5v14M5 12h14"/>',
   phone:'<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>',
   user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
@@ -2293,10 +2356,11 @@ const ICO={
   factory:'<path d="M2 20V9l6 4V9l6 4V4h6v16z"/><path d="M2 20h20M7 16h2M12 16h2M17 16h2"/>'
 };
 function ico(n,cls){const p=ICO[n];if(!p)return'';return`<svg class="ic${cls?' '+cls:''}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${p}</svg>`;}
-const EMO_IC={'🔔':'bell','🏭':'factory','🏠':'home','📋':'inbox','✅':'check','🔻':'filter','📦':'package','🔁':'repeat','☰':'more','🎯':'target','🏍️':'bike','🏍':'bike','🧥':'shirt','⭐':'star','🎟️':'ticket','🎟':'ticket','📅':'calendar','🧮':'calc','💰':'coins','💶':'coins','⬇️':'download','⬇':'download','🚚':'truck','✕':'xcircle','❌':'xcircle','🔑':'key','🚪':'logout','🤝':'store','📉':'trend','🏁':'flag','❤️':'heart','🏆':'trophy','⚠️':'alert','📐':'chart','🧾':'receipt','🔒':'lock'};
+const EMO_IC={'👥':'user','🔔':'bell','🏭':'factory','🏠':'home','📋':'inbox','✅':'check','🔻':'filter','📦':'package','🔁':'repeat','☰':'more','🎯':'target','🏍️':'bike','🏍':'bike','🧥':'shirt','⭐':'star','🎟️':'ticket','🎟':'ticket','📅':'calendar','🧮':'calc','💰':'coins','💶':'coins','⬇️':'download','⬇':'download','🚚':'truck','✕':'xcircle','❌':'xcircle','🔑':'key','🚪':'logout','🤝':'store','📉':'trend','🏁':'flag','❤️':'heart','🏆':'trophy','⚠️':'alert','📐':'chart','🧾':'receipt','🔒':'lock'};
 // Enter no registo rápido regista; Esc fecha os painéis em linha (Hoje e ficha)
 document.addEventListener('keydown',e=>{if(typeof S==='undefined')return;const t=e.target;
   if(e.key==='Enter'&&t&&t.dataset&&t.dataset.vhnovo){e.preventDefault();vhNovoRegistar();return;}
+  if(e.key==='Enter'&&t&&t.id==='reu-c-texto'){e.preventDefault();const b=document.querySelector('[data-action="reu-comp-add"]');reuCompAdd(b?b.dataset.p:'');return;}
   if(e.key==='Escape'&&S.vhAcao){S.vhAcao=null;render();return;}
   if(e.key==='Escape'&&S.fmGuardar&&!S.eotAberto){S.fmGuardar=false;render();}});
 document.addEventListener('keydown',e=>{const t=e.target;if((e.key==='Enter'||e.key===' ')&&t&&t.matches&&t.matches('[data-action][tabindex]:not(button):not(a):not(input):not(select):not(textarea)')){e.preventDefault();t.click();}});
@@ -2344,7 +2408,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-25-c';
+const APP_VERSION='2026-10-25-d';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -6936,7 +7000,7 @@ function travar(nome){const fn=window[nome];if(typeof fn!=='function'||fn._trava
   const w=async function(...a){let k;try{k=nome+'|'+JSON.stringify(a);}catch(_){k=nome;}if(_emCurso.has(k))return;_emCurso.add(k);document.body.classList.add('a-gravar');
     try{return await fn.apply(this,a);}finally{_emCurso.delete(k);if(!_emCurso.size)document.body.classList.remove('a-gravar');}};
   w._travado=true;window[nome]=w;}
-['mrConfirmar','mrRecusar','addStockMotaFull','addStockMota','comissaoAdd','premioAdd','saveInscricaoNova','saveEventoNovo','saveLead','saveAutomatricula','saveVendaDireta','saveRecord','deleteRecord','seqConfirmar','seqRegistar','seqForaRegistar','recontReabrir','recontAdiar','eotConfirmar','eotGuardar','eotModalGuardar','eotAtribuirLote','eotCriarNegocio','eotComentar','eqAdd','eqColar','comFechoToggle','negComentar','vhNovoRegistar','vhContactei','vhAdiar','vhPerdido','fmGuardarNovo','fmAssociar'].forEach(n=>{try{travar(n);}catch(e){}});
+['mrConfirmar','mrRecusar','addStockMotaFull','addStockMota','comissaoAdd','premioAdd','saveInscricaoNova','saveEventoNovo','saveLead','saveAutomatricula','saveVendaDireta','saveRecord','deleteRecord','seqConfirmar','seqRegistar','seqForaRegistar','recontReabrir','recontAdiar','eotConfirmar','eotGuardar','eotModalGuardar','eotAtribuirLote','eotCriarNegocio','eotComentar','eqAdd','eqColar','comFechoToggle','negComentar','vhNovoRegistar','vhContactei','vhAdiar','vhPerdido','fmGuardarNovo','fmAssociar','reuCompAdd','reuCompFeito','reuCompApagar'].forEach(n=>{try{travar(n);}catch(e){}});
 // ---- Teclado: tudo o que é clicável recebe foco e abre com Enter/Espaço; campos ganham nome para leitores de ecrã ----
 function tecladoAplicar(){
   const raiz=document.getElementById('app');if(!raiz)return;
@@ -6971,6 +7035,275 @@ async function comFechoToggle(ym){
   }catch(e){alert('Erro: '+erroTexto(e)+(/comissoes_fecho/.test(String(e.message))?'\n\nFalta correr o SQL comissoes_fecho.sql no Supabase.':''));await loadComFecho();render();}
 }
 document.addEventListener('click',e=>{if(S.pdfMenu&&!(e.target.closest&&e.target.closest('.cf-pdfwrap'))){S.pdfMenu=false;renderSeguro();}});
+
+// ---- Reunião semanal (só o chefe): prepara os números, guia ponto a ponto com o tempo de cada um e regista compromissos ----
+// Terças às 15:00, 20 minutos. Números desde a reunião anterior (terça passada às 15:00) até agora.
+const REU_PASSOS=[
+  {k:'compromissos',lb:'Compromissos da semana passada',min:2},
+  {k:'resultados',lb:'Resultados contra o objetivo',min:3},
+  {k:'carteira',lb:'Carteira e entregas',min:3},
+  {k:'eots',lb:'EOTs',min:2},
+  {k:'stock',lb:'Stock: novas e usadas',min:4},
+  {k:'equip',lb:'Equipamento: dinâmicas comerciais',min:3},
+  {k:'eventos',lb:'Eventos',min:2},
+  {k:'fecho',lb:'Compromissos e resumo',min:1}];
+const REU_DIA=2,REU_HORA=15,REU_DURACAO=20;
+// reunião desta semana: de segunda a quarta é a de terça (na quarta ainda se pode fazer/rever a da véspera, ex.: feriado);
+// de quinta a domingo já se prepara a da terça seguinte
+function reuData(){const d=new Date();const dw=d.getDay();let add=(REU_DIA-dw+7)%7;if(dw===(REU_DIA+1)%7)add=-1;d.setDate(d.getDate()+add);d.setHours(REU_HORA,0,0,0);return d;}
+function reuISO(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function reuJanela(){const ini=new Date(reuData());ini.setDate(ini.getDate()-7);return{ini,fim:new Date()};}
+function reuNaJanela(v,J){if(!v)return false;const s=String(v);const t=new Date(s.length<=10?s+'T12:00:00':s).getTime();return t>=J.ini.getTime()&&t<=J.fim.getTime();}
+function reuDM(v){const m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})/);return m?`${m[3]}/${m[2]}`:'';}
+function reuEur(n){return Math.round(Number(n)||0).toLocaleString('pt-PT')+' €';}
+function reuMMSS(ms){const s=Math.max(0,Math.floor(ms/1000));return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;}
+function reuNome(id){if(!id)return'Equipa';const n=vendName(id);return n&&n!=='?'?String(n).split(/\s+/)[0]:'?';}
+function reuVendedores(){return (S.team||[]).filter(p=>p.role==='vendedor');}
+function reuEstado(){
+  const dia=reuISO(reuData());
+  if(!S.reu||S.reu.dia!==dia){let g=null;try{g=JSON.parse(localStorage.getItem('bm_reuniao')||'null');}catch(e){}
+    S.reu=g&&g.dia===dia?g:{dia,modo:'prep',passo:0,t0:null,tp:null};}
+  return S.reu;}
+function reuGuardar(){try{localStorage.setItem('bm_reuniao',JSON.stringify(S.reu));}catch(e){}}
+async function loadReuComp(){
+  try{S.reuComp=(await supabaseApi('GET','/reuniao_compromissos?select=*&order=criado_em.asc'))||[];S.reuCompErr='';}
+  catch(e){S.reuComp=[];const m=String((e&&e.message)||e);S.reuCompErr=/reuniao_compromissos|42P01|PGRST20[05]|schema cache/i.test(m)?'sem-sql':erroTexto(e);}
+}
+function reuCVals(){const C=Object.assign({texto:'',vend:'',prazo:''},S.reuC||{});
+  [['texto','reu-c-texto'],['vend','reu-c-vend'],['prazo','reu-c-prazo']].forEach(([k,id])=>{const el=document.getElementById(id);if(el)C[k]=el.value;});return C;}
+async function reuCompAdd(ponto){
+  const C=reuCVals();const texto=String(C.texto||'').trim();
+  if(!texto){S.reuC=C;toast('Escreve o compromisso antes de registar.','erro');return;}
+  const prox=new Date(reuData());prox.setDate(prox.getDate()+7);
+  const body={reuniao:reuISO(reuData()),vendedor_id:C.vend||null,ponto:ponto||null,texto,prazo:C.prazo||reuISO(prox)};
+  try{const r=await supabaseApi('POST','/reuniao_compromissos',body);const row=Array.isArray(r)&&r[0];
+    S.reuComp=[...(S.reuComp||[]),row||Object.assign({id:'tmp'+Date.now(),feito:false,criado_em:new Date().toISOString()},body)];
+    S.reuC={texto:'',vend:C.vend,prazo:C.prazo};
+    const el=document.getElementById('reu-c-texto');if(el){el.value='';el._valFoco='';}
+    render();setTimeout(()=>toast('Compromisso registado'),450);}
+  catch(e){S.reuC=C;toast('Não registei o compromisso: '+erroTexto(e),'erro');}
+}
+async function reuCompFeito(id){const c=(S.reuComp||[]).find(x=>String(x.id)===String(id));if(!c)return;const v=!c.feito;
+  const antes={feito:c.feito,feito_em:c.feito_em};Object.assign(c,{feito:v,feito_em:v?new Date().toISOString():null});render();
+  try{await supabaseApi('PATCH','/reuniao_compromissos?id=eq.'+encodeURIComponent(id),{feito:v,feito_em:c.feito_em});}
+  catch(e){Object.assign(c,antes);render();toast('Não gravei: '+erroTexto(e),'erro');}}
+async function reuCompApagar(id){const c=(S.reuComp||[]).find(x=>String(x.id)===String(id));if(!c)return;
+  if(!confirm(`Apagar o compromisso «${c.texto}»? Deixa de aparecer nas próximas reuniões.`))return;
+  try{await supabaseApi('DELETE','/reuniao_compromissos?id=eq.'+encodeURIComponent(id));S.reuComp=(S.reuComp||[]).filter(x=>x!==c);render();}
+  catch(e){toast('Não apaguei: '+erroTexto(e),'erro');}}
+// preço das usadas alterado na própria reunião
+function reuPrecoGuardar(el){const id=el.dataset.reuPreco,campo=el.dataset.campo;const raw=String(el.value||'').trim();const v=raw===''?null:numPT(raw);
+  if(raw!==''&&(v==null||!isFinite(v)||v<0)){el.classList.add('num-erro');toast('Valor inválido: escreve só o número (ex: 9 500).','erro');return;}
+  el.classList.remove('num-erro');const m=(S.stock||[]).find(x=>String(x.id)===String(id));if(m&&Number(m[campo])===v)return;
+  saveStockField(id,campo,v);}
+
+// ---------- dados de cada ponto ----------
+function reuDados(){
+  const J=reuJanela(),R=S.records||[],ym=curYM(),hoje=new Date(),hISO=reuISO(hoje);
+  const isN=r=>r.type==='MN'||r.type==='MD',isU=r=>r.type==='MU';
+  const d={J,ym,hISO};
+  // resultados
+  const ret=R.filter(r=>r.status==='Retail'&&retailYM(r)===ym);
+  d.rN=ret.filter(isN).length;d.rU=ret.filter(isU).length;
+  d.obj=(objEquipaGet(ym,'novas')||{}).objetivo||0;
+  const diasMes=new Date(hoje.getFullYear(),hoje.getMonth()+1,0).getDate();d.diasRest=diasMes-hoje.getDate();
+  d.ritmo=Math.round(d.rN/Math.max(1,hoje.getDate())*diasMes);
+  d.cartMes=R.filter(r=>r.status==='Carteira'&&r.mes1===ym);d.cN=d.cartMes.filter(isN).length;
+  d.dN=retailDelta(R,ym,isN);d.dU=retailDelta(R,ym,isU);
+  d.semana=R.filter(r=>r.status==='Retail'&&reuNaJanela(r.col_298,J));
+  const fech=Object.keys(S.comFecho||{}).filter(k=>S.comFecho[k]).sort().pop()||null;d.mesFechado=fech;
+  if(fech){const L=R.filter(r=>r.status==='Retail'&&retailYM(r)===fech&&comElegivel(r)&&r.type!=='MD').map(r=>margemDe(r.id)).filter(v=>v!=null);
+    d.mgTot=L.reduce((a,v)=>a+v,0);d.mgNeg=L.filter(v=>v<0).length;d.mgN=L.length;}
+  // carteira e entregas
+  const cart=R.filter(r=>r.status==='Carteira');const lim=new Date(hoje);lim.setDate(lim.getDate()+14);const limISO=reuISO(lim);
+  d.entregas=cart.map(r=>({r,e:entOf(r.id)||{}})).filter(x=>x.e.data_entrega&&String(x.e.data_entrega).slice(0,10)>=hISO&&String(x.e.data_entrega).slice(0,10)<=limISO).sort((a,b)=>String(a.e.data_entrega).localeCompare(String(b.e.data_entrega)));
+  d.atraso=cart.filter(r=>r.mes1&&r.mes1<ym);
+  d.semEnc=cart.filter(r=>r.type==='MN'&&!String(r.enc||'').trim()&&!String(r.chas||'').trim());
+  d.semChassis=cart.filter(r=>r.mes1&&r.mes1<=ym&&!String(r.chas||'').trim()&&r.type!=='MU');
+  d.pedidosMes=cart.filter(r=>r.mes1_pedido);
+  // EOTs
+  const eot=(S.eot||[]).filter(x=>x.no_mapa!==false&&!EOT_FECHO.includes(x.fase));
+  d.eot90=eot.filter(x=>(x.fase||'Por contactar')==='Por contactar'&&(()=>{const n=eotDias(x);return n!=null&&n<=90;})()).sort((a,b)=>String(a.data_fim).localeCompare(String(b.data_fim)));
+  d.eotSemResp=eot.filter(x=>!x.responsavel_id);
+  const th=notifThreads(),lidas=S.notifLidas||[];d.indPorLer={};
+  eot.forEach(x=>{if(!x.responsavel_id)return;const cs=th.get(String(x.contrato))||[];const u=cs[0];if(!u||notifLado(u.autor_role)!=='F')return;
+    if(lidas.some(l=>l.user_id===x.responsavel_id&&String(l.contrato)===String(x.contrato)&&Number(l.hist_id)>=Number(u.id)))return;
+    d.indPorLer[x.responsavel_id]=(d.indPorLer[x.responsavel_id]||0)+1;});
+  // stock novas e usadas
+  d.stUs=encStParaUs();
+  const encM=encResMapa();   // livres: sem cliente no ficheiro BMW nem negócio a correr na plataforma
+  d.novasStock=(S.enc||[]).filter(x=>encOrigemDe(x)==='aveiro'&&encLivre(x,encM)).map(x=>({x,dias:encDiasStock(x)})).filter(o=>o.dias!=null).sort((a,b)=>b.dias-a.dias);
+  d.usadas=(S.stock||[]).filter(m=>m.categoria!=='demo'&&m.estado!=='Vendida').map(m=>({m,dias:diasEmStock(m.data_rececao)})).sort((a,b)=>(b.dias||0)-(a.dias||0));
+  d.usadasValor=d.usadas.reduce((a,o)=>a+(Number(o.m.valor_anunciado)||0),0);
+  const dd=d.usadas.map(o=>o.dias).filter(v=>v!=null);d.usadasMedia=dd.length?Math.round(dd.reduce((a,v)=>a+v,0)/dd.length):null;
+  d.usadas90=d.usadas.filter(o=>(o.dias||0)>=90);
+  d.demos=(S.stock||[]).filter(m=>m.categoria==='demo'&&m.estado!=='Vendida').length;
+  // equipamento
+  d.eqSemana=(S.equip||[]).filter(l=>reuNaJanela(l.data,J));
+  d.eqFat=d.eqSemana.reduce((a,l)=>a+eqFaturado(l),0);
+  d.eqPorPessoa={};d.eqSemana.forEach(l=>{const k=l.vendedor_id||'';d.eqPorPessoa[k]=(d.eqPorPessoa[k]||0)+eqFaturado(l);});
+  d.eqMortoVend=d.eqSemana.filter(l=>eqEstadoNorm(l.estado_stock)==='morto').length;d.eqMoribVend=d.eqSemana.filter(l=>eqEstadoNorm(l.estado_stock)==='moribundo').length;
+  const se=S.stockEq||[];const q=x=>String(x.qualidade||'').toLowerCase();
+  d.eqMorto=se.filter(x=>q(x)==='morto');d.eqMorib=se.filter(x=>q(x)==='moribundo');
+  const val=x=>Number(x.custo_total)||((Number(x.custo_unit)||0)*(Number(x.qtd)||0));
+  d.eqMortoVal=d.eqMorto.reduce((a,x)=>a+val(x),0);d.eqMoribVal=d.eqMorib.reduce((a,x)=>a+val(x),0);
+  d.eqTop=[...d.eqMorto,...d.eqMorib].filter(x=>(Number(x.qtd)||0)>0).sort((a,b)=>val(b)-val(a)).slice(0,8).map(x=>({x,v:val(x)}));
+  // eventos
+  const ontem=new Date(hoje);ontem.setDate(ontem.getDate()-1);const oISO=reuISO(ontem);
+  d.eventos=(S.eventos||[]).filter(e=>e.ativo||(e.data&&String(e.data).slice(0,10)>=oISO)).sort((a,b)=>String(a.data||'9999').localeCompare(String(b.data||'9999')));
+  // compromissos
+  const C=S.reuComp||[],dia=reuISO(reuData());
+  d.compAnt=C.filter(c=>c.reuniao<dia&&(!c.feito||reuNaJanela(c.feito_em,J)));
+  d.compHoje=C.filter(c=>c.reuniao===dia);
+  return d;
+}
+
+// ---------- texto de cada ponto: frases, listas e perguntas ----------
+function reuBloco(k,d){
+  const row=(attrs,a,b,c)=>`<div class="reu-row"${attrs?' '+attrs:''}><span class="reu-rn">${a}</span><span class="reu-rs">${b||''}</span>${c!=null?`<span class="reu-rv">${c}</span>`:''}</div>`;
+  const lista=(tit,itens,vazio)=>`<div class="reu-lista"><div class="reu-lt">${tit}</div>${itens.length?itens.join(''):`<div class="reu-vazio">${vazio}</div>`}</div>`;
+  const negAttr=r=>`data-action="open-record-from-dash" data-id="${esc(r.id)}" role="button" tabindex="0"`;
+  const F=[],P=[];let corpo='';
+  if(k==='compromissos'){
+    if(S.reuCompErr==='sem-sql'){corpo='<div class="mg-aviso">Para guardar compromissos falta correr o SQL «2026-10-25_reuniao_compromissos» no Supabase.</div>';}
+    else{const ab=d.compAnt.filter(c=>!c.feito),feitos=d.compAnt.filter(c=>c.feito);const atras=ab.filter(c=>c.prazo&&c.prazo<d.hISO);
+      const nA=d.compAnt.length;F.push(nA?`<b>${feitos.length}</b> de ${nA} compromisso${nA!==1?'s':''} cumprido${nA!==1?'s':''}${atras.length?` · <b>${atras.length}</b> fora do prazo`:''}.`:'Sem compromissos das reuniões anteriores.');
+      corpo=d.compAnt.length?`<div class="reu-comp">${d.compAnt.map(reuCompHTML).join('')}</div>`:'';
+      atras.slice(0,2).forEach(c=>P.push(`${esc(reuNome(c.vendedor_id))}: o que impediu «${esc(c.texto)}»? Qual é a data nova?`));}
+  }else if(k==='resultados'){
+    const pct=d.obj?Math.round(d.rN/d.obj*100):null;
+    F.push(d.obj?`Retail novas: <b>${d.rN}</b> de ${d.obj} (${pct}%)${d.rN<d.obj?` — faltam <b>${d.obj-d.rN}</b> em ${d.diasRest} dias`:' — objetivo atingido'}.`:`Retail novas: <b>${d.rN}</b> (sem objetivo marcado para este mês).`);
+    if(d.dN)F.push(`Contra ${(MONTH_NAMES[Number(d.dN.prev.slice(5))-1]||'').toLowerCase()}.${d.dN.ate?` até ao dia ${d.dN.ate}`:''}: novas ${d.rN-d.dN.ant>=0?'+':'−'}${Math.abs(d.rN-d.dN.ant)}, usadas ${d.rU-d.dU.ant>=0?'+':'−'}${Math.abs(d.rU-d.dU.ant)} (usadas no mês: <b>${d.rU}</b>).`);
+    if(d.obj)F.push(`A este ritmo o mês fecha com <b>~${d.ritmo}</b> novas.${d.cN?` Se a Carteira deste mês entregar toda (${d.cN} nova${d.cN!==1?'s':''}), chega a <b>${d.rN+d.cN}</b>.`:''}`);
+    const pv={};d.semana.forEach(r=>{pv[r.vendedor_id]=(pv[r.vendedor_id]||0)+1;});
+    F.push(`Desde a última reunião: <b>${d.semana.length}</b> retail${d.semana.length?' ('+Object.entries(pv).map(([v,n])=>`${esc(reuNome(v))} ${n}`).join(' · ')+')':''}.`);
+    if(d.mesFechado&&d.mgN)F.push(`<span class="reu-priv">Só para ti</span> Margem de ${esc(ymCurto(d.mesFechado))} (último mês com comissões fechadas): <b>${reuEur(d.mgTot)}</b> em ${d.mgN} mota${d.mgN!==1?'s':''}${d.mgNeg?`, <b>${d.mgNeg}</b> com margem negativa`:''}.`);
+    corpo=lista('Retail desde a última reunião',d.semana.map(r=>row(negAttr(r),esc(r.id_cliente||'—'),esc([r.type,r.model].filter(Boolean).join(' · '))+' · '+esc(reuNome(r.vendedor_id)),esc(reuDM(r.col_298)))),'Nenhum retail desde a última reunião.');
+    if(d.obj&&d.ritmo<d.obj)P.push(`Que negócios fecham até sexta para recuperar ${d.obj-d.ritmo} novas de ritmo?`);
+    if(d.cN)P.push(`O que falta para entregar ${d.cN===1?'a nova':'as '+d.cN+' novas'} da Carteira deste mês?`);
+  }else if(k==='carteira'){
+    F.push(`<b>${d.entregas.length}</b> entrega${d.entregas.length!==1?'s':''} nas próximas 2 semanas · <b>${d.atraso.length}</b> em atraso · <b>${d.semEnc.length}</b> nova${d.semEnc.length!==1?'s':''} sem encomenda nem chassis${d.pedidosMes.length?` · <b>${d.pedidosMes.length}</b> pedido${d.pedidosMes.length!==1?'s':''} de mudança de mês por validar`:''}.`);
+    const flags=e=>[e.pago?'':'por pagar',e.pedido_matricula?'matrícula pedida':'',e.prep_pedida?'':'preparação por pedir'].filter(Boolean).join(' · ');
+    corpo=lista('Entregas nas próximas 2 semanas',d.entregas.map(({r,e})=>row(negAttr(r),esc(r.id_cliente||'—'),esc(reuNome(r.vendedor_id))+(flags(e)?' · '+esc(flags(e)):''),esc(reuDM(e.data_entrega)))),'Nenhuma entrega marcada.')
+      +lista('Em atraso',d.atraso.map(r=>row(negAttr(r),esc(r.id_cliente||'—'),esc(reuNome(r.vendedor_id))+' · '+esc(r.model||''),'mês '+esc(ymCurto(r.mes1)))),'Nada em atraso.')
+      +(d.semEnc.length||d.semChassis.length?lista('Sem encomenda ou chassis',[...new Set([...d.semEnc,...d.semChassis])].map(r=>row(negAttr(r),esc(r.id_cliente||'—'),esc(reuNome(r.vendedor_id))+' · '+esc(r.model||''),r.enc?'sem chassis':'sem encomenda')),''):'')
+      +(d.pedidosMes.length?lista('Pedidos de mudança de mês',d.pedidosMes.map(r=>row(negAttr(r),esc(r.id_cliente||'—'),esc(reuNome(r.vendedor_id)),esc(ymCurto(r.mes1))+' → '+esc(String(r.mes1_pedido)))),''):'');
+    d.atraso.slice(0,3).forEach(r=>P.push(`${esc(reuNome(r.vendedor_id))}: o que falta para entregar a mota de ${esc(r.id_cliente||'—')}?`));
+  }else if(k==='eots'){
+    const pv={};d.eot90.forEach(x=>{const v=x.responsavel_id||'';pv[v]=(pv[v]||0)+1;});
+    F.push(`<b>${d.eot90.length}</b> contrato${d.eot90.length!==1?'s':''} a terminar em 90 dias ou menos ainda por contactar${d.eot90.length?' ('+Object.entries(pv).map(([v,n])=>`${esc(v?reuNome(v):'por atribuir')} ${n}`).join(' · ')+')':''}.`);
+    const ind=Object.entries(d.indPorLer);
+    F.push(ind.length?`Indicações dos financeiros por ler: ${ind.map(([v,n])=>`${esc(reuNome(v))} <b>${n}</b>`).join(' · ')}.`:'Sem indicações dos financeiros por ler.');
+    if(d.eotSemResp.length)F.push(`<b>${d.eotSemResp.length}</b> EOT${d.eotSemResp.length!==1?'s':''} por atribuir.`);
+    corpo=lista('A terminar em 90 dias ou menos, por contactar',d.eot90.slice(0,8).map(x=>row(`data-action="eot-abrir" data-c="${esc(x.contrato)}" role="button" tabindex="0"`,esc(x.cliente||x.contrato),esc(x.responsavel_id?reuNome(x.responsavel_id):'por atribuir')+' · '+esc(x.modelo||''),esc(reuDM(x.data_fim)))),'Nenhum contrato nessa situação.');
+    Object.entries(pv).filter(([v])=>v).slice(0,2).forEach(([v,n])=>P.push(`${esc(reuNome(v))}: quando ligas ${n===1?'ao contrato que termina':'aos '+n+' contratos que terminam'} em menos de 90 dias?`));
+    ind.slice(0,2).forEach(([v,n])=>P.push(`${esc(reuNome(v))}: tens ${n} indicaç${n!==1?'ões':'ão'} dos financeiros por ler. Quando ${n!==1?'as':'a'} tratas?`));
+  }else if(k==='stock'){
+    const n90=d.novasStock.filter(o=>o.dias>=90).length;
+    F.push(`Novas livres em stock em Aveiro: <b>${d.novasStock.length}</b>${n90?`, <b>${n90}</b> há 90 dias ou mais`:''}${d.stUs.length?` · <b>${d.stUs.length}</b> para mudar de ST para US`:''}.`);
+    F.push(`Usadas à venda: <b>${d.usadas.length}</b> (${reuEur(d.usadasValor)} anunciados${d.usadasMedia!=null?`, ${d.usadasMedia} dias em média`:''})${d.usadas90.length?` · <b>${d.usadas90.length}</b> há 90 dias ou mais: rever preço`:''}${d.demos?` · ${d.demos} demo${d.demos!==1?'s':''}`:''}.`);
+    const inPreco=(m,campo,lb)=>`<label class="reu-preco"><span>${lb}</span><input class="norma-inp" inputmode="decimal" data-reu-preco="${esc(m.id)}" data-campo="${campo}" value="${m[campo]!=null&&m[campo]!==''?esc(String(Math.round(Number(m[campo])))):''}" aria-label="${esc(lb+' de '+(m.modelo||''))}"></label>`;
+    corpo=lista('Novas livres há mais tempo em stock',d.novasStock.slice(0,5).map(({x,dias})=>row('',esc(x.model_desc||x.model_code||'—'),esc([x.color_code,x.processing_type].filter(Boolean).join(' · ')),`${dias} d`)),'Sem novas em stock.')
+      +`<div class="reu-lista"><div class="reu-lt">Usadas à venda (mais antigas primeiro) · preços alteram-se aqui</div>${d.usadas.length?d.usadas.slice(0,10).map(({m,dias})=>`<div class="reu-row reu-usada${(dias||0)>=90?' velha':''}"><span class="reu-rn">${esc(m.modelo||'—')}</span><span class="reu-rs">${esc([m.matricula,m.ano,m.kms!=null?Number(m.kms).toLocaleString('pt-PT')+' km':''].filter(Boolean).join(' · '))}${dias!=null?' · <b>'+dias+' d</b>':''}</span>${inPreco(m,'valor_anunciado','Anunciado')}${inPreco(m,'valor_campanha','Campanha')}</div>`).join(''):'<div class="reu-vazio">Sem usadas à venda.</div>'}</div>`;
+    d.usadas90.slice(0,2).forEach(({m,dias})=>P.push(`${esc(m.modelo||'—')}${m.matricula?' ('+esc(m.matricula)+')':''} está há ${dias} dias a ${reuEur(m.valor_anunciado)}: baixamos, fazemos campanha ou vai para comerciante?`));
+    if(d.stUs.length)P.push(`Quem pede à BMW a passagem de ST para US ${d.stUs.length===1?'da mota':'das '+d.stUs.length+' motas'} com 90 dias ou mais?`);
+  }else if(k==='equip'){
+    const pp=Object.entries(d.eqPorPessoa).sort((a,b)=>b[1]-a[1]);
+    F.push(`Equipamento desde a última reunião: <b>${reuEur(d.eqFat)}</b> faturados s/IVA${pp.length?' ('+pp.map(([v,x])=>`${esc(reuNome(v))} ${reuEur(x)}`).join(' · ')+')':''}${d.eqMortoVend+d.eqMoribVend?` · ${d.eqMortoVend} de stock morto e ${d.eqMoribVend} de moribundo`:''}.`);
+    F.push(`Stock morto: <b>${reuEur(d.eqMortoVal)}</b> a custo (${d.eqMorto.length} ref.) · moribundo: <b>${reuEur(d.eqMoribVal)}</b> (${d.eqMorib.length} ref.). Comissão: 20% do faturado no morto, 10% no moribundo.`);
+    const prox=new Date(reuData());prox.setDate(prox.getDate()+7);const des=`Desafio até ${reuDM(reuISO(prox))}: cada vendedor vende 2 artigos de stock morto (comissão de 20%).`;
+    F.push(`Dinâmica sugerida: ${esc(des)} <button type="button" class="btn btn-outline btn-sm reu-usar" data-action="reu-usar" data-t="${esc(des)}">Usar como compromisso</button>`);
+    corpo=lista('Para empurrar esta semana (morto e moribundo, maior valor)',d.eqTop.map(({x,v})=>row('',esc(x.descricao||x.ref||'—'),esc([x.ref,x.qualidade,(Number(x.qtd)||0)+' un.',x.desc_max!=null&&x.desc_max!==''?'desc. máx. '+Math.round(Number(x.desc_max)*(Number(x.desc_max)<=1?100:1))+'%':''].filter(Boolean).join(' · ')),reuEur(v))),S.stockEqErr?'Não consegui ler o stock de equipamento.':'Sem stock morto ou moribundo carregado.');
+    P.push('Quem pega no desafio do stock morto esta semana, e com que clientes?');
+  }else if(k==='eventos'){
+    if(!d.eventos.length){F.push('Sem eventos marcados.');P.push('Marcamos um evento para mexer o stock (test-ride de usadas ou demos)?');}
+    d.eventos.forEach(e=>{const I=(S.inscricoes||[]).filter(i=>i.evento_id===e.id&&i.estado!=='Cancelado');const conf=I.filter(i=>i.estado==='Confirmado').length,esp=I.filter(i=>i.estado==='Lista de espera').length;
+      const pv={};I.forEach(i=>{pv[i.vendedor_id]=(pv[i.vendedor_id]||0)+1;});const motas=Array.isArray(e.motas)?e.motas.length:0;
+      F.push(`<b>${esc(e.nome||'Evento')}</b>${e.data?' · '+esc(reuDM(e.data)):''}${e.local?' · '+esc(e.local):''}: <b>${I.length}</b> inscrito${I.length!==1?'s':''}${e.lotacao?` de ${esc(String(e.lotacao))}`:''} (${conf} confirmado${conf!==1?'s':''}${esp?`, ${esp} em espera`:''})${Object.keys(pv).length?' · '+Object.entries(pv).map(([v,n])=>`${esc(reuNome(v))} ${n}`).join(' · '):''}${motas?` · ${motas} mota${motas!==1?'s':''}`:''}.`);
+      reuVendedores().filter(p=>!pv[p.id]).slice(0,2).forEach(p=>P.push(`${esc(reuNome(p.id))}: ainda não inscreveste ninguém em ${esc(e.nome||'evento')}. Que clientes do teu funil convidas?`));});
+  }else if(k==='fecho'){
+    F.push(d.compHoje.length?`<b>${d.compHoje.length}</b> compromisso${d.compHoje.length!==1?'s':''} registado${d.compHoje.length!==1?'s':''} nesta reunião.`:'Ainda não registaste compromissos nesta reunião.');
+    corpo=(d.compHoje.length?`<div class="reu-comp">${d.compHoje.map(reuCompHTML).join('')}</div>`:'')
+      +`<div class="reu-resumo"><div class="reu-lt">Resumo para enviar à equipa (sem margens)</div><textarea class="norma-inp" id="reu-resumo" rows="9" readonly aria-label="Resumo da reunião">${esc(reuResumoTexto(d))}</textarea>
+        <button type="button" class="btn btn-dark btn-sm" data-action="reu-copiar">Copiar resumo</button></div>`;
+  }
+  return{F,P,corpo};
+}
+function reuCompHTML(c){const atras=!c.feito&&c.prazo&&c.prazo<reuISO(new Date());
+  return`<div class="reu-c${c.feito?' feito':''}${atras?' atras':''}"><button type="button" class="reu-c-ok" data-action="reu-comp-feito" data-id="${esc(c.id)}" aria-pressed="${!!c.feito}" aria-label="Feito: ${esc(c.texto)}">${c.feito?'✓':''}</button>
+    <span class="reu-c-t"><b>${esc(reuNome(c.vendedor_id))}</b><span class="reu-c-tx">${esc(c.texto)}</span><small>${c.prazo?'até '+esc(reuDM(c.prazo)):''}${atras?' · fora do prazo':''}${c.feito&&c.feito_em?' · feito a '+esc(reuDM(c.feito_em)):''}</small></span>
+    <button type="button" class="reu-c-x" data-action="reu-comp-apagar" data-id="${esc(c.id)}" aria-label="Apagar compromisso" title="Apagar">${ico('x','ic-sm')}</button></div>`;}
+function reuResumoTexto(d){
+  const dia=reuData();const L=[`Reunião comercial · ${dia.toLocaleDateString('pt-PT',{weekday:'long',day:'2-digit',month:'2-digit'})}`,''];
+  L.push(`Resultados: retail novas ${d.rN}${d.obj?'/'+d.obj+' ('+Math.round(d.rN/d.obj*100)+'%)':''} · usadas ${d.rU} · Carteira do mês ${d.cartMes.length}`);
+  L.push(`Carteira: ${d.entregas.length} entrega(s) nas próximas 2 semanas · ${d.atraso.length} em atraso`);
+  L.push(`EOTs: ${d.eot90.length} contrato(s) a terminar em ≤90 dias por contactar`);
+  L.push(`Stock: ${d.stUs.length} ST→US · ${d.usadas90.length} usada(s) há 90+ dias`);
+  L.push(`Equipamento: ${reuEur(d.eqFat)} faturados desde a última reunião`);
+  d.eventos.forEach(e=>{const n=(S.inscricoes||[]).filter(i=>i.evento_id===e.id&&i.estado!=='Cancelado').length;L.push(`Evento: ${e.nome||''}${e.data?' '+reuDM(e.data):''} · ${n} inscrito(s)`);});
+  if(d.compHoje.length){L.push('','Compromissos:');d.compHoje.forEach(c=>L.push(`- ${reuNome(c.vendedor_id)}: ${c.texto}${c.prazo?' (até '+reuDM(c.prazo)+')':''}`));}
+  return L.join('\n');}
+function reuCompFormHTML(ponto){
+  if(S.reuCompErr==='sem-sql')return'';
+  const C=Object.assign({texto:'',vend:'',prazo:''},S.reuC||{});const prox=new Date(reuData());prox.setDate(prox.getDate()+7);
+  return`<div class="reu-cform" role="group" aria-label="Registar compromisso">
+    <select class="norma-inp" id="reu-c-vend" aria-label="Quem"><option value="">Equipa</option>${reuVendedores().map(p=>`<option value="${esc(p.id)}" ${String(C.vend)===String(p.id)?'selected':''}>${esc(p.nome||'?')}</option>`).join('')}</select>
+    <input class="norma-inp" id="reu-c-texto" value="${esc(C.texto)}" placeholder="Compromisso (ex: ligar aos 3 contratos EOT)" aria-label="Compromisso" autocomplete="off">
+    <input class="norma-inp" type="date" id="reu-c-prazo" value="${esc(C.prazo||reuISO(prox))}" aria-label="Prazo">
+    <button type="button" class="btn btn-orange btn-sm" data-action="reu-comp-add" data-p="${esc(ponto||'')}">Registar</button>
+  </div>`;}
+function reuBlocoHTML(p,i,d,emPasso){
+  const b=reuBloco(p.k,d);
+  return`<section class="reu-bloco${emPasso?' passo':''}" aria-labelledby="reu-h-${p.k}">
+    <div class="reu-bh"><span class="reu-bn">${i+1}</span><h3 id="reu-h-${p.k}">${esc(p.lb)}</h3><span class="reu-bmin">${p.min} min</span></div>
+    ${b.F.length?`<ul class="reu-frases">${b.F.map(f=>`<li>${f}</li>`).join('')}</ul>`:''}
+    ${b.corpo?`<div class="reu-corpo">${b.corpo}</div>`:''}
+    ${b.P.length?`<div class="reu-perg"><div class="reu-lt">Perguntas para fazer</div><ul>${b.P.map(q=>`<li>${q}</li>`).join('')}</ul></div>`:''}
+    ${emPasso&&p.k!=='compromissos'?reuCompFormHTML(p.k):''}
+  </section>`;}
+let _reuIv=null;
+function reuRelogio(){clearInterval(_reuIv);_reuIv=null;const R0=S.reu;if(!R0||R0.modo!=='conduzir')return;
+  const tick=()=>{const R=S.reu;if(S.screen!=='dashboard'||S.gppSec!=='reuniao'||!R||R.modo!=='conduzir'){clearInterval(_reuIv);_reuIv=null;return;}
+    const now=Date.now(),p=REU_PASSOS[R.passo]||REU_PASSOS[0];const a=document.getElementById('reu-total'),b=document.getElementById('reu-passo-t');
+    if(a){a.textContent=reuMMSS(now-R.t0)+' / '+REU_DURACAO+':00';a.classList.toggle('over',now-R.t0>REU_DURACAO*60000);}
+    if(b){b.textContent=reuMMSS(now-R.tp)+' / '+p.min+':00';b.classList.toggle('over',now-R.tp>p.min*60000);}};
+  tick();_reuIv=setInterval(tick,1000);}
+function reuIrPasso(n){const R=reuEstado();R.passo=Math.max(0,Math.min(REU_PASSOS.length-1,n));R.tp=Date.now();reuGuardar();render();}
+function reuCarregar(forcar){if(S._reuCarga&&!forcar)return;S._reuCarga=true;S._reuCargaOk=false;
+  Promise.all([loadStock(),loadStockEq(),loadEventos(),loadInscricoes(),loadReuComp(),loadEntregas(),loadNotif(),loadEot(),loadEquipamento(),loadMargens(),loadComFecho(),loadEnc()].map(x=>Promise.resolve(x).catch(()=>{}))).finally(()=>{S._reuCargaOk=true;render();});}
+function reuniaoView(){
+  reuCarregar(false);
+  const R=reuEstado();const d=reuDados();const dia=reuData();
+  const quando=`${dia.toLocaleDateString('pt-PT',{weekday:'long',day:'2-digit',month:'2-digit'})} às ${REU_HORA}:00 · ${REU_DURACAO} min`;
+  const desde=`números desde ${d.J.ini.toLocaleDateString('pt-PT',{weekday:'long',day:'2-digit',month:'2-digit'})} às ${REU_HORA}:00`;
+  const aviso=(S._reuCargaOk?'':'<div class="reu-carga" role="status">A carregar os dados da reunião…</div>')+(S.reuCompErr&&S.reuCompErr!=='sem-sql'?`<div class="mg-aviso">Não consegui ler os compromissos (${esc(S.reuCompErr)}).</div>`:'');
+  if(R.modo==='conduzir'){
+    if(!_reuIv)setTimeout(reuRelogio,0);
+    const p=REU_PASSOS[R.passo]||REU_PASSOS[0];const ult=R.passo===REU_PASSOS.length-1;
+    const ag=Date.now(),tT=R.t0?ag-R.t0:0,tP=R.tp?ag-R.tp:0;
+    return`<div class="reu reu-conduzir">
+      <div class="reu-topo"><div><div class="reu-t">Reunião semanal</div><div class="reu-sub">${esc(quando)}</div></div>
+        <div class="reu-relogios"><span class="reu-rel" title="Tempo total da reunião">${ico('clock','ic-sm')}<b id="reu-total"${tT>REU_DURACAO*60000?' class="over"':''}>${reuMMSS(tT)} / ${REU_DURACAO}:00</b></span></div>
+        <button type="button" class="btn btn-ghost btn-sm" data-action="reu-sair">Ver preparação</button></div>
+      <nav class="reu-passos" aria-label="Pontos da reunião">${REU_PASSOS.map((x,i)=>`<button type="button" class="reu-pt${i===R.passo?' on':''}${i<R.passo?' feito':''}" data-action="reu-passo" data-p="${i}" ${i===R.passo?'aria-current="step"':''} title="${esc(x.lb)}" aria-label="Ponto ${i+1}: ${esc(x.lb)}">${i+1}</button>`).join('')}</nav>
+      ${aviso}
+      <div class="reu-ptempo">Ponto ${R.passo+1} de ${REU_PASSOS.length} · <b id="reu-passo-t"${tP>p.min*60000?' class="over"':''}>${reuMMSS(tP)} / ${p.min}:00</b></div>
+      ${reuBlocoHTML(p,R.passo,d,true)}
+      <div class="reu-nav">
+        <button type="button" class="btn btn-outline" data-action="reu-ant" ${R.passo===0?'disabled':''}>${ico('chevl','ic-sm')}<span>Anterior</span></button>
+        ${ult?`<button type="button" class="btn btn-dark" data-action="reu-terminar">Terminar reunião</button>`:`<button type="button" class="btn btn-orange" data-action="reu-prox"><span>Próximo: ${esc(REU_PASSOS[R.passo+1].lb)}</span>${ico('chevr','ic-sm')}</button>`}
+      </div>
+    </div>`;
+  }
+  return`<div class="reu">
+    <div class="reu-topo"><div><div class="reu-t">Reunião semanal</div><div class="reu-sub">${esc(quando)} · ${esc(desde)}</div>${R.fim&&R.t0?`<div class="reu-sub reu-fim">Terminada às ${new Date(R.fim).toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'})} · durou ${reuMMSS(R.fim-R.t0)}</div>`:''}</div>
+      <button type="button" class="btn ${R.fim?'btn-outline':'btn-orange'}" data-action="reu-comecar">${R.fim?'Retomar a reunião':(R.t0?'Continuar a reunião':'Começar a reunião')}</button></div>
+    ${aviso}
+    <div class="reu-agenda">${REU_PASSOS.map((p,i)=>`<span>${i+1}. ${esc(p.lb)} <small>${p.min} min</small></span>`).join('')}</div>
+    ${REU_PASSOS.map((p,i)=>reuBlocoHTML(p,i,d,false)).join('')}
+    <div class="reu-bloco"><div class="reu-bh"><h3>Registar um compromisso</h3></div>${reuCompFormHTML('')}</div>
+  </div>`;
+}
 
 // ---- Navegação agrupada (menu com separadores) ----
 const GRUPOS_SEC={
@@ -7879,6 +8212,10 @@ function EXPORT_FOLHAS(){
       {c:'notas',l:'Notas'},{c:'negocio_id',l:'Negócio ID'},{c:'no_mapa',l:'No mapa',f:sn},{c:'saiu_em',l:'Saiu do mapa',f:dt},
       {c:'criado_em',l:'Criado',f:dt},{c:'ultima_import',l:'Última importação',f:dt},{c:'updated_at',l:'Atualizado',f:dt},
     ]},
+    {nome:'Reunião compromissos',path:'/reuniao_compromissos?select=*&order=id.asc',cols:[
+      {c:'reuniao',l:'Reunião',f:d},{c:'vendedor_id',l:'Quem',f:v=>v?(vendName(v)||v):'Equipa'},{c:'ponto',l:'Ponto'},{c:'texto',l:'Compromisso'},{c:'prazo',l:'Prazo',f:d},
+      {c:'feito',l:'Feito',f:sn},{c:'feito_em',l:'Feito em',f:dt},{c:'criado_em',l:'Registado em',f:dt},
+    ]},
     {nome:'EOTs notificações lidas',path:'/eot_notif_lidas?select=*&order=lido_em.asc',cols:[
       {c:'user_id',l:'Quem',f:v=>vendName(v)&&vendName(v)!=='?'?vendName(v):(v||'')},{c:'contrato',l:'Contrato'},{c:'hist_id',l:'Indicação (id)'},{c:'lido_em',l:'Lido em',f:dt},
     ]},
@@ -8145,6 +8482,7 @@ function renderDashboard(){
 
   const TOPICOS=[
     ['home','🏠','Home'],
+    ['reuniao','👥','Reunião semanal'],
     ['entregas','🚚','Entregas'],
     ['retail','✅','Retail'],
     ['comercio','🤝','Vendas Comerciante'],
@@ -8172,7 +8510,7 @@ function renderDashboard(){
     ['exportar','⬇️','Exportar'],
   ];
   const NAV_GRUPOS=[
-    ['Diário',['home','atratar']],
+    ['Diário',['home','atratar','reuniao']],
     ['Negócio',['funil','leads','eots','vendas']],
     ['Recursos',['encomendas','usadas','stockeq','demos','evento','escala']],
     ['Ferramentas',['ficha','comissoesg','exportar']]
@@ -9577,6 +9915,7 @@ function renderDashboard(){
   }
   else if(sec==='home')body=lembretesHTML()+notifBannerHTML()+fichasAprovarHTML()+encStParaUsHTML()+mesRefHTML()+mesBar+(recs.filter(r=>r.status==='Retail'&&!r.col_298).length?`${(()=>{const semData=recs.filter(r=>r.status==='Retail'&&!r.col_298);return`<div class="gpp-alerta ${S.dashAlertOpen==='sem298'?'open':''}"><div class="gpp-alerta-head" data-action="dash-alert-toggle" data-id="sem298"><span>⚠️</span><span><b>${semData.length}</b> mota${semData.length>1?'s':''} em Retail sem data 298 — não contam nos totais</span><span class="gpp-alerta-arrow">${S.dashAlertOpen==='sem298'?'▾':'▸'}</span></div>${S.dashAlertOpen==='sem298'?`<div class="gpp-alerta-lista">${semData.map(r=>`<div class="gpp-alerta-item" data-action="open-record-from-dash" data-id="${r.id}"><b>${esc(r.id_cliente||'(sem cliente)')}</b><span>${esc(r.model||'')} ${esc(r.version||'')}</span><span class="gpp-alerta-tipo">${esc(r.type||'?')}</span><span style="color:var(--text3)">${esc(vendName(r.vendedor_id)||'')}</span></div>`).join('')}</div>`:''}</div>`})()}`:'')+tabelaResumo()+homeAcoes();
   else if(sec==='funil')body=funilView();
+  else if(sec==='reuniao')body=reuniaoView();
   else if(sec==='fechados')body=fechadosView();
   else if(sec==='saude')body=saudeEquipa();
   else if(sec==='trimestre')body=trimestreView();
@@ -9652,6 +9991,7 @@ function bindEvents(){
   const app=document.getElementById('app');
   app.oninput=function(e){
     const el=e.target;
+    if(el.id==='reu-c-texto'){S.reuC=Object.assign({texto:'',vend:'',prazo:''},S.reuC||{},{texto:el.value});return;}
     if(el.dataset&&el.dataset.vhnovo){S.vhNovo=Object.assign({nome:'',tel:'',modelo:'',fase:'Morno'},S.vhNovo||{},{[el.dataset.vhnovo]:el.value});if(S.vhNovoErr&&el.dataset.vhnovo==='nome'&&el.value.trim()){S.vhNovoErr='';const er=document.querySelector('.vh-n-err');if(er)er.remove();}return;}
     if(el.id==='fm-assoc-q'){S.fmAssocQ=el.value;render();return;}
     if(el.dataset&&el.dataset.tblQ){const k=el.dataset.tblQ;S.tblQ=Object.assign({},S.tblQ||{},{[k]:el.value});const tb=tblPorChave(k);if(tb)tblFiltrar(tb,el.value);return;}
@@ -9703,6 +10043,8 @@ function bindEvents(){
   };
   app.onchange=function(e){
     const el=e.target;
+    if(el.id==='reu-c-vend'||el.id==='reu-c-prazo'){S.reuC=Object.assign({texto:'',vend:'',prazo:''},S.reuC||{},{[el.id==='reu-c-vend'?'vend':'prazo']:el.value});return;}
+    if(el.dataset&&el.dataset.reuPreco){reuPrecoGuardar(el);return;}
     if(el.id==='fm-g-vend'){S.fmGVend=el.value;return;}
     if(el.dataset&&el.dataset.eotm){eotModalInput(el);return;}
     if(el.dataset&&el.dataset.finF){S.finF=Object.assign({},S.finF||{},{[el.dataset.finF]:el.value});render();return;}
@@ -9918,6 +10260,18 @@ function bindEvents(){
       case'fm-guardar-fechar':S.fmGuardar=false;render();break;
       case'fm-guardar-novo':fmGuardarNovo();break;
       case'fm-associar':fmAssociar(el.dataset.id);break;
+      case'reu-comecar':{const R=reuEstado();const ag=Date.now();if(!R.t0)R.t0=ag;if(R.fim){R.t0+=ag-R.fim;R.fim=null;}R.modo='conduzir';R.tp=ag;reuGuardar();render();break;}
+      case'reu-passo':reuIrPasso(Number(el.dataset.p));break;
+      case'reu-prox':reuIrPasso(reuEstado().passo+1);break;
+      case'reu-ant':reuIrPasso(reuEstado().passo-1);break;
+      case'reu-sair':{const R=reuEstado();R.modo='prep';reuGuardar();render();break;}
+      case'reu-terminar':{const R=reuEstado();R.modo='prep';R.fim=Date.now();const dur=R.t0?reuMMSS(R.fim-R.t0):'';reuGuardar();render();toast('Reunião terminada'+(dur?' · '+dur:''));break;}
+      case'reu-comp-add':reuCompAdd(el.dataset.p);break;
+      case'reu-comp-feito':reuCompFeito(el.dataset.id);break;
+      case'reu-comp-apagar':reuCompApagar(el.dataset.id);break;
+      case'reu-usar':{S.reuC=Object.assign(reuCVals(),{texto:el.dataset.t});render();const i=document.getElementById('reu-c-texto');if(i){i.focus();try{i.scrollIntoView({block:'center',behavior:'smooth'});}catch(e){}}break;}
+      case'reu-copiar':{const t=document.getElementById('reu-resumo');const txt=t?t.value:'';
+        (navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(txt):Promise.reject(new Error('sem clipboard'))).then(()=>toast('Resumo copiado')).catch(()=>{if(t){t.focus();t.select();}toast('Seleciona o texto e copia com Ctrl+C.');});break;}
       case'fin-visto':finVistoAlternar(el.dataset.c);break;
       case'fin-tab':{const t=el.dataset.t;try{localStorage.setItem('bm_fin_tab',t);}catch(e){}setState({finTab:t});break;}
       case'nt-abrir':notifAbrir(el.dataset.c);break;
@@ -10019,7 +10373,7 @@ function bindEvents(){
       case'gpp-sec':{let s=el.dataset.s;if(s==='ficha'&&S.fmNeg)fmSairDoNegocio();if(s==='encomendas'){S.encLoaded=false;S.encMsg='';}if(s==='eots')loadEot().then(()=>render());if(s==='notificacoes')loadNotif().then(()=>render());if(GRUPOS_SEC[s])s=((S.gppTab||{})[s])||GRUPOS_SEC[s].tabs[0][0];{const _g=grupoDe(s);if(_g)S.gppTab=Object.assign({},S.gppTab||{},{[_g]:s});}S.gppBusca='';S.gppMais=false;if(s==='escala'){setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}else if(s==='stock'||s==='depreciacao'||s==='margem'){setState({gppSec:s,dashAlertOpen:null});if(!S.stockLoaded)loadStock().then(()=>render());}
       else if(s==='premios'){setState({gppSec:s,dashAlertOpen:null});loadPremiosMes().then(()=>render());}
       else if(s==='entregas'){setState({gppSec:s,dashAlertOpen:null});loadEntregas().then(()=>render());}
-      else if(s==='comissoes'){setState({gppSec:s,dashAlertOpen:null,pdfMenu:false});Promise.all([loadMargens(),loadEquipamento(),loadAssessores(),loadComFecho()]).then(()=>render());}else if(s==='evento'){setState({gppSec:s,dashAlertOpen:null,eventoErr:''});const ev=eventoAtual();if(ev){S.eventoSel=ev.id;loadRanking(ev.id).then(()=>render());}}else if(s==='funil'){setState({gppSec:s,dashAlertOpen:null});loadTransicoes().then(()=>render());}else{setState({gppSec:s,dashAlertOpen:null});}break}
+      else if(s==='comissoes'){setState({gppSec:s,dashAlertOpen:null,pdfMenu:false});Promise.all([loadMargens(),loadEquipamento(),loadAssessores(),loadComFecho()]).then(()=>render());}else if(s==='evento'){setState({gppSec:s,dashAlertOpen:null,eventoErr:''});const ev=eventoAtual();if(ev){S.eventoSel=ev.id;loadRanking(ev.id).then(()=>render());}}else if(s==='funil'){setState({gppSec:s,dashAlertOpen:null});loadTransicoes().then(()=>render());}else if(s==='reuniao'){reuCarregar(true);setState({gppSec:s,dashAlertOpen:null});}else{setState({gppSec:s,dashAlertOpen:null});}break}
       case'stock-cat':setState({stockCat:el.dataset.c,stockAdding:false});break;
       case'stock-vend-toggle':setState({stockVendOpen:!S.stockVendOpen});break;
       case'stock-add':setState({stockAdding:true,stockFormMax:false});break;

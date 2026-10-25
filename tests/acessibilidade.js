@@ -15,6 +15,10 @@ const eot=[{contrato:'E1',cliente:'Cliente EOT Um',modelo:'F 900 GS',matricula:'
   {contrato:'E3',cliente:'Cliente EOT Três',modelo:'R 1300 GS',data_fim:d(-200),fase:'Por contactar',responsavel_id:'v1',no_mapa:true,residual:9000,fin_visto_em:new Date(Date.now()-3600e3).toISOString(),fin_visto_por:'f1',fin_visto_nome:'Filipa Financeira'}];
 const hist=[{id:1,contrato:'E1',tipo:'comentario',autor_id:'v1',autor_nome:'Vera Vendas',autor_role:'vendedor',criado_em:new Date(Date.now()-3600e3).toISOString(),texto:'Cliente quer saber o valor para refinanciar'}];
 const enc=[1,2,3,4].map(i=>({origem:'aveiro',production_number:String(9100000+i),chassis:'6N1000'+i,model_code:'0M21',model_desc:'R 1300 GS',color_code:'N52',options:'20B 389 7A8 413 5AG',order_status:i<3?'198':'150',ts_order_status:d(i*40),processing_type:['ST','US','DE','CS'][i-1],conf_f3_from:d(-10),conf_f3_to:d(-17),customer_last:i===4?'Apelido':'',importado_em:new Date().toISOString()}));
+const usadas=[{id:51,modelo:'R 1250 GS',matricula:'AA-00-AA',ano:2021,kms:30000,data_rececao:d(120),valor_anunciado:15900,valor_campanha:15500,categoria:'usada',estado:'Disponível'},
+  {id:52,modelo:'R 1300 GS',matricula:'BB-11-BB',categoria:'demo',estado:'Disponível',data_rececao:d(30)}];
+const comp=[{id:1,reuniao:d(14),vendedor_id:'v1',ponto:'eots',texto:'Ligar aos clientes EOT',prazo:d(3),feito:false,feito_em:null,criado_em:new Date(Date.now()-14*864e5).toISOString()},
+  {id:2,reuniao:d(14),vendedor_id:null,ponto:'equip',texto:'Desafio do stock morto',prazo:d(2),feito:true,feito_em:new Date(Date.now()-864e5).toISOString(),criado_em:new Date(Date.now()-14*864e5).toISOString()}];
 const seq=[1,2,3].map(i=>({id:i,lote:'L1',ponto_venda:'Caetano Aveiro',ref:'7622852610'+i,descricao:'Botas Teste '+i,categoria:'botas',qualidade:['Vivo','Moribundo','Morto'][i-1],antig_saida:['Últ. Saída até 3 meses','Últ. Saída de 1 a 2 anos','Sem Movimento de Saída'][i-1],ult_saida:i<3?d(i*200):null,qtd:i,custo_unit:80,desc_max:i/10,importado_em:new Date().toISOString()}));
 async function contexto(b,uid,vp,tema){
   const ctx=await b.newContext({viewport:vp,bypassCSP:true,colorScheme:tema==='escuro'?'dark':'light'});
@@ -30,6 +34,8 @@ async function contexto(b,uid,vp,tema){
     if(t==='eot_historico')return json(hist);
     if(t==='encomendas_bmw')return json(u.includes('offset=0')?enc:[]);
     if(t==='stock_equip')return json(u.includes('offset=0')?seq:[]);
+    if(t==='stock_usadas')return json(usadas);
+    if(t==='reuniao_compromissos')return json(uid==='c1'?comp:[]);
     return json([]);});
   return ctx;}
 const ECRAS={
@@ -41,7 +47,9 @@ const ECRAS={
       ['Janela EOT','()=>{S.screen="dashboard";S.gppSec="eots";render();eotAbrir("E1");}'],
       ['Leads','()=>{S.screen="dashboard";S.gppSec="leads";render();}'],['Perdidos','()=>{S.screen="dashboard";S.gppSec="perdidos";render();}'],['Demos','()=>{S.screen="dashboard";S.gppSec="demos";render();}'],
       ['Stock Usadas','()=>{S.screen="dashboard";S.gppSec="stock";render();}'],['Exportar','()=>{S.screen="dashboard";S.gppSec="exportar";render();}'],['Saúde da equipa','()=>{S.screen="dashboard";S.gppSec="saude";render();}'],
-      ['Trimestre','()=>{S.screen="dashboard";S.gppSec="trimestre";render();}'],['Evento','()=>{S.screen="dashboard";S.gppSec="evento";render();}'],['Escolher negócio (stock)','()=>{S.screen="dashboard";S.gppSec="encomendas";S.encOrigem="aveiro";render();setState({encEscolher:"9100003"});}']],
+      ['Trimestre','()=>{S.screen="dashboard";S.gppSec="trimestre";render();}'],['Evento','()=>{S.screen="dashboard";S.gppSec="evento";render();}'],['Escolher negócio (stock)','()=>{S.screen="dashboard";S.gppSec="encomendas";S.encOrigem="aveiro";render();setState({encEscolher:"9100003"});}'],
+      ['Reunião (preparação)','()=>{S.screen="dashboard";S.gppSec="reuniao";S.reu={dia:reuISO(reuData()),modo:"prep",passo:0,t0:null,tp:null};render();}'],
+      ['Reunião (a conduzir)','()=>{S.screen="dashboard";S.gppSec="reuniao";S.reu={dia:reuISO(reuData()),modo:"conduzir",passo:4,t0:Date.now()-150000,tp:Date.now()-30000};render();}']],
   v1:[['Hoje','()=>{S.screen="list";S.statusFilter="_hoje";S.alertFilter=null;render();}'],['Funil','()=>{S.screen="list";S.statusFilter="Funil";render();}'],['Carteira','()=>{S.screen="list";S.statusFilter="Carteira";render();}'],
       ['Negócio (detalhe)','()=>{setState({screen:"detail",selected:S.records.find(r=>r.id===5),openGroups:{INFO:true}});}'],['Negócio (editar)','()=>{const r=S.records.find(x=>x.id===1);setState({selected:r,form:recordToForm(r),screen:"edit",openGroups:{INFO:true,"Identificação":true}});}'],
       ['EOTs','()=>{setState({screen:"veot"});}'],['Notificações','()=>{setState({screen:"vnotif"});}'],['Stock BMW Novas','()=>{setState({screen:"vencomendas",encOrigem:"aveiro"});}'],['Stock Equipamento','()=>{setState({screen:"vstockeq"});}'],
