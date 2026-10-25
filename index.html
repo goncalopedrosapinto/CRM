@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-25-d">
+<meta name="app-version" content="2026-10-25-e">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2274,6 +2274,7 @@ body.a-gravar [data-action]{cursor:progress}
 .reu-c-x{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border:0;border-radius:var(--r);background:none;color:var(--text3)}
 .reu-c-x:hover{background:var(--surface2);color:var(--red)}
 .reu-cform{display:grid;grid-template-columns:160px minmax(0,1fr) 150px auto;gap:8px;align-items:center;margin-top:12px}
+.reu-cform select.norma-inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23A8A29E' fill='none' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;cursor:pointer}
 .reu-resumo{display:flex;flex-direction:column;gap:8px;margin-top:10px}
 .reu-resumo textarea{font-family:inherit;font-size:12px;line-height:1.5}
 .reu-resumo .btn{align-self:flex-start}
@@ -2290,7 +2291,7 @@ body.a-gravar [data-action]{cursor:progress}
 .reu-ptempo b{color:var(--text2);font-variant-numeric:tabular-nums}
 .reu-nav{display:flex;justify-content:space-between;gap:10px;margin-top:4px}
 .reu-nav .btn{display:inline-flex;align-items:center;gap:6px}
-@media(max-width:700px){.reu{padding:4px 10px 90px}.reu-cform{grid-template-columns:1fr}.reu-corpo{grid-template-columns:1fr}.reu-rn{max-width:none}.reu-usada{flex-wrap:wrap}.reu-nav .btn span{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+@media(max-width:700px){.reu{padding:4px 10px 90px}.reu-cform{grid-template-columns:1fr}.reu-corpo{grid-template-columns:1fr}.reu-rn{max-width:none}.reu-usada{flex-wrap:wrap}.reu-usada .reu-rn{flex:1}.reu-usada .reu-rs{order:3;flex-basis:100%;white-space:normal}.reu-nav .btn span{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
 </style>
 </head>
 <body>
@@ -2408,7 +2409,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-25-d';
+const APP_VERSION='2026-10-25-e';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
