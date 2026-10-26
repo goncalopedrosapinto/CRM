@@ -32,6 +32,7 @@ async function contexto(b,uid,vp,tema){
     if(t==='baviera_control'||t==='negocios_secretaria')return json(uid==='v1'?recs.filter(x=>x.vendedor_id==='v1'):recs);
     if(t==='eot_contratos')return json(uid==='v1'?eot.filter(x=>x.responsavel_id==='v1'):eot);
     if(t==='eot_historico')return json(hist);
+    if(t==='negocio_historico')return json(u.includes('negocio_id=eq.')?[{id:1,negocio_id:5,tipo:'comentario',texto:'Proposta da concorrência',imagens:['5/a.webp'],autor_id:'v1',autor_nome:'Vera Vendas',autor_role:'vendedor',criado_em:new Date(Date.now()-3600e3).toISOString()}]:[]);
     if(t==='encomendas_bmw')return json(u.includes('offset=0')?enc:[]);
     if(t==='stock_equip')return json(u.includes('offset=0')?seq:[]);
     if(t==='stock_usadas')return json(usadas);

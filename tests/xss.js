@@ -20,7 +20,7 @@ function linhas(tab,uid){
       else if(t==='d')r[c]=ISO;else if(t==='ts')r[c]=new Date(Date.now()-k*3600e3).toISOString();
       else if(t==='u')r[c]=(c==='vendedor_id'||c==='responsavel_id')?(k%2?TEAM[1][0]:(uid||TEAM[2][0])):TEAM[k%TEAM.length][0];
       else if(t==='b')r[c]=k%2===0;
-      else if(t==='j')r[c]=c==='motas'?[tag(tab+'.motas[0]'),tag(tab+'.motas[1]')]:(c==='docs'?{cc:true,[tag(tab+'.docs.key')]:true}:{cliente:tag(tab+'.dados.cliente'),obs:tag(tab+'.dados.obs')});
+      else if(t==='j')r[c]=c==='motas'?[tag(tab+'.motas[0]'),tag(tab+'.motas[1]')]:c==='imagens'?[tag(tab+'.imagens[0]')]:(c==='docs'?{cc:true,[tag(tab+'.docs.key')]:true}:{cliente:tag(tab+'.dados.cliente'),obs:tag(tab+'.dados.obs')});
       else{ if(MODO==='A'&&ENUM[c])r[c]=ENUM[c][k%ENUM[c].length];
         else if(MODO==='A'&&tab==='profiles'&&c==='role')r[c]=TEAM[k][1];
         else r[c]=tag(tab+'.'+c);}

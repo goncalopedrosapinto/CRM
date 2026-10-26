@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-25-f">
+<meta name="app-version" content="2026-10-26-a">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2375,9 +2375,14 @@ function imgsDoEvento(dt){if(!dt)return[];const fs=[...(dt.files||[])].filter(f=
 document.addEventListener('paste',e=>{if(typeof S==='undefined'||!S.eotAberto||S.screen==='login')return;const t=e.target;
   if(t&&t.matches&&t.matches('input,select,textarea')&&t.id!=='eotm-com')return; // colar texto noutros campos fica como sempre
   const fs=imgsDoEvento(e.clipboardData);if(!fs.length)return;e.preventDefault();const ta=document.getElementById('eotm-com');if(ta)S.eotCom=ta.value;eotImgJuntar(fs);});
+document.addEventListener('paste',e=>{if(typeof S==='undefined'||S.eotAberto||S.screen==='login')return;const box=document.getElementById('neg-com');if(!box)return;const t=e.target;
+  if(t&&t.matches&&t.matches('input,select,textarea')&&t.id!=='neg-com')return; // colar texto noutros campos fica como sempre
+  const fs=imgsDoEvento(e.clipboardData);if(!fs.length)return;e.preventDefault();S.negCom=box.value;negImgJuntar(negImgAlvo(),fs);});
+document.addEventListener('dragover',e=>{if(typeof S!=='undefined'&&!S.eotAberto&&e.target&&e.target.closest&&e.target.closest('.neg-hist'))e.preventDefault();});
+document.addEventListener('drop',e=>{if(typeof S==='undefined'||S.eotAberto||!(e.target&&e.target.closest&&e.target.closest('.neg-hist')))return;const fs=imgsDoEvento(e.dataTransfer);if(!fs.length)return;e.preventDefault();const box=document.getElementById('neg-com');if(box)S.negCom=box.value;negImgJuntar(negImgAlvo(),fs);});
 document.addEventListener('dragover',e=>{if(typeof S!=='undefined'&&S.eotAberto&&e.target&&e.target.closest&&e.target.closest('.eotm'))e.preventDefault();});
 document.addEventListener('drop',e=>{if(typeof S==='undefined'||!S.eotAberto||!(e.target&&e.target.closest&&e.target.closest('.eotm')))return;const fs=imgsDoEvento(e.dataTransfer);if(!fs.length)return;e.preventDefault();const ta=document.getElementById('eotm-com');if(ta)S.eotCom=ta.value;eotImgJuntar(fs);});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&typeof S!=='undefined'&&S.eotImgVer){S.eotImgVer=null;render();return;}if(e.key==='Escape'&&typeof S!=='undefined'&&S.eotAberto){eotFechar();return;}if(e.key==='Escape'&&typeof S!=='undefined'&&(S.contaAberto||S.gppMais)){S.contaAberto=false;S.gppMais=false;render();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&typeof S!=='undefined'&&S.eotImgVer){S.eotImgVer=null;render();return;}if(e.key==='Escape'&&typeof S!=='undefined'&&S.negImgVer){S.negImgVer=null;S.negImgZoom=false;render();return;}if(e.key==='Escape'&&typeof S!=='undefined'&&S.eotAberto){eotFechar();return;}if(e.key==='Escape'&&typeof S!=='undefined'&&(S.contaAberto||S.gppMais)){S.contaAberto=false;S.gppMais=false;render();}});
 function icE(x){const n=EMO_IC[x];return n?ico(n):x;}
 // ---- Tema (claro / escuro) ----
 function temaAtual(){try{return localStorage.getItem('bm_tema')||'claro'}catch(e){return'claro'}}
@@ -2413,7 +2418,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-25-f';
+const APP_VERSION='2026-10-26-a';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -6631,8 +6636,9 @@ async function storagePedido(metodo,bucket,path,blob){
   let r=await fazer(S.token);
   if(r.status===401||r.status===403||r.status===400){const tx=await r.clone().text();if(/jwt|token|expired|unauthori/i.test(tx)){const nt=await refreshSession();if(nt){S.token=nt;r=await fazer(nt);}}}
   if(!r.ok){let tx='';try{tx=await r.text();}catch(e){}let m=tx;try{const j=JSON.parse(tx);m=j.message||j.error||tx;}catch(e){}
-    if(/bucket not found/i.test(m))m='Falta correr o SQL "2026-10-22_eot_imagens" no Supabase.';
-    else if(/row-level security|unauthorized|403/i.test(m+r.status))m='Não tens permissão para imagens desta EOT.';
+    const eotB=bucket===EOT_IMG_BUCKET;
+    if(/bucket not found/i.test(m))m=`Falta correr o SQL "${eotB?'2026-10-22_eot_imagens':'2026-10-26_negocio_imagens'}" no Supabase.`;
+    else if(/row-level security|unauthorized|403/i.test(m+r.status))m=`Não tens permissão para imagens ${eotB?'desta EOT':'deste negócio'}.`;
     throw new Error(m||('HTTP '+r.status));}
   return r;
 }
@@ -6678,6 +6684,40 @@ function eotImgsAplicar(){
       .catch(()=>{document.querySelectorAll('img[data-eot-img]').forEach(i=>{if(i.dataset.eotImg===p){i.alt='Imagem indisponível';i.closest('.eoth-img')&&i.closest('.eoth-img').classList.add('falhou');}});})
       .finally(()=>_eotImgPend.delete(p)));});
 }
+// ---- Imagens nos comentários dos negócios: Storage privado "negocio-imagens", uma pasta por negócio ----
+// Colar um print (Ctrl+V) com o negócio aberto, arrastar, ou «Imagem». Só o chefe e o vendedor do negócio as veem.
+const NEG_IMG_BUCKET='negocio-imagens';
+const _negImgUrl=new Map(),_negImgPend=new Map();
+function negImgsDe(id){return S.negImgs&&String(S.negImgs.id)===String(id)?S.negImgs.L:[];}
+function negImgAlvo(){const b=document.querySelector('[data-action="neg-comentar"]');return b?b.dataset.id:null;}
+async function negImgJuntar(id,files){
+  if(id==null||id==='')return false;
+  const L=[...(files||[])].filter(f=>f&&/^image\//.test(f.type));if(!L.length)return false;
+  if(S.negImgs&&String(S.negImgs.id)!==String(id)&&S.negImgs.L.length){negImgLimpar();toast('As imagens por enviar do outro negócio foram postas de lado.');}
+  const atual=negImgsDe(id).slice();const vagas=EOT_IMG_MAXN-atual.length;
+  if(vagas<=0){toast(`Máximo ${EOT_IMG_MAXN} imagens por comentário`);return true;}
+  if(L.length>vagas)toast(`Só entram mais ${vagas} imagem${vagas>1?'ns':''} neste comentário`);
+  for(const f of L.slice(0,vagas)){
+    try{const b=await imgComprimir(f);if(b.size>5*1024*1024){toast('Imagem demasiado grande, mesmo reduzida');continue;}
+      atual.push({id:Math.random().toString(36).slice(2,10),blob:b,url:URL.createObjectURL(b)});}
+    catch(e){toast('Não consegui ler a imagem: '+((e&&e.message)||e));}
+  }
+  S.negImgs={id:String(id),L:atual};render();return true;
+}
+function negImgTirar(iid){const L=(S.negImgs&&S.negImgs.L)||[];const x=L.find(i=>i.id===iid);if(x)URL.revokeObjectURL(x.url);if(S.negImgs)S.negImgs.L=L.filter(i=>i.id!==iid);render();}
+function negImgLimpar(){((S.negImgs&&S.negImgs.L)||[]).forEach(i=>{try{URL.revokeObjectURL(i.url);}catch(e){}});S.negImgs=null;}
+// carrega as imagens do histórico do negócio com a sessão (não há links públicos) e mostra-as como blob:
+function negImgsAplicar(){
+  const els=[...document.querySelectorAll('img[data-neg-img]:not([src])')];if(!els.length)return;
+  els.forEach(el=>{const p=el.dataset.negImg;const u=_negImgUrl.get(p);if(u){el.src=u;return;}
+    if(_negImgPend.has(p))return;
+    _negImgPend.set(p,storagePedido('GET',NEG_IMG_BUCKET,p).then(r=>r.blob()).then(b=>{const url=URL.createObjectURL(b);_negImgUrl.set(p,url);
+        document.querySelectorAll('img[data-neg-img]').forEach(i=>{if(i.dataset.negImg===p)i.src=url;});})
+      .catch(()=>{document.querySelectorAll('img[data-neg-img]').forEach(i=>{if(i.dataset.negImg===p){i.alt='Imagem indisponível';i.closest('.eoth-img')&&i.closest('.eoth-img').classList.add('falhou');}});})
+      .finally(()=>_negImgPend.delete(p)));});
+}
+function negImgLbHTML(){const p=S.negImgVer;const u=_negImgUrl.get(p);
+  return`<div class="eot-lb${S.negImgZoom?' zoom':''}" data-action="neg-img-fechar" role="dialog" aria-label="Imagem"><img data-neg-img="${esc(p)}" ${u?`src="${esc(u)}"`:''} alt="Imagem do comentário" data-action="neg-img-zoom" title="${S.negImgZoom?'Ajustar ao ecrã':'Ver em tamanho real'}"><button type="button" class="eot-lb-x" data-action="neg-img-fechar" aria-label="Fechar">${ico('x')}</button><div class="eot-lb-dica">${S.negImgZoom?'Tamanho real · clica na imagem para ajustar ao ecrã':'Clica na imagem para ver em tamanho real'} · Esc fecha</div></div>`;}
 function eotHistValor(k,v){if(v==null||v==='')return'(vazio)';if(k==='fin_visto_em')return finVistoDH(v)||String(v);if(k==='responsavel_id')return vendName(v)||'?';if(k==='no_mapa')return String(v)==='true'?'Sim':'Não';if(EOT_DATA.includes(k))return eotDataPT(v);if(['prestacao','residual','despesas','total'].includes(k))return eotEur(v);return String(v);}
 function eotHistHTML(h){
   const d=new Date(h.criado_em);const p=n=>String(n).padStart(2,'0');
@@ -7526,13 +7566,26 @@ async function loadNegHist(id){id=String(id);S.negHistErr='';
   try{const d=await supabaseApi('GET','/negocio_historico?negocio_id=eq.'+encodeURIComponent(id)+'&select=*&order=criado_em.desc,id.desc');S.negHist=Object.assign({},S.negHist||{},{[id]:d||[]});}
   catch(e){S.negHist=Object.assign({},S.negHist||{},{[id]:[]});S.negHistErr=/negocio_historico|42P01|schema cache/i.test(String(e&&e.message))?'Os comentários ainda não estão ativos (falta correr o SQL melhorias_negocios.sql).':('Não consegui ler o histórico: '+erroTexto(e));}
   render();}
-async function negComentar(id){const t=String(S.negCom||'').trim();if(!t)return;
-  try{await supabaseApi('POST','/negocio_historico',{negocio_id:Number(id),tipo:'comentario',texto:t});S.negCom='';await loadNegHist(id);}
-  catch(e){alert('Erro ao gravar o comentário: '+erroTexto(e));}}
+async function negComentar(id){const ta=document.getElementById('neg-com');if(ta)S.negCom=ta.value;
+  const t=String(S.negCom||'').trim();const imgs=negImgsDe(id);if((!t&&!imgs.length)||S._negEnviando)return;
+  S._negEnviando=true;render();const feitos=[];
+  try{
+    for(const im of imgs){const ext=im.blob.type==='image/webp'?'webp':im.blob.type==='image/png'?'png':'jpg';
+      const path=`${id}/${Date.now()}-${im.id}.${ext}`;await storagePedido('POST',NEG_IMG_BUCKET,path,im.blob);feitos.push(path);
+      _negImgUrl.set(path,im.url);} // a pré-visualização passa a servir de imagem já carregada
+    const body={negocio_id:Number(id),tipo:'comentario',texto:t||null};if(feitos.length)body.imagens=feitos;
+    await supabaseApi('POST','/negocio_historico',body);
+    S.negImgs=null;S.negCom='';await loadNegHist(id);
+  }catch(e){
+    for(const p of feitos){_negImgUrl.delete(p);try{await storagePedido('DELETE',NEG_IMG_BUCKET,p);}catch(_){}}
+    const m=(e&&e.message)||String(e);const semSql=/PGRST204|42703|bucket not found|negocio_imagens/i.test(m);
+    alert('Erro ao gravar o comentário: '+(semSql?'falta correr o SQL "2026-10-26_negocio_imagens" no Supabase.':(/^Não tens permissão/.test(m)?m:erroTexto(e))));
+  }finally{S._negEnviando=false;render();}}
 function negHistItem(h){const d=new Date(h.criado_em);const p=n=>String(n).padStart(2,'0');
   const quando=isNaN(d)?'':`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
   const quem=`${esc(h.autor_nome||'?')}${h.autor_role?` (${esc(EOT_ROLE_LB[h.autor_role]||h.autor_role)})`:''}`;
-  const txt=h.tipo==='comentario'?`<span class="eoth-com">${esc(h.texto||'').replace(/\n/g,'<br>')}</span>`:(h.tipo==='criacao'?esc(h.texto||'criou o negócio'):
+  const imgs=h.tipo==='comentario'&&Array.isArray(h.imagens)&&h.imagens.length?`<div class="eoth-imgs">${h.imagens.map((p,i)=>`<button type="button" class="eoth-img" data-action="neg-img-ver" data-p="${esc(p)}" aria-label="Abrir imagem ${i+1}"><img data-neg-img="${esc(p)}" alt="Imagem ${i+1} do comentário"></button>`).join('')}</div>`:'';
+  const txt=h.tipo==='comentario'?`<span class="eoth-com">${esc(h.texto||'').replace(/\n/g,'<br>')}</span>${imgs}`:(h.tipo==='criacao'?esc(h.texto||'criou o negócio'):
     `alterou <b>${esc(negCampoLb(h.campo))}</b>: ${esc(negValor(h.campo,h.valor_antes))} → <b>${esc(negValor(h.campo,h.valor_depois))}</b>`);
   return`<div class="eoth-it ${h.tipo==='criacao'?'sistema':esc(h.tipo)}"><div class="eoth-q">${esc(quando)}${h.tipo==='comentario'?' · comentário':''}</div><div class="eoth-t">${quem}: ${txt}</div></div>`;}
 const NEG_COM_RAPIDOS=['Liguei — não atendeu','Falei com o cliente','Enviei proposta','Marcou test-ride','Aguarda financiamento','Pediu para ligar mais tarde','Vem ao stand'];
@@ -7546,10 +7599,14 @@ function negHistHTML(r){
   const comsVer=S.negHistTudo===id?coms:coms.slice(0,5);
   const altAberto=S.negAltAberto===id;
   const altVer=S.negAltTudo===id?alts:alts.slice(0,15);
+  const pend=negImgsDe(id);
   return`<div class="neg-hist">
     <div class="neg-hist-h"><span>${ico('inbox','ic-sm')} Comentários</span>${H?`<span class="neg-hist-n">${coms.length} comentário${coms.length!==1?'s':''}</span>`:''}</div>
     <div class="neg-chips">${NEG_COM_RAPIDOS.map(t=>`<button class="vchip" data-action="neg-com-chip" data-t="${esc(t)}">${esc(t)}</button>`).join('')}</div>
-    <div class="eotm-com"><textarea class="norma-inp" id="neg-com" rows="2" aria-label="Novo comentário" placeholder="Escreve um comentário — fica registado com o teu nome e a hora${isAdmin()?' (o vendedor vê)':' (o chefe vê)'}">${esc(S.negCom||'')}</textarea><button class="btn btn-dark btn-sm" data-action="neg-comentar" data-id="${id}">Comentar</button></div>
+    <div class="eotm-com"><textarea class="norma-inp" id="neg-com" rows="2" aria-label="Novo comentário" placeholder="Escreve um comentário ou cola um print (Ctrl+V) — fica registado com o teu nome e a hora${isAdmin()?' (o vendedor vê)':' (o chefe vê)'}">${esc(S.negCom||'')}</textarea>
+      <div class="eotm-com-b"><label class="btn btn-outline btn-sm eot-anexo" title="Anexar imagens (também podes colar com Ctrl+V)">${ico('plus','ic-sm')}<span>Imagem</span><input type="file" id="neg-img-file" accept="image/*" multiple hidden></label>
+      <button class="btn btn-dark btn-sm" data-action="neg-comentar" data-id="${id}" ${S._negEnviando?'disabled':''}>${S._negEnviando?(pend.length?'A enviar imagens…':'A gravar…'):'Comentar'}</button></div></div>
+    ${pend.length?`<div class="eot-pend" aria-label="Imagens por enviar">${pend.map(i=>`<div class="eot-pend-i"><img src="${esc(i.url)}" alt="Imagem por enviar"><button type="button" class="eot-pend-x" data-action="neg-img-tirar" data-id="${esc(i.id)}" aria-label="Tirar imagem">${ico('x')}</button><small>${Math.max(1,Math.round(i.blob.size/1024))} KB</small></div>`).join('')}<div class="eot-pend-n">${pend.length} imagem${pend.length>1?'ns':''} por enviar: carrega em Comentar.</div></div>`:''}
     ${S.negHistErr?`<div class="mg-aviso" style="margin:8px 0 0">${esc(S.negHistErr)}</div>`:''}
     <div class="eoth">${!H?'<div class="eoth-v">A carregar…</div>':(comsVer.length?comsVer.map(negHistItem).join(''):(S.negHistErr?'':'<div class="eoth-v">Ainda sem comentários.</div>'))}</div>
     ${coms.length>5&&S.negHistTudo!==id?`<button class="btn btn-ghost btn-sm" data-action="neg-hist-tudo" data-id="${id}">Ver todos os comentários (${coms.length})</button>`:''}
@@ -7568,7 +7625,7 @@ function comsNovos(){const v=new Set(comsVistos());return (S.comsRec||[]).filter
 function comsRecentesHTML(titulo){const L=comsNovos();if(!L.length)return'';
   const cli=id=>{const r=(S.records||[]).find(x=>String(x.id)===String(id));return r?(r.id_cliente||'negócio'):'negócio';};
   return`<div class="vh-sec"><span>${esc(titulo||'Comentários novos')}</span><span class="vh-cnt">${L.length}</span><button class="btn btn-ghost btn-sm" data-action="coms-vistos" style="margin-left:auto">Marcar como vistos</button></div>
-  <div class="vh-box">${L.slice(0,8).map(c=>`<div class="vh-row" data-action="${isAdmin()?'open-record-from-dash':'open-detail'}" data-id="${c.negocio_id}" data-com="${c.id}" role="button" tabindex="0"><span class="atag atag-mn">${esc(String(c.autor_nome||'?').split(' ')[0])}</span><span class="vh-txt"><b>${esc(cli(c.negocio_id))}</b> — ${esc(String(c.texto||'').slice(0,110))}</span><span class="vh-chev">${ico('chevr','ic-sm')}</span></div>`).join('')}</div>`;}
+  <div class="vh-box">${L.slice(0,8).map(c=>`<div class="vh-row" data-action="${isAdmin()?'open-record-from-dash':'open-detail'}" data-id="${c.negocio_id}" data-com="${c.id}" role="button" tabindex="0"><span class="atag atag-mn">${esc(String(c.autor_nome||'?').split(' ')[0])}</span><span class="vh-txt"><b>${esc(cli(c.negocio_id))}</b> — ${String(c.texto||'').trim()?esc(String(c.texto).slice(0,110)):'<i>enviou uma imagem</i>'}</span><span class="vh-chev">${ico('chevr','ic-sm')}</span></div>`).join('')}</div>`;}
 // ===== Criação rápida de negócio =====
 function qfChip(k,v,lb){return`<button class="qf-chip ${String(S.form[k]||'')===v?'on':''} ${k==='status'?'qf-st-'+v:''}" data-action="qf-set" data-k="${k}" data-v="${v}">${lb||v}</button>`;}
 function renderEditRapido(){
@@ -8258,7 +8315,7 @@ function EXPORT_FOLHAS(){
     ]},
     {nome:'Negócios histórico',path:'/negocio_historico?select=*&order=criado_em.asc,id.asc',cols:[
       {c:'negocio_id',l:'Negócio ID'},{c:'criado_em',l:'Quando',f:dt},{c:'autor_nome',l:'Quem'},{c:'autor_role',l:'Papel'},{c:'tipo',l:'Tipo'},
-      {c:'campo',l:'Campo'},{c:'valor_antes',l:'Antes'},{c:'valor_depois',l:'Depois'},{c:'texto',l:'Comentário'},
+      {c:'campo',l:'Campo'},{c:'valor_antes',l:'Antes'},{c:'valor_depois',l:'Depois'},{c:'texto',l:'Comentário'},{c:'imagens',l:'Imagens',f:v=>Array.isArray(v)&&v.length?v.length:''},
     ]},
     {nome:'Comissões lançadas',path:'/comissoes_fecho?select=*&order=mes.asc',cols:[
       {c:'mes',l:'Mês'},{c:'fechado_em',l:'Lançadas em',f:dt},{c:'fechado_por',l:'Por',f:nome},
@@ -10007,7 +10064,7 @@ function render0(){
   if(S.screen==='vnotif'&&S.me&&!isVendedor())S.screen=ecraInicial();
   const fn=screens[S.screen];
   const mb=app.querySelector('.eotm-body'),mst=mb?mb.scrollTop:0;
-  app.innerHTML=(typeof fn==='function'?(V_SHELL[S.screen]&&S.me&&!isAdmin()?vEnvolver(fn(),V_SHELL[S.screen]):fn()):fn)+(S.eotAberto&&S.me?eotModalHTML():'')+(S.me?novaVersaoHTML():'');
+  app.innerHTML=(typeof fn==='function'?(V_SHELL[S.screen]&&S.me&&!isAdmin()?vEnvolver(fn(),V_SHELL[S.screen]):fn()):fn)+(S.eotAberto&&S.me?eotModalHTML():'')+(S.negImgVer&&S.me&&!S.eotAberto?negImgLbHTML():'')+(S.me?novaVersaoHTML():'');
   try{const nN=S.me?notifLista().length:0;const tt=(nN?'('+nN+') ':'')+'Bimby Motorrad';if(document.title!==tt)document.title=tt;}catch(e){}
   if(mb&&S.eotAberto){const nb=app.querySelector('.eotm-body');if(nb)nb.scrollTop=mst;}
   app.dataset.screen=S.screen;
@@ -10015,6 +10072,7 @@ function render0(){
   bindEvents();
   try{tblAplicar();}catch(e){}
   try{eotImgsAplicar();}catch(e){}
+  try{negImgsAplicar();}catch(e){}
   try{cardsAplicar();}catch(e){}
   try{tecladoAplicar();}catch(e){}
   try{numAplicar();}catch(e){}
@@ -10095,6 +10153,7 @@ function bindEvents(){
     if(el.dataset&&el.dataset.pmK){savePremioMes(el.dataset.pmMes,el.dataset.pmK,el.value);return;}
     if(el.dataset&&el.dataset.mrgId){saveMargem(el.dataset.mrgId,el.value);return;}
     if(el.dataset&&el.dataset.entId){const v=el.value;saveEntrega(el.dataset.entId,{[el.dataset.entF]:(v===''?null:v)});return;}
+    if(el.id==='neg-img-file'){const fs=[...(el.files||[])];el.value='';const ta=document.getElementById('neg-com');if(ta)S.negCom=ta.value;negImgJuntar(negImgAlvo(),fs);return;}
     if(el.id==='eot-img-file'){const fs=[...(el.files||[])];el.value='';const ta=document.getElementById('eotm-com');if(ta)S.eotCom=ta.value;eotImgJuntar(fs);return;}
     if(el.id==='enc-file'){const fs=[...(el.files||[])];el.value='';encFicheiros(fs);return;}
     if(el.dataset&&el.dataset.encOrI!=null){const P=S.encPrev;if(P&&P.ficheiros[+el.dataset.encOrI]){const f=P.ficheiros[+el.dataset.encOrI];f.origem=el.value||null;f.porque=el.value?'escolhida por ti':f.porque;f.aviso='';encPrevComparar([f]);setState({encPrev:P,encErrImp:''});}return;}
@@ -10281,6 +10340,10 @@ function bindEvents(){
       case'eotm-comentar':eotComentar();break;
       case'eot-img-tirar':eotImgTirar(el.dataset.id);break;
       case'eot-img-ver':setState({eotImgVer:el.dataset.p,eotImgZoom:false});break;
+      case'neg-img-ver':{const nc=document.getElementById('neg-com');if(nc)S.negCom=nc.value;setState({negImgVer:el.dataset.p,negImgZoom:false});break;}
+      case'neg-img-fechar':setState({negImgVer:null,negImgZoom:false});break;
+      case'neg-img-zoom':setState({negImgZoom:!S.negImgZoom});break;
+      case'neg-img-tirar':{const nc=document.getElementById('neg-com');if(nc)S.negCom=nc.value;negImgTirar(el.dataset.id);break;}
       case'eot-img-fechar':setState({eotImgVer:null,eotImgZoom:false});break;
       case'vh-novo-abrir':S.vhNovoAberto=true;render();{const i=document.getElementById('vh-novo-nome');if(i)i.focus();}break;
       case'vh-novo-fase':S.vhNovo=Object.assign(vhNovoVals(),{fase:el.dataset.f});render();break;

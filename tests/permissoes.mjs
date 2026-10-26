@@ -32,6 +32,7 @@ await db.query("insert into public.equipamento(vendedor_id,data,custo,venda) val
 await db.query("insert into public.encomendas_bmw(production_number,model_code,customer_last) values('8000001','0M21','Cliente')");
 N.v2q=await neg(U.vend2,'Quente');
 await db.query("insert into storage.objects(bucket_id,name,owner) values('eot-imagens','C1/foto.webp',$1),('eot-imagens','C2/foto.webp',$2)",[U.vend,U.vend2]);
+await db.query("insert into storage.objects(bucket_id,name,owner) values('negocio-imagens',$1,$2),('negocio-imagens',$3,$4)",[N.frio+'/foto.webp',U.vend,N.v2q+'/foto.webp',U.vend2]);
 await db.exec("set session_replication_role = replica"); // dados de partida: inclui uma encomenda repetida antiga, como existe em produção
 await db.query(`update public.baviera_control set enc='7000001' where id=${N.v2q}`);
 await db.query(`update public.baviera_control set enc='7000005' where id in (${N.carteira},${N.retail2})`);
@@ -166,6 +167,21 @@ const C=[ // [área, perfil, descrição, função, esperado]
   ['vendedor','vend','comentário só com imagem',()=>ok("insert into public.eot_historico(contrato,tipo,imagens) values('C1','comentario',array['C1/a.webp'])"),'consegue'],
   ['vendedor','vend','comentário sem texto nem imagem',()=>ok("insert into public.eot_historico(contrato,tipo,texto) values('C1','comentario','  ')"),'recusado'],
   ['vendedor','vend','comentário que aponta para imagem de outra EOT',()=>ok("insert into public.eot_historico(contrato,tipo,imagens) values('C1','comentario',array['C2/foto.webp'])"),'recusado'],
+  ['anónimo','anon','vê imagens de negócios (nenhuma)',()=>n("select count(*) n from storage.objects where bucket_id='negocio-imagens'"),0],
+  ['vendedor','vend','junta imagem ao seu negócio',()=>ok(`insert into storage.objects(bucket_id,name) values('negocio-imagens','${N.frio}/nova.webp')`),'consegue'],
+  ['vendedor','vend','junta imagem ao negócio do colega',()=>ok(`insert into storage.objects(bucket_id,name) values('negocio-imagens','${N.v2q}/intrusa.webp')`),'recusado'],
+  ['vendedor','vend','vê imagens de negócios (só as dos seus)',()=>n("select count(*) n from storage.objects where bucket_id='negocio-imagens'"),1],
+  ['vendedor','vend','apaga imagem de negócio enviada pelo colega',()=>n(`with d as (delete from storage.objects where name='${N.v2q}/foto.webp' returning 1) select count(*) n from d`),0],
+  ['vendedor','vend','comenta o seu negócio só com imagem',()=>ok(`insert into public.negocio_historico(negocio_id,tipo,imagens) values(${N.frio},'comentario',array['${N.frio}/a.webp'])`),'consegue'],
+  ['vendedor','vend','comenta o seu negócio com texto (como antes)',()=>ok(`insert into public.negocio_historico(negocio_id,tipo,texto) values(${N.frio},'comentario','Liguei ao cliente')`),'consegue'],
+  ['vendedor','vend','comentário sem texto nem imagem',()=>ok(`insert into public.negocio_historico(negocio_id,tipo,texto) values(${N.frio},'comentario','  ')`),'recusado'],
+  ['vendedor','vend','comentário que aponta para imagem de outro negócio',()=>ok(`insert into public.negocio_historico(negocio_id,tipo,imagens) values(${N.frio},'comentario',array['${N.v2q}/foto.webp'])`),'recusado'],
+  ['vendedor','vend','comenta o negócio do colega',()=>ok(`insert into public.negocio_historico(negocio_id,tipo,texto) values(${N.v2q},'comentario','Intruso')`),'recusado'],
+  ['secretário','sec','vê imagens de negócios',()=>n("select count(*) n from storage.objects where bucket_id='negocio-imagens'"),0],
+  ['financeiro','fin','vê imagens de negócios',()=>n("select count(*) n from storage.objects where bucket_id='negocio-imagens'"),0],
+  ['assessor','ass','vê imagens de negócios',()=>n("select count(*) n from storage.objects where bucket_id='negocio-imagens'"),0],
+  ['chefe','chefe','vê imagens de todos os negócios',()=>n("select count(*) n from storage.objects where bucket_id='negocio-imagens'"),2],
+  ['chefe','chefe','comenta negócio de um vendedor com imagem',()=>ok(`insert into public.negocio_historico(negocio_id,tipo,texto,imagens) values(${N.v2q},'comentario','Vê isto',array['${N.v2q}/b.webp'])`),'consegue'],
   ['secretário','sec','vê imagens de EOT',()=>n("select count(*) n from storage.objects where bucket_id='eot-imagens'"),0],
   ['financeiro','fin','vê imagens de todas as EOTs',()=>n("select count(*) n from storage.objects where bucket_id='eot-imagens'"),2],
   ['vendedor','vend','marca adenda à mão na sua EOT (fica sem efeito)',async()=>{await db.query("update public.eot_contratos set adenda_em='2026-10-22' where contrato='C1'");return n("select count(*) n from public.eot_contratos where adenda_em is not null");},0],

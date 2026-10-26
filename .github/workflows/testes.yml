@@ -51,6 +51,7 @@ jobs:
       - run: npm run encomendas
       - run: npm run comercio
       - run: npm run eotimg
+      - run: npm run negimg
       - run: npm run adenda
       - run: npm run alertas
       - run: npm run notificacoes
