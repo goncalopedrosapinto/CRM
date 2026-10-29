@@ -10,6 +10,8 @@ const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'))
     const base={natureza:'MN',iva:23,modo:'civa',fv:2,pvb:'10000',isv:'0',sgpu:'0',mg_fixa_pct:'6',mg_var_pct:'3,5'};
     const pv=d=>String(10000-d*(10000/1.23)*1.23);
     const C=[['9,5 % sem custos',{preco_venda:'9050'},3.5,0],['9,5 % + comparticipação 77 € s/IVA',{preco_venda:'9050',compart_conc:'77'},4.447,-77],
+      ['9,5 % + subvenção 77 € s/IVA (igual à comparticipação)',{preco_venda:'9050',subv_conc:'77'},4.447,-77],
+      ['9,5 % + comparticipação 77 € + subvenção 77 €',{preco_venda:'9050',compart_conc:'77',subv_conc:'77'},5.394,-154],
       ['9,5 % + preparação 123 € c/IVA',{preco_venda:'9050',recondicionamento:'123'},4.73,-100],['5 % sem custos',{preco_venda:pv(0.05)},0,null],
       ['5 % + comparticipação 77 €',{preco_venda:pv(0.05),compart_conc:'77'},0,null],['5 % + comparticipação 500 €',{preco_venda:pv(0.05),compart_conc:'500'},5.15,null],
       ['6 % exatos',{preco_venda:pv(0.06)},0,null],
@@ -39,6 +41,19 @@ const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'))
     return {pct:c.compartCustoPct,esperado:255.55*c.k/c.custo,txt:el?el.textContent:''};});
   casos.push({n:'comparticipação = '+(cpc.pct*100).toFixed(2)+' % do preço de custo ('+cpc.txt+')',esf:+(cpc.pct*100).toFixed(2),esperado:+(cpc.esperado*100).toFixed(2),
     ok:Math.abs(cpc.pct-cpc.esperado)<1e-9&&cpc.txt.includes((cpc.esperado*100).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2}))&&/do preço de custo/.test(cpc.txt)});
+  // Subvenção: sem IVA em qualquer modo (mudar c/IVA ↔ s/IVA não lhe mexe), % do preço de custo ao lado e no PDF
+  const subv=await p.evaluate(()=>{S.fm={natureza:'MN',iva:23,modo:'civa',fv:2,isv:'0',sgpu:'0',pvb:'12300',mg_fixa_pct:'6',mg_var_pct:'3.5',compart_conc:'255.55',subv_conc:'100',preco_venda:'11800'};
+    const c=fmCalc();S.screen='ficha';render();
+    const linha=lb=>{const tr=[...document.querySelectorAll('tr')].find(t=>t.textContent.includes(lb));return tr?{tag:(tr.querySelector('.fm-tag,[class*="tag"]')||{}).textContent||'',pct:(tr.querySelector('.fm-cpc')||{}).textContent||'',inp:!!tr.querySelector('input[data-fm="subv_conc"]'),nota:tr.textContent}:null;};
+    const L=linha('Subvenção Concessionário');
+    fmSetModo('siva');const emSiva=S.fm.subv_conc;fmSetModo('civa');const deVolta=S.fm.subv_conc;
+    let cap='';const o=window.open;window.open=()=>({document:{open(){},write(h){cap+=h},close(){}},focus(){},print(){}});fmPDF();window.open=o;
+    const pdfLinha=(cap.match(/Subven[^<]*Concession[^<]*<span[^>]*>s\/IVA<\/span><\/td><td[^>]*>([^<]*)</)||[])[1]||'';
+    return {pct:c.subvCustoPct,esperado:100*c.k/c.custo,custoInclui:Math.abs(c.custo-((12300/1.23-0)*1.23*1+(255.55+100)*1.23-c.desc*c.k))<0.01,L,emSiva,deVolta,pdfLinha,ajuda:/Comparticipação e a Subvenção Concessionário são sem IVA/.test(document.body.textContent)};});
+  const pctTxt=(subv.esperado*100).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2});
+  casos.push({n:'subvenção = '+(subv.pct*100).toFixed(2)+' % do preço de custo, s/IVA, no ecrã e no PDF ('+(subv.L&&subv.L.pct)+' · PDF '+subv.pdfLinha+')',esf:+(subv.pct*100).toFixed(2),esperado:+(subv.esperado*100).toFixed(2),
+    ok:Math.abs(subv.pct-subv.esperado)<1e-9&&subv.custoInclui&&!!subv.L&&subv.L.inp&&subv.L.pct.includes(pctTxt)&&/escreve-se sem IVA/.test(subv.L.nota)&&!/a única/.test(subv.L.nota)&&
+      subv.emSiva==='100'&&subv.deVolta==='100'&&subv.pdfLinha.includes(pctTxt.replace('.',','))&&subv.ajuda});
   casos.forEach(c=>console.log((c.ok?'✓ ':'✗ ')+c.n+': esforço '+c.esf+' % (esperado '+c.esperado+' %)'));
   const ok=casos.every(c=>c.ok);console.log(ok?'Esforço correto':'FALHOU');await b.close();process.exit(ok?0:1);
 })();
