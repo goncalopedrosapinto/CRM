@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-29-a">
+<meta name="app-version" content="2026-10-30-a">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -457,7 +457,7 @@ html,body{overflow-x:hidden;max-width:100vw}
 .gpp-th-novas{color:var(--blue)}.gpp-th-usadas{color:var(--amber)}
 .gpp-num-sub{font-size:10.5px;font-weight:600;color:var(--amber);margin-top:2px;letter-spacing:0}
 .gpp-com-nota{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;border-top:1px solid var(--border);background:var(--bg);font-size:12.5px;line-height:1.45;color:var(--text2);text-align:left}
-.gpp-com-nota b{color:var(--text)}.gpp-com-nota ul{margin:4px 0 0;padding:0;list-style:none}.gpp-com-nota li{padding:2px 0}.gpp-com-nota li.gpp-lclick{cursor:pointer}.gpp-com-nota li.gpp-lclick:hover b{text-decoration:underline}
+.gpp-com-nota b{color:var(--text)}.gpp-com-nota ul{margin:4px 0 0;padding:0;list-style:none}.gpp-com-nota li{padding:2px 0}.gpp-com-nota li .gpp-lclick{cursor:pointer}.gpp-com-nota li .gpp-lclick:hover b{text-decoration:underline}
 .gpp-com-nota em{font-style:normal;color:var(--text3)}.gpp-com-seta{color:var(--text3)}.gpp-com-ic{flex:none}
 .gpp-th-tot{color:var(--text)}
 .gpp-rowlbl{text-align:left!important;font-weight:600;font-size:14px;color:var(--text)}
@@ -1258,7 +1258,10 @@ html,body{overflow-x:hidden;max-width:100vw}
 .stock-tab.active{background:var(--text);color:#fff;border-color:var(--text)}
 .stock-tbl th{white-space:nowrap}
 .stock-tbl{min-width:1720px}
-.com-tbl{min-width:820px}
+.com-tbl{min-width:980px}
+.com-tbl .com-mg{white-space:nowrap}.com-tbl .com-mg b{font-weight:800}.com-mg-p{display:block;font-size:11px;color:var(--text3);font-weight:600}
+.com-tbl .stock-eurwrap{width:128px;max-width:none;margin-left:auto}
+.com-tbl input.stock-inp,.mg-tbl input.stock-inp{width:100%;max-width:none;box-sizing:border-box;padding:6px 20px 6px 8px;border:1px solid var(--border2);border-radius:6px;font-size:13px;background:var(--surface);color:var(--text);text-align:right;font-variant-numeric:tabular-nums}
 .dep-tbl{min-width:1560px}
 .stock-tbl td{padding:8px 10px}
 .stock-tbl input.stock-inp,.stock-tbl select.stock-inp{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--surface);color:var(--text)}
@@ -2418,7 +2421,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-29-a';
+const APP_VERSION='2026-10-30-a';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -3616,7 +3619,8 @@ function retailDeltaNota(d){if(!d)return'';const nm=MONTH_NAMES[Number(d.prev.sl
 function comercioN(L,f){const n=L.filter(r=>r.venda_direta&&f(r)).length;return n?`<div class="gpp-num-sub">${n} comércio</div>`:'';}
 function comercioNotaHTML(retail,cart,ym,click){const L=[...retail,...cart].filter(r=>r.venda_direta);if(!L.length)return'';
   return`<div class="gpp-com-nota"><span class="gpp-com-ic">🤝</span><div><b>${L.length} mota${L.length>1?'s':''} para o comércio</b> em ${esc(ymLongo(ym))}, já incluída${L.length>1?'s':''} nos números acima:
-    <ul>${L.map(r=>`<li${click?` class="gpp-lclick" data-action="open-record-from-dash" data-id="${esc(r.id)}"`:''}>${esc([r.model,r.version].filter(Boolean).join(' ')||'—')}${r.mat?' · '+esc(r.mat):''} <span class="gpp-com-seta">→</span> <b>${esc(r.id_cliente||'—')}</b>${r.status==='Carteira'?' <em>(carteira)</em>':''}</li>`).join('')}</ul></div></div>`;}
+    <ul>${L.map(r=>{const t=`${esc([r.model,r.version].filter(Boolean).join(' ')||'—')}${r.mat?' · '+esc(r.mat):''} <span class="gpp-com-seta">→</span> <b>${esc(r.id_cliente||'—')}</b>${r.status==='Carteira'?' <em>(carteira)</em>':''}`;
+      return`<li>${click?`<span class="gpp-lclick" data-action="open-record-from-dash" data-id="${esc(r.id)}">${t}</span>`:t}</li>`;}).join('')}</ul></div></div>`;}
 function prevObjetivo(sel,rN,cN){
   const obj=(objEquipaGet(sel,'novas')||{}).objetivo||0;
   if(!obj)return`<div class="gpp-card gpp-obj-card"><div class="gpp-obj-sub" style="text-align:center;padding:6px 0">Sem objetivo lançado para ${esc(ymCurto(sel))}.</div></div>`;
@@ -6298,6 +6302,20 @@ function comOrdena(a,b){const oa=COM_ORDEM_TIPO[a.type]!=null?COM_ORDEM_TIPO[a.t
   return oa-ob||String(a.mat||'').localeCompare(String(b.mat||''))||String(a.id_cliente||'').localeCompare(String(b.id_cliente||''));}
 // Comissão de usada = 25% da margem. Como a margem inclui a comissão no custo, resolve-se:
 //   com = pct*(venda - base) / (1+pct)   [base = custo SEM comissão]; nunca abaixo do mínimo.
+// Custo e margem de uma usada vendida: entrada − depreciação + preparação (+ comissão).
+// Venda a comerciante: a entrada é a do registo da venda (ou a da mota no stock); sem garantia nem comissão
+// (vende-se no estado e não conta para nenhum vendedor). Oficina e legalização já gastas contam se a mota estiver no stock.
+function usadaMargem(r,m){
+  const vd=!!(r&&r.venda_direta);const num=v=>(v==null||v===''||!isFinite(Number(v)))?null:Number(v);
+  const venda=num(r&&r.pvp),entReg=vd?num(r.valor_entrada):null,entSt=m?num(m.valor_entrada):null;
+  const ent=entReg!=null?entReg:entSt;
+  const dep=m&&m.dep_manual!=null?(Number(m.dep_manual)||0):0;
+  const pSem=m?((vd?0:(Number(m.prep_garantia)||0))+(Number(m.prep_legalizacao)||0)+(Number(m.prep_oficina)||0)):0;
+  const base=ent!=null?(ent-dep+pSem):null;
+  const cm=vd?{valor:0,regra:'venda a comerciante: sem comissão'}:comissaoUsada(base,venda);
+  const prep=pSem+cm.valor;const custo=ent!=null?(ent-dep+prep):null;
+  return {vd,venda,ent,entDe:ent==null?null:(entReg!=null?'venda':'stock'),dep,pSem,prep,com:cm.valor,custo,marg:(venda!=null&&custo!=null)?venda-custo:null};
+}
 function comissaoUsada(base,venda){
   const pct=COM_REGRAS.pctUsadas,min=COM_REGRAS.minimo;
   if(venda==null||base==null)return {valor:min,regra:'mínimo (sem preço de venda)'};
@@ -8917,28 +8935,19 @@ function renderDashboard(){
     let tVenda=0,tCusto=0,tCom=0,tMargem=0,nOk=0,nSem=0;
     const linhas=doMes.map(r=>{
       const {m,via}=acha(r);
-      const venda=r.pvp!=null?Number(r.pvp):null;
-      const ent=m&&m.valor_entrada!=null?Number(m.valor_entrada):null;
-      const dep=m&&m.dep_manual!=null?Number(m.dep_manual):0;
-      const _pSem=m?((Number(m.prep_garantia)||0)+(Number(m.prep_legalizacao)||0)+(Number(m.prep_oficina)||0)):0;
-      const _base=(ent!=null)?(ent-dep+_pSem):null;
-      const _cm=comissaoUsada(_base,venda);
-      const prep=_pSem+_cm.valor;
-      const custo=ent!=null?(ent-dep+prep):null;
-      const com=_cm.valor;
-      const marg=(venda!=null&&custo!=null)?(venda-custo):null;
+      const {venda,ent,dep,prep,custo,com,marg}=usadaMargem(r,m);
       const dias=(m&&m.data_rececao&&r.neg)?Math.max(0,Math.round((new Date(String(r.neg).slice(0,10))-new Date(String(m.data_rececao).slice(0,10)))/86400000)):null;
       if(marg!=null){tVenda+=venda;tCusto+=custo;tCom+=com;tMargem+=marg;nOk++;}else{nSem++;}
-      const falta=!m?'sem mota associada':(ent==null?'sem valor de entrada':(venda==null?'sem PVP':''));
+      const falta=ent==null?((m||r.venda_direta)?'sem valor de entrada':'sem mota associada'):(venda==null?'sem PVP':'');
       return`<tr class="gpp-lrow2">
         <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}">${r.neg?esc(String(r.neg).slice(0,10)):'—'}</td>
         <td class="gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}">${esc(r.id_cliente||'—')}${r.venda_direta?'<span class="vd-badge">🤝</span>':''}</td>
         <td>${esc((m&&m.modelo)||r.model||'—')}</td>
         <td>${esc(r.mat||(m&&m.matricula)||'—')}${via==='matrícula'?'<span class="mg-via" title="Ligada por matrícula, não pelo campo Mota do Stock">~</span>':''}</td>
         <td style="text-align:right">${dias!=null?dias:'—'}</td>
-        <td style="text-align:right">${m?`<div class="stock-eurwrap"><input class="stock-inp stock-num" data-mg-stock="${m.id}" data-mg-f="valor_entrada" type="number" step="0.01" value="${ent!=null?ent:''}" placeholder="0"><span class="stock-eur2">€</span></div>`:'<span class="mg-falta">—</span>'}</td>
+        <td style="text-align:right">${r.venda_direta&&(!m||(r.valor_entrada!=null&&r.valor_entrada!==''))?`<div class="stock-eurwrap" title="Valor de entrada do registo da venda a comerciante"><input class="stock-inp stock-num" data-mg-rec="${r.id}" data-mg-f="valor_entrada" type="number" step="0.01" value="${r.valor_entrada!=null&&r.valor_entrada!==''?esc(String(r.valor_entrada)):''}" placeholder="0" aria-label="Valor de entrada de ${esc(r.id_cliente||'')}"><span class="stock-eur2">€</span></div>`:(m?`<div class="stock-eurwrap"><input class="stock-inp stock-num" data-mg-stock="${m.id}" data-mg-f="valor_entrada" type="number" step="0.01" value="${ent!=null?ent:''}" placeholder="0"><span class="stock-eur2">€</span></div>`:'<span class="mg-falta">—</span>')}</td>
         <td style="text-align:right">${m?`<div class="stock-eurwrap"><input class="stock-inp stock-num" data-mg-stock="${m.id}" data-mg-f="dep_manual" type="number" step="0.01" value="${m.dep_manual!=null?m.dep_manual:''}" placeholder="0"><span class="stock-eur2">€</span></div>`:'<span class="mg-falta">—</span>'}</td>
-        <td style="text-align:right" title="Garantia + comissão + legalização + oficina — edita na Calculadora de Depreciação">${prep?fmtE(prep):'—'}</td>
+        <td style="text-align:right" title="${r.venda_direta?'Venda a comerciante: legalização + oficina (sem garantia nem comissão)':'Garantia + comissão + legalização + oficina — edita na Calculadora de Depreciação'}">${prep?fmtE(prep):'—'}</td>
         <td style="text-align:right;font-weight:600">${custo!=null?fmtE(custo):'—'}</td>
         <td style="text-align:right"><div class="stock-eurwrap"><input class="stock-inp stock-num" data-mg-rec="${r.id}" data-mg-f="pvp" type="number" step="0.01" value="${venda!=null?venda:''}" placeholder="0"><span class="stock-eur2">€</span></div></td>
         <td style="text-align:right;color:var(--text3)" title="Já incluída na preparação">${com?fmtE(com):'—'}</td>
@@ -8960,7 +8969,7 @@ function renderDashboard(){
       <div class="gpp-card" style="margin:0 16px 20px;overflow-x:auto"><table class="gpp-ltable mg-tbl">
         <thead><tr><th>Data</th><th>Cliente</th><th>Modelo</th><th>Matrícula</th><th style="text-align:right">Dias stock</th><th style="text-align:right">Entrada</th><th style="text-align:right">Deprec.</th><th style="text-align:right">Prep.</th><th style="text-align:right">Custo</th><th style="text-align:right">Venda (PVP)</th><th style="text-align:right">Comissão<br><span style="font-weight:400;font-size:9px">(na prep.)</span></th><th style="text-align:right">Margem líq.</th></tr></thead>
         <tbody>${linhas}</tbody></table></div>`}
-      <div class="gpp-pend-desc" style="margin:0 16px 16px"><b>Preparação = garantia + legalização + oficina + comissão</b> (as três primeiras editas na Calculadora de Depreciação; a <b>comissão é calculada</b>: 25% da margem, mínimo 35 €). Custo = entrada − depreciação + preparação. <b>Margem líquida = venda (PVP) − custo</b> — a comissão já lá está dentro, por isso não é descontada outra vez. Podes editar a entrada, a depreciação e o PVP aqui. Não inclui IVA nem encargos de financiamento.</div>`;
+      <div class="gpp-pend-desc" style="margin:0 16px 16px"><b>Preparação = garantia + legalização + oficina + comissão</b> (as três primeiras editas na Calculadora de Depreciação; a <b>comissão é calculada</b>: 25% da margem, mínimo 35 €). Custo = entrada − depreciação + preparação. <b>Margem líquida = venda (PVP) − custo</b> — a comissão já lá está dentro, por isso não é descontada outra vez. Podes editar a entrada, a depreciação e o PVP aqui. Não inclui IVA nem encargos de financiamento. Vendas a comerciante (🤝): entrada do registo da venda, sem garantia nem comissão.</div>`;
   }
   function premiosView(){
     const fmtE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
@@ -9587,23 +9596,34 @@ function renderDashboard(){
     const fmtMes=d=>{if(!d)return'—';const parts=String(d).slice(0,7).split('-');if(parts.length<2)return String(d).slice(0,10);const mi=(+parts[1])-1;return (MONTH_NAMES[mi]||parts[1])+' '+parts[0];};
     const com=(recs||[]).filter(r=>r.venda_direta).slice().sort((a,b)=>String(b.col_298||'').localeCompare(String(a.col_298||'')));
     const totalVal=com.reduce((a,r)=>a+(parseFloat(r.pvp)||0),0);
+    // margem de cada venda: saída − entrada (− oficina e legalização já gastas, se a mota estiver ligada ao stock)
+    const norm=v=>String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'');const stock=S.stock||[];
+    const motaDe=r=>(r.stock_id&&stock.find(x=>String(x.id)===String(r.stock_id)))||(r.mat&&stock.find(x=>norm(x.matricula)&&norm(x.matricula)===norm(r.mat)))||null;
+    const M=new Map(com.map(r=>[r,usadaMargem(r,motaDe(r))]));
+    const ok=com.filter(r=>M.get(r).marg!=null);const tMarg=ok.reduce((a,r)=>a+M.get(r).marg,0),nNeg=ok.filter(r=>M.get(r).marg<0).length,nSem=com.length-ok.length;
+    const sinal=n=>(n>0?'+':(n<0?'−':''))+fmtE(Math.abs(n));const corM=n=>n>0?'var(--green)':(n<0?'var(--red)':'var(--text2)');
+    const pctS=(n,v)=>v?(n<0?'−':'')+Math.abs(n/v*100).toLocaleString('pt-PT',{minimumFractionDigits:1,maximumFractionDigits:1})+' %':'';
+    const clk=`class="gpp-lclick" data-action="open-record-from-dash"`;
     return`${vdBlocoHTML()}
       <div class="gpp-tot-head" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-        <span>🤝 Vendas a comerciante · <b>${com.length}</b> mota${com.length!==1?'s':''}${totalVal?` · ${fmtE(totalVal)}`:''}</span>
+        <span>🤝 Vendas a comerciante · <b>${com.length}</b> mota${com.length!==1?'s':''}${totalVal?` · ${fmtE(totalVal)}`:''}${ok.length?` · margem <b class="com-mg-tot" style="color:${corM(tMarg)}">${sinal(tMarg)}</b>`:''}${nNeg?` · <b style="color:var(--red)">${nNeg}</b> a perder dinheiro`:''}${nSem?` · ${nSem} sem valor de entrada`:''}</span>
       </div>
-      <div class="gpp-pend-desc" style="margin:2px 16px 10px">Contam para o bolo da empresa. <b>Não</b> contam como retail para nenhum vendedor — o vendedor indicado é só quem trabalhou o preço.</div>
+      <div class="gpp-pend-desc" style="margin:2px 16px 10px">Contam para o bolo da empresa. <b>Não</b> contam como retail para nenhum vendedor — o vendedor indicado é só quem trabalhou o preço. <b>Margem</b> = saída − entrada (menos oficina e legalização já gastas, se a mota estiver ligada ao stock); sem garantia nem comissão.</div>
       ${com.length===0?'<div class="gpp-empty">Ainda sem vendas a comerciante registadas.</div>':`
       <div class="gpp-card" style="margin:0 16px 20px;overflow-x:auto"><table class="gpp-ltable com-tbl">
-        <thead><tr><th>Comerciante</th><th>Mês retail / fatura</th><th>Modelo</th><th>Matrícula</th><th>Tipo</th><th>Trabalhado por</th><th>Valor</th></tr></thead>
-        <tbody>${com.map(r=>`<tr class="gpp-lrow" data-action="open-record-from-dash" data-id="${r.id}">
-          <td style="font-weight:600">${esc(r.id_cliente||'—')}</td>
-          <td>${fmtMes(r.col_298)}</td>
-          <td>${esc(r.model||'')} ${esc(r.version||'')}</td>
-          <td>${esc(r.mat||'—')}</td>
-          <td><span class="gpp-tipo-badge">${esc(r.type||'MU')}</span></td>
-          <td style="color:var(--text3)">${vendTag(r.vendedor_id)}</td>
-          <td style="color:var(--text3)">${r.pvp!=null?fmtE(parseFloat(r.pvp)):'—'}</td>
-        </tr>`).join('')}</tbody>
+        <thead><tr><th>Comerciante</th><th>Mês retail / fatura</th><th>Modelo</th><th>Matrícula</th><th>Tipo</th><th>Trabalhado por</th><th style="text-align:right">Entrada</th><th style="text-align:right">Saída</th><th style="text-align:right">Margem</th></tr></thead>
+        <tbody>${com.map(r=>{const x=M.get(r);const tit=x.marg!=null?`Saída ${fmtE(x.venda)} − entrada ${fmtE(x.ent)}${x.entDe==='stock'?' (do stock)':''}${x.pSem?` − oficina/legalização ${fmtE(x.pSem)}`:''}${x.dep?` + depreciação ${fmtE(x.dep)}`:''}`:'';
+          return`<tr class="gpp-lrow2" data-id="${r.id}">
+          <td ${clk} data-id="${r.id}" style="font-weight:600">${esc(r.id_cliente||'—')}</td>
+          <td ${clk} data-id="${r.id}">${fmtMes(r.col_298)}</td>
+          <td ${clk} data-id="${r.id}">${esc(r.model||'')} ${esc(r.version||'')}</td>
+          <td ${clk} data-id="${r.id}">${esc(r.mat||'—')}</td>
+          <td ${clk} data-id="${r.id}"><span class="gpp-tipo-badge">${esc(r.type||'MU')}</span></td>
+          <td ${clk} data-id="${r.id}" style="color:var(--text3)">${vendTag(r.vendedor_id)}</td>
+          <td style="text-align:right"><div class="stock-eurwrap"><input class="stock-inp stock-num" data-mg-rec="${r.id}" data-mg-f="valor_entrada" type="number" step="0.01" value="${r.valor_entrada!=null&&r.valor_entrada!==''?esc(String(r.valor_entrada)):''}" placeholder="${x.entDe==='stock'?esc(String(x.ent))+' · stock':'quanto entrou'}" ${x.entDe==='stock'?`title="Entrada da mota no stock: ${esc(fmtE(x.ent))} — escreve aqui para usar outro valor"`:''} aria-label="Valor de entrada de ${esc(r.model||'')} ${esc(r.mat||'')}"><span class="stock-eur2">€</span></div></td>
+          <td ${clk} data-id="${r.id}" style="text-align:right;color:var(--text3)">${x.venda!=null?fmtE(x.venda):'—'}</td>
+          <td class="gpp-lclick com-mg" data-action="open-record-from-dash" data-id="${r.id}" style="text-align:right" title="${esc(tit)}">${x.marg!=null?`<b style="color:${corM(x.marg)}">${sinal(x.marg)}</b><small class="com-mg-p">${pctS(x.marg,x.venda)}</small>`:'<span class="mg-falta">sem valor de entrada</span>'}</td>
+        </tr>`;}).join('')}</tbody>
       </table></div>`}`;
   }
   function depreciacaoView(){
@@ -10470,7 +10490,7 @@ function bindEvents(){
       case'retail-ord':{const o=el.dataset.o;if(S.retailOrd===o)setState({retailDir:S.retailDir==='asc'?'desc':'asc'});else setState({retailOrd:o,retailDir:'asc'});break;}
       case'gpp-mais':setState({gppMais:!S.gppMais});break;
       case'gpp-mais-close':setState({gppMais:false});break;
-      case'gpp-sec':{let s=el.dataset.s;if(s==='ficha'&&S.fmNeg)fmSairDoNegocio();if(s==='encomendas'){S.encLoaded=false;S.encMsg='';}if(s==='eots')loadEot().then(()=>render());if(s==='notificacoes')loadNotif().then(()=>render());if(GRUPOS_SEC[s])s=((S.gppTab||{})[s])||GRUPOS_SEC[s].tabs[0][0];{const _g=grupoDe(s);if(_g)S.gppTab=Object.assign({},S.gppTab||{},{[_g]:s});}S.gppBusca='';S.gppMais=false;if(s==='escala'){setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}else if(s==='stock'||s==='depreciacao'||s==='margem'){setState({gppSec:s,dashAlertOpen:null});if(!S.stockLoaded)loadStock().then(()=>render());}
+      case'gpp-sec':{let s=el.dataset.s;if(s==='ficha'&&S.fmNeg)fmSairDoNegocio();if(s==='encomendas'){S.encLoaded=false;S.encMsg='';}if(s==='eots')loadEot().then(()=>render());if(s==='notificacoes')loadNotif().then(()=>render());if(GRUPOS_SEC[s])s=((S.gppTab||{})[s])||GRUPOS_SEC[s].tabs[0][0];{const _g=grupoDe(s);if(_g)S.gppTab=Object.assign({},S.gppTab||{},{[_g]:s});}S.gppBusca='';S.gppMais=false;if(s==='escala'){setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}else if(s==='stock'||s==='depreciacao'||s==='margem'||s==='comercio'){setState({gppSec:s,dashAlertOpen:null});if(!S.stockLoaded)loadStock().then(()=>render());}
       else if(s==='premios'){setState({gppSec:s,dashAlertOpen:null});loadPremiosMes().then(()=>render());}
       else if(s==='entregas'){setState({gppSec:s,dashAlertOpen:null});loadEntregas().then(()=>render());}
       else if(s==='comissoes'){setState({gppSec:s,dashAlertOpen:null,pdfMenu:false});Promise.all([loadMargens(),loadEquipamento(),loadAssessores(),loadComFecho()]).then(()=>render());}else if(s==='evento'){setState({gppSec:s,dashAlertOpen:null,eventoErr:''});const ev=eventoAtual();if(ev){S.eventoSel=ev.id;loadRanking(ev.id).then(()=>render());}}else if(s==='funil'){setState({gppSec:s,dashAlertOpen:null});loadTransicoes().then(()=>render());}else if(s==='reuniao'){reuCarregar(true);setState({gppSec:s,dashAlertOpen:null});}else{setState({gppSec:s,dashAlertOpen:null});}break}
