@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-10-30-a">
+<meta name="app-version" content="2026-11-02-a">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1997,6 +1997,8 @@ a{color:var(--blue)}
 .eotm-com textarea{flex:1;resize:vertical;min-height:44px}
 .eotm-com-b{display:flex;gap:6px;align-items:center}.eot-anexo{display:inline-flex;align-items:center;gap:4px;cursor:pointer;margin:0}
 .eot-pend{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin-top:8px}
+.eot-prev-det{margin-top:8px;font-size:12.5px}.eot-prev-det summary{cursor:pointer;font-weight:700;color:var(--text2)}
+.eot-prev-det ul{margin:6px 0 0;padding-left:18px;max-height:260px;overflow:auto;line-height:1.5}.eot-prev-ct{color:var(--text3);font-size:11px}
 .eot-pend-i{position:relative;width:84px;height:84px;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:var(--bg)}
 .eot-pend-i img{width:100%;height:100%;object-fit:cover;display:block}
 .eot-pend-i small{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.55);color:#fff;font-size:10px;text-align:center;padding:1px 0}
@@ -2421,7 +2423,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-10-30-a';
+const APP_VERSION='2026-11-02-a';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -6409,6 +6411,11 @@ function eotData(v){
   if(m)return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
   m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);return m?m[0]:null;
 }
+// número do contrato para comparar mapas: sem espaços/pontos/traços e sem zeros à esquerda (o mesmo contrato escrito de outra forma)
+function eotChave(c){return String(c==null?'':c).trim().replace(/\.0+$/,'').toUpperCase().replace(/[\s.\-\/]/g,'').replace(/^0+(?=\d)/,'');}
+const EOT_NUM_BANCO=['prazo','prestacao','residual','despesas','total'];
+function eotCmp(k,v){if(v==null||v==='')return'';if(EOT_NUM_BANCO.includes(k)){const n=Number(v);return isFinite(n)?String(Math.round(n*100)/100):String(v).trim();}
+  if(k==='data_fim')return String(v).slice(0,10);return String(v).replace(/\s+/g,' ').trim();}
 function eotIncluir(marca,conc,resp){
   if(eotNorm(marca)!=='bmw motorrad')return false;
   const c=eotNorm(conc),r=eotNorm(resp);
@@ -6429,34 +6436,62 @@ function eotParse(rows){
   const falta=['contrato','marca','conc','fim'].filter(k=>C[k]<0);
   if(falta.length)throw new Error('Faltam colunas no ficheiro: '+falta.join(', '));
   const g=(r,k)=>C[k]>=0?r[C[k]]:null;
-  const linhas=[],vistos=new Set();let exMarca=0,exConc=0,total=0;
+  const porChave=new Map();let exMarca=0,exConc=0,total=0;
   for(let i=hi+1;i<rows.length;i++){
     const r=rows[i]||[];const ct=eotTxt(g(r,'contrato'));if(!ct)continue;
     total++;
     if(eotNorm(g(r,'marca'))!=='bmw motorrad'){exMarca++;continue;}
     if(!eotIncluir(g(r,'marca'),g(r,'conc'),g(r,'resp'))){exConc++;continue;}
-    const k=String(ct).replace(/\.0+$/,'');if(vistos.has(k))continue;vistos.add(k);
+    const k=String(ct).replace(/\.0+$/,'').trim();
     const man=[eotTxt(g(r,'man1')),eotTxt(g(r,'man2'))].filter(Boolean).join(' · ')||null;
     const pz=eotNum(g(r,'prazo'));
-    linhas.push({contrato:k,tipo:eotTxt(g(r,'tipo')),cliente:eotTxt(g(r,'cliente')),contacto_nome:eotTxt(g(r,'contacto')),
+    const ch=eotChave(k);if(!porChave.has(ch))porChave.set(ch,[]);
+    porChave.get(ch).push({contrato:k,tipo:eotTxt(g(r,'tipo')),cliente:eotTxt(g(r,'cliente')),contacto_nome:eotTxt(g(r,'contacto')),
       telefone:eotTxt(g(r,'tel')),telemovel:eotTxt(g(r,'tlm')),data_fim:eotData(g(r,'fim')),prazo:pz==null?null:Math.round(pz),
       prestacao:eotNum(g(r,'prest')),kms:eotTxt(g(r,'kms')),matricula:eotTxt(g(r,'mat')),modelo:eotTxt(g(r,'modelo')),
       seguro:eotTxt(g(r,'seguro')),manutencao:man,residual:eotNum(g(r,'resid')),despesas:eotNum(g(r,'desp')),total:eotNum(g(r,'total')),
       concessionario:eotTxt(g(r,'conc')),conc_resp:eotTxt(g(r,'resp')),vendedor_origem:eotTxt(g(r,'vend'))});
   }
-  return {linhas,total,exMarca,exConc};
+  const linhas=[],repetidos=[];
+  porChave.forEach(L=>{if(L.length===1){linhas.push(L[0]);return;}
+    let best=L[0];L.forEach(x=>{if(String(x.data_fim||'')>=String(best.data_fim||''))best=x;});
+    const m=Object.assign({},best);EOT_CAMPOS_BANCO.forEach(c=>{if(m[c]==null){const o=L.find(x=>x[c]!=null);if(o)m[c]=o[c];}});
+    repetidos.push({contrato:m.contrato,cliente:m.cliente,n:L.length,difs:EOT_CAMPOS_BANCO.filter(c=>new Set(L.map(x=>eotCmp(c,x[c]))).size>1)});
+    linhas.push(m);});
+  return {linhas,total,exMarca,exConc,repetidos};
 }
-function eotDiff(linhas,exist){
-  const m=new Map((exist||[]).map(x=>[String(x.contrato),x]));const noFich=new Set(linhas.map(l=>l.contrato));
-  const novos=linhas.filter(l=>!m.has(l.contrato));
-  const voltam=linhas.filter(l=>m.has(l.contrato)&&m.get(l.contrato).no_mapa===false);
-  const atual=linhas.filter(l=>m.has(l.contrato)&&m.get(l.contrato).no_mapa!==false);
-  const saem=(exist||[]).filter(x=>x.no_mapa!==false&&!noFich.has(String(x.contrato)));
+// manuais: contrato → campo → quando a equipa o corrigiu à mão (histórico); essa correção fica se for depois da última importação
+function eotNoMapa(){return (S.eot||[]).filter(x=>x.no_mapa!==false).length;}
+function eotMuitosSaem(P){const n=eotNoMapa();return n>=5&&P.saem.length>n*0.3;}   // mais de 30% a sair: pode ser um mapa antigo
+function eotDiff(linhas,exist,manuais){
+  const m=new Map((exist||[]).map(x=>[eotChave(x.contrato),x]));
+  // o mesmo contrato escrito de outra forma junta-se ao que já existe (fica o número gravado, não se cria outro)
+  const L=linhas.map(l=>{const e=m.get(eotChave(l.contrato));return e&&String(e.contrato)!==String(l.contrato)?Object.assign({},l,{contrato:String(e.contrato),contrato_ficheiro:l.contrato}):l;});
+  const E=l=>m.get(eotChave(l.contrato));const noFich=new Set(L.map(l=>eotChave(l.contrato)));
+  const novos=L.filter(l=>!E(l));
+  const voltam=L.filter(l=>E(l)&&E(l).no_mapa===false);
+  const atual=L.filter(l=>E(l)&&E(l).no_mapa!==false);
+  const saem=(exist||[]).filter(x=>x.no_mapa!==false&&!noFich.has(eotChave(x.contrato)));
   // adenda: o banco mantém o número do contrato e muda a data de fim → volta a "Por contactar"
-  const reabrir=linhas.filter(l=>{const e=m.get(l.contrato);return !!e&&e.fase==='Adenda'&&!!l.data_fim&&!!e.data_fim&&String(l.data_fim)>String(e.data_fim);})
-    .map(l=>Object.assign({},l,{fim_antes:m.get(l.contrato).data_fim}));
-  return {novos,voltam,atual,saem,reabrir};
+  const reabrir=L.filter(l=>{const e=E(l);return !!e&&e.fase==='Adenda'&&!!l.data_fim&&!!e.data_fim&&String(l.data_fim)>String(e.data_fim);})
+    .map(l=>Object.assign({},l,{fim_antes:E(l).data_fim}));
+  const mudam=[],mantidos=[];let iguais=0,vazios=0;
+  const upsert=L.map(l=>{const c=Object.assign({},l);delete c.contrato_ficheiro;const e=E(l);if(!e)return c;const mud=[];
+    EOT_CAMPOS_BANCO.forEach(k=>{const nv=eotCmp(k,l[k]),ov=eotCmp(k,e[k]);
+      if(nv===''){if(ov!==''){c[k]=e[k];vazios++;}return;}          // vazio no ficheiro não apaga o que já estava
+      if(nv===ov)return;
+      const man=manuais&&manuais.get(String(e.contrato))&&manuais.get(String(e.contrato)).get(k);
+      if(man&&(!e.ultima_import||String(man)>String(e.ultima_import))){c[k]=e[k];mantidos.push({contrato:e.contrato,cliente:e.cliente||l.cliente,k,banco:l[k],atual:e[k],em:man});return;}
+      mud.push({k,antes:e[k],depois:l[k]});});
+    if(mud.length)mudam.push({contrato:e.contrato,cliente:e.cliente||l.cliente,mud});else iguais++;
+    return c;});
+  return {novos,voltam,atual,saem,reabrir,upsert,mudam,mantidos,iguais,vazios,formato:L.filter(l=>l.contrato_ficheiro)};
 }
+// correções feitas à mão nos dados do banco (para a importação não as desfazer)
+async function eotManuais(){const mm=new Map();
+  try{const h=await supabaseApi('GET','/eot_historico?tipo=eq.alteracao&campo=in.('+EOT_CAMPOS_BANCO.join(',')+')&select=contrato,campo,criado_em&order=criado_em.desc&limit=5000');
+    (h||[]).forEach(x=>{const c=String(x.contrato);if(!mm.has(c))mm.set(c,new Map());if(!mm.get(c).has(x.campo))mm.get(c).set(x.campo,x.criado_em);});}catch(e){}
+  return mm;}
 let _xlsxP=null;
 function eotCarregarXLSX(){
   if(window.XLSX)return Promise.resolve(window.XLSX);
@@ -6478,7 +6513,7 @@ async function eotFicheiro(f){
     if(!p.linhas.length)throw new Error('O ficheiro tem '+p.total+' contratos mas nenhum BMW Motorrad de Aveiro.');
     await loadEot();
     if(S.eotErr)throw new Error('Não consegui ler a tabela eot_contratos: '+S.eotErr);
-    const d=eotDiff(p.linhas,S.eot);
+    const d=eotDiff(p.linhas,S.eot,await eotManuais());
     setState({eotBusy:false,eotPrev:Object.assign({nome:f.name},p,d)});
   }catch(e){setState({eotBusy:false,eotErrImp:(e&&e.message)||String(e)});}
 }
@@ -6493,8 +6528,9 @@ async function eotConfirmar(){
   setState({eotBusy:true,eotErrImp:''});
   const agora=new Date().toISOString();
   try{
-    // só dados do banco + marcação "no mapa": fase, responsável, temperatura, próxima ação e notas nunca são tocados
-    const corpo=P.linhas.map(l=>Object.assign({},l,{no_mapa:true,saiu_em:null,ultima_import:agora}));
+    // só dados do banco + marcação "no mapa": fase, responsável, temperatura, próxima ação, notas e indicações nunca são tocados;
+    // nos que já existem, vazios do ficheiro e correções da equipa ficam como estavam (P.upsert)
+    const corpo=(P.upsert||P.linhas).map(l=>Object.assign({},l,{no_mapa:true,saiu_em:null,ultima_import:agora}));
     for(let i=0;i<corpo.length;i+=200)await eotUpsert(corpo.slice(i,i+200));
     const saem=P.saem.map(x=>String(x.contrato));
     for(let i=0;i<saem.length;i+=100){
@@ -6511,7 +6547,7 @@ async function eotConfirmar(){
       catch(e){if(/adenda_em|PGRST204|schema cache/i.test(String(e&&e.message)))avisoAd=' ⚠️ Contratos com adenda não reabertos: falta correr o SQL "2026-10-22_eot_adenda" no Supabase.';else throw e;}
     }
     await loadEot();
-    setState({eotBusy:false,eotPrev:null,eotMsg:`Mapa atualizado: ${P.novos.length} novos · ${P.atual.length} atualizados${P.voltam.length?` · ${P.voltam.length} voltaram`:''}${P.saem.length?` · ${P.saem.length} saíram do mapa`:''}${nReab?` · ${nReab} com adenda voltaram a "Por contactar"`:''}.${avisoAd}`});
+    setState({eotBusy:false,eotPrev:null,eotMsg:`Mapa atualizado: ${P.novos.length} novos · ${P.atual.length+P.voltam.length} já existiam${(P.mudam||[]).length?` (${P.mudam.length} com dados novos do banco; os valores antigos ficam no histórico de cada contrato)`:''}${P.voltam.length?` · ${P.voltam.length} voltaram`:''}${P.saem.length?` · ${P.saem.length} saíram do mapa`:''}${nReab?` · ${nReab} com adenda voltaram a "Por contactar"`:''}.${avisoAd}`});
   }catch(e){setState({eotBusy:false,eotErrImp:'Erro ao gravar: '+erroTexto(e)});}
 }
 async function eotGuardar(contrato,patch){
@@ -6836,12 +6872,21 @@ function eotView(){
       <div class="eot-prev-g">
         <div><b>${P.linhas.length}</b> contratos BMW Motorrad · Aveiro</div>
         <div class="ok">＋ <b>${P.novos.length}</b> novos</div>
-        <div>↻ <b>${P.atual.length}</b> já existentes (só dados do banco atualizados)</div>
+        <div>↻ <b>${P.atual.length+P.voltam.length}</b> já existiam${P.mudam?`: ${P.iguais} sem alterações · <b>${P.mudam.length}</b> com dados novos do banco`:''}</div>
         ${P.voltam.length?`<div>↩ <b>${P.voltam.length}</b> voltaram ao mapa</div>`:''}
         ${(P.reabrir||[]).length?`<div class="ok">↻ <b>${P.reabrir.length}</b> com adenda e data de fim nova: voltam a "Por contactar" (a adenda continua a contar como renovado)</div>`:''}
         <div class="${P.saem.length?'no':''}">⇥ <b>${P.saem.length}</b> saem do mapa (não são apagados)</div>
+        ${(P.repetidos||[]).length?`<div class="no">⚠ <b>${P.repetidos.length}</b> contrato${P.repetidos.length!==1?'s':''} repetido${P.repetidos.length!==1?'s':''} dentro do ficheiro: fica a linha com a data de fim mais recente (o que estiver vazio vem da outra)</div>`:''}
+        ${(P.formato||[]).length?`<div>≡ <b>${P.formato.length}</b> com o número escrito de outra forma: juntos ao contrato que já existia</div>`:''}
+        ${P.vazios?`<div>🛡 <b>${P.vazios}</b> campo${P.vazios!==1?'s':''} vazio${P.vazios!==1?'s':''} no ficheiro: fica o valor que já estava</div>`:''}
+        ${(P.mantidos||[]).length?`<div>🛡 <b>${P.mantidos.length}</b> correç${P.mantidos.length!==1?'ões':'ão'} da equipa mantida${P.mantidos.length!==1?'s':''} (o mapa traz outro valor)</div>`:''}
+        ${eotMuitosSaem(P)?`<div class="no">⚠ <b>${P.saem.length}</b> de ${eotNoMapa()} contratos saem do mapa: confirma que este é o ficheiro mais recente</div>`:''}
+        <div class="ok">🛡 Fase, responsável, temperatura, próxima ação, notas, indicações e visto dos financeiros não são tocados.</div>
         <div class="mut">Ignorados: ${P.exMarca} de outras marcas · ${P.exConc} Motorrad de outros concessionários (total no ficheiro: ${P.total})</div>
       </div>
+      ${(P.mudam||[]).length?`<details class="eot-prev-det"><summary>O que muda nos dados do banco (${P.mudam.length})</summary><ul>${P.mudam.slice(0,60).map(x=>`<li><b>${esc(x.cliente||x.contrato)}</b> <span class="eot-prev-ct">${esc(x.contrato)}</span>: ${x.mud.map(d=>`${esc(EOT_CAMPOS[d.k]||d.k)} ${esc(eotHistValor(d.k,d.antes))} → <b>${esc(eotHistValor(d.k,d.depois))}</b>`).join(' · ')}</li>`).join('')}${P.mudam.length>60?`<li>e mais ${P.mudam.length-60}</li>`:''}</ul></details>`:''}
+      ${(P.mantidos||[]).length?`<details class="eot-prev-det"><summary>Correções da equipa que ficam (${P.mantidos.length})</summary><ul>${P.mantidos.slice(0,60).map(x=>`<li><b>${esc(x.cliente||x.contrato)}</b> <span class="eot-prev-ct">${esc(x.contrato)}</span>: ${esc(EOT_CAMPOS[x.k]||x.k)} fica <b>${esc(eotHistValor(x.k,x.atual))}</b> (corrigido a ${esc(eotDataPT(String(x.em).slice(0,10)))}; o mapa traz ${esc(eotHistValor(x.k,x.banco))})</li>`).join('')}</ul></details>`:''}
+      ${(P.repetidos||[]).length?`<details class="eot-prev-det"><summary>Repetidos no ficheiro (${P.repetidos.length})</summary><ul>${P.repetidos.slice(0,60).map(x=>`<li><b>${esc(x.cliente||x.contrato)}</b> <span class="eot-prev-ct">${esc(x.contrato)}</span>: ${x.n} linhas${x.difs.length?` · diferem em ${x.difs.map(k=>esc(EOT_CAMPOS[k]||k)).join(', ')}`:' iguais'}</li>`).join('')}</ul></details>`:''}
       ${(P.reabrir||[]).length?`<div class="eot-prev-saem eot-prev-reab">Reabrem: ${P.reabrir.slice(0,12).map(x=>esc(x.cliente||x.contrato)+' ('+esc(eotDataPT(x.fim_antes))+' → '+esc(eotDataPT(x.data_fim))+')').join(', ')}${P.reabrir.length>12?` e mais ${P.reabrir.length-12}`:''}</div>`:''}
       ${P.saem.length?`<div class="eot-prev-saem">Saem: ${P.saem.slice(0,12).map(x=>esc(x.cliente||x.contrato)).join(', ')}${P.saem.length>12?` e mais ${P.saem.length-12}`:''}</div>`:''}
       <div style="display:flex;gap:8px;margin-top:12px">
@@ -7840,7 +7885,7 @@ function renderEscalaPicker(){
   return`<div class="esc-modal-bg" data-action="escala-close">
     <div class="esc-modal" data-action="escala-noop">
       <div class="esc-modal-head">
-        <div><b>${estado}</b> · ${d}/${m}</div>
+        <div><b>${esc(estado)}</b> · ${esc(d)}/${esc(m)}</div>
         <button class="esc-modal-x" data-action="escala-close">✕</button>
       </div>
       <div class="esc-modal-body">
@@ -7848,10 +7893,10 @@ function renderEscalaPicker(){
           const e=S.escala[dia+'|'+v.id];
           const here=e&&e.estado===estado;
           const elsewhere=e&&e.estado!==estado?e.estado:null;
-          return`<div class="esc-pick ${here?'on':''}" data-action="escala-toggle" data-dia="${dia}" data-vid="${v.id}" data-estado="${estado}">
+          return`<div class="esc-pick ${here?'on':''}" data-action="escala-toggle" data-dia="${esc(dia)}" data-vid="${esc(v.id)}" data-estado="${esc(estado)}">
             <span class="esc-pick-chk">${here?'✓':''}</span>
             <span class="esc-pick-name">${esc(v.nome||'?')}</span>
-            ${elsewhere?`<span class="esc-pick-else">está em ${elsewhere}</span>`:''}
+            ${elsewhere?`<span class="esc-pick-else">está em ${esc(elsewhere)}</span>`:''}
           </div>`;
         }).join('')}
       </div>
