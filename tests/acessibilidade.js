@@ -20,6 +20,10 @@ const usadas=[{id:51,modelo:'R 1250 GS',matricula:'AA-00-AA',ano:2021,kms:30000,
 const comp=[{id:1,reuniao:d(14),vendedor_id:'v1',ponto:'eots',texto:'Ligar aos clientes EOT',prazo:d(3),feito:false,feito_em:null,adiamentos:1,adiado_em:d(7),criado_em:new Date(Date.now()-14*864e5).toISOString()},
   {id:2,reuniao:d(14),vendedor_id:null,ponto:'equip',texto:'Desafio do stock morto',prazo:d(2),feito:true,feito_em:new Date(Date.now()-864e5).toISOString(),criado_em:new Date(Date.now()-14*864e5).toISOString()}];
 const seq=[1,2,3].map(i=>({id:i,lote:'L1',ponto_venda:'Caetano Aveiro',ref:'7622852610'+i,descricao:'Botas Teste '+i,categoria:'botas',qualidade:['Vivo','Moribundo','Morto'][i-1],antig_saida:['Últ. Saída até 3 meses','Últ. Saída de 1 a 2 anos','Sem Movimento de Saída'][i-1],ult_saida:i<3?d(i*200):null,qtd:i,custo_unit:80,desc_max:i/10,importado_em:new Date().toISOString()}));
+// fichas de margem: uma à espera do chefe (negócio 1) e uma não aprovada à espera do vendedor (negócio 2)
+const fdados={natureza:'MN',iva:23,modo:'civa',fv:2,modelo:'R 1300 GS',pvb:'24500',preco_venda:'21000',mg_fixa_pct:'6',mg_var_pct:'3.5'};
+const fichas=[{id:31,negocio_id:1,estado:'ativa',criado_em:d(3)+'T10:00:00Z',updated_at:d(1)+'T10:00:00Z',dados:fdados,aprovada_em:null,aprovada_por:null,recusada_em:null,recusada_por:null,recusa_motivo:null},
+  {id:32,negocio_id:2,estado:'ativa',criado_em:d(4)+'T10:00:00Z',updated_at:d(2)+'T10:00:00Z',dados:Object.assign({},fdados,{preco_venda:'21300'}),aprovada_em:null,aprovada_por:null,recusada_em:d(1)+'T16:20:00Z',recusada_por:'c1',recusa_motivo:'Rever o valor da retoma'}];
 async function contexto(b,uid,vp,tema){
   const ctx=await b.newContext({viewport:vp,bypassCSP:true,colorScheme:tema==='escuro'?'dark':'light'});
   await ctx.addInitScript(([t,tm,uid])=>{try{if(uid)localStorage.setItem('bc_session',JSON.stringify({refresh_token:'rt',access_token:t,exp:Date.now()+3600e3}));localStorage.setItem('bm_tema',tm);}catch(e){}},[jwt(uid||'x'),tema,uid]);
@@ -37,6 +41,7 @@ async function contexto(b,uid,vp,tema){
     if(t==='stock_equip')return json(u.includes('offset=0')?seq:[]);
     if(t==='stock_usadas')return json(usadas);
     if(t==='reuniao_compromissos')return json(uid==='c1'?comp:[]);
+    if(t==='fichas_margem'){const ng=(u.match(/negocio_id=eq\.(\d+)/)||[])[1];const mine=uid==='c1'?fichas:fichas.filter(f=>recs.some(r=>r.id===f.negocio_id&&r.vendedor_id===uid));return json(mine.filter(f=>!ng||f.negocio_id===+ng));}
     return json([]);});
   return ctx;}
 const ECRAS={
@@ -51,12 +56,16 @@ const ECRAS={
       ['Trimestre','()=>{S.screen="dashboard";S.gppSec="trimestre";render();}'],['Evento','()=>{S.screen="dashboard";S.gppSec="evento";render();}'],['Escolher negócio (stock)','()=>{S.screen="dashboard";S.gppSec="encomendas";S.encOrigem="aveiro";render();setState({encEscolher:"9100003"});}'],
       ['Vendas a comerciante (margem)','()=>{S.screen="dashboard";S.gppSec="comercio";render();}'],['Usadas · Margem','()=>{S.screen="dashboard";S.gppSec="margem";S.perTipo="mes";render();}'],
       ['Reunião (preparação)','()=>{S.screen="dashboard";S.gppSec="reuniao";S.reu={dia:reuISO(reuData()),modo:"prep",passo:0,t0:null,tp:null};render();}'],
-      ['Reunião (a conduzir)','()=>{S.screen="dashboard";S.gppSec="reuniao";S.reu={dia:reuISO(reuData()),modo:"conduzir",passo:4,t0:Date.now()-150000,tp:Date.now()-30000};render();}']],
+      ['Reunião (a conduzir)','()=>{S.screen="dashboard";S.gppSec="reuniao";S.reu={dia:reuISO(reuData()),modo:"conduzir",passo:4,t0:Date.now()-150000,tp:Date.now()-30000};render();}'],
+      ['Fichas: não aprovar (motivo) e não aprovadas','()=>{S.screen="dashboard";S.gppSec="home";S.faRecusar=31;S.faMotivo="";S.faRecsAberto=true;render();}'],
+      ['Ficha: não aprovar (motivo)','()=>{S.faRecusar=null;fmAbrirNegocio("1","31").then(()=>{S.faRecusar=31;render();});}'],
+      ['Ficha não aprovada (chefe)','()=>{S.faRecusar=null;fmSairDoNegocio();fmAbrirNegocio("2","32");}']],
   v1:[['Hoje','()=>{S.screen="list";S.statusFilter="_hoje";S.alertFilter=null;render();}'],['Funil','()=>{S.screen="list";S.statusFilter="Funil";render();}'],['Carteira','()=>{S.screen="list";S.statusFilter="Carteira";render();}'],
       ['Negócio (detalhe)','()=>{setState({screen:"detail",selected:S.records.find(r=>r.id===5),openGroups:{INFO:true}});}'],['Negócio (editar)','()=>{const r=S.records.find(x=>x.id===1);setState({selected:r,form:recordToForm(r),screen:"edit",openGroups:{INFO:true,"Identificação":true}});}'],
       ['EOTs','()=>{setState({screen:"veot"});}'],['Notificações','()=>{setState({screen:"vnotif"});}'],['Stock BMW Novas','()=>{setState({screen:"vencomendas",encOrigem:"aveiro"});}'],['Stock Equipamento','()=>{setState({screen:"vstockeq"});}'],
       ['Ficha de Margem','()=>{setState({screen:"ficha"});}'],['Comissões','()=>{setState({screen:"vcom"});}'],['Janela EOT','()=>{setState({screen:"veot"});eotAbrir("E1");}'],
-      ['Stock usadas/demos','()=>{setState({screen:"stockvend"});}'],['Escala','()=>{setState({screen:"escala"});}'],['Menu aberto','()=>{setState({screen:"list",statusFilter:"_hoje",sidebarOpen:true});}'],['Alterar password','()=>{setState({screen:"password"});}']],
+      ['Stock usadas/demos','()=>{setState({screen:"stockvend"});}'],['Escala','()=>{setState({screen:"escala"});}'],['Menu aberto','()=>{setState({screen:"list",statusFilter:"_hoje",sidebarOpen:true});}'],['Alterar password','()=>{setState({screen:"password"});}'],
+      ['Ficha não aprovada (vendedor)','()=>{setState({sidebarOpen:false});fmAbrirNegocio("2","32");}']],
   s1:[['Secretaria','()=>{setState({screen:"secretaria"});}']],
   f1:[['EOTs','()=>{setState({screen:"financeiro",finTab:"todos"});}'],['Notificações','()=>{setState({screen:"notificacoes"});}'],['Janela EOT','()=>{setState({screen:"financeiro"});eotAbrir("E1");}']],
   a1:[['Assessor','()=>{setState({screen:"assessor"});}']],

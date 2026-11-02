@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-02-a">
+<meta name="app-version" content="2026-11-02-b">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2209,6 +2209,16 @@ body.a-gravar [data-action]{cursor:progress}
 .mr-acts{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.mr-inp{width:150px;min-height:36px}
 .mr-nota{margin-top:6px;font-size:12px;color:var(--text2);background:var(--surface2);border-radius:8px;padding:6px 10px}.mr-nota.pend{background:var(--orange-bg);color:var(--orange2)}.mr-nota.ok{background:var(--green-bg);color:var(--green)}
 @media (max-width:760px){.mr-acts{width:100%}.mr-inp{flex:1}}
+/* Fichas: não aprovar (motivo na linha, sem janela) e lista das não aprovadas à espera do vendedor */
+.fa-row-rec{background:var(--surface2)}
+.fa-rec{flex-basis:100%;display:flex;flex-direction:column;gap:8px;padding:10px 12px;border:1px solid var(--border2);border-radius:10px;background:var(--surface);color:var(--text);font-size:13px}
+.fm-aprov .fa-rec{margin-top:8px}
+.fa-rec-l{font-size:12.5px;color:var(--text2)}
+.fa-rec-chips{display:flex;gap:6px;flex-wrap:wrap}.fa-rec-chips .qf-chip{min-height:36px;padding:0 12px;font-size:12.5px}
+.fa-rec-in{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.fa-rec-in .field-input{flex:1;min-width:220px;min-height:38px}
+.fa-recs{border-top:1px solid var(--border)}.fa-so-recs .fa-recs{border-top:0}.fa-so-recs{border-left-color:var(--border2)}
+.fa-recs>summary{cursor:pointer;padding:10px 14px;font-size:13px;color:var(--text2)}.fa-recs[open]>summary{border-bottom:1px solid var(--border)}
+@media (max-width:760px){.fa-rec-in .field-input{min-width:0;flex-basis:100%}.fa-rec-in .btn{flex:1}}
 .lemb-box{margin:12px 16px 4px;display:flex;flex-direction:column;gap:8px}
 .lemb-row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--red);border-radius:var(--r2);box-shadow:var(--elev1)}
 .lemb-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.lemb-txt b{font-size:14px}.lemb-txt span{font-size:12.5px;color:var(--text2)}
@@ -2371,6 +2381,8 @@ const EMO_IC={'👥':'user','🔔':'bell','🏭':'factory','🏠':'home','📋':
 document.addEventListener('keydown',e=>{if(typeof S==='undefined')return;const t=e.target;
   if(e.key==='Enter'&&t&&t.dataset&&t.dataset.vhnovo){e.preventDefault();vhNovoRegistar();return;}
   if(e.key==='Enter'&&t&&t.id==='reu-c-texto'){e.preventDefault();const b=document.querySelector('[data-action="reu-comp-add"]');reuCompAdd(b?b.dataset.p:'');return;}
+  if(e.key==='Enter'&&t&&t.id==='fa-motivo'){e.preventDefault();fichaRecusar(t.dataset.id);return;}
+  if(e.key==='Escape'&&S.faRecusar!=null&&!S.eotAberto){S.faRecusar=null;S.faMotivo='';render();return;}
   if(e.key==='Escape'&&S.vhAcao){S.vhAcao=null;render();return;}
   if(e.key==='Escape'&&S.fmGuardar&&!S.eotAberto){S.fmGuardar=false;render();}});
 document.addEventListener('keydown',e=>{const t=e.target;if((e.key==='Enter'||e.key===' ')&&t&&t.matches&&t.matches('[data-action][tabindex]:not(button):not(a):not(input):not(select):not(textarea)')){e.preventDefault();t.click();}});
@@ -2423,7 +2435,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-02-a';
+const APP_VERSION='2026-11-02-b';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -3092,7 +3104,9 @@ async function fmGravar1(id,forcar,dados,fid){
       if(S.fmFicha==null&&novoId!=null)S.fmFicha=novoId;
       const L=(S.fmFichas||[]).slice();const i=L.findIndex(x=>novoId!=null&&String(x.id)===String(novoId));
       const srvRow=Array.isArray(r)&&r[0]?r[0]:{};
-      if(i>=0)L[i]=Object.assign({},L[i],{dados,updated_at:nova},('aprovada_em' in srvRow)?{aprovada_em:srvRow.aprovada_em,aprovada_por:srvRow.aprovada_por}:{aprovada_em:null,aprovada_por:null});else if(novoId!=null)L.push({id:novoId,negocio_id:Number(id),dados,updated_at:nova,estado:'ativa'});
+      // aprovação/recusa como o servidor as deixou (mudar os valores fá-las cair); sem resposta completa, assume que caíram
+      const decisao={};['aprovada_em','aprovada_por','recusada_em','recusada_por','recusa_motivo'].forEach(k=>{decisao[k]=(k in srvRow)?srvRow[k]:null;});
+      if(i>=0)L[i]=Object.assign({},L[i],{dados,updated_at:nova},decisao);else if(novoId!=null)L.push({id:novoId,negocio_id:Number(id),dados,updated_at:nova,estado:'ativa'});
       S.fmFichas=L;S.fichasN=Object.assign({},S.fichasN||{},{[String(id)]:Math.max(L.length,1)});
     }
     S.fichasIdx=Object.assign({},S.fichasIdx||{},{[id]:nova});S.fmGravado=nova;S.fmEstado='guardado';S.fmPendente=false;S.fmConflito=null;_fmTent=0;
@@ -3121,40 +3135,90 @@ async function fmLigarAoNovo(id){
 function fmCalcDe(dados){const o=S.fm;try{S.fm=fmParaCiva(fmMigra(Object.assign({},dados||{})));return fmCalc();}catch(e){return null;}finally{S.fm=o;}}
 async function loadFichasAprovar(){
   if(!isAdmin())return;
-  try{S.fichasAprov=(await supabaseApi('GET','/fichas_margem?select=id,negocio_id,dados,estado,aprovada_em,updated_at&aprovada_em=is.null&estado=neq.arquivada'))||[];}
-  catch(e){S.fichasAprov=[];} // antes da migração: sem lista
+  const q='/fichas_margem?aprovada_em=is.null&estado=neq.arquivada&select=id,negocio_id,dados,estado,aprovada_em,updated_at';
+  try{S.fichasAprov=(await supabaseApi('GET',q+',recusada_em,recusada_por,recusa_motivo'))||[];}
+  catch(e){try{S.fichasAprov=(await supabaseApi('GET',q))||[];}catch(e2){S.fichasAprov=[];}} // antes das migrações: sem recusa / sem lista
 }
 const _fichasCalcMemo=new Map();
+function fichasCalcDe(f){const k=f.id+'|'+(f.updated_at||'')+'|'+JSON.stringify(f.dados||{});
+  let c=_fichasCalcMemo.get(k);if(c===undefined){c=fmCalcDe(f.dados);if(_fichasCalcMemo.size>500)_fichasCalcMemo.clear();_fichasCalcMemo.set(k,c);}return c;}
+function _fichasAbertas(){const recs=S.records||[];
+  return (S.fichasAprov||[]).filter(f=>!f.aprovada_em&&f.estado!=='arquivada').map(f=>{const r=recs.find(x=>String(x.id)===String(f.negocio_id));
+    return r&&!['Perdido','Frio'].includes(r.status)?{f,r}:null;}).filter(Boolean);}
+// à espera do chefe: precisa de aprovação e não foi recusada (a recusa cai quando o vendedor muda a ficha)
 function fichasAprovarLista(){
   if(!isAdmin())return[];
-  const recs=S.records||[];
-  return (S.fichasAprov||[]).filter(f=>!f.aprovada_em&&f.estado!=='arquivada').map(f=>{const r=recs.find(x=>String(x.id)===String(f.negocio_id));if(!r||['Perdido','Frio'].includes(r.status))return null;
-    const k=f.id+'|'+(f.updated_at||'')+'|'+JSON.stringify(f.dados||{});
-    let c=_fichasCalcMemo.get(k);if(c===undefined){c=fmCalcDe(f.dados);if(_fichasCalcMemo.size>500)_fichasCalcMemo.clear();_fichasCalcMemo.set(k,c);}
-    return c&&c.aprovacao?{f,r,c}:null;}).filter(Boolean)
+  return _fichasAbertas().filter(x=>!x.f.recusada_em).map(x=>{const c=fichasCalcDe(x.f);return c&&c.aprovacao?Object.assign(x,{c}):null;}).filter(Boolean)
     .sort((a,b)=>String(b.f.updated_at||'').localeCompare(String(a.f.updated_at||'')));
 }
+// não aprovadas: à espera de o vendedor mudar a ficha
+function fichasRecusadasLista(){
+  if(!isAdmin())return[];
+  return _fichasAbertas().filter(x=>x.f.recusada_em).map(x=>Object.assign(x,{c:fichasCalcDe(x.f)}))
+    .sort((a,b)=>String(b.f.recusada_em||'').localeCompare(String(a.f.recusada_em||'')));
+}
+const FA_MOTIVOS=c=>[c&&c.margem<0?'Margem negativa: rever o preço de venda':(c&&c.aprovMargem?'Margem abaixo de 0,50 %: rever o preço de venda':''),
+  c&&c.aprovEsforco?'Esforço acima da margem variável: rever o desconto':'','Rever o valor da retoma','Falta informação na ficha'].filter(Boolean);
+function faRecusarHTML(f,c){
+  return`<div class="fa-rec" role="group" aria-label="Não aprovar a ficha">
+    <div class="fa-rec-l">Porque não aprovas? O vendedor recebe o motivo nos comentários do negócio.</div>
+    <div class="fa-rec-chips">${FA_MOTIVOS(c).map(m=>`<button type="button" class="qf-chip" data-action="fa-motivo" data-m="${esc(m)}">${esc(m)}</button>`).join('')}</div>
+    <div class="fa-rec-in"><input type="text" class="field-input" id="fa-motivo" data-id="${esc(f.id)}" maxlength="500" value="${esc(S.faMotivo||'')}" placeholder="Motivo (obrigatório)" aria-label="Motivo para não aprovar">
+    <button class="btn btn-danger btn-sm" data-action="fa-recusar-ok" data-id="${esc(f.id)}">Não aprovar</button><button class="btn btn-ghost btn-sm" data-action="fa-recusar-cancel">Cancelar</button></div></div>`;
+}
+function faQuando(v){const d=new Date(v);return isNaN(d)?'':d.toLocaleDateString('pt-PT',{day:'2-digit',month:'2-digit'})+' às '+d.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});}
 function fichasAprovarHTML(){
-  const L=fichasAprovarLista();if(!L.length)return'';
+  const L=fichasAprovarLista(),R=fichasRecusadasLista();if(!L.length&&!R.length)return'';
   const pc=n=>(n*100).toLocaleString('pt-PT',{minimumFractionDigits:1,maximumFractionDigits:2})+' %';
   const fE0=n=>Math.round(Number(n||0)).toLocaleString('pt-PT')+' €';
-  return`<div class="mr-box fa-box"><div class="mr-h"><span>Fichas à espera da tua aprovação · <b>${L.length}</b></span><small>Margem abaixo de 0,50 % ou esforço acima da margem variável. Se o vendedor mudar a ficha depois de aprovada, volta a aparecer aqui.</small></div>
-  ${L.map(({f,r,c})=>`<div class="mr-row"><span class="atag atag-al">Aprovar</span>
-    <div class="mr-txt"><div><b class="gpp-lclick" data-action="fa-abrir" data-neg="${esc(r.id)}" data-id="${esc(f.id)}">${esc(r.id_cliente||'—')}</b> · ${esc((f.dados&&f.dados.modelo)||[r.model,r.version].filter(Boolean).join(' ')||'—')} · ${vendTag(r.vendedor_id)} <span class="gpp-tipo-badge">${esc(r.status||'')}</span></div>
+  const nome=(f,r)=>`<b class="gpp-lclick" data-action="fa-abrir" data-neg="${esc(r.id)}" data-id="${esc(f.id)}">${esc(r.id_cliente||'—')}</b> · ${esc((f.dados&&f.dados.modelo)||[r.model,r.version].filter(Boolean).join(' ')||'—')} · ${vendTag(r.vendedor_id)} <span class="gpp-tipo-badge">${esc(r.status||'')}</span>`;
+  const abrir=(f,r)=>`<button class="btn btn-outline btn-sm" data-action="fa-abrir" data-neg="${esc(r.id)}" data-id="${esc(f.id)}">Abrir ficha</button>`;
+  const rec=R.length?`<details class="fa-recs"${S.faRecsAberto?' open':''}><summary>Não aprovadas, à espera do vendedor · <b>${R.length}</b></summary>
+    ${R.map(({f,r})=>`<div class="mr-row"><span class="atag atag-mut">Não aprovada</span>
+      <div class="mr-txt"><div>${nome(f,r)}</div><span class="mr-sub">«${esc(f.recusa_motivo||'')}» · ${esc(faQuando(f.recusada_em))}. Volta para aprovar quando o vendedor mudar a ficha.</span></div>
+      <div class="mr-acts">${abrir(f,r)}<button class="btn btn-ghost btn-sm" data-action="fa-aprovar" data-id="${esc(f.id)}">Aprovar mesmo assim</button></div></div>`).join('')}</details>`:'';
+  if(!L.length)return`<div class="mr-box fa-box fa-so-recs">${rec}</div>`;
+  return`<div class="mr-box fa-box"><div class="mr-h"><span>Fichas à espera da tua aprovação · <b>${L.length}</b></span><small>Margem abaixo de 0,50 % ou esforço acima da margem variável. Se não aprovares, o vendedor recebe o motivo; quando mudar a ficha (ou mudar uma já aprovada), volta a aparecer aqui.</small></div>
+  ${L.map(({f,r,c})=>{const ab=String(S.faRecusar)===String(f.id);return`<div class="mr-row${ab?' fa-row-rec':''}"><span class="atag atag-al">Aprovar</span>
+    <div class="mr-txt"><div>${nome(f,r)}</div>
     <span class="mr-sub">${esc(fmAprovTxt(c,pc))}${c.venda?' · proposto '+esc(fE0(c.venda))+' · margem '+esc(fE0(c.margem)):''}</span></div>
-    <div class="mr-acts"><button class="btn btn-outline btn-sm" data-action="fa-abrir" data-neg="${esc(r.id)}" data-id="${esc(f.id)}">Abrir ficha</button><button class="btn btn-green btn-sm" data-action="fa-aprovar" data-id="${esc(f.id)}">Aprovar</button></div></div>`).join('')}</div>`;
+    <div class="mr-acts">${abrir(f,r)}<button class="btn btn-outline btn-sm" data-action="fa-recusar" data-id="${esc(f.id)}" aria-expanded="${ab}">Não aprovar</button><button class="btn btn-green btn-sm" data-action="fa-aprovar" data-id="${esc(f.id)}">Aprovar</button></div>
+    ${ab?faRecusarHTML(f,c):''}</div>`;}).join('')}${rec}</div>`;
 }
 async function fichaAprovar(fid,aprovar){
   if(!isAdmin()||fid==null)return;
-  const it=fichasAprovarLista().find(x=>String(x.f.id)===String(fid));
-  if(aprovar!==false&&it&&!confirm(`Aprovar a ficha de ${it.r.id_cliente||'—'}?\n${fmAprovTxt(it.c,n=>(n*100).toLocaleString('pt-PT',{maximumFractionDigits:2})+' %')}`))return;
+  const it=fichasAprovarLista().concat(fichasRecusadasLista()).find(x=>String(x.f.id)===String(fid));
+  if(aprovar!==false&&it&&!confirm(`Aprovar a ficha de ${it.r.id_cliente||'—'}?\n${it.c?fmAprovTxt(it.c,n=>(n*100).toLocaleString('pt-PT',{maximumFractionDigits:2})+' %'):''}${it.f.recusada_em?'\n(Tinhas não aprovado: «'+(it.f.recusa_motivo||'')+'»)':''}`))return;
   try{
     await supabaseApi('POST','/rpc/ficha_aprovar',{p_id:Number(fid),p_aprovar:aprovar!==false});
     S.fichasAprov=(S.fichasAprov||[]).filter(x=>String(x.id)!==String(fid));
-    if(S.fmNeg&&S.fmNeg!=='novo'){try{const L=await fmListaFichas(S.fmNeg);S.fmFichas=L;const f=L.find(x=>String(x.id)===String(S.fmFicha));if(f)S.fmGravado=f.updated_at;}catch(e){}}
+    if(String(S.faRecusar)===String(fid)){S.faRecusar=null;S.faMotivo='';}
+    await fmFichasRecarregar();
     if(aprovar===false)await loadFichasAprovar();
-    toast(aprovar===false?'Aprovação retirada':'Ficha aprovada');render();
+    render();setTimeout(()=>toast(aprovar===false?'Aprovação retirada':'Ficha aprovada'),450);
   }catch(e){alert('Não consegui aprovar: '+(/ficha_aprovar|PGRST202|function/i.test(String(e&&e.message))?'falta correr o SQL "2026-10-22_fichas_varias" no Supabase.':erroTexto(e)));}
+}
+async function fmFichasRecarregar(){
+  if(!S.fmNeg||S.fmNeg==='novo')return;
+  try{const L=await fmListaFichas(S.fmNeg);S.fmFichas=L;const f=L.find(x=>String(x.id)===String(S.fmFicha));if(f)S.fmGravado=f.updated_at;}catch(e){}
+}
+// Não aprovar: motivo obrigatório; o vendedor recebe-o como comentário no negócio e a ficha sai da lista até ele a mudar
+async function fichaRecusar(fid){
+  if(!isAdmin()||fid==null)return;
+  const inp=document.getElementById('fa-motivo');
+  const motivo=String((inp&&inp.value)||S.faMotivo||'').replace(/\s+/g,' ').trim().slice(0,500);
+  if(!motivo){toast('Escreve o motivo: o vendedor precisa de saber o que mudar','erro');if(inp)inp.focus();return;}
+  const f0=(S.fichasAprov||[]).find(x=>String(x.id)===String(fid))||(S.fmFichas||[]).find(x=>String(x.id)===String(fid))||{};
+  try{
+    const t=await supabaseApi('POST','/rpc/ficha_recusar',{p_id:Number(fid),p_motivo:motivo});
+    const rec={recusada_em:typeof t==='string'&&t?t:new Date().toISOString(),recusada_por:S.me&&S.me.id,recusa_motivo:motivo,aprovada_em:null,aprovada_por:null};
+    S.fichasAprov=(S.fichasAprov||[]).map(x=>String(x.id)===String(fid)?Object.assign({},x,rec):x);
+    S.faRecusar=null;S.faMotivo='';
+    if(f0.negocio_id!=null&&S.negHist)delete S.negHist[String(f0.negocio_id)];
+    await fmFichasRecarregar();
+    render();setTimeout(()=>toast('Ficha não aprovada. O vendedor vê o motivo nos comentários do negócio'),450);
+  }catch(e){const m=String(e&&e.message);
+    toast('Não consegui gravar: '+(/PGRST202|could not find the function|schema cache/i.test(m)?'falta correr o SQL "2026-11-02_fichas_recusar" no Supabase.':erroTexto(e)),'erro');}
 }
 function fmAprovTxt(c,pc){return[c.aprovMargem?`margem de ${pc(c.margemPct)}, abaixo do mínimo de 0,50 %`:'',c.aprovEsforco?`esforço de ${pc(c.esforcoPct)}, acima da margem variável de ${pc(c.margVarPct)}`:''].filter(Boolean).join(' e ');}
 function fmPDF(){
@@ -3220,9 +3284,12 @@ function fmPDF(){
    +'<tr><td class="k">N\u00ba proposta</td><td>'+esc(fm.proposta||'')+'</td><td class="k">Pagamento</td><td>'+esc(fm.pagamento||'')+'</td></tr>'
    +'<tr><td class="k">Cliente</td><td>'+esc(fm.cliente||'')+'</td><td class="k">Tipo</td><td>'+esc(fm.tipo||'')+'</td></tr></table>'
    +resumo
-   +(c.aprovacao?(()=>{const fa=(S.fmFichas||[]).find(f=>S.fmFicha!=null&&String(f.id)===String(S.fmFicha));
-      if(fa&&fa.aprovada_em){const d=new Date(fa.aprovada_em);return'<div class="aprov ok">APROVADO PELA CHEFIA ('+esc(vendName(fa.aprovada_por)||'chefia')+') a '+esc(d.toLocaleDateString('pt-PT'))+' \u00e0s '+esc(d.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'}))+' \u2014 '+esc(fmAprovTxt(c,pc))+'.</div>';}
-      return'<div class="aprov">NECESS\u00c1RIO APROVA\u00c7\u00c3O DA CHEFIA \u2014 '+esc(fmAprovTxt(c,pc))+'.</div>';})():'')
+   +((()=>{const fa=(S.fmFichas||[]).find(f=>S.fmFicha!=null&&String(f.id)===String(S.fmFicha));
+      const hora=d=>esc(d.toLocaleDateString('pt-PT'))+' \u00e0s '+esc(d.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'}));
+      if(fa&&fa.recusada_em){const d=new Date(fa.recusada_em);return'<div class="aprov">N\u00c3O APROVADO PELA CHEFIA ('+esc(nomePerfil(fa.recusada_por)||'chefia')+') a '+hora(d)+' \u2014 '+esc(fa.recusa_motivo||'')+'</div>';}
+      if(!c.aprovacao)return'';
+      if(fa&&fa.aprovada_em){const d=new Date(fa.aprovada_em);return'<div class="aprov ok">APROVADO PELA CHEFIA ('+esc(nomePerfil(fa.aprovada_por)||'chefia')+') a '+hora(d)+' \u2014 '+esc(fmAprovTxt(c,pc))+'.</div>';}
+      return'<div class="aprov">NECESS\u00c1RIO APROVA\u00c7\u00c3O DA CHEFIA \u2014 '+esc(fmAprovTxt(c,pc))+'.</div>';})())
    +'<table class="r">'+r+'</table>'
    +'<div class="nota">Valores com IVA, como na plataforma BMW, exceto ISV, SGPU, Comparticipa\u00e7\u00e3o e Subven\u00e7\u00e3o Concession\u00e1rio (sem IVA). A margem e a comiss\u00e3o s\u00e3o calculadas sem IVA.</div>'
    +'<div class="ass"><div class="ass-t">'+(c.aprovacao?'Aprova\u00e7\u00e3o da chefia (obrigat\u00f3ria)':'Aprova\u00e7\u00e3o da chefia')+'</div>'
@@ -3372,9 +3439,12 @@ function renderFichaMargem(){
       <div class="kpi-c"><span class="kpi-k">Comissão</span><span class="kpi-v pos">${c.com==null?'—':fE0(c.com)}</span></div>
       <div class="kpi-c"><span class="kpi-k">Esforço</span><span class="kpi-v ${c.aprovEsforco?'neg':''}">${c.venda&&c.esforcoPct!=null?pc(c.esforcoPct):'—'}</span><span class="kpi-s">${c.margFixaPct==null?'falta MG. FIXA':`${c.margVarPct!=null?`de ${pc(c.margVarPct)} variável · `:''}desconto ${pc(Math.max(0,(c.descEsfPct||0)-c.margFixaPct))}${c.internosPct>0.00005?` + custos ${pc(c.internosPct)}`:''}`}</span></div>
     </div>
-    ${c.aprovacao?(()=>{const fa=(S.fmFichas||[]).find(f=>S.fmFicha!=null&&String(f.id)===String(S.fmFicha));
-      if(fa&&fa.aprovada_em){const q=vendName(fa.aprovada_por)||'chefia';const d=new Date(fa.aprovada_em);return`<div class="fm-aprov ok">✓ <b>Aprovada por ${esc(q)}</b> a ${esc(d.toLocaleDateString('pt-PT'))} às ${esc(d.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'}))}: ${esc(fmAprovTxt(c,pc))}. Se mudares a ficha, a aprovação cai.${isAdmin()?` <button class="btn btn-ghost btn-sm" data-action="fa-retirar" data-id="${esc(fa.id)}">Retirar aprovação</button>`:''}</div>`;}
-      return`<div class="fm-aprov">⚠️ <b>Necessário aprovação da chefia</b>: ${esc(fmAprovTxt(c,pc))}.${fa?(isAdmin()?` <button class="btn btn-green btn-sm" data-action="fa-aprovar" data-id="${esc(fa.id)}">Aprovar agora</button>`:' Já aparece ao chefe para aprovar.'):''}</div>`;})():''}
+    ${(()=>{const fa=(S.fmFichas||[]).find(f=>S.fmFicha!=null&&String(f.id)===String(S.fmFicha));
+      if(fa&&fa.recusada_em){const q=nomePerfil(fa.recusada_por)||'chefia';const d=new Date(fa.recusada_em);return`<div class="fm-aprov fm-rec">✕ <b>Não aprovada por ${esc(q)}</b> a ${esc(d.toLocaleDateString('pt-PT'))} às ${esc(d.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'}))}: «${esc(fa.recusa_motivo||'')}». ${isAdmin()?'Volta à tua lista quando o vendedor mudar a ficha.':'Quando mudares a ficha, volta a ir ao chefe (se ainda precisar de aprovação).'}${isAdmin()?` <button class="btn btn-outline btn-sm" data-action="fa-aprovar" data-id="${esc(fa.id)}">Aprovar mesmo assim</button>`:''}</div>`;}
+      if(!c.aprovacao)return'';
+      if(fa&&fa.aprovada_em){const q=nomePerfil(fa.aprovada_por)||'chefia';const d=new Date(fa.aprovada_em);return`<div class="fm-aprov ok">✓ <b>Aprovada por ${esc(q)}</b> a ${esc(d.toLocaleDateString('pt-PT'))} às ${esc(d.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'}))}: ${esc(fmAprovTxt(c,pc))}. Se mudares a ficha, a aprovação cai.${isAdmin()?` <button class="btn btn-ghost btn-sm" data-action="fa-retirar" data-id="${esc(fa.id)}">Retirar aprovação</button>`:''}</div>`;}
+      const ab=fa&&isAdmin()&&String(S.faRecusar)===String(fa.id);
+      return`<div class="fm-aprov">⚠️ <b>Necessário aprovação da chefia</b>: ${esc(fmAprovTxt(c,pc))}.${fa?(isAdmin()?` <button class="btn btn-green btn-sm" data-action="fa-aprovar" data-id="${esc(fa.id)}">Aprovar agora</button> <button class="btn btn-outline btn-sm" data-action="fa-recusar" data-id="${esc(fa.id)}" aria-expanded="${!!ab}">Não aprovar</button>`:' Já aparece ao chefe para aprovar.'):''}${ab?faRecusarHTML(fa,c):''}</div>`;})()}
     <div class="gpp-card fm-card">
       <table class="fm-tbl"><tbody>
         <tr class="fm-h"><td>Rúbrica</td><td>%</td><td>€</td></tr>
@@ -3778,7 +3848,9 @@ function renderSemAcesso(){
     <p>Ainda não tens áreas atribuídas na plataforma.<br>Fala com o chefe de vendas.</p>
   </div></div></div></div>`;
 }
-async function loadTeam(){const d=await supabaseApi('GET','/profiles?select=*&order=nome.asc');S.team=(d||[]).filter(p=>p.role==='vendedor')}
+async function loadTeam(){const d=await supabaseApi('GET','/profiles?select=*&order=nome.asc');S.perfisTodos=d||[];S.team=(d||[]).filter(p=>p.role==='vendedor')}
+// nome de qualquer perfil visível (o chefe não está em S.team); vazio se não se souber
+function nomePerfil(id){if(!id)return'';const v=vendName(id);if(v&&v!=='?')return v;const p=(S.perfisTodos||[]).find(x=>x.id===id);return p&&p.nome?p.nome:'';}
 function diasEmStock(d){if(!d)return null;const dt=new Date(String(d).slice(0,10)+'T00:00:00');if(isNaN(dt.getTime()))return null;const h=new Date();const hoje=new Date(h.getFullYear(),h.getMonth(),h.getDate());const n=Math.round((hoje-dt)/86400000);return n<0?null:n;}
 function vendName(id){if(!id)return null;const p=(S.team||[]).find(x=>x.id===id)||(S.assessores||[]).find(x=>x.id===id)||(S.me&&S.me.id===id?S.me:null);return p?(p.nome||'?'):'?'}
 function curMes(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`}
@@ -7111,7 +7183,7 @@ function travar(nome){const fn=window[nome];if(typeof fn!=='function'||fn._trava
   const w=async function(...a){let k;try{k=nome+'|'+JSON.stringify(a);}catch(_){k=nome;}if(_emCurso.has(k))return;_emCurso.add(k);document.body.classList.add('a-gravar');
     try{return await fn.apply(this,a);}finally{_emCurso.delete(k);if(!_emCurso.size)document.body.classList.remove('a-gravar');}};
   w._travado=true;window[nome]=w;}
-['mrConfirmar','mrRecusar','addStockMotaFull','addStockMota','comissaoAdd','premioAdd','saveInscricaoNova','saveEventoNovo','saveLead','saveAutomatricula','saveVendaDireta','saveRecord','deleteRecord','seqConfirmar','seqRegistar','seqForaRegistar','recontReabrir','recontAdiar','eotConfirmar','eotGuardar','eotModalGuardar','eotAtribuirLote','eotCriarNegocio','eotComentar','eqAdd','eqColar','comFechoToggle','negComentar','vhNovoRegistar','vhContactei','vhAdiar','vhPerdido','fmGuardarNovo','fmAssociar','reuCompAdd','reuCompFeito','reuCompApagar','reuCompNovaData'].forEach(n=>{try{travar(n);}catch(e){}});
+['mrConfirmar','mrRecusar','addStockMotaFull','addStockMota','comissaoAdd','premioAdd','saveInscricaoNova','saveEventoNovo','saveLead','saveAutomatricula','saveVendaDireta','saveRecord','deleteRecord','seqConfirmar','seqRegistar','seqForaRegistar','recontReabrir','recontAdiar','eotConfirmar','eotGuardar','eotModalGuardar','eotAtribuirLote','eotCriarNegocio','eotComentar','eqAdd','eqColar','comFechoToggle','negComentar','vhNovoRegistar','vhContactei','vhAdiar','vhPerdido','fmGuardarNovo','fmAssociar','reuCompAdd','reuCompFeito','reuCompApagar','reuCompNovaData','fichaAprovar','fichaRecusar'].forEach(n=>{try{travar(n);}catch(e){}});
 // ---- Teclado: tudo o que é clicável recebe foco e abre com Enter/Espaço; campos ganham nome para leitores de ecrã ----
 function tecladoAplicar(){
   const raiz=document.getElementById('app');if(!raiz)return;
@@ -10151,6 +10223,7 @@ function bindEvents(){
   app.oninput=function(e){
     const el=e.target;
     if(el.id==='reu-c-texto'){S.reuC=Object.assign({texto:'',vend:'',prazo:''},S.reuC||{},{texto:el.value});return;}
+    if(el.id==='fa-motivo'){S.faMotivo=el.value;return;}
     if(el.dataset&&el.dataset.vhnovo){S.vhNovo=Object.assign({nome:'',tel:'',modelo:'',fase:'Morno'},S.vhNovo||{},{[el.dataset.vhnovo]:el.value});if(S.vhNovoErr&&el.dataset.vhnovo==='nome'&&el.value.trim()){S.vhNovoErr='';const er=document.querySelector('.vh-n-err');if(er)er.remove();}return;}
     if(el.id==='fm-assoc-q'){S.fmAssocQ=el.value;render();return;}
     if(el.dataset&&el.dataset.tblQ){const k=el.dataset.tblQ;S.tblQ=Object.assign({},S.tblQ||{},{[k]:el.value});const tb=tblPorChave(k);if(tb)tblFiltrar(tb,el.value);return;}
@@ -10297,6 +10370,7 @@ function bindEvents(){
   };
   app.onclick=function(e){
     {const sm=e.target.closest&&e.target.closest('.eotm-det>summary');if(sm){setTimeout(()=>{const d=sm.parentElement;S.eotDetAberto=!!(d&&d.open);},0);}}
+    {const sm=e.target.closest&&e.target.closest('.fa-recs>summary');if(sm){setTimeout(()=>{const d=sm.parentElement;S.faRecsAberto=!!(d&&d.open);},0);}}
     const el=e.target.closest('[data-action]');if(!el)return;
     const a=el.dataset.action;
     if(window.innerWidth<=700&&S.sidebarOpen&&el.closest('.sidebar')&&!['toggle-vsel','toggle-sidebar','open-sidebar'].includes(a))S.sidebarOpen=false;
@@ -10455,6 +10529,12 @@ function bindEvents(){
       case'fa-abrir':fmAbrirNegocio(el.dataset.neg,el.dataset.id);break;
       case'fa-aprovar':fichaAprovar(el.dataset.id,true);break;
       case'fa-retirar':if(confirm('Retirar a aprovação desta ficha?'))fichaAprovar(el.dataset.id,false);break;
+      case'fa-recusar':{const id=el.dataset.id;const fecha=String(S.faRecusar)===String(id);S.faRecusar=fecha?null:id;S.faMotivo='';render();
+        if(!fecha)setTimeout(()=>{const n=document.getElementById('fa-motivo');if(n){n.focus();try{n.scrollIntoView({block:'nearest'});}catch(_){}}},30);break;}
+      case'fa-recusar-cancel':S.faRecusar=null;S.faMotivo='';render();break;
+      case'fa-recusar-ok':fichaRecusar(el.dataset.id);break;
+      case'fa-motivo':{const n=document.getElementById('fa-motivo');const m=el.dataset.m||'';const cur=String((n&&n.value)||'').trim();
+        S.faMotivo=!cur?m:(cur.includes(m)?cur:cur.replace(/[.;,\s]+$/,'')+'; '+m);if(n){n.value=S.faMotivo;n.focus();try{n.setSelectionRange(n.value.length,n.value.length);}catch(_){}}break;}
       case'fm-ficha-nova':fmNovaFicha();break;
       case'fm-ficha-vendida':fmMarcarVendida(false);break;
       case'fm-ficha-desfazer':fmMarcarVendida(true);break;

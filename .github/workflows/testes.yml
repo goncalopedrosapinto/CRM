@@ -47,6 +47,7 @@ jobs:
       - run: npm run pdf
       - run: npm run navegacao
       - run: npm run fichas
+      - run: npm run recusar
       - run: npm run sessao
       - run: npm run encomendas
       - run: npm run comercio

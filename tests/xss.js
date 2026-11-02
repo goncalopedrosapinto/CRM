@@ -27,6 +27,7 @@ function linhas(tab,uid){
     }
     if(tab==='profiles'){r.id=TEAM[k][0];r.role=TEAM[k][1];r.linha='motorrad';}
     if(tab==='eot_contratos'){r.contrato=MODO==='A'?String(900+k):tag('eot_contratos.contrato')+k;}
+    if(tab==='fichas_margem'){const est=k%3;if(est!==0){r.aprovada_em=null;r.aprovada_por=null;}if(est!==1){r.recusada_em=null;r.recusada_por=null;r.recusa_motivo=null;}} // aprovada / não aprovada / à espera
     out.push(r);}
   return out;
 }

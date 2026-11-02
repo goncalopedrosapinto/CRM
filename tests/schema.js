@@ -10,7 +10,7 @@ eot_historico:'id:n,contrato:t,criado_em:ts,autor_id:u,autor_nome:t,autor_role:t
 equipamento:'id:n,vendedor_id:u,data:d,wip:t,fatura:t,artigo:t,descricao:t,qtd:n,custo:n,venda:n,campanha:t,created_at:ts,estado_stock:t',
 escala:'id:n,dia:d,vendedor_id:u,estado:t,created_at:ts,updated_at:ts,updated_by:u',
 eventos:'id:n,nome:t,data:d,local:t,lotacao:n,ativo:b,created_at:ts,motas:j',
-fichas_margem:'negocio_id:n,dados:j,updated_at:ts,updated_by:u',
+fichas_margem:'id:n,negocio_id:n,nome:t,estado:t,criado_em:ts,dados:j,updated_at:ts,updated_by:u,aprovada_em:ts,aprovada_por:u,recusada_em:ts,recusada_por:u,recusa_motivo:t',
 inscricoes:'id:n,evento_id:n,cliente:t,telefone:t,acompanhantes:n,estado:t,obs:t,vendedor_id:u,created_at:ts,funil:t,mota:t',
 inscricoes_publico:'id:n,evento_id:n,cliente:t,mota:t,vendedor_id:u,estado:t,funil:t,acompanhantes:n,created_at:ts',
 margens:'negocio_id:n,margem:n,updated_at:ts',

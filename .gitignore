@@ -16,3 +16,8 @@ tests/negocio_imagens_grande.png
 tests/comercio_margem.png
 tests/comercio_margem_usadas.png
 tests/eot_importacao.png
+tests/ficha_recusar.png
+tests/ficha_recusar_motivo.png
+tests/ficha_recusar_lista.png
+tests/ficha_recusar_vendedor.png
+tests/ficha_recusar_ficha.png
