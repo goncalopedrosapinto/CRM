@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-03-a">
+<meta name="app-version" content="2026-11-03-b">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2443,7 +2443,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-03-a';
+const APP_VERSION='2026-11-03-b';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -2931,11 +2931,14 @@ function fmCalc(){
   else if(!venda){com=null;regraCom='falta preço de venda';}
   else{const b=margem*pct;if(b<COM_REGRAS.minimo){com=COM_REGRAS.minimo;regraCom=Math.round(pct*100)+'% = '+b.toFixed(2)+' € — mínimo garantido';}else{com=b;regraCom=Math.round(pct*100)+'% da margem';}}
   const plat=fmN('pvp_plat');
-  // A plataforma BMW mostra o PVP = modelo + opcionais + impostos + diversos, SEM apoios nem margens.
-  // O desconto ao cliente mede-se SEMPRE contra o PVP da própria ficha; o valor escrito em "Confirmar com a plataforma"
-  // só serve para confirmar (mostra a diferença) e nunca entra nas contas: um engano a escrevê-lo não muda o desconto.
-  // O esforço mede-se a partir do PVP já com os apoios (pvpDesc).
-  const pvpPlat=pvpTab;
+  // A plataforma BMW mostra o PVP = modelo + opcionais + impostos + diversos, sem margens. O PAC entra nos Diversos da
+  // plataforma como linha negativa ("PAC Q4 −1.080"), por isso o PVP da plataforma já vem SEM o PAC (as 8 fichas com PAC
+  // em produção, a 03/11/2026, confirmam-no ao cêntimo). O apoio demo não entra (confirmado); protocolo e restantes apoios
+  // ficam fora, como estavam. O desconto ao cliente mede-se contra este PVP: é o que a plataforma mostra.
+  // O valor escrito em "Confirmar com a plataforma" só serve para confirmar (mostra a diferença) e nunca entra nas contas.
+  // O esforço mede-se a partir do PVP já com todos os apoios (pvpDesc).
+  const pacC=fmIn('pac')*k;
+  const pvpPlat=pvpTab-pacC;
   const difPlat=plat?(plat-pvpPlat):null;
   const pvpRef=pvpPlat;
   const descCli=venda?(pvpRef-venda)/k:null;
@@ -2957,7 +2960,7 @@ function fmCalc(){
   const aprovacao=aprovMargem||aprovEsforco;
   return {aprovMargem,aprovEsforco,compartCustoPct,subvCustoPct,sivaPct,descEsfPct,internosPct,margFixaPct,esforcoPct,margVarPct,margPct,folga,aprovacao,modo:fmModo(),iva,k,isv,sgpu,base,baseD:base-descPreco,dl,desc,descMarg,descPreco,pvpRef,descCli,descCliPct,descPct:base?desc/base:0,diversos,ptot,ptotD,taxasTab:taxas(ptot),taxasDesc:taxas(ptotD),
     pvp:pvpTab,pvpTab,pvpDesc,internos,custo,custoSC,compart,descCusto,venda,vendaS,margem,margemPct,com,regraCom,
-    pvpPlat,descValor:venda-pvpRef,descPercent:pvpRef?(venda-pvpRef)/pvpRef:0,plat,difPlat};
+    pvpPlat,pacC,descValor:venda-pvpRef,descPercent:pvpRef?(venda-pvpRef)/pvpRef:0,plat,difPlat};
 }
 // muda o modo e converte o que já está escrito, para nada mudar na conta
 function fmSetModo(m){
@@ -3244,7 +3247,7 @@ function fmPDF(){
   r+=lin('Model and Options','',fE((c.base+c.isv)*k),'t','c');
   FM_PLAT2.forEach(([kk,l])=>r+=linV(l,fmN(kk),'c'));
   FM_DIV.forEach(([kk,l])=>r+=linV('Diversos \u00b7 '+l,fmN(kk),'c'));
-  r+=lin('PVP (c/ impostos) \u2014 o da plataforma','',fE(c.pvpTab),'t','c');
+  r+=lin(c.pacC>0.004?'PVP (c/ impostos) \u2014 antes do PAC':'PVP (c/ impostos) \u2014 o da plataforma','',fE(c.pvpTab),'t','c');
   r+=sec('Descontos e apoios (% sobre Model and Options net = '+fE(c.base)+')');
   c.dl.forEach(x=>{r+=lin(x.l+(x.marg?' (margem)':''),x.pct?pc(x.taxa/100):'','\u2212'+fE(x.valor*k),'','c');});
   r+=lin('DESC. TOTAL',pc(c.descPct),'\u2212'+fE(c.desc*k),'t','c');
@@ -3263,7 +3266,7 @@ function fmPDF(){
   const cel=(cls,kk,v,sub)=>'<td class="'+cls+'"><div class="rk">'+kk+'</div><div class="rv">'+v+'</div>'+(sub?'<div class="rs">'+sub+'</div>':'')+'</td>';
   const esfSub=c.margFixaPct==null?'falta MG. FIXA':((c.margVarPct!=null?'de '+pc(c.margVarPct)+' vari\u00e1vel \u00b7 ':'')+'desconto '+pc(Math.max(0,(c.descEsfPct||0)-c.margFixaPct))+(c.internosPct>0.00005?' + custos '+pc(c.internosPct):''));
   const resumo='<table class="res"><tr>'
-    +cel('','PVP',c.pvpTab?fE0(c.pvpTab):'\u2014','')
+    +cel('','PVP',c.pvpPlat?fE0(c.pvpPlat):'\u2014',c.pacC>0.004?'j\u00e1 sem o PAC \u00b7 '+fE0(c.pvpTab)+' antes':'')
     +cel('dsc','Valor proposto',c.venda?fE0(c.venda):'\u2014',c.descCliPct!=null&&c.venda?(c.descCliPct>=0?'desconto ':'acima do PVP ')+pc(Math.abs(c.descCliPct)):'')
     +cel(c.venda&&c.margem<0?'neg':'mg','Margem',c.venda?fE0(c.margem):'\u2014',c.venda?pc(c.margemPct)+(c.aprovacao?' \u00b7 <b>precisa aprova\u00e7\u00e3o</b>':''):'')
     +cel('mg','Comiss\u00e3o',c.com==null?'\u2014':fE0(c.com),'')
@@ -3441,7 +3444,7 @@ function renderFichaMargem(){
     ${S.fmNeg?`<div class="fm-negbar">${S.fmNeg==='novo'?'📝 Rascunho do registo novo — fica ligada ao negócio quando carregares em <b>Guardar</b>.':`🔗 Ligada a este negócio · <span id="fm-estado" role="status">${S.fmEstado?esc(S.fmEstado):(S.fmGravado?'guardada':'ainda sem alterações')}</span> — guarda-se sozinha a cada alteração. <button class="fm-volta-neg" data-action="fm-voltar">← Voltar ao negócio</button>`}${S.fmErro?` <span style="color:var(--red)">${esc(S.fmErro)}</span>`:''}</div>`:''}
     ${fichasBarra}
     <div class="kpi-strip fm-kpis" aria-label="Resumo da ficha">
-      <div class="kpi-c"><span class="kpi-k">PVP</span><span class="kpi-v">${c.pvpTab?fE0(c.pvpTab):'—'}</span></div>
+      <div class="kpi-c"><span class="kpi-k">PVP</span><span class="kpi-v">${c.pvpPlat?fE0(c.pvpPlat):'—'}</span>${c.pacC>0.004?`<span class="kpi-s">já sem o PAC · ${fE0(c.pvpTab)} antes</span>`:''}</div>
       <div class="kpi-c"><span class="kpi-k">Valor proposto</span><span class="kpi-v">${c.venda?fE0(c.venda):'—'}</span>${c.descCliPct!=null&&c.venda?`<span class="kpi-s">${c.descCliPct>=0?'desconto':'acima do PVP'} ${Math.abs(c.descCliPct*100).toLocaleString('pt-PT',{maximumFractionDigits:1})} %</span>`:''}</div>
       <div class="kpi-c"><span class="kpi-k">Margem</span><span class="kpi-v ${c.venda&&c.margem<0?'neg':''}">${c.venda?fE0(c.margem):'—'}</span>${c.venda?`<span class="kpi-s">${pc(c.margemPct)}${c.aprovacao?' · <b class="neg">precisa aprovação</b>':''}</span>`:''}</div>
       <div class="kpi-c"><span class="kpi-k">Comissão</span><span class="kpi-v pos">${c.com==null?'—':fE0(c.com)}</span></div>
@@ -3467,18 +3470,19 @@ function renderFichaMargem(){
         ${FM_PLAT2.map(([key,l])=>lIn(key,l,'')).join('')}
         ${tr('fm-grp','Diversos'+tag('c'),'',`<span class="fm-mut">${fE(c.diversos*k)}</span>`)}
         ${FM_DIV.map(([key,l])=>tr('fm-sub','<span class="fm-ind">'+esc(l)+'</span>'+tag('c'),'',inE(key))).join('')}
-        ${tr('fm-t','PVP (c/ impostos)'+tag('c')+onde('= o PVP que a plataforma mostra (sem apoios nem margens)'),'',`<b>${fE(c.pvpTab)}</b>`)}
+        ${tr('fm-t','PVP (c/ impostos)'+tag('c')+onde(c.pacC>0.004?'modelo + opcionais + impostos + diversos, antes do PAC':'= o PVP que a plataforma mostra (sem apoios nem margens)'),'',`<b>${fE(c.pvpTab)}</b>`)}
+        ${c.pacC>0.004?tr('fm-t fm-plat','PVP na plataforma'+tag('c')+onde('a plataforma põe o PAC nos Diversos e mostra este PVP · daqui conta o desconto ao cliente'),'',`<b>${fE(c.pvpPlat)}</b>`):''}
         ${sep('Descontos e apoios',`(% sobre Model and Options sem IVA = ${fE(c.base)})`)}
         ${c.dl.map(x=>tr(x.marg?'fm-marg':'',esc(x.l)+tag('c')+(x.marg?onde('margem do concessionário · não mexe no PVP'):''),x.pct?inP(x.k+'_pct'):'',x.pct?`<span class="fm-neg">−${fE(x.valor*k)}</span>`:inE(x.k))).join('')}
         ${tr('fm-t','DESC. TOTAL'+tag('c'),`<span class="fm-hint">${pc(c.descPct)}</span>`,`<b class="fm-neg">−${fE(c.desc*k)}</b>`)}
         ${tr('fm-dest','PVP com apoios'+tag('c')+onde('PVP menos os apoios da marca (PAC, protocolo, apoios…) · daqui conta o esforço'),'',`<b>${fE(c.pvpDesc)}</b>`)}
-        ${tr('fm-ver','<span class="fm-ver-l">Confirmar com a plataforma</span>'+tag('c')+(verif?`<div style="margin-top:3px">${verif}</div>`:onde('escreve o PVP que a plataforma mostra')),'',inE('pvp_plat','PVP da BMW'))}
+        ${tr('fm-ver','<span class="fm-ver-l">Confirmar com a plataforma</span>'+tag('c')+(verif?`<div style="margin-top:3px">${verif}</div>`:onde('escreve o PVP que a plataforma mostra'+(c.pacC>0.004?' (já sem o PAC)':''))),'',inE('pvp_plat','PVP da BMW'))}
         ${sep('Custos internos','— não aparecem na plataforma')}
         ${FM_INT.map(([key,l])=>FM_SIVA.includes(key)?tr('',esc(l)+tag('s')+onde('escreve-se sem IVA'),c.sivaPct[key]!=null?`<span class="fm-cpc" title="${esc(l)} com IVA a dividir pelo preço de custo">${(c.sivaPct[key]*100).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})} %<small>do preço de custo</small></span>`:'',inE(key)):lIn(key,l,'')).join('')}
         ${tr('fm-t','PREÇO CUSTO'+tag('c'),'',`<b>${fE(c.custo)}</b>`)}
         ${sep('Venda','')}
         ${tr('fm-dest','Valor proposto de venda'+tag('c')+custoTxt,'',inE('preco_venda','preço acordado'))}
-        ${c.descCli!=null?tr('fm-dest','Desconto ao cliente'+tag('s')+onde('o valor que a plataforma BMW mostra'),`<b>${(c.descCliPct*100).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})} %</b>`,`<b>${c.descCli>0?'−':''}${fE(Math.abs(c.descCli))}</b>`):''}
+        ${c.descCli!=null?tr('fm-dest','Desconto ao cliente'+tag('s')+onde(c.pacC>0.004?'o que a plataforma BMW mostra: sobre o PVP já sem o PAC':'o valor que a plataforma BMW mostra'),`<b>${(c.descCliPct*100).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})} %</b>`,`<b>${c.descCli>0?'−':''}${fE(Math.abs(c.descCli))}</b>`):''}
         ${tr('','Valor proposto'+tag('s'),'',fE(c.vendaS))}
         ${tr('fm-dest','Margem'+tag('s'),`<b>${pc(c.margemPct)}</b>`,`<b class="${c.margem<0?'fm-neg':''}">${fE(c.margem)}</b>`)}
         ${tr('fm-dest','Comissão'+onde(c.regraCom),'',`<b>${c.com==null?'—':fE(c.com)}</b>`)}

@@ -24,11 +24,26 @@ const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'))
     return {pvp:+c.pvpDesc.toFixed(2),pvpPlat:+c.pvpPlat.toFixed(2),difPlat:+c.difPlat.toFixed(2),margem:+c.margem.toFixed(2),esf:+(c.esforcoPct*100).toFixed(2),desc:+(c.descCliPct*100).toFixed(2)};});
   const realOk=Math.abs(real.pvp-24682.08)<0.02&&Math.abs(real.difPlat)<=0.05&&Math.abs(real.margem-237.5)<0.05&&Math.abs(real.esf-2.31)<0.01;
   casos.push({n:'demo S 1000 RR (PVP plataforma '+real.pvpPlat+', dif. '+real.difPlat+', margem '+real.margem+')',esf:real.esf,esperado:2.31,ok:realOk});
-  // Todos os apoios fora do PVP da plataforma: PAC 200 € + protocolo 2 % + apoio adicional 1 %, PVP da plataforma = PVP (c/ impostos).
-  const apoios=await p.evaluate(()=>{S.fm={natureza:'MN',iva:23,modo:'civa',fv:2,isv:'0',sgpu:'0',pvb:'10000',mg_fixa_pct:'6',mg_var_pct:'3.5',pac:'200',protocolo_pct:'2',apoio_adic_pct:'1',pvp_plat:'10000',preco_venda:'9000'};
-    const c=fmCalc();return {dif:+c.difPlat.toFixed(2),desc:+(c.descCliPct*100).toFixed(3),descEsf:+(c.descEsfPct*100).toFixed(3),esf:+(c.esforcoPct*100).toFixed(3),ident:+Math.max(0,3.5-c.margem/c.base*100).toFixed(3)};});
-  casos.push({n:'PAC + protocolo + apoio adicional fora do PVP (dif. '+apoios.dif+', desconto plataforma '+apoios.desc+' %, desconto p/ esforço '+apoios.descEsf+' %)',esf:apoios.esf,esperado:apoios.ident,
-    ok:Math.abs(apoios.dif)<=0.05&&apoios.desc>apoios.descEsf&&Math.abs(apoios.esf-apoios.ident)<0.001});
+  // O PAC entra nos Diversos da plataforma (o PVP da plataforma já vem sem ele); protocolo e apoio adicional ficam fora.
+  // PAC 200 € + protocolo 2 % + apoio adicional 1 %: PVP da plataforma = PVP (c/ impostos) − PAC = 9 800 €.
+  const apoios=await p.evaluate(()=>{S.fm={natureza:'MN',iva:23,modo:'civa',fv:2,isv:'0',sgpu:'0',pvb:'10000',mg_fixa_pct:'6',mg_var_pct:'3.5',pac:'200',protocolo_pct:'2',apoio_adic_pct:'1',pvp_plat:'9800',preco_venda:'9000'};
+    const c=fmCalc();return {plat:+c.pvpPlat.toFixed(2),dif:+c.difPlat.toFixed(2),desc:+(c.descCliPct*100).toFixed(3),descEsperado:+((9800-9000)/1.23/(10000/1.23)*100).toFixed(3),descEsf:+(c.descEsfPct*100).toFixed(3),esf:+(c.esforcoPct*100).toFixed(3),ident:+Math.max(0,3.5-c.margem/c.base*100).toFixed(3)};});
+  casos.push({n:'PAC nos Diversos da plataforma; protocolo e apoio adicional fora (PVP plataforma '+apoios.plat+', dif. '+apoios.dif+', desconto '+apoios.desc+' %, p/ esforço '+apoios.descEsf+' %)',esf:apoios.esf,esperado:apoios.ident,
+    ok:apoios.plat===9800&&Math.abs(apoios.dif)<=0.05&&apoios.desc===apoios.descEsperado&&apoios.desc>apoios.descEsf&&Math.abs(apoios.esf-apoios.ident)<0.001});
+  // Caso real (M 1000 XR, 03/11/2026): PAC 1 080 € nos Diversos da plataforma. A plataforma mostra PVP 28 474,40 € e
+  // desconto 7,39 % (1 606,42 € s/IVA) com 26 498,50 €. Antes a ficha media contra o PVP sem o PAC e dava 11,42 %.
+  const xr=await p.evaluate(()=>{const fm={natureza:'MN',iva:23,modo:'civa',fv:2,isv:'245.14',sgpu:'0.78',pvb:'27549.04',opc:'-509.99',bsi:'1590',ecovalor:'1.9',transporte:'922.5',
+      pac:'1080',mg_fixa_pct:'6',mg_var_pct:'3.5',compart_conc:'275.12',pvp_plat:'28474.4'};
+    S.fm=Object.assign({},fm,{preco_venda:'26498.50'});const a=fmCalc();S.fm=Object.assign({},fm,{preco_venda:'26500'});const c=fmCalc();
+    S.screen='ficha';S.fmNeg=null;render();const tx=e=>e?e.textContent.replace(/\s+/g,' ').trim():'';
+    const linha=lb=>tx([...document.querySelectorAll('.fm-tbl tr')].find(t=>t.querySelector('.fm-l')&&t.querySelector('.fm-l').textContent.startsWith(lb)));
+    let cap='';const o=window.open;window.open=()=>({document:{open(){},write(h){cap+=h},close(){}},focus(){},print(){}});fmPDF();window.open=o;
+    return {plat:+a.pvpPlat.toFixed(2),dif:+a.difPlat.toFixed(2),descA:+a.descCli.toFixed(2),pctA:+(a.descCliPct*100).toFixed(2),pctC:+(c.descCliPct*100).toFixed(2),
+      margem:+c.margem.toFixed(2),esf:+(c.esforcoPct*100).toFixed(2),kpi:tx(document.querySelector('.fm-kpis .kpi-c')),linhaPlat:linha('PVP na plataforma'),ver:tx(document.querySelector('.fm-ver')),
+      desc:linha('Desconto ao cliente'),pdfPvp:/PVP<\/div><div class="rv">28\s474\s€/.test(cap.replace(/[\u00a0\u202f]/g,' '))&&/já sem o PAC/.test(cap),pdfDesc:/Desconto ao cliente[\s\S]{0,200}?7,38\s?%/.test(cap.replace(/[\u00a0\u202f]/g,' '))};});
+  casos.push({n:'M 1000 XR: desconto igual à plataforma (PVP '+xr.plat+', '+xr.pctA+' % = '+xr.descA+' € com 26 498,50 €; '+xr.pctC+' % com 26 500 €; KPI «'+xr.kpi+'»)',esf:xr.esf,esperado:2.65,
+    ok:Math.abs(xr.plat-28474.4)<=0.02&&Math.abs(xr.dif)<=0.05&&xr.pctA===7.39&&Math.abs(xr.descA-1606.42)<=0.02&&xr.pctC===7.38&&xr.margem===184.76&&xr.esf===2.65&&
+      /28\s474 €/.test(xr.kpi.replace(/[\u00a0\u202f]/g,' '))&&/já sem o PAC/.test(xr.kpi)&&/28\s474,4\d €/.test(xr.linhaPlat.replace(/[\u00a0\u202f]/g,' '))&&/bate com a plataforma/.test(xr.ver)&&/7,38 %/.test(xr.desc)&&/já sem o PAC/.test(xr.desc)&&xr.pdfPvp&&xr.pdfDesc});
   // Engano a escrever o PVP da plataforma (+10 €): o desconto ao cliente não muda, só aparece a diferença (caso F 900 R de 22/10)
   const engano=await p.evaluate(()=>{const fm={natureza:'MN',iva:23,modo:'civa',fv:2,isv:'0',sgpu:'0',pvb:'10000',mg_fixa_pct:'6',mg_var_pct:'3.5',preco_venda:'9300'};
     S.fm=Object.assign({},fm);const a=fmCalc();S.fm=Object.assign({},fm,{pvp_plat:(a.pvpPlat+10).toFixed(2)});const c=fmCalc();
