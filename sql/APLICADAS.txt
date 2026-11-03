@@ -21,3 +21,4 @@
 2026-10-25_reuniao_repetidos.sql
 2026-10-26_negocio_imagens.sql
 2026-11-02_eot_import_historico.sql
+2026-11-02_fichas_recusar.sql

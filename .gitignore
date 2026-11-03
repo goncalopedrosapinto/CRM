@@ -21,3 +21,6 @@ tests/ficha_recusar_motivo.png
 tests/ficha_recusar_lista.png
 tests/ficha_recusar_vendedor.png
 tests/ficha_recusar_ficha.png
+tests/eot_manual_form.png
+tests/eot_manual_ficha.png
+tests/eot_manual_lista.png

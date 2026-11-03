@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-02-b">
+<meta name="app-version" content="2026-11-03-a">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1915,6 +1915,7 @@ a{color:var(--blue)}
 :root[data-theme="dark"] .stock-seg-item{background:var(--surface)}
 :root[data-theme="dark"] .fm-l{color:var(--text)}
 :root[data-theme="dark"] .mg-aviso,:root[data-theme="dark"] .stock-warn,:root[data-theme="dark"] .fun-warn,:root[data-theme="dark"] .norma-nok,:root[data-theme="dark"] .norma-warn2,:root[data-theme="dark"] .stock-max-alert{background:var(--amber-bg)!important;border-color:#5A4510!important;color:var(--amber)!important}
+:root[data-theme="dark"] .eotd-tag.mais{color:var(--amber)}
 :root[data-theme="dark"] .fm-aprov{background:var(--red-bg);color:var(--red)}
 :root[data-theme="dark"] .norma-ok{background:var(--green-bg);border-color:#1C4A30;color:var(--green)}
 @media(max-width:700px){.fm-kpis{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.fm-kpis .kpi-c{padding:6px 8px;border-radius:var(--r)}.fm-kpis .kpi-k{font-size:10.5px}.fm-kpis .kpi-v{font-size:13.5px}.hdr-btn[data-action="fm-pdf"] span{display:none}.hdr-btn[data-action="fm-pdf"]{width:44px;padding:0}}
@@ -2209,6 +2210,12 @@ body.a-gravar [data-action]{cursor:progress}
 .mr-acts{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.mr-inp{width:150px;min-height:36px}
 .mr-nota{margin-top:6px;font-size:12px;color:var(--text2);background:var(--surface2);border-radius:8px;padding:6px 10px}.mr-nota.pend{background:var(--orange-bg);color:var(--orange2)}.mr-nota.ok{background:var(--green-bg);color:var(--green)}
 @media (max-width:760px){.mr-acts{width:100%}.mr-inp{flex:1}}
+/* EOTs criadas à mão */
+.eot-man{display:inline-block;padding:0 6px;border-radius:999px;background:var(--blue-bg);color:var(--blue);font-size:10.5px;font-weight:700;line-height:17px;vertical-align:1px}
+.eotm-man{margin:0 0 10px;padding:8px 12px;border-radius:10px;background:var(--surface2);color:var(--text2);font-size:12.5px}
+.eotm-apagar{margin-left:auto}
+.eotn .eotn-err .norma-inp{border-color:var(--red)}.eotn-msg{color:var(--red);font-size:11.5px;font-weight:600}
+.eotn .eotn-dup{margin:0 0 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 /* Fichas: não aprovar (motivo na linha, sem janela) e lista das não aprovadas à espera do vendedor */
 .fa-row-rec{background:var(--surface2)}
 .fa-rec{flex-basis:100%;display:flex;flex-direction:column;gap:8px;padding:10px 12px;border:1px solid var(--border2);border-radius:10px;background:var(--surface);color:var(--text);font-size:13px}
@@ -2382,6 +2389,7 @@ document.addEventListener('keydown',e=>{if(typeof S==='undefined')return;const t
   if(e.key==='Enter'&&t&&t.dataset&&t.dataset.vhnovo){e.preventDefault();vhNovoRegistar();return;}
   if(e.key==='Enter'&&t&&t.id==='reu-c-texto'){e.preventDefault();const b=document.querySelector('[data-action="reu-comp-add"]');reuCompAdd(b?b.dataset.p:'');return;}
   if(e.key==='Enter'&&t&&t.id==='fa-motivo'){e.preventDefault();fichaRecusar(t.dataset.id);return;}
+  if(e.key==='Enter'&&t&&t.tagName==='INPUT'&&t.dataset&&t.dataset.eotn){e.preventDefault();eotCriarManual();return;}
   if(e.key==='Escape'&&S.faRecusar!=null&&!S.eotAberto){S.faRecusar=null;S.faMotivo='';render();return;}
   if(e.key==='Escape'&&S.vhAcao){S.vhAcao=null;render();return;}
   if(e.key==='Escape'&&S.fmGuardar&&!S.eotAberto){S.fmGuardar=false;render();}});
@@ -2435,7 +2443,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-02-b';
+const APP_VERSION='2026-11-03-a';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -3794,7 +3802,7 @@ function renderFinanceiro(){
   const resps=[...new Set(todos.map(x=>x.responsavel_id).filter(Boolean))];
   const sel=(k,opts)=>`<select class="seq-sel" data-fin-f="${k}" aria-label="${k}">${opts.map(([v,l])=>`<option value="${esc(v)}" ${String(F[k])===String(v)?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
   const linhas=L.map(x=>`<tr class="gpp-lrow2 eot-click" data-action="eot-abrir" data-c="${esc(x.contrato)}" tabindex="0" title="Abrir ficha da EOT">
-      ${VA?`<td class="fin-visto-td">${finVistoBtn(x)}</td>`:''}<td><b>${esc(x.cliente||'—')}</b>${notifMarca(x.contrato)}<div class="fin-sub">${esc(x.contrato||'')}${x.tipo?' · '+esc(x.tipo):''}</div></td>
+      ${VA?`<td class="fin-visto-td">${finVistoBtn(x)}</td>`:''}<td><b>${esc(x.cliente||'—')}</b>${notifMarca(x.contrato)}<div class="fin-sub">${esc(x.contrato||'')}${x.tipo?' · '+esc(x.tipo):''}${eotManual(x)?' '+EOT_MAN_TAG:''}</div></td>
       <td>${esc(x.modelo||'—')}${x.matricula?`<div class="fin-sub">${esc(x.matricula)}</div>`:''}</td>
       <td>${fD(x.data_fim)}<div class="fin-sub">${eotDiasHTML(x)}</div></td>
       <td style="text-align:right"><b>${fE(x.residual)}</b></td>
@@ -6533,7 +6541,10 @@ function eotParse(rows){
   return {linhas,total,exMarca,exConc,repetidos};
 }
 // manuais: contrato → campo → quando a equipa o corrigiu à mão (histórico); essa correção fica se for depois da última importação
-function eotNoMapa(){return (S.eot||[]).filter(x=>x.no_mapa!==false).length;}
+// contratos criados à mão (não vieram no mapa do banco): a importação não os dá como saídos
+function eotManual(x){return !!x&&x.origem==='manual';}
+const EOT_MAN_TAG='<span class="eot-man" title="Criado à mão: não veio no mapa do banco">à mão</span>';
+function eotNoMapa(){return (S.eot||[]).filter(x=>x.no_mapa!==false&&!eotManual(x)).length;}
 function eotMuitosSaem(P){const n=eotNoMapa();return n>=5&&P.saem.length>n*0.3;}   // mais de 30% a sair: pode ser um mapa antigo
 function eotDiff(linhas,exist,manuais){
   const m=new Map((exist||[]).map(x=>[eotChave(x.contrato),x]));
@@ -6543,7 +6554,8 @@ function eotDiff(linhas,exist,manuais){
   const novos=L.filter(l=>!E(l));
   const voltam=L.filter(l=>E(l)&&E(l).no_mapa===false);
   const atual=L.filter(l=>E(l)&&E(l).no_mapa!==false);
-  const saem=(exist||[]).filter(x=>x.no_mapa!==false&&!noFich.has(eotChave(x.contrato)));
+  const saem=(exist||[]).filter(x=>x.no_mapa!==false&&!eotManual(x)&&!noFich.has(eotChave(x.contrato)));
+  const adotados=L.filter(l=>eotManual(E(l)));   // criados à mão que agora vêm no mapa: passam a ser atualizados pelo banco
   // adenda: o banco mantém o número do contrato e muda a data de fim → volta a "Por contactar"
   const reabrir=L.filter(l=>{const e=E(l);return !!e&&e.fase==='Adenda'&&!!l.data_fim&&!!e.data_fim&&String(l.data_fim)>String(e.data_fim);})
     .map(l=>Object.assign({},l,{fim_antes:E(l).data_fim}));
@@ -6557,7 +6569,7 @@ function eotDiff(linhas,exist,manuais){
       mud.push({k,antes:e[k],depois:l[k]});});
     if(mud.length)mudam.push({contrato:e.contrato,cliente:e.cliente||l.cliente,mud});else iguais++;
     return c;});
-  return {novos,voltam,atual,saem,reabrir,upsert,mudam,mantidos,iguais,vazios,formato:L.filter(l=>l.contrato_ficheiro)};
+  return {novos,voltam,atual,saem,reabrir,upsert,mudam,mantidos,iguais,vazios,adotados,formato:L.filter(l=>l.contrato_ficheiro)};
 }
 // correções feitas à mão nos dados do banco (para a importação não as desfazer)
 async function eotManuais(){const mm=new Map();
@@ -6661,6 +6673,76 @@ async function eotCriarNegocio(contrato){
     alert(`${body.id_cliente} entrou no funil de ${vendName(vid)} (campanha "EOT").`);
   }catch(e){alert('Erro ao criar negócio: '+erroTexto(e));}
 }
+// ---- Contrato criado à mão (não veio no mapa): só o chefe ----
+function eotNovoAbrir(){S.eotNovo=S.eotNovo?null:{v:{},erros:{}};render();if(S.eotNovo)setTimeout(()=>{const n=document.getElementById('eotn-contrato');if(n)n.focus();},30);}
+function eotNovoHTML(){
+  const N=S.eotNovo;if(!N||!isAdmin())return'';
+  const v=N.v||{},er=N.erros||{};const vend=(S.team||[]).filter(p=>p.role==='vendedor');
+  const f=(k,lb,ph,extra)=>`<div class="vd-f${er[k]?' eotn-err':''}"><label for="eotn-${k}">${lb}</label><input class="norma-inp" id="eotn-${k}" data-eotn="${k}" ${extra||''} value="${esc(v[k]||'')}" placeholder="${esc(ph||'')}"${er[k]?` aria-invalid="true" aria-describedby="eotn-${k}-msg"`:''}>${er[k]?`<small class="eotn-msg" id="eotn-${k}-msg">${esc(er[k])}</small>`:''}</div>`;
+  const dup=N.dup?(S.eot||[]).find(x=>String(x.contrato)===String(N.dup)):null;
+  return`<div class="gpp-card vd-form eotn" style="margin:0 16px 14px">
+    <div class="vd-form-t">✍ Contrato à mão</div>
+    <div class="vd-form-sub">Para contratos que não vieram no mapa do banco. Fica ativo até lhe dares uma fase final e a importação do mapa não o tira. Se um dia vier no mapa (mesmo nº), junta-se a este e passa a ser atualizado pelo banco.</div>
+    ${dup?`<div class="mg-aviso eotn-dup">Já existe o contrato <b>${esc(dup.contrato)}</b> (${esc(dup.cliente||'—')}${dup.no_mapa===false?', saiu do mapa':''}). <button class="btn btn-outline btn-sm" data-action="eot-abrir" data-c="${esc(dup.contrato)}">Abrir esse contrato</button></div>`:''}
+    ${N.erro?`<div class="error" style="margin-bottom:10px">${esc(N.erro)}</div>`:''}
+    <div class="vd-grid">
+      ${f('contrato','Nº do contrato *','Nº do banco','autocomplete="off"')}
+      ${f('cliente','Cliente *','Nome do cliente')}
+      ${f('data_fim','Data de fim *','','type="date"')}
+      ${f('telemovel','Telemóvel','9xxxxxxxx','inputmode="tel"')}
+      ${f('modelo','Modelo','Ex: R 1250 GS')}
+      ${f('matricula','Matrícula','AA-00-AA')}
+      ${f('residual','Valor residual (€)','0,00','inputmode="decimal"')}
+      ${f('prestacao','Prestação (€)','0,00','inputmode="decimal"')}
+      <div class="vd-f"><label for="eotn-responsavel_id">Responsável</label><select class="norma-inp" id="eotn-responsavel_id" data-eotn="responsavel_id"><option value="">— por atribuir —</option>${vend.map(p=>`<option value="${esc(p.id)}" ${String(v.responsavel_id||'')===String(p.id)?'selected':''}>${esc(p.nome||'?')}</option>`).join('')}</select></div>
+      <div class="vd-f" style="grid-column:1/-1"><label for="eotn-notas">Notas</label><input class="norma-inp" id="eotn-notas" data-eotn="notas" value="${esc(v.notas||'')}" placeholder="Ex: veio de outro concessionário; o banco não o pôs no mapa"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+      <button class="btn btn-orange btn-sm" data-action="eot-novo-criar" ${N.aGravar?'disabled':''}>${N.aGravar?'A criar…':'Criar contrato'}</button>
+      <button class="btn btn-dark btn-sm" data-action="eot-novo-fechar">Cancelar</button>
+    </div>
+  </div>`;
+}
+async function eotCriarManual(){
+  const N=S.eotNovo;if(!N||!isAdmin()||N.aGravar)return;
+  const v=Object.assign({},N.v||{});
+  const ct=String(v.contrato||'').replace(/\s+/g,'').trim();
+  const res=eotTxt(v.residual)?numPT(v.residual):null,pre=eotTxt(v.prestacao)?numPT(v.prestacao):null;
+  const er={};
+  if(!ct)er.contrato='Falta o nº do contrato';
+  if(!eotTxt(v.cliente))er.cliente='Falta o cliente';
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(String(v.data_fim||'')))er.data_fim='Falta a data de fim';
+  if(eotTxt(v.residual)&&res==null)er.residual='Número inválido';
+  if(eotTxt(v.prestacao)&&pre==null)er.prestacao='Número inválido';
+  const dup=ct?(S.eot||[]).find(x=>eotChave(x.contrato)===eotChave(ct)):null;   // o mesmo nº escrito de outra forma também conta
+  S.eotNovo=Object.assign({},N,{erros:er,dup:dup?String(dup.contrato):null,erro:''});
+  if(Object.keys(er).length||dup){render();setTimeout(()=>{const k=Object.keys(er)[0]||'contrato';const n=document.getElementById('eotn-'+k);if(n)n.focus();},30);return;}
+  const body={contrato:ct,cliente:eotTxt(v.cliente),data_fim:v.data_fim,telemovel:eotTxt(v.telemovel),modelo:eotTxt(v.modelo),
+    matricula:eotTxt(v.matricula)?String(v.matricula).trim().toUpperCase():null,residual:res,prestacao:pre,
+    responsavel_id:v.responsavel_id||null,notas:eotTxt(v.notas),fase:'Por contactar',no_mapa:true,origem:'manual'};
+  S.eotNovo.aGravar=true;render();
+  try{
+    const r=await supabaseApi('POST','/eot_contratos',body);
+    const row=Array.isArray(r)&&r[0]?r[0]:Object.assign({criado_em:new Date().toISOString(),criado_por:S.me&&S.me.id},body);
+    S.eot=(S.eot||[]).filter(x=>String(x.contrato)!==ct).concat([row]);
+    S.eotNovo=null;
+    S.eotMsg=`Contrato ${ct} (${body.cliente}) criado à mão${body.responsavel_id?' e atribuído a '+vendName(body.responsavel_id):': falta atribuir o responsável'}.`;
+    eotAbrir(ct);   // abre a ficha para completar o resto (contacto, prazo, total…)
+  }catch(e){const m=String(e&&e.message);
+    S.eotNovo=Object.assign({},S.eotNovo||N,{aGravar:false,
+      erro:/origem|criado_por|PGRST204|schema cache/i.test(m)?'Falta correr o SQL "2026-11-03_eot_manual" no Supabase.':(/23505|duplicate key/i.test(m)?'Já existe um contrato com este número.':erroTexto(e))});
+    render();}
+}
+// apagar só um contrato criado à mão (por engano, ou com o nº errado: o nº não se muda depois de criado)
+async function eotApagarManual(c){
+  const x=(S.eot||[]).find(y=>String(y.contrato)===String(c));if(!x||!eotManual(x)||!isAdmin())return;
+  if(!confirm(`Apagar o contrato ${x.contrato} (${x.cliente||'—'})?\nFoi criado à mão. Perdem-se também as indicações e o histórico deste contrato.`))return;
+  try{
+    await supabaseApi('DELETE','/eot_contratos?contrato=eq.'+encodeURIComponent(x.contrato)+'&origem=eq.manual');
+    eotFechar(true);await loadEot();render();
+    setTimeout(()=>toast((S.eot||[]).some(y=>String(y.contrato)===String(x.contrato))?'Não foi apagado: entretanto veio no mapa':'Contrato apagado'),450);
+  }catch(e){alert('Não consegui apagar: '+erroTexto(e));}
+}
 function eotDias(x){if(!x||!x.data_fim)return null;const h=new Date();h.setHours(0,0,0,0);return Math.round((new Date(String(x.data_fim).slice(0,10)+'T00:00:00')-h)/864e5);}
 function eotDataPT(v){return v?String(v).slice(0,10).split('-').reverse().join('/'):'—';}
 function eotEur(n){return n==null||n===''?'—':Number(n).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';}
@@ -6707,7 +6789,7 @@ function eotDistribuicao(ativos,vend,sel){
       ${sem.n?`<tr class="eotd-row eotd-sem ${sel==='_sem'?'on':''}" data-action="eot-resp-f" data-v="${sel==='_sem'?'':'_sem'}"><td><i>Por atribuir</i></td><td><b>${sem.n}</b></td><td class="r">${sem.u90}</td><td class="r">${sem.u180}</td><td class="r">${fE0(sem.res)}</td><td class="r">—</td><td class="r">—</td><td></td></tr>`:''}
       </tbody></table></div>
     ${avisos.length?`<div class="eotd-av">⚖️ ${avisos.join(' · ')}</div>`:''}
-    <div class="eotd-nota">Conta só os contratos que estão no mapa. Clica numa linha para filtrar. Equilibrado = até ±15% da média; olha também para o valor residual e para os urgentes — quantidade igual não é o mesmo que oportunidades iguais.</div>
+    <div class="eotd-nota">Conta só os contratos ativos (no mapa${ativos.some(eotManual)?' e criados à mão':''}). Clica numa linha para filtrar. Equilibrado = até ±15% da média; olha também para o valor residual e para os urgentes — quantidade igual não é o mesmo que oportunidades iguais.</div>
   </div>`;
 }
 // ---- Vista do chefe (dentro de Leads) ----
@@ -6715,7 +6797,7 @@ function eotDistribuicao(ativos,vend,sel){
 const EOT_CAMPOS={cliente:'Cliente',contacto_nome:'Contacto',telemovel:'Telemóvel',telefone:'Telefone',tipo:'Tipo de contrato',modelo:'Modelo',matricula:'Matrícula',kms:'Km contratados',
   data_fim:'Data de fim',prazo:'Prazo (meses)',prestacao:'Prestação',residual:'Valor residual',despesas:'Despesas finais',total:'Total a pagar',seguro:'Seguro',manutencao:'Manutenção',
   concessionario:'Concessionário',conc_resp:'Conc. responsável',vendedor_origem:'Vendedor original',no_mapa:'No mapa',
-  responsavel_id:'Responsável',fase:'Fase',temperatura:'Temperatura',proxima_acao:'Próxima ação',proxima_data:'Data da próxima ação',notas:'Notas',negocio_id:'Negócio no funil',adenda_em:'Adenda (contrato prolongado)',fin_visto_em:'Tratado (visto dos financeiros)'};
+  responsavel_id:'Responsável',fase:'Fase',temperatura:'Temperatura',proxima_acao:'Próxima ação',proxima_data:'Data da próxima ação',notas:'Notas',negocio_id:'Negócio no funil',adenda_em:'Adenda (contrato prolongado)',fin_visto_em:'Tratado (visto dos financeiros)',origem:'Origem'};
 const EOT_NUM=['prazo','prestacao','residual','despesas','total'],EOT_DATA=['data_fim','proxima_data','adenda_em'];
 const EOT_GRP_CONTRATO=['cliente','contacto_nome','telemovel','telefone','tipo','modelo','matricula','kms','data_fim','prazo','prestacao','residual','despesas','total','seguro','manutencao','concessionario','conc_resp','vendedor_origem','no_mapa'];
 const EOT_GRP_ACOMP=['responsavel_id','fase','temperatura','proxima_acao','proxima_data','notas'];
@@ -6847,7 +6929,7 @@ function negImgsAplicar(){
 }
 function negImgLbHTML(){const p=S.negImgVer;const u=_negImgUrl.get(p);
   return`<div class="eot-lb${S.negImgZoom?' zoom':''}" data-action="neg-img-fechar" role="dialog" aria-label="Imagem"><img data-neg-img="${esc(p)}" ${u?`src="${esc(u)}"`:''} alt="Imagem do comentário" data-action="neg-img-zoom" title="${S.negImgZoom?'Ajustar ao ecrã':'Ver em tamanho real'}"><button type="button" class="eot-lb-x" data-action="neg-img-fechar" aria-label="Fechar">${ico('x')}</button><div class="eot-lb-dica">${S.negImgZoom?'Tamanho real · clica na imagem para ajustar ao ecrã':'Clica na imagem para ver em tamanho real'} · Esc fecha</div></div>`;}
-function eotHistValor(k,v){if(v==null||v==='')return'(vazio)';if(k==='fin_visto_em')return finVistoDH(v)||String(v);if(k==='responsavel_id')return vendName(v)||'?';if(k==='no_mapa')return String(v)==='true'?'Sim':'Não';if(EOT_DATA.includes(k))return eotDataPT(v);if(['prestacao','residual','despesas','total'].includes(k))return eotEur(v);return String(v);}
+function eotHistValor(k,v){if(v==null||v==='')return'(vazio)';if(k==='origem')return v==='manual'?'criado à mão':(v==='mapa'?'mapa do banco':String(v));if(k==='fin_visto_em')return finVistoDH(v)||String(v);if(k==='responsavel_id')return vendName(v)||'?';if(k==='no_mapa')return String(v)==='true'?'Sim':'Não';if(EOT_DATA.includes(k))return eotDataPT(v);if(['prestacao','residual','despesas','total'].includes(k))return eotEur(v);return String(v);}
 function eotHistHTML(h){
   const d=new Date(h.criado_em);const p=n=>String(n).padStart(2,'0');
   const quando=isNaN(d)?'':`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
@@ -6883,11 +6965,12 @@ function eotModalHTML(){
   return`<div class="eotm-bd${_cl}" data-action="eotm-fechar"></div>
   <div class="eotm${_cl}" role="dialog" aria-modal="true" aria-label="EOT ${esc(x.contrato)}">
     <div class="eotm-h">
-      <div class="eotm-ht"><div class="eotm-tit">EOT: ${esc(x.contrato)}</div><div class="eotm-sub"><b>${esc(x.cliente||'—')}</b> · ${esc(x.modelo||'')}${x.matricula?' · '+esc(x.matricula):''} · fim ${eotDataPT(x.data_fim)} ${eotDiasHTML(x)}</div></div>
+      <div class="eotm-ht"><div class="eotm-tit">EOT: ${esc(x.contrato)}</div><div class="eotm-sub"><b>${esc(x.cliente||'—')}</b> · ${esc(x.modelo||'')}${x.matricula?' · '+esc(x.matricula):''} · fim ${eotDataPT(x.data_fim)} ${eotDiasHTML(x)}${eotManual(x)?' '+EOT_MAN_TAG:''}</div></div>
       <button class="eotm-x" data-action="eotm-fechar" aria-label="Fechar">${ico('x')}</button>
     </div>
     <div class="eotm-body">
       <div class="eotm-kpis"><span>Prestação <b>${eotEur(x.prestacao)}</b></span><span>Residual <b>${eotEur(x.residual)}</b></span><span>Total a pagar <b>${eotEur(x.total)}</b></span><span>Fase <b>${esc(x.fase||'Por contactar')}</b></span><span>Responsável <b>${x.responsavel_id?esc(vendName(x.responsavel_id)||'?'):'por atribuir'}</b></span></div>
+      ${eotManual(x)?`<div class="eotm-man">✍ Criado à mão${x.criado_por?' por '+esc(nomePerfil(x.criado_por)||'?'):''}${x.criado_em?' a '+esc(eotDataPT(String(x.criado_em).slice(0,10))):''}. Não veio no mapa do banco: a importação não o dá como saído. Se vier no mapa com o mesmo nº, passa a ser atualizado pelo banco.</div>`:''}
       <div class="eotm-sec">Acompanhamento</div>
       <div class="eotm-g">${EOT_GRP_ACOMP.map(k=>eotCampoHTML(x,k)).join('')}</div>
       ${negBtn?`<div style="margin:8px 0 2px">${negBtn}</div>`:''}
@@ -6907,6 +6990,7 @@ function eotModalHTML(){
     <div class="eotm-foot">
       <button class="btn btn-orange" data-action="eotm-guardar" id="eotm-guardar">Guardar${nAlt?` (${nAlt})`:''}</button>
       <button class="btn btn-ghost" data-action="eotm-fechar">Cancelar</button>
+      ${eotManual(x)&&isAdmin()?`<button class="btn btn-danger btn-sm eotm-apagar" data-action="eot-apagar" data-c="${esc(x.contrato)}">Apagar contrato</button>`:''}
     </div>
   </div>
   ${S.eotImgVer?`<div class="eot-lb${S.eotImgZoom?' zoom':''}" data-action="eot-img-fechar" role="dialog" aria-label="Imagem"><img data-eot-img="${esc(S.eotImgVer)}" ${_eotImgUrl.get(S.eotImgVer)?`src="${esc(_eotImgUrl.get(S.eotImgVer))}"`:''} alt="Imagem da indicação" data-action="eot-img-zoom" title="${S.eotImgZoom?'Ajustar ao ecrã':'Ver em tamanho real'}"><button type="button" class="eot-lb-x" data-action="eot-img-fechar" aria-label="Fechar">${ico('x')}</button><div class="eot-lb-dica">${S.eotImgZoom?'Tamanho real · clica na imagem para ajustar ao ecrã':'Clica na imagem para ver em tamanho real'} · Esc fecha</div></div>`:''}`;
@@ -6919,6 +7003,7 @@ function eotView(){
   const todos=S.eot||[];
   const vend=(S.team||[]).filter(p=>p.role==='vendedor');
   const ativos=todos.filter(x=>x.no_mapa!==false);
+  const nMan=ativos.filter(eotManual).length;
   const k90=ativos.filter(x=>{const d=eotDias(x);return d!=null&&d<=90&&!EOT_FECHO.includes(x.fase);}).length;
   const k180=ativos.filter(x=>{const d=eotDias(x);return d!=null&&d>90&&d<=180&&!EOT_FECHO.includes(x.fase);}).length;
   const kSemResp=ativos.filter(x=>!x.responsavel_id&&!EOT_FECHO.includes(x.fase)).length;
@@ -6946,8 +7031,9 @@ function eotView(){
         <div class="ok">＋ <b>${P.novos.length}</b> novos</div>
         <div>↻ <b>${P.atual.length+P.voltam.length}</b> já existiam${P.mudam?`: ${P.iguais} sem alterações · <b>${P.mudam.length}</b> com dados novos do banco`:''}</div>
         ${P.voltam.length?`<div>↩ <b>${P.voltam.length}</b> voltaram ao mapa</div>`:''}
+        ${(P.adotados||[]).length?`<div class="ok">✍ <b>${P.adotados.length}</b> criado${P.adotados.length!==1?'s':''} à mão ve${P.adotados.length!==1?'êm':'m'} agora no mapa: junta${P.adotados.length!==1?'m':''}-se e passa${P.adotados.length!==1?'m':''} a ser atualizado${P.adotados.length!==1?'s':''} pelo banco (${P.adotados.slice(0,6).map(x=>esc(x.cliente||x.contrato)).join(', ')}${P.adotados.length>6?'…':''})</div>`:''}
         ${(P.reabrir||[]).length?`<div class="ok">↻ <b>${P.reabrir.length}</b> com adenda e data de fim nova: voltam a "Por contactar" (a adenda continua a contar como renovado)</div>`:''}
-        <div class="${P.saem.length?'no':''}">⇥ <b>${P.saem.length}</b> saem do mapa (não são apagados)</div>
+        <div class="${P.saem.length?'no':''}">⇥ <b>${P.saem.length}</b> saem do mapa (não são apagados)${(S.eot||[]).some(x=>eotManual(x)&&x.no_mapa!==false)?' · os criados à mão ficam':''}</div>
         ${(P.repetidos||[]).length?`<div class="no">⚠ <b>${P.repetidos.length}</b> contrato${P.repetidos.length!==1?'s':''} repetido${P.repetidos.length!==1?'s':''} dentro do ficheiro: fica a linha com a data de fim mais recente (o que estiver vazio vem da outra)</div>`:''}
         ${(P.formato||[]).length?`<div>≡ <b>${P.formato.length}</b> com o número escrito de outra forma: juntos ao contrato que já existia</div>`:''}
         ${P.vazios?`<div>🛡 <b>${P.vazios}</b> campo${P.vazios!==1?'s':''} vazio${P.vazios!==1?'s':''} no ficheiro: fica o valor que já estava</div>`:''}
@@ -6967,7 +7053,7 @@ function eotView(){
       </div>
     </div>`:'';
   const linha=x=>`<tr class="gpp-lrow2 eot-click ${eotPrecisaAcao(x)?'eot-row-acao':''}" data-action="eot-abrir" data-c="${esc(x.contrato)}" tabindex="0" title="Abrir ficha da EOT">
-      <td><b>${esc(x.cliente||'—')}</b>${notifMarca(x.contrato)}<div class="eot-sub">${esc(x.contrato)}${x.tipo?' · '+esc(x.tipo):''}</div></td>
+      <td><b>${esc(x.cliente||'—')}</b>${notifMarca(x.contrato)}<div class="eot-sub">${esc(x.contrato)}${x.tipo?' · '+esc(x.tipo):''}${eotManual(x)?' '+EOT_MAN_TAG:''}</div></td>
       <td>${esc(x.modelo||'')}<div class="eot-sub">${esc(x.matricula||'')}</div></td>
       <td>${eotDataPT(x.data_fim)}<div class="eot-sub">${eotDiasHTML(x)}</div></td>
       <td style="text-align:right">${eotEur(x.residual)}</td>
@@ -6980,6 +7066,7 @@ function eotView(){
       <span>EOTs · contratos a terminar (BMW Motorrad · Aveiro)</span>
       <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         ${ultima?`<span class="eot-ult">Última importação: ${esc(new Date(ultima).toLocaleString('pt-PT',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}))}</span>`:''}
+        ${isAdmin()?`<button class="btn btn-outline btn-sm" data-action="eot-novo" aria-expanded="${!!S.eotNovo}">＋ Contrato à mão</button>`:''}
         <label class="btn btn-orange btn-sm" style="cursor:pointer;margin:0">${S.eotBusy&&!P?'A ler…':'📥 Carregar mapa (Excel)'}<input type="file" id="eot-file" accept=".xls,.xlsx" style="display:none"></label>
       </span>
     </div>
@@ -6987,9 +7074,10 @@ function eotView(){
     ${S.eotErrImp?`<div class="error" style="margin:0 16px 12px">${esc(S.eotErrImp)}</div>`:''}
     <div class="nt-pad0">${notifBannerHTML()}</div>
     ${S.eotMsg?`<div class="lead-ok" style="margin:0 16px 12px">✓ ${esc(S.eotMsg)}</div>`:''}
+    ${eotNovoHTML()}
     ${prev}
     <div class="lc-cards">
-      <div class="mg-card"><div class="mg-k">No mapa</div><div class="mg-v">${ativos.length}</div></div>
+      <div class="mg-card"><div class="mg-k">No mapa</div><div class="mg-v">${ativos.length-nMan}</div>${nMan?`<div class="eot-k-sub">+ ${nMan} criado${nMan>1?'s':''} à mão</div>`:''}</div>
       <div class="mg-card"><div class="mg-k">≤ 90 dias</div><div class="mg-v" style="color:var(--red)">${k90}</div></div>
       <div class="mg-card"><div class="mg-k">91–180 dias</div><div class="mg-v" style="color:var(--amber)">${k180}</div></div>
       <div class="mg-card"><div class="mg-k">Por contactar</div><div class="mg-v">${kPorCont}</div></div>
@@ -7003,14 +7091,14 @@ function eotView(){
       ${sel('fase',F.fase,[['','Todas as fases'],['_abertas','Em aberto'],...EOT_FASES.map(f=>[f,f])])}
       ${sel('temp',F.temp,[['','Todas as temperaturas'],['_sem','Sem temperatura'],...EOT_TEMP.map(t=>[t,t])])}
       ${sel('prazo',F.prazo,[['','Todos os prazos'],['acao','⚠️ Precisam de ação'],['90','≤ 90 dias'],['180','91–180 dias'],['365','181–365 dias']])}
-      ${sel('saiu',F.saiu?'1':'',[['','No mapa'],['1','Saíram do mapa']])}
+      ${sel('saiu',F.saiu?'1':'',[['',nMan?'No mapa e à mão':'No mapa'],['1','Saíram do mapa']])}
       ${semRespFilt&&vend.length?`<select class="gpp-mes-sel eot-lote" id="eot-lote"><option value="">Atribuir os ${semRespFilt} sem responsável a…</option>${vend.map(p=>`<option value="${p.id}">${esc(p.nome||'?')}</option>`).join('')}</select>`:''}
     </div>
-    ${!todos.length&&!S.eotErr?`<div class="gpp-empty">Ainda não há contratos. Carrega o mapa de terminações (o .xls que descarregas).</div>`:
+    ${!todos.length&&!S.eotErr?`<div class="gpp-empty">Ainda não há contratos. Carrega o mapa de terminações (o .xls que descarregas) ou cria um à mão.</div>`:
     `<div class="gpp-card" style="margin:0 16px 20px;overflow-x:auto"><table class="gpp-ltable eot-tbl">
       <thead><tr><th>Cliente</th><th>Mota</th><th>Fim</th><th style="text-align:right">Residual</th><th>Responsável</th><th>Fase</th><th>Próx. contacto</th><th></th></tr></thead>
       <tbody>${arr.map(linha).join('')||'<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:18px">Nada com estes filtros.</td></tr>'}</tbody></table></div>`}
-    <div class="gpp-pend-desc" style="margin:0 16px 16px">Só entram contratos <b>BMW Motorrad</b> com concessionário de <b>Aveiro</b> (ou BMW Bank com concessionário responsável de Aveiro). Cada novo carregamento atualiza <b>apenas os dados do banco</b> — responsável, fase, temperatura, próxima ação e notas ficam como estão. Contratos que deixam de vir no ficheiro passam a "Saíram do mapa" (nunca são apagados). O vendedor só vê os contratos que lhe atribuíres, e as notas são partilhadas com ele.</div>`;
+    <div class="gpp-pend-desc" style="margin:0 16px 16px">Só entram contratos <b>BMW Motorrad</b> com concessionário de <b>Aveiro</b> (ou BMW Bank com concessionário responsável de Aveiro). Cada novo carregamento atualiza <b>apenas os dados do banco</b> — responsável, fase, temperatura, próxima ação e notas ficam como estão. Contratos que deixam de vir no ficheiro passam a "Saíram do mapa" (nunca são apagados). Um contrato que não vem no mapa pode ser criado à mão: fica ativo até lhe dares uma fase final e a importação não o tira. O vendedor só vê os contratos que lhe atribuíres, e as notas são partilhadas com ele.</div>`;
 }
 
 // ---- Vista do vendedor ----
@@ -7025,7 +7113,7 @@ function renderMinhasEot(){
         <div class="ve-cli"><b>${esc(x.cliente||'—')}</b>${notifMarca(x.contrato)}${x.temperatura?` <span class="v-tipo">${esc(x.temperatura)}</span>`:''}</div>
         <div class="ve-dt">${eotDataPT(x.data_fim)} ${eotDiasHTML(x)}</div>
       </div>
-      <div class="ve-mod">${esc(x.modelo||'')}${x.matricula?` · <b>${esc(x.matricula)}</b>`:''}${x.no_mapa===false?' · <span style="color:var(--red)">saiu do mapa</span>':''}</div>
+      <div class="ve-mod">${esc(x.modelo||'')}${x.matricula?` · <b>${esc(x.matricula)}</b>`:''}${x.no_mapa===false?' · <span style="color:var(--red)">saiu do mapa</span>':''}${eotManual(x)?' '+EOT_MAN_TAG:''}</div>
       <div class="eot-cmini">${eotFaseHTML(x)}<span>Residual <b>${eotEur(x.residual)}</b></span>${x.proxima_data?`<span>Próx.: ${eotProxHTML(x)}</span>`:''}<span class="eot-chev">${ico('chevr','ic-sm')}</span></div>
     </div>`;
   const chip=(k,l)=>`<button class="ve-mes ${filt===k?'on':''}" data-action="v-eot-f" data-f="${k}">${l}</button>`;
@@ -7183,7 +7271,7 @@ function travar(nome){const fn=window[nome];if(typeof fn!=='function'||fn._trava
   const w=async function(...a){let k;try{k=nome+'|'+JSON.stringify(a);}catch(_){k=nome;}if(_emCurso.has(k))return;_emCurso.add(k);document.body.classList.add('a-gravar');
     try{return await fn.apply(this,a);}finally{_emCurso.delete(k);if(!_emCurso.size)document.body.classList.remove('a-gravar');}};
   w._travado=true;window[nome]=w;}
-['mrConfirmar','mrRecusar','addStockMotaFull','addStockMota','comissaoAdd','premioAdd','saveInscricaoNova','saveEventoNovo','saveLead','saveAutomatricula','saveVendaDireta','saveRecord','deleteRecord','seqConfirmar','seqRegistar','seqForaRegistar','recontReabrir','recontAdiar','eotConfirmar','eotGuardar','eotModalGuardar','eotAtribuirLote','eotCriarNegocio','eotComentar','eqAdd','eqColar','comFechoToggle','negComentar','vhNovoRegistar','vhContactei','vhAdiar','vhPerdido','fmGuardarNovo','fmAssociar','reuCompAdd','reuCompFeito','reuCompApagar','reuCompNovaData','fichaAprovar','fichaRecusar'].forEach(n=>{try{travar(n);}catch(e){}});
+['mrConfirmar','mrRecusar','addStockMotaFull','addStockMota','comissaoAdd','premioAdd','saveInscricaoNova','saveEventoNovo','saveLead','saveAutomatricula','saveVendaDireta','saveRecord','deleteRecord','seqConfirmar','seqRegistar','seqForaRegistar','recontReabrir','recontAdiar','eotConfirmar','eotGuardar','eotModalGuardar','eotAtribuirLote','eotCriarNegocio','eotComentar','eqAdd','eqColar','comFechoToggle','negComentar','vhNovoRegistar','vhContactei','vhAdiar','vhPerdido','fmGuardarNovo','fmAssociar','reuCompAdd','reuCompFeito','reuCompApagar','reuCompNovaData','fichaAprovar','fichaRecusar','eotCriarManual','eotApagarManual'].forEach(n=>{try{travar(n);}catch(e){}});
 // ---- Teclado: tudo o que é clicável recebe foco e abre com Enter/Espaço; campos ganham nome para leitores de ecrã ----
 function tecladoAplicar(){
   const raiz=document.getElementById('app');if(!raiz)return;
@@ -8438,7 +8526,7 @@ function EXPORT_FOLHAS(){
       {c:'concessionario',l:'Concessionário'},{c:'conc_resp',l:'Conc. responsável'},{c:'vendedor_origem',l:'Vendedor original'},
       {c:'responsavel_id',l:'Responsável',f:nome},{c:'fase',l:'Fase'},{c:'adenda_em',l:'Adenda em',f:d},{c:'fin_visto_em',l:'Visto financeiros',f:dt},{c:'fin_visto_nome',l:'Visto por'},{c:'temperatura',l:'Temperatura'},{c:'proxima_acao',l:'Próxima ação'},{c:'proxima_data',l:'Data próx. ação',f:d},
       {c:'notas',l:'Notas'},{c:'negocio_id',l:'Negócio ID'},{c:'no_mapa',l:'No mapa',f:sn},{c:'saiu_em',l:'Saiu do mapa',f:dt},
-      {c:'criado_em',l:'Criado',f:dt},{c:'ultima_import',l:'Última importação',f:dt},{c:'updated_at',l:'Atualizado',f:dt},
+      {c:'origem',l:'Origem',f:v=>v==='manual'?'Criado à mão':(v?'Mapa':'')},{c:'criado_em',l:'Criado',f:dt},{c:'criado_por',l:'Criado por',f:nome},{c:'ultima_import',l:'Última importação',f:dt},{c:'updated_at',l:'Atualizado',f:dt},
     ]},
     {nome:'Reunião compromissos',path:'/reuniao_compromissos?select=*&order=id.asc',cols:[
       {c:'reuniao',l:'Reunião',f:d},{c:'vendedor_id',l:'Quem',f:v=>v?(vendName(v)||v):'Equipa'},{c:'ponto',l:'Ponto'},{c:'texto',l:'Compromisso'},{c:'prazo',l:'Prazo',f:d},
@@ -10224,6 +10312,7 @@ function bindEvents(){
     const el=e.target;
     if(el.id==='reu-c-texto'){S.reuC=Object.assign({texto:'',vend:'',prazo:''},S.reuC||{},{texto:el.value});return;}
     if(el.id==='fa-motivo'){S.faMotivo=el.value;return;}
+    if(el.dataset&&el.dataset.eotn){S.eotNovo=Object.assign({v:{},erros:{}},S.eotNovo||{});S.eotNovo.v=Object.assign({},S.eotNovo.v,{[el.dataset.eotn]:el.value});return;}
     if(el.dataset&&el.dataset.vhnovo){S.vhNovo=Object.assign({nome:'',tel:'',modelo:'',fase:'Morno'},S.vhNovo||{},{[el.dataset.vhnovo]:el.value});if(S.vhNovoErr&&el.dataset.vhnovo==='nome'&&el.value.trim()){S.vhNovoErr='';const er=document.querySelector('.vh-n-err');if(er)er.remove();}return;}
     if(el.id==='fm-assoc-q'){S.fmAssocQ=el.value;render();return;}
     if(el.dataset&&el.dataset.tblQ){const k=el.dataset.tblQ;S.tblQ=Object.assign({},S.tblQ||{},{[k]:el.value});const tb=tblPorChave(k);if(tb)tblFiltrar(tb,el.value);return;}
@@ -10596,6 +10685,10 @@ function bindEvents(){
       case'v-mes-sel':setState({vMesSel:Object.assign({},S.vMesSel||{},{[el.dataset.g]:el.dataset.m}),renderLimit:50});break;
       case'leads-tab':setState({leadsTab:el.dataset.t});if(el.dataset.t==='eot')loadEot().then(()=>render());break;
       case'eot-confirmar':eotConfirmar();break;
+      case'eot-novo':eotNovoAbrir();break;
+      case'eot-novo-fechar':S.eotNovo=null;render();break;
+      case'eot-novo-criar':eotCriarManual();break;
+      case'eot-apagar':eotApagarManual(el.dataset.c);break;
       case'eot-cancelar':setState({eotPrev:null,eotErrImp:''});break;
       case'eot-negocio':eotCriarNegocio(el.dataset.c);break;
       case'eot-resp-f':{const F=Object.assign({},S.eotF||{});F.resp=el.dataset.v||'';setState({eotF:F,eotMsg:''});break;}
