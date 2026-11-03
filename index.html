@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-03-b">
+<meta name="app-version" content="2026-11-03-c">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2210,6 +2210,13 @@ body.a-gravar [data-action]{cursor:progress}
 .mr-acts{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.mr-inp{width:150px;min-height:36px}
 .mr-nota{margin-top:6px;font-size:12px;color:var(--text2);background:var(--surface2);border-radius:8px;padding:6px 10px}.mr-nota.pend{background:var(--orange-bg);color:var(--orange2)}.mr-nota.ok{background:var(--green-bg);color:var(--green)}
 @media (max-width:760px){.mr-acts{width:100%}.mr-inp{flex:1}}
+/* Usadas › Retomas: valores dados */
+.ret-match{display:flex;flex-direction:column;gap:8px;margin-top:10px}.ret-match:empty{display:none}
+.ret-m{padding:9px 12px;border-radius:10px;background:var(--surface2);font-size:12.5px;color:var(--text2)}.ret-m b{color:var(--text)}
+.ret-m.forte{background:var(--amber-bg);border:1px solid var(--amber)}.ret-m ul{margin:4px 0 0;padding-left:18px}.ret-m li{margin:2px 0}
+.ret-tbl td{vertical-align:top}.ret-tbl .r{text-align:right;white-space:nowrap}.ret-tbl .neg{color:var(--red)}
+.ret-ext{max-width:260px;white-space:normal}.ret-notas{min-width:150px;min-height:34px;font-size:12.5px}
+.ret-acts{white-space:nowrap}.ret-acts .btn{margin-left:4px}
 /* EOTs criadas à mão */
 .eot-man{display:inline-block;padding:0 6px;border-radius:999px;background:var(--blue-bg);color:var(--blue);font-size:10.5px;font-weight:700;line-height:17px;vertical-align:1px}
 .eotm-man{margin:0 0 10px;padding:8px 12px;border-radius:10px;background:var(--surface2);color:var(--text2);font-size:12.5px}
@@ -2390,6 +2397,7 @@ document.addEventListener('keydown',e=>{if(typeof S==='undefined')return;const t
   if(e.key==='Enter'&&t&&t.id==='reu-c-texto'){e.preventDefault();const b=document.querySelector('[data-action="reu-comp-add"]');reuCompAdd(b?b.dataset.p:'');return;}
   if(e.key==='Enter'&&t&&t.id==='fa-motivo'){e.preventDefault();fichaRecusar(t.dataset.id);return;}
   if(e.key==='Enter'&&t&&t.tagName==='INPUT'&&t.dataset&&t.dataset.eotn){e.preventDefault();eotCriarManual();return;}
+  if(e.key==='Enter'&&t&&t.tagName==='INPUT'&&t.dataset&&t.dataset.ret){e.preventDefault();retRegistar();return;}
   if(e.key==='Escape'&&S.faRecusar!=null&&!S.eotAberto){S.faRecusar=null;S.faMotivo='';render();return;}
   if(e.key==='Escape'&&S.vhAcao){S.vhAcao=null;render();return;}
   if(e.key==='Escape'&&S.fmGuardar&&!S.eotAberto){S.fmGuardar=false;render();}});
@@ -2443,7 +2451,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-03-b';
+const APP_VERSION='2026-11-03-c';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -6677,6 +6685,10 @@ async function eotCriarNegocio(contrato){
     alert(`${body.id_cliente} entrou no funil de ${vendName(vid)} (campanha "EOT").`);
   }catch(e){alert('Erro ao criar negócio: '+erroTexto(e));}
 }
+// formulários na página: ao escrever num campo com erro, o aviso desse campo sai sem redesenhar
+function campoErroLimpar(el,F){const k=el.dataset.ret||el.dataset.eotn;if(!F||!F.erros||!F.erros[k])return;
+  F.erros=Object.assign({},F.erros);delete F.erros[k];const box=el.closest('.vd-f');if(box){box.classList.remove('eotn-err');const m=box.querySelector('.eotn-msg');if(m)m.remove();}
+  el.removeAttribute('aria-invalid');el.removeAttribute('aria-describedby');}
 // ---- Contrato criado à mão (não veio no mapa): só o chefe ----
 function eotNovoAbrir(){S.eotNovo=S.eotNovo?null:{v:{},erros:{}};render();if(S.eotNovo)setTimeout(()=>{const n=document.getElementById('eotn-contrato');if(n)n.focus();},30);}
 function eotNovoHTML(){
@@ -7275,7 +7287,7 @@ function travar(nome){const fn=window[nome];if(typeof fn!=='function'||fn._trava
   const w=async function(...a){let k;try{k=nome+'|'+JSON.stringify(a);}catch(_){k=nome;}if(_emCurso.has(k))return;_emCurso.add(k);document.body.classList.add('a-gravar');
     try{return await fn.apply(this,a);}finally{_emCurso.delete(k);if(!_emCurso.size)document.body.classList.remove('a-gravar');}};
   w._travado=true;window[nome]=w;}
-['mrConfirmar','mrRecusar','addStockMotaFull','addStockMota','comissaoAdd','premioAdd','saveInscricaoNova','saveEventoNovo','saveLead','saveAutomatricula','saveVendaDireta','saveRecord','deleteRecord','seqConfirmar','seqRegistar','seqForaRegistar','recontReabrir','recontAdiar','eotConfirmar','eotGuardar','eotModalGuardar','eotAtribuirLote','eotCriarNegocio','eotComentar','eqAdd','eqColar','comFechoToggle','negComentar','vhNovoRegistar','vhContactei','vhAdiar','vhPerdido','fmGuardarNovo','fmAssociar','reuCompAdd','reuCompFeito','reuCompApagar','reuCompNovaData','fichaAprovar','fichaRecusar','eotCriarManual','eotApagarManual'].forEach(n=>{try{travar(n);}catch(e){}});
+['mrConfirmar','mrRecusar','addStockMotaFull','addStockMota','comissaoAdd','premioAdd','saveInscricaoNova','saveEventoNovo','saveLead','saveAutomatricula','saveVendaDireta','saveRecord','deleteRecord','seqConfirmar','seqRegistar','seqForaRegistar','recontReabrir','recontAdiar','eotConfirmar','eotGuardar','eotModalGuardar','eotAtribuirLote','eotCriarNegocio','eotComentar','eqAdd','eqColar','comFechoToggle','negComentar','vhNovoRegistar','vhContactei','vhAdiar','vhPerdido','fmGuardarNovo','fmAssociar','reuCompAdd','reuCompFeito','reuCompApagar','reuCompNovaData','fichaAprovar','fichaRecusar','eotCriarManual','eotApagarManual','retRegistar','retApagar'].forEach(n=>{try{travar(n);}catch(e){}});
 // ---- Teclado: tudo o que é clicável recebe foco e abre com Enter/Espaço; campos ganham nome para leitores de ecrã ----
 function tecladoAplicar(){
   const raiz=document.getElementById('app');if(!raiz)return;
@@ -7608,11 +7620,129 @@ function reuniaoView(){
   </div>`;
 }
 
+// ===== Usadas › Retomas: registo dos valores de retoma dados (só o chefe) =====
+// Para dar o mesmo valor se o cliente voltar a perguntar e para controlar o que foi aceite.
+// Os valores ficam fixos depois de gravados (é o que foi dito ao cliente); só o estado e as notas mudam: outro valor = registo novo.
+const RET_ESTADOS=[['proposta','Proposta dada'],['aceite','Aceite'],['recusada','Recusada']];
+const RET_NUM=['valor_retoma','preparacao','valor_venda','venda_minima'];
+function retEstadoLb(e){const x=RET_ESTADOS.find(y=>y[0]===e);return x?x[1]:String(e||'');}
+async function loadRetomas(){if(!isAdmin())return;
+  try{S.retomas=(await supabaseApi('GET','/retomas_valores?select=*&order=criado_em.desc,id.desc'))||[];S.retErr='';}
+  catch(e){S.retomas=[];S.retErr=/retomas_valores|PGRST205|42P01|schema cache/i.test(String(e&&e.message))?'Falta correr o SQL "2026-11-03_retomas_valores" no Supabase.':('Não consegui ler o registo: '+erroTexto(e));}}
+function retMat(v){return String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'');}
+function retEur(n){return n==null||n===''?'—':Math.round(Number(n)).toLocaleString('pt-PT')+' €';}
+function retData(v){const d=new Date(v);return isNaN(d)?'':d.toLocaleDateString('pt-PT',{day:'2-digit',month:'2-digit',year:'numeric'});}
+// margem simples: venda − retoma − preparação (antes da comissão)
+function retMargem(x,venda){if(venda==null||venda==='')return null;const v=Number(venda);return isFinite(v)?v-Number(x.valor_retoma||0)-Number(x.preparacao||0):null;}
+// valores já dados parecidos com o que se está a escrever: a mesma mota (matrícula), o mesmo cliente, motas iguais (modelo e ano)
+function retParecidos(v){
+  const L=S.retomas||[];const mat=retMat(v.matricula),cli=eotNorm(v.cliente),mod=eotNorm(v.modelo),ano=String(v.ano||'').trim();
+  const mesma=mat.length>=4?L.filter(x=>retMat(x.matricula)===mat):[];
+  const cliente=cli.length>=4?L.filter(x=>{const c=eotNorm(x.cliente);return !mesma.includes(x)&&c&&(c===cli||c.startsWith(cli+' ')||cli.startsWith(c+' '));}):[];
+  const igual=mod.length>=3?L.filter(x=>!mesma.includes(x)&&!cliente.includes(x)&&eotNorm(x.modelo)===mod&&(!ano||String(x.ano||'')===ano)):[];
+  return {mesma,cliente,igual};
+}
+function retMatchHTML(){
+  const v=(S.retForm&&S.retForm.v)||{};const P=retParecidos(v);
+  const linha=x=>`<li><b>${esc(retData(x.criado_em))}</b> · ${esc(x.cliente||'sem cliente')} · ${esc([x.modelo,x.ano,x.kms!=null?Number(x.kms).toLocaleString('pt-PT')+' km':''].filter(Boolean).join(' · '))}: ofereceste <b>${retEur(x.valor_retoma)}</b>${x.valor_venda!=null?` · venda ${retEur(x.valor_venda)}`:''}${x.venda_minima!=null?` (mín. ${retEur(x.venda_minima)})`:''} · ${esc(retEstadoLb(x.estado))}</li>`;
+  const bloco=(t,L,cls)=>L.length?`<div class="ret-m ${cls}"><b>${t}</b><ul>${L.slice(0,4).map(linha).join('')}${L.length>4?`<li>e mais ${L.length-4}</li>`:''}</ul></div>`:'';
+  return bloco('⚠ Já deste valor a esta mota (mesma matrícula)',P.mesma,'forte')+bloco('⚠ Já deste valores a este cliente',P.cliente,'forte')+bloco('Valores que deste a motas iguais (modelo e ano)',P.igual,'');
+}
+function retomasView(){
+  if(S.retomas==null&&!S._retLoad){S._retLoad=true;loadRetomas().then(()=>{S._retLoad=false;render();});}
+  const F=S.retForm||{v:{},erros:{}};const v=F.v||{},er=F.erros||{};
+  const f=(k,lb,ph,extra,larga)=>`<div class="vd-f${er[k]?' eotn-err':''}"${larga?' style="grid-column:1/-1"':''}><label for="ret-${k}">${lb}</label><input class="norma-inp" id="ret-${k}" data-ret="${k}" ${extra||''} value="${esc(v[k]==null?'':v[k])}" placeholder="${esc(ph||'')}"${er[k]?` aria-invalid="true" aria-describedby="ret-${k}-msg"`:''}>${er[k]?`<small class="eotn-msg" id="ret-${k}-msg">${esc(er[k])}</small>`:''}</div>`;
+  const L=S.retomas||[];const filt=S.retF||'';const nE=e=>L.filter(x=>x.estado===e).length;
+  const arr=filt?L.filter(x=>x.estado===filt):L;
+  const temAlgo=Object.values(v).some(x=>String(x==null?'':x).trim());
+  const linha=x=>{const mg=retMargem(x,x.valor_venda),mm=retMargem(x,x.venda_minima);
+    return`<tr class="gpp-lrow2" data-ret-id="${esc(x.id)}">
+      <td>${esc(retData(x.criado_em))}</td>
+      <td><b>${esc(x.cliente||'—')}</b></td>
+      <td>${esc(x.modelo||'')}${x.ano?' · '+esc(x.ano):''}<div class="eot-sub">${[x.kms!=null?esc(Number(x.kms).toLocaleString('pt-PT'))+' km':'',x.matricula?esc(x.matricula):''].filter(Boolean).join(' · ')}</div>${x.extras?`<div class="eot-sub ret-ext">${esc(x.extras)}</div>`:''}</td>
+      <td class="r"><b>${retEur(x.valor_retoma)}</b></td>
+      <td class="r">${retEur(x.preparacao)}</td>
+      <td class="r">${retEur(x.valor_venda)}${x.venda_minima!=null?`<div class="eot-sub">mín. ${retEur(x.venda_minima)}</div>`:''}</td>
+      <td class="r"><b class="${mg!=null&&mg<0?'neg':''}">${mg==null?'—':retEur(mg)}</b>${mm!=null?`<div class="eot-sub ${mm<0?'neg':''}">mín. ${retEur(mm)}</div>`:''}</td>
+      <td><select class="lc-sel" data-ret-estado="${esc(x.id)}" aria-label="Estado da retoma de ${esc(x.cliente||x.modelo||'')}">${RET_ESTADOS.map(([k,l])=>`<option value="${k}" ${x.estado===k?'selected':''}>${l}</option>`).join('')}</select></td>
+      <td><input class="norma-inp ret-notas" data-ret-notas="${esc(x.id)}" value="${esc(x.notas||'')}" placeholder="—" aria-label="Notas da retoma de ${esc(x.cliente||x.modelo||'')}"></td>
+      <td class="ret-acts"><button class="btn btn-outline btn-sm" data-action="ret-novo" data-id="${esc(x.id)}" title="Registar outro valor para esta mota">Novo valor</button><button class="btn btn-ghost btn-sm" data-action="ret-apagar" data-id="${esc(x.id)}" aria-label="Apagar o registo de ${esc(x.cliente||x.modelo||'')}">Apagar</button></td>
+    </tr>`;};
+  return`<div class="gpp-tot-head">Valores de retoma dados</div>
+    <div class="gpp-card vd-form ret-form" style="margin:0 16px 14px">
+      <div class="vd-form-t">Registar um valor dado</div>
+      <div class="vd-form-sub">Fica com a data de hoje. Os valores não mudam depois de gravados (é o que disseste ao cliente): para dar outro valor, regista um novo. Se já deste valores a esta mota ou a este cliente, aparecem aqui em baixo.</div>
+      ${S.retErr?`<div class="error" style="margin-bottom:10px">${esc(S.retErr)}</div>`:''}
+      ${F.erro?`<div class="error" style="margin-bottom:10px">${esc(F.erro)}</div>`:''}
+      <div class="vd-grid">
+        ${f('cliente','Cliente','Nome do cliente')}
+        ${f('matricula','Matrícula','AA-00-AA','autocomplete="off"')}
+        ${f('modelo','Modelo *','Ex: R 1250 GS Adventure')}
+        ${f('ano','Ano','2021','inputmode="numeric"')}
+        ${f('kms','Km','35 000','inputmode="numeric"')}
+        ${f('extras','Extras','Ex: malas, escape Akrapovič, punhos aquecidos','',true)}
+        ${f('valor_retoma','Valor oferecido *','0','inputmode="decimal"')}
+        ${f('preparacao','Preparação estimada','0','inputmode="decimal"')}
+        ${f('valor_venda','Venda prevista','0','inputmode="decimal"')}
+        ${f('venda_minima','Venda mínima esperada','0','inputmode="decimal"')}
+        ${f('notas','Notas','Ex: cliente quer trocar por uma R 1300 GS','',true)}
+      </div>
+      <div id="ret-match" class="ret-match" aria-live="polite">${retMatchHTML()}</div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn btn-orange btn-sm" data-action="ret-registar" ${F.aGravar?'disabled':''}>${F.aGravar?'A gravar…':'Registar valor'}</button>
+        ${temAlgo?`<button class="btn btn-dark btn-sm" data-action="ret-limpar">Limpar</button>`:''}
+      </div>
+    </div>
+    ${S.retomas==null?'<div class="gpp-empty">A carregar…</div>':(!L.length?(S.retErr?'':'<div class="gpp-empty">Ainda não registaste nenhum valor de retoma.</div>'):`
+    <div class="eot-filtros"><select class="gpp-mes-sel" data-ret-filtro="1" aria-label="Filtrar por estado"><option value="" ${!filt?'selected':''}>Todos (${L.length})</option>${RET_ESTADOS.map(([k,l])=>`<option value="${k}" ${filt===k?'selected':''}>${l} (${nE(k)})</option>`).join('')}</select></div>
+    <div class="gpp-card" style="margin:0 16px 20px;overflow-x:auto"><table class="gpp-ltable ret-tbl">
+      <thead><tr><th>Data</th><th>Cliente</th><th>Mota</th><th class="r">Retoma</th><th class="r">Preparação</th><th class="r">Venda</th><th class="r">Margem</th><th>Estado</th><th>Notas</th><th></th></tr></thead>
+      <tbody>${arr.map(linha).join('')||'<tr><td colspan="10" style="text-align:center;color:var(--text3);padding:18px">Nada com este filtro.</td></tr>'}</tbody></table></div>
+    <div class="gpp-pend-desc" style="margin:0 16px 16px">Margem = venda − retoma − preparação, antes da comissão. Só tu vês este registo.</div>`)}`;
+}
+async function retRegistar(){
+  if(!isAdmin())return;const F=S.retForm||{v:{},erros:{}};if(F.aGravar)return;const v=Object.assign({},F.v||{});const er={};
+  const num=k=>{const t=eotTxt(v[k]);if(!t)return null;const n=numPT(t);return n==null?NaN:n;};
+  const modelo=eotTxt(v.modelo);if(!modelo)er.modelo='Falta o modelo';
+  const ret=num('valor_retoma');if(ret==null)er.valor_retoma='Falta o valor que ofereceste';else if(!(ret>=0))er.valor_retoma='Número inválido';
+  const prep=num('preparacao'),venda=num('valor_venda'),vmin=num('venda_minima');
+  [['preparacao',prep],['valor_venda',venda],['venda_minima',vmin]].forEach(([k,n])=>{if(n!=null&&!(n>=0))er[k]='Número inválido';});
+  const anoT=eotTxt(v.ano),ano=anoT?Number(String(anoT).replace(/\D/g,'')):null;
+  if(anoT&&!(ano>=1950&&ano<=new Date().getFullYear()+1))er.ano='Ano inválido';
+  const kmT=eotTxt(v.kms),kms=kmT?Number(String(kmT).replace(/\D/g,'')):null;   // "45 000", "45.000 km"
+  if(kmT&&!/\d/.test(kmT))er.kms='Km inválidos';
+  if(!er.valor_venda&&!er.venda_minima&&venda!=null&&vmin!=null&&vmin>venda)er.venda_minima='Maior do que a venda prevista';
+  S.retForm=Object.assign({},F,{v,erros:er,erro:''});
+  if(Object.keys(er).length){render();setTimeout(()=>{const n=document.getElementById('ret-'+Object.keys(er)[0]);if(n)n.focus();},30);return;}
+  const body={cliente:eotTxt(v.cliente),matricula:eotTxt(v.matricula)?String(v.matricula).trim().toUpperCase():null,modelo,ano,kms,extras:eotTxt(v.extras),
+    valor_retoma:ret,preparacao:prep,valor_venda:venda,venda_minima:vmin,notas:eotTxt(v.notas)};
+  S.retForm.aGravar=true;render();
+  try{const r=await supabaseApi('POST','/retomas_valores',body);
+    const row=Array.isArray(r)&&r[0]?r[0]:Object.assign({id:'n'+Date.now(),criado_em:new Date().toISOString(),estado:'proposta'},body);
+    S.retomas=[row].concat(S.retomas||[]);S.retForm=null;render();setTimeout(()=>toast('Valor de retoma registado'),450);}
+  catch(e){const m=String(e&&e.message);
+    S.retForm=Object.assign({},S.retForm||F,{aGravar:false,erro:/retomas_valores|PGRST205|42P01|schema cache/i.test(m)?'Falta correr o SQL "2026-11-03_retomas_valores" no Supabase.':erroTexto(e)});render();}
+}
+async function retMudar(id,patch){
+  const L=S.retomas||[];const i=L.findIndex(x=>String(x.id)===String(id));if(i<0)return;const antes=L[i];
+  S.retomas=L.slice();S.retomas[i]=Object.assign({},antes,patch);render();
+  try{const r=await supabaseApi('PATCH','/retomas_valores?id=eq.'+encodeURIComponent(id),patch);if(Array.isArray(r)&&r.length===0)throw new Error('sem permissão para alterar este registo');}
+  catch(e){S.retomas=(S.retomas||[]).map(x=>String(x.id)===String(id)?antes:x);render();alert('Não consegui gravar: '+erroTexto(e));}
+}
+// outro valor para a mesma mota: copia o registo para o formulário (com a data de hoje ao gravar)
+function retNovoDe(id){const x=(S.retomas||[]).find(y=>String(y.id)===String(id));if(!x)return;
+  const v={};['cliente','matricula','modelo','ano','kms','extras'].concat(RET_NUM).forEach(k=>{if(x[k]!=null&&x[k]!=='')v[k]=RET_NUM.includes(k)?String(x[k]).replace('.',','):String(x[k]);});
+  S.retForm={v,erros:{}};render();
+  setTimeout(()=>{const n=document.getElementById('ret-valor_retoma');if(n){n.focus();try{n.select();n.scrollIntoView({block:'center'});}catch(_){}}},30);}
+async function retApagar(id){const x=(S.retomas||[]).find(y=>String(y.id)===String(id));if(!x)return;
+  if(!confirm(`Apagar o registo de ${x.cliente||'(sem cliente)'} · ${x.modelo||''} de ${retData(x.criado_em)}?\nSó para registos feitos por engano: o valor que deste ao cliente deixa de ficar registado.`))return;
+  try{await supabaseApi('DELETE','/retomas_valores?id=eq.'+encodeURIComponent(id));S.retomas=(S.retomas||[]).filter(y=>String(y.id)!==String(id));render();setTimeout(()=>toast('Registo apagado'),450);}
+  catch(e){alert('Não consegui apagar: '+erroTexto(e));}}
 // ---- Navegação agrupada (menu com separadores) ----
 const GRUPOS_SEC={
   atratar:{ic:'📋',lb:'A tratar',tabs:[['pendentes','A tratar hoje'],['notificacoes','Notificações EOT'],['entregas','Entregas']]},
   vendas:{ic:'✅',lb:'Vendas',tabs:[['retail','Retail'],['carteira','Carteira'],['fechados','Fechados'],['perdidos','Perdidos'],['comercio','Comerciante'],['trimestre','Trimestre'],['saude','Saúde da equipa']]},
-  usadas:{ic:'🏍️',lb:'Usadas',tabs:[['stock','Stock'],['depreciacao','Depreciação'],['margem','Margem']]},
+  usadas:{ic:'🏍️',lb:'Usadas',tabs:[['stock','Stock'],['depreciacao','Depreciação'],['margem','Margem'],['retomas','Retomas']]},
   comissoesg:{ic:'💰',lb:'Comissões',tabs:[['comissoes','Resumo'],['premios','Os meus prémios']]}
 };
 function grupoDe(sec){for(const k in GRUPOS_SEC){if(GRUPOS_SEC[k].tabs.some(t=>t[0]===sec))return k;}return null;}
@@ -8532,6 +8662,11 @@ function EXPORT_FOLHAS(){
       {c:'notas',l:'Notas'},{c:'negocio_id',l:'Negócio ID'},{c:'no_mapa',l:'No mapa',f:sn},{c:'saiu_em',l:'Saiu do mapa',f:dt},
       {c:'origem',l:'Origem',f:v=>v==='manual'?'Criado à mão':(v?'Mapa':'')},{c:'criado_em',l:'Criado',f:dt},{c:'criado_por',l:'Criado por',f:nome},{c:'ultima_import',l:'Última importação',f:dt},{c:'updated_at',l:'Atualizado',f:dt},
     ]},
+    {nome:'Retomas (valores dados)',path:'/retomas_valores?select=*&order=criado_em.asc,id.asc',cols:[
+      {c:'id',l:'ID'},{c:'criado_em',l:'Data',f:dt},{c:'cliente',l:'Cliente'},{c:'matricula',l:'Matrícula'},{c:'modelo',l:'Modelo'},{c:'ano',l:'Ano'},{c:'kms',l:'Km'},{c:'extras',l:'Extras'},
+      {c:'valor_retoma',l:'Valor oferecido'},{c:'preparacao',l:'Preparação estimada'},{c:'valor_venda',l:'Venda prevista'},{c:'venda_minima',l:'Venda mínima'},
+      {c:'estado',l:'Estado',f:v=>retEstadoLb(v)},{c:'notas',l:'Notas'},{c:'criado_por',l:'Registado por',f:nome},{c:'updated_at',l:'Atualizado',f:dt},
+    ]},
     {nome:'Reunião compromissos',path:'/reuniao_compromissos?select=*&order=id.asc',cols:[
       {c:'reuniao',l:'Reunião',f:d},{c:'vendedor_id',l:'Quem',f:v=>v?(vendName(v)||v):'Equipa'},{c:'ponto',l:'Ponto'},{c:'texto',l:'Compromisso'},{c:'prazo',l:'Prazo',f:d},
       {c:'feito',l:'Feito',f:sn},{c:'feito_em',l:'Feito em',f:dt},{c:'adiamentos',l:'Novas datas'},{c:'adiado_em',l:'Última nova data em',f:d},{c:'criado_em',l:'Registado em',f:dt},
@@ -8814,6 +8949,7 @@ function renderDashboard(){
     ['leads','🎯','Leads'],
     ['eots','🔁','EOTs'],
     ['margem','💶','Margem Usadas'],
+    ['retomas','🧾','Valores de retoma'],
     ['premios','🏆','Os Meus Prémios'],
     ['perdidos','❌','Perdidos'],
     ['pendentes','⚠️','Pendentes'],
@@ -10257,6 +10393,7 @@ function renderDashboard(){
   else if(sec==='notificacoes')body=`<div class="nt-pad">${notifView()}</div>`;
   else if(sec==='stock')body=stockView('usada');
   else if(sec==='depreciacao')body=depreciacaoView();
+  else if(sec==='retomas')body=retomasView();
   else if(sec==='demos')body=normaView();
   else if(sec==='comissoes')body=comissoesView();
   else if(sec==='evento')body=eventoView();
@@ -10316,7 +10453,9 @@ function bindEvents(){
     const el=e.target;
     if(el.id==='reu-c-texto'){S.reuC=Object.assign({texto:'',vend:'',prazo:''},S.reuC||{},{texto:el.value});return;}
     if(el.id==='fa-motivo'){S.faMotivo=el.value;return;}
-    if(el.dataset&&el.dataset.eotn){S.eotNovo=Object.assign({v:{},erros:{}},S.eotNovo||{});S.eotNovo.v=Object.assign({},S.eotNovo.v,{[el.dataset.eotn]:el.value});return;}
+    if(el.dataset&&el.dataset.ret){S.retForm=Object.assign({v:{},erros:{}},S.retForm||{});S.retForm.v=Object.assign({},S.retForm.v,{[el.dataset.ret]:el.value});campoErroLimpar(el,S.retForm);
+      if(['cliente','matricula','modelo','ano'].includes(el.dataset.ret)){const m=document.getElementById('ret-match');if(m)m.innerHTML=retMatchHTML();}return;}
+    if(el.dataset&&el.dataset.eotn){S.eotNovo=Object.assign({v:{},erros:{}},S.eotNovo||{});S.eotNovo.v=Object.assign({},S.eotNovo.v,{[el.dataset.eotn]:el.value});campoErroLimpar(el,S.eotNovo);return;}
     if(el.dataset&&el.dataset.vhnovo){S.vhNovo=Object.assign({nome:'',tel:'',modelo:'',fase:'Morno'},S.vhNovo||{},{[el.dataset.vhnovo]:el.value});if(S.vhNovoErr&&el.dataset.vhnovo==='nome'&&el.value.trim()){S.vhNovoErr='';const er=document.querySelector('.vh-n-err');if(er)er.remove();}return;}
     if(el.id==='fm-assoc-q'){S.fmAssocQ=el.value;render();return;}
     if(el.dataset&&el.dataset.tblQ){const k=el.dataset.tblQ;S.tblQ=Object.assign({},S.tblQ||{},{[k]:el.value});const tb=tblPorChave(k);if(tb)tblFiltrar(tb,el.value);return;}
@@ -10368,6 +10507,9 @@ function bindEvents(){
   };
   app.onchange=function(e){
     const el=e.target;
+    if(el.dataset&&el.dataset.retEstado){retMudar(el.dataset.retEstado,{estado:el.value});return;}
+    if(el.dataset&&el.dataset.retNotas){const x=(S.retomas||[]).find(y=>String(y.id)===String(el.dataset.retNotas));const nv=eotTxt(el.value);if(x&&(x.notas||null)!==nv)retMudar(el.dataset.retNotas,{notas:nv});return;}
+    if(el.dataset&&el.dataset.retFiltro){S.retF=el.value;render();return;}
     if(el.id==='reu-c-vend'||el.id==='reu-c-prazo'){S.reuC=Object.assign({texto:'',vend:'',prazo:''},S.reuC||{},{[el.id==='reu-c-vend'?'vend':'prazo']:el.value});return;}
     if(el.dataset&&el.dataset.reuPreco){reuPrecoGuardar(el);return;}
     if(el.dataset&&el.dataset.reuPrazo){reuCompNovaData(el);return;}
@@ -10693,6 +10835,10 @@ function bindEvents(){
       case'eot-novo-fechar':S.eotNovo=null;render();break;
       case'eot-novo-criar':eotCriarManual();break;
       case'eot-apagar':eotApagarManual(el.dataset.c);break;
+      case'ret-registar':retRegistar();break;
+      case'ret-limpar':S.retForm=null;render();break;
+      case'ret-novo':retNovoDe(el.dataset.id);break;
+      case'ret-apagar':retApagar(el.dataset.id);break;
       case'eot-cancelar':setState({eotPrev:null,eotErrImp:''});break;
       case'eot-negocio':eotCriarNegocio(el.dataset.c);break;
       case'eot-resp-f':{const F=Object.assign({},S.eotF||{});F.resp=el.dataset.v||'';setState({eotF:F,eotMsg:''});break;}
@@ -10712,7 +10858,7 @@ function bindEvents(){
       case'retail-ord':{const o=el.dataset.o;if(S.retailOrd===o)setState({retailDir:S.retailDir==='asc'?'desc':'asc'});else setState({retailOrd:o,retailDir:'asc'});break;}
       case'gpp-mais':setState({gppMais:!S.gppMais});break;
       case'gpp-mais-close':setState({gppMais:false});break;
-      case'gpp-sec':{let s=el.dataset.s;if(s==='ficha'&&S.fmNeg)fmSairDoNegocio();if(s==='encomendas'){S.encLoaded=false;S.encMsg='';}if(s==='eots')loadEot().then(()=>render());if(s==='notificacoes')loadNotif().then(()=>render());if(GRUPOS_SEC[s])s=((S.gppTab||{})[s])||GRUPOS_SEC[s].tabs[0][0];{const _g=grupoDe(s);if(_g)S.gppTab=Object.assign({},S.gppTab||{},{[_g]:s});}S.gppBusca='';S.gppMais=false;if(s==='escala'){setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}else if(s==='stock'||s==='depreciacao'||s==='margem'||s==='comercio'){setState({gppSec:s,dashAlertOpen:null});if(!S.stockLoaded)loadStock().then(()=>render());}
+      case'gpp-sec':{let s=el.dataset.s;if(s==='ficha'&&S.fmNeg)fmSairDoNegocio();if(s==='encomendas'){S.encLoaded=false;S.encMsg='';}if(s==='eots')loadEot().then(()=>render());if(s==='retomas')loadRetomas().then(()=>render());if(s==='notificacoes')loadNotif().then(()=>render());if(GRUPOS_SEC[s])s=((S.gppTab||{})[s])||GRUPOS_SEC[s].tabs[0][0];{const _g=grupoDe(s);if(_g)S.gppTab=Object.assign({},S.gppTab||{},{[_g]:s});}S.gppBusca='';S.gppMais=false;if(s==='escala'){setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false}));}else if(s==='stock'||s==='depreciacao'||s==='margem'||s==='comercio'){setState({gppSec:s,dashAlertOpen:null});if(!S.stockLoaded)loadStock().then(()=>render());}
       else if(s==='premios'){setState({gppSec:s,dashAlertOpen:null});loadPremiosMes().then(()=>render());}
       else if(s==='entregas'){setState({gppSec:s,dashAlertOpen:null});loadEntregas().then(()=>render());}
       else if(s==='comissoes'){setState({gppSec:s,dashAlertOpen:null,pdfMenu:false});Promise.all([loadMargens(),loadEquipamento(),loadAssessores(),loadComFecho()]).then(()=>render());}else if(s==='evento'){setState({gppSec:s,dashAlertOpen:null,eventoErr:''});const ev=eventoAtual();if(ev){S.eventoSel=ev.id;loadRanking(ev.id).then(()=>render());}}else if(s==='funil'){setState({gppSec:s,dashAlertOpen:null});loadTransicoes().then(()=>render());}else if(s==='reuniao'){reuCarregar(true);setState({gppSec:s,dashAlertOpen:null});}else{setState({gppSec:s,dashAlertOpen:null});}break}

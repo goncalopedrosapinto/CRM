@@ -75,6 +75,11 @@ const PERIGO=/logout|sair|delete|apagar|remover|eliminar|reset|limpar|fechar-ses
     console.error(role,'PDF',JSON.stringify(pdf.res),'janelas',pdf.n,pdf.tags.filter(t=>t[0]==='#').join(' '));
     for(const t of pdf.tags.filter(t=>t[0]!=='#')){const nome=TAGS[+t.slice(1)];if(!achados.has(nome))achados.set(nome,new Set());achados.get(nome).add(role+' @ PDF');}
     await scan(p,await ecra());
+    // Usadas › Retomas (chefe): lista e "já deste valores…" com os mesmos dados
+    if(role==='admin'){await p.evaluate(async()=>{const ini={screen:S.screen,gppSec:S.gppSec};await loadRetomas();const x=(S.retomas||[])[0]||{};
+        S.retForm={v:{matricula:x.matricula||'',cliente:x.cliente||'',modelo:x.modelo||'',ano:String(x.ano||'')},erros:{}};S.screen='dashboard';S.gppSec='retomas';render();window.__ini=ini;}).catch(()=>{});
+      await p.waitForTimeout(200);await scan(p,'dashboard/retomas');
+      await p.evaluate(()=>{S.retForm=null;Object.assign(S,window.__ini||{});render();}).catch(()=>{});await p.waitForTimeout(100);}
     // varrimento: cada ação visível uma vez a partir do ecrã inicial, depois passeio aleatório
     const inicio=await p.evaluate(()=>JSON.stringify({screen:S.screen,gppSec:S.gppSec}));
     const acoes=async()=>p.evaluate((perigo)=>{const re=new RegExp(perigo,'i');return [...document.querySelectorAll('[data-action]')].filter(e=>{const r=e.getBoundingClientRect();return r.width>0&&r.height>0&&!re.test(e.dataset.action);}).map((e,i)=>{e.setAttribute('data-xi',i);return {i,a:e.dataset.action,sig:e.dataset.action+'|'+(e.dataset.sec||e.dataset.s||e.dataset.tab||e.dataset.status||'')};});},PERIGO.source);

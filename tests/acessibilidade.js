@@ -42,6 +42,8 @@ async function contexto(b,uid,vp,tema){
     if(t==='stock_equip')return json(u.includes('offset=0')?seq:[]);
     if(t==='stock_usadas')return json(usadas);
     if(t==='reuniao_compromissos')return json(uid==='c1'?comp:[]);
+    if(t==='retomas_valores')return json(uid==='c1'?[{id:1,criado_em:new Date(Date.now()-40*864e5).toISOString(),cliente:'Cliente Retoma',matricula:'11-AA-22',modelo:'R 1250 GS',ano:2020,kms:40000,extras:'Malas',valor_retoma:9000,preparacao:300,valor_venda:12500,venda_minima:11800,estado:'proposta',notas:null},
+      {id:2,criado_em:new Date(Date.now()-20*864e5).toISOString(),cliente:'Outro Cliente',modelo:'R 1250 GS',ano:2020,kms:52000,valor_retoma:8500,preparacao:null,valor_venda:12000,venda_minima:null,estado:'recusada',notas:'Achou pouco'}]:[]);
     if(t==='fichas_margem'){const ng=(u.match(/negocio_id=eq\.(\d+)/)||[])[1];const mine=uid==='c1'?fichas:fichas.filter(f=>recs.some(r=>r.id===f.negocio_id&&r.vendedor_id===uid));return json(mine.filter(f=>!ng||f.negocio_id===+ng));}
     return json([]);});
   return ctx;}
@@ -58,6 +60,7 @@ const ECRAS={
       ['Vendas a comerciante (margem)','()=>{S.screen="dashboard";S.gppSec="comercio";render();}'],['Usadas · Margem','()=>{S.screen="dashboard";S.gppSec="margem";S.perTipo="mes";render();}'],
       ['Reunião (preparação)','()=>{S.screen="dashboard";S.gppSec="reuniao";S.reu={dia:reuISO(reuData()),modo:"prep",passo:0,t0:null,tp:null};render();}'],
       ['Reunião (a conduzir)','()=>{S.screen="dashboard";S.gppSec="reuniao";S.reu={dia:reuISO(reuData()),modo:"conduzir",passo:4,t0:Date.now()-150000,tp:Date.now()-30000};render();}'],
+      ['Usadas · Retomas (já deste valores)','()=>{S.screen="dashboard";S.gppSec="retomas";S.retomas=null;S.retForm={v:{matricula:"11 aa 22",modelo:"R 1250 GS",ano:"2020"},erros:{valor_retoma:"Falta o valor que ofereceste"}};render();}'],
       ['EOTs: contrato à mão (erros e repetido)','()=>{S.screen="dashboard";S.gppSec="eots";S.eotNovo={v:{contrato:"E1"},erros:{cliente:"Falta o cliente",data_fim:"Falta a data de fim"},dup:"E1"};render();}'],
       ['Janela EOT (criada à mão)','()=>{S.eotNovo=null;S.screen="dashboard";S.gppSec="eots";render();eotAbrir("E4");}'],
       ['Fichas: não aprovar (motivo) e não aprovadas','()=>{S.screen="dashboard";S.gppSec="home";S.faRecusar=31;S.faMotivo="";S.faRecsAberto=true;render();}'],
