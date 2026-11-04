@@ -12,6 +12,7 @@ escala:'id:n,dia:d,vendedor_id:u,estado:t,created_at:ts,updated_at:ts,updated_by
 eventos:'id:n,nome:t,data:d,local:t,lotacao:n,ativo:b,created_at:ts,motas:j',
 retomas_valores:'id:n,criado_em:ts,criado_por:u,updated_at:ts,vendedor_id:u,cliente:t,matricula:t,modelo:t,ano:n,kms:n,extras:t,valor_retoma:n,preparacao:n,valor_venda:n,venda_minima:n,estado:t,notas:t',
 acordos_venda:'negocio_id:n,dados:j,updated_at:ts,updated_by:u',
+documentos_emitidos:'id:n,negocio_id:n,tipo:t,caminho:t,nome:t,criado_em:ts,criado_por:u',
 fichas_margem:'id:n,negocio_id:n,nome:t,estado:t,criado_em:ts,dados:j,updated_at:ts,updated_by:u,aprovada_em:ts,aprovada_por:u,recusada_em:ts,recusada_por:u,recusa_motivo:t',
 inscricoes:'id:n,evento_id:n,cliente:t,telefone:t,acompanhantes:n,estado:t,obs:t,vendedor_id:u,created_at:ts,funil:t,mota:t',
 inscricoes_publico:'id:n,evento_id:n,cliente:t,mota:t,vendedor_id:u,estado:t,funil:t,acompanhantes:n,created_at:ts',

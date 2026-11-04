@@ -189,7 +189,7 @@ campo('retoma_ano', 'Ano:', 380, b, 450)
 campo('retoma_kms', 'Km:', 460, b, 561.28)
 b -= 19
 campo('retoma_valor', 'Valor dado ao cliente (€):', 34, b, 290)
-campo('retoma_valor_bps', 'Valor dado pelo BPS (€):', 300, b, 561.28)
+campo('retoma_valor_comercio', 'Valor dado pelo comércio (€):', 300, b, 561.28)
 y = b - 8
 # ---------- assinaturas (de baixo para cima) e observações no espaço que sobra ----------
 BASE_QUADRO = 91.49

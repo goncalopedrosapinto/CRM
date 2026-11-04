@@ -18,7 +18,7 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
      obs:'NOTA INTERNA que não pode ir para o cliente',updated_at:new Date().toISOString()},
    {id:8,vendedor_id:'v1',status:'Quente',type:'MN',id_cliente:'Cliente Nova',model:'R 1300 GS',updated_at:new Date().toISOString()},
    {id:9,vendedor_id:'v1',status:'Quente',type:'MU',id_cliente:'Cliente Sem Dados',updated_at:new Date().toISOString()}];
- const est={acordos:{},escritas:[],semSql:false};
+ const est={acordos:{},escritas:[],semSql:false,docs:{},reg:[]};
  const rota=quem=>async r=>{const u=decodeURIComponent(r.request().url());const m=r.request().method();if(u.startsWith('http://localhost'))return r.continue();
   const json=(x,st)=>r.fulfill({status:st||200,contentType:'application/json',body:JSON.stringify(x)});
   if(u.includes('/auth/v1/token'))return json({access_token:jwt(quem),refresh_token:'rt2'});
@@ -29,6 +29,11 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
     const body=JSON.parse(r.request().postData());est.escritas.push([m,body.negocio_id||id,JSON.parse(JSON.stringify(body.dados))]);
     if(m==='PATCH'){if(!est.acordos[id])return json([]);est.acordos[id]=body.dados;return json([{negocio_id:id,dados:body.dados}]);}
     if(m==='POST'){est.acordos[body.negocio_id]=body.dados;return json([body],201);}}
+  if(u.includes('/storage/v1/object/')){const k=u.split(/negocio-documentos\//)[1];if(est.semSql)return json({statusCode:'404',error:'Bucket not found',message:'Bucket not found'},400);
+    if(m==='POST'){est.docs[k]=r.request().postDataBuffer();return json({Key:k});}if(est.docs[k])return r.fulfill({status:200,contentType:'application/pdf',body:est.docs[k]});return json({message:'not found'},404);}
+  if(t==='documentos_emitidos'){if(est.semSql)return json({code:'PGRST205',message:"Could not find the table 'public.documentos_emitidos' in the schema cache"},404);
+    if(m==='POST'){const bd=JSON.parse(r.request().postData());est.reg.push(Object.assign({id:est.reg.length+1,criado_em:new Date().toISOString(),criado_por:quem},bd));return json([est.reg[est.reg.length-1]],201);}
+    const id=+(u.match(/negocio_id=eq\.(\d+)/)||[])[1];return json(est.reg.filter(x=>x.negocio_id===id));}
   if(t==='stock_usadas_publico'||t==='stock_usadas')return json([{id:31,modelo:'R 1250 GS Adventure',matricula:'AA-11-BB',kms:41000,ano:2021,categoria:'usada',estado:'A negociar'}]);
   if(t==='profiles')return json([PERFIS[quem]].concat(Object.values(PERFIS).filter(p=>p.id!==quem)));
   if(t==='baviera_control')return json(recs);
@@ -47,7 +52,7 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
    form.getFields().forEach(x=>{const n=x.getName();o[n]=x instanceof PDFLib.PDFCheckBox?x.isChecked():String(x.getText()||'').replace(/[\s  ]+/g,' ');});return o;};
  // ---------- vendedor do negócio ----------
  const V1=await abrir('v1');const p=V1.p;
- await negocio(p,8);const nova=await painel(p);
+ await negocio(p,8);const nova=await painel(p);const folhaNaNova=await p.evaluate(()=>!!document.querySelector('[data-action="folha-abrir"]'));
  await negocio(p,7);const A=await painel(p);
  await p.click('[data-action="acordo-abrir"]');await p.waitForTimeout(600);const B=await painel(p);
  // escrever o que é do acordo (grava sozinho)
@@ -63,6 +68,8 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
  const [dl]=await Promise.all([p.waitForEvent('download',{timeout:15000}),p.click('[data-action="acordo-pdf"]')]);
  const nomeFicheiro=dl.suggestedFilename();const destino=path.join(__dirname,'acordo_venda_teste.pdf');await dl.saveAs(destino);await p.waitForTimeout(500);
  const pdf=await lerPDF(destino);const guardadoNoFim=est.acordos[7]||{};
+ await p.waitForTimeout(300);const emit=await p.evaluate(()=>[...document.querySelectorAll('#ac-box .doc-lista li')].map(li=>li.textContent.replace(/\s+/g,' ').trim()));
+ const [dl3]=await Promise.all([p.waitForEvent('download',{timeout:15000}),p.click('#ac-box [data-action="doc-abrir"]')]);const nomeAbrir=dl3.suggestedFilename();const destino3=path.join(__dirname,'acordo_venda_teste2.pdf');await dl3.saveAs(destino3);const pdfGuardado=await lerPDF(destino3);try{fs.unlinkSync(destino3);}catch(e){}
  // negócio usado sem dados: diz o que falta, nome sem matrícula
  await negocio(p,9);await p.click('[data-action="acordo-abrir"]');await p.waitForTimeout(500);const E=await painel(p);
  await V1.ctx.close();
@@ -75,11 +82,11 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
  const [dl2]=await Promise.all([q.waitForEvent('download',{timeout:15000}),q.click('[data-action="acordo-pdf"]')]);const nome2=dl2.suggestedFilename();
  const larg=await q.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1);
  await V1b.ctx.close();
- const R={nova,A,B,C,caixa,escritas1,D,nomeFicheiro,pdf,guardadoNoFim,E,chefe,outro,F,nome2,larg,erros};
+ const R={emit,nomeAbrir,reg:est.reg.map(x=>({negocio_id:x.negocio_id,tipo:x.tipo,caminho:x.caminho,nome:x.nome})),nova,A,B,C,caixa,escritas1,D,nomeFicheiro,pdf,guardadoNoFim,E,chefe,outro,F,nome2,larg,erros};
  console.log(JSON.stringify(R,null,1));
  const ultima=escritas1[escritas1.length-1]||[];
  const ok={
-  'só nos negócios de usadas (o de mota nova não tem o botão)':!nova.botao&&/Acordo de venda/.test(A.botao)&&!A.aberto,
+  'só nos negócios de usadas (o de mota nova não tem o botão; a Folha de Negócio está desligada)':!nova.botao&&!folhaNaNova&&/Acordo de venda/.test(A.botao)&&!A.aberto,
   'abre na página com o que vem do negócio e sem faltas':B.aberto&&/Cliente Usada Ficticio/.test(B.neg)&&/123456789/.test(B.neg)&&/3800-100/.test(B.neg)&&/AA-11-BB/.test(B.neg)&&/Honda Africa Twin · 22-CC-33/.test(B.neg)&&!B.faltas&&!/NOTA INTERNA/.test(B.neg),
   'valores por omissão: data de hoje, marca, km do stock, data da matrícula, retoma Honda, pronto pagamento':B.v.data_acordo===hoje.toISOString().slice(0,10)||B.v.data_acordo===`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}-${String(hoje.getDate()).padStart(2,'0')}`,
   'por omissão (resto)':B.v.viatura_marca==='BMW'&&B.v.viatura_kms==='41000'&&B.v.viatura_data_matricula==='2021-03-15'&&B.v.retoma_marca==='Honda'&&B.v.forma_pagamento==='Pronto pagamento'&&B.retoma,
@@ -94,6 +101,8 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
   'PDF: retoma':pdf.retoma_marca==='Honda'&&pdf.retoma_modelo==='Honda Africa Twin'&&pdf.retoma_matricula==='22-CC-33'&&pdf.retoma_kms==='35 000'&&pdf.retoma_cor==='Vermelho'&&pdf.retoma_data_matricula==='20/05/2019'&&pdf.retoma_valor==='6 500,00',
   'PDF: sinal, pagamento, valores, observações e BMW FS':pdf.sinal_numerario==='500,00'&&pdf.sinal_transferencia==='1 000,00'&&!pdf.sinal_cheque&&!pdf.sinal_mb&&pdf.forma_pagamento==='Pronto pagamento'&&
     pdf.valor_venda==='12 500,00'&&pdf.valor_sinal==='1 500,00'&&pdf.valor_retoma==='6 500,00'&&pdf.valor_liquidar==='4 500,00'&&pdf.observacoes==='Inclui malas laterais e revisão dos 40 000 km.'&&pdf.bmw_fs_conhecimento===true,
+  'fica guardado no negócio tal como saiu e abre-se em «Emitidos»':est.reg.length===1&&est.reg[0].negocio_id===7&&est.reg[0].tipo==='acordo_venda'&&/^7\/acordo_venda-\d{8}-\d{6}-\w+\.pdf$/.test(est.reg[0].caminho)&&
+    est.reg[0].dados.campos.cliente_nome==='Cliente Usada Ficticio'&&emit.length===1&&/Vendedor Um/.test(emit[0])&&nomeAbrir==='Acordo de venda AA-11-BB.pdf'&&pdfGuardado.valor_liquidar==='4 500,00',
   'a nota interna do negócio não vai para o PDF':!Object.values(pdf).some(v=>/NOTA INTERNA/.test(String(v))),
   'ao descarregar fica guardado tal como saiu (data incluída)':guardadoNoFim.data_acordo&&guardadoNoFim.viatura_kms==='41000'&&guardadoNoFim.viatura_cor==='Cinzento Racing',
   'negócio usado sem dados: diz o que falta e o nome sai sem matrícula':/Falta no negócio: NIF, Morada, Código postal, C\.C\., Telemóvel, E-mail, Modelo, Matrícula, Valor de venda \(PVP\)/.test(E.faltas)&&E.nome==='Acordo de venda.pdf'&&!E.retoma,

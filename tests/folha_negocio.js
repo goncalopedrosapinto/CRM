@@ -29,6 +29,8 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
     const body=JSON.parse(r.request().postData());est.escritas.push([m,body.negocio_id||id,JSON.parse(JSON.stringify(body.dados))]);
     if(m==='PATCH'){if(!est.acordos[id])return json([]);est.acordos[id]=body.dados;return json([{negocio_id:id,dados:body.dados}]);}
     if(m==='POST'){est.acordos[body.negocio_id]=body.dados;return json([body],201);}}
+  if(u.includes('/storage/v1/object/negocio-documentos/')){est.docs=(est.docs||[]).concat([u.split('negocio-documentos/')[1]]);return json({Key:'x'});}
+  if(t==='documentos_emitidos'){if(m==='POST'){const bd=JSON.parse(r.request().postData());est.reg=(est.reg||[]).concat([bd]);return json([Object.assign({id:1,criado_em:new Date().toISOString(),criado_por:quem},bd)],201);}return json((est.reg||[]).map((x,i)=>Object.assign({id:i+1,criado_em:new Date().toISOString(),criado_por:'v1'},x)));}
   if(t==='fichas_margem')return json(u.includes('negocio_id=eq.21')?[{estado:'arquivada',dados:{preco_venda:'25000',pac:'900'},updated_at:'2026-10-01'},{estado:'vendida',dados:{preco_venda:'23 900',pac:'750'},updated_at:'2026-09-01'}]:[]);
   if(t==='encomendas_bmw')return json(u.includes('production_number=eq.9100007')?[{model_code:'0M21'}]:[]);
   if(t==='profiles')return json([PERFIS[quem]].concat(Object.values(PERFIS).filter(p=>p.id!==quem)));
@@ -38,7 +40,7 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
  const abrir=async(quem,vp)=>{const ctx=await b.newContext({viewport:vp||{width:1280,height:1000},acceptDownloads:true});
   await ctx.addInitScript(t=>localStorage.setItem('bc_session',JSON.stringify({refresh_token:'rt',access_token:t,exp:Date.now()+3600e3})),jwt(quem));
   await ctx.route('**/*',rota(quem));const p=await ctx.newPage();p.on('pageerror',e=>erros.push(quem+': '+e.message));
-  await p.goto(`http://localhost:${PORTA}/`);await p.waitForTimeout(1500);return {ctx,p};};
+  await p.goto(`http://localhost:${PORTA}/`);await p.waitForTimeout(1500);if(!process.env.FOLHA_DESLIGADA)await p.evaluate(()=>{FOLHA_ATIVA=true;});return {ctx,p};};
  const negocio=async(p,id)=>{await p.evaluate(id=>{S.folhaAberta=null;S.acordoAberto=null;setState({screen:'detail',selected:S.records.find(r=>r.id===id)});},id);await p.waitForTimeout(250);};
  const painel=p=>p.evaluate(()=>{const t=e=>e?e.textContent.replace(/[\s  ]+/g,' ').trim():'';const box=document.getElementById('fn-box');
    const v={};document.querySelectorAll('#fn-box [data-ac]').forEach(e=>{v[e.dataset.ac]=e.type==='checkbox'?e.checked:e.value;});
@@ -53,7 +55,7 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
  await p.click('[data-action="folha-abrir"]');await p.waitForTimeout(700);const B=await painel(p);
  const escrever=async(k,v)=>{await p.fill('#ac-'+k,v);};
  await escrever('fn_proposta','P-2026-118');await escrever('fn_sinal','1 000');await escrever('fn_n_stock','ST-55');await escrever('fn_frota','0');
- await escrever('fn_retoma_ano','2017');await escrever('fn_retoma_kms','48 000');await escrever('fn_retoma_valor','6 000');await escrever('fn_retoma_bps','5 500');
+ await escrever('fn_retoma_ano','2017');await escrever('fn_retoma_kms','48 000');await escrever('fn_retoma_valor','6 000');await escrever('fn_retoma_comercio','5 500');
  await escrever('fn_observacoes','Entrega com malas.');await p.check('#ac-fn_fin_gap');await p.uncheck('#ac-fn_fin_seguro_auto');
  await p.selectOption('#ac-fn_origem','Lead Internet');
  await p.waitForTimeout(1200);const C=await painel(p);const escritas1=est.escritas.slice();
@@ -86,7 +88,8 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
     pdf.or_lead_internet===true&&['or_stand','or_recomendacao','or_lead_bmw','or_csc','or_angariacao','or_apv','or_eventos','or_cliente_atual'].every(k=>pdf[k]===false)&&pdf.codigo_modelo==='0M21',
   'PDF: informações de negócio e financiamento':pdf.modelo==='R 1300 GS Trophy'&&pdf.valor_fatura==='23 900,00'&&pdf.sinal==='1 000,00'&&pdf.encomenda==='9100007'&&pdf.n_stock==='ST-55'&&pdf.valor_pac==='750,00'&&pdf.valor_frota==='0,00'&&
     pdf.fat_particular===true&&pdf.fat_empresa===false&&pdf.fin_outro_banco===true&&pdf.fin_gap===true&&pdf.fin_seguro_auto===false&&pdf.fin_pp===false,
-  'PDF: retoma e observações':pdf.retoma_modelo==='F 800 GS'&&pdf.retoma_matricula==='11-ZZ-22'&&pdf.retoma_ano==='2017'&&pdf.retoma_kms==='48 000'&&pdf.retoma_valor==='6 000,00'&&pdf.retoma_valor_bps==='5 500,00'&&pdf.observacoes==='Entrega com malas.',
+  'PDF: retoma e observações':pdf.retoma_modelo==='F 800 GS'&&pdf.retoma_matricula==='11-ZZ-22'&&pdf.retoma_ano==='2017'&&pdf.retoma_kms==='48 000'&&pdf.retoma_valor==='6 000,00'&&pdf.retoma_valor_comercio==='5 500,00'&&pdf.observacoes==='Entrega com malas.',
+  'fica guardado no negócio tal como saiu (PDF na pasta do negócio e registo)':(est.docs||[]).length===1&&/^21\/folha_negocio-\d{8}-\d{6}-\w+\.pdf$/.test(est.docs[0])&&(est.reg||[])[0]&&est.reg[0].tipo==='folha_negocio'&&est.reg[0].nome==='Folha de Negócio Cliente Nova Ficticia.pdf'&&est.reg[0].dados.campos.n_proposta==='P-2026-118',
   'a nota interna do negócio não vai para o PDF':!Object.values(pdf).some(v=>/NOTA INTERNA/.test(String(v))),
   'ao descarregar fica guardado tal como saiu (data e preço da ficha incluídos)':!!guardado.fn_data&&guardado.fn_valor_fatura==='23900'&&guardado.fn_codigo_modelo==='0M21',
   'demo de empresa: Demo, Empresa e diz o que falta':D.v.fn_tipo_venda==='Demo'&&D.v.fn_empresa==='Empresa Demo Lda'&&!D.v.fn_utilizador&&D.v.fn_faturacao==='Empresa'&&/Falta no negócio: NIF, Contacto, E-mail/.test(D.faltas)&&!D.retoma,
