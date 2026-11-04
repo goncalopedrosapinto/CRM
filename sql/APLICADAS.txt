@@ -24,3 +24,5 @@
 2026-11-02_fichas_recusar.sql
 2026-11-03_eot_manual.sql
 2026-11-03_retomas_valores.sql
+2026-11-04_acordos_venda.sql
+2026-11-04_retomas_vendedor.sql

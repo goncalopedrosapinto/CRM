@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-04-c">
+<meta name="app-version" content="2026-11-04-d">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2222,6 +2222,8 @@ body.a-gravar [data-action]{cursor:progress}
 .ac-chk{display:flex;gap:8px;align-items:flex-start;margin:14px 0 4px;font-size:13px;cursor:pointer}.ac-chk input[type=checkbox]{-webkit-appearance:none;appearance:none;flex:none;width:18px;height:18px;min-height:0;margin:1px 0 0;padding:0;border:1.5px solid var(--text3);border-radius:4px;background:var(--surface);cursor:pointer;box-shadow:none}.ac-chk input[type=checkbox]:checked{background:var(--blue) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' stroke='white' stroke-width='2.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/13px no-repeat;border-color:var(--blue)}.ac-chk input[type=checkbox]:focus-visible{outline:2px solid var(--blue);outline-offset:2px}.ac-g1{grid-template-columns:minmax(150px,220px)}
 .ac-vals{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:12px 0}.ac-vals>div{border:1px solid var(--border2);border-radius:8px;padding:8px 10px}
 .ac-vals span{display:block;font-size:10.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.03em}.ac-vals b{font-size:15px}.ac-vals .liq{background:var(--surface2)}.ac-vals b.neg{color:var(--red)}
+.ac-box select.norma-inp,.ret-form select.norma-inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23A8A29E' fill='none' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;cursor:pointer}
+.fn-fin{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:0 12px}.fn-fin .ac-chk{margin:6px 0}.ac-g2{grid-template-columns:repeat(2,minmax(150px,220px))}
 .ac-acts{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.ac-nome{font-size:12px;color:var(--text3)}
 /* Usadas › Retomas: valores dados */
 .ret-match{display:flex;flex-direction:column;gap:8px;margin-top:10px}.ret-match:empty{display:none}
@@ -2464,7 +2466,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-04-c';
+const APP_VERSION='2026-11-04-d';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -7300,7 +7302,7 @@ function travar(nome){const fn=window[nome];if(typeof fn!=='function'||fn._trava
   const w=async function(...a){let k;try{k=nome+'|'+JSON.stringify(a);}catch(_){k=nome;}if(_emCurso.has(k))return;_emCurso.add(k);document.body.classList.add('a-gravar');
     try{return await fn.apply(this,a);}finally{_emCurso.delete(k);if(!_emCurso.size)document.body.classList.remove('a-gravar');}};
   w._travado=true;window[nome]=w;}
-['mrConfirmar','mrRecusar','addStockMotaFull','addStockMota','comissaoAdd','premioAdd','saveInscricaoNova','saveEventoNovo','saveLead','saveAutomatricula','saveVendaDireta','saveRecord','deleteRecord','seqConfirmar','seqRegistar','seqForaRegistar','recontReabrir','recontAdiar','eotConfirmar','eotGuardar','eotModalGuardar','eotAtribuirLote','eotCriarNegocio','eotComentar','eqAdd','eqColar','comFechoToggle','negComentar','vhNovoRegistar','vhContactei','vhAdiar','vhPerdido','fmGuardarNovo','fmAssociar','reuCompAdd','reuCompFeito','reuCompApagar','reuCompNovaData','fichaAprovar','fichaRecusar','eotCriarManual','eotApagarManual','retRegistar','retApagar','acordoDescarregar'].forEach(n=>{try{travar(n);}catch(e){}});
+['mrConfirmar','mrRecusar','addStockMotaFull','addStockMota','comissaoAdd','premioAdd','saveInscricaoNova','saveEventoNovo','saveLead','saveAutomatricula','saveVendaDireta','saveRecord','deleteRecord','seqConfirmar','seqRegistar','seqForaRegistar','recontReabrir','recontAdiar','eotConfirmar','eotGuardar','eotModalGuardar','eotAtribuirLote','eotCriarNegocio','eotComentar','eqAdd','eqColar','comFechoToggle','negComentar','vhNovoRegistar','vhContactei','vhAdiar','vhPerdido','fmGuardarNovo','fmAssociar','reuCompAdd','reuCompFeito','reuCompApagar','reuCompNovaData','fichaAprovar','fichaRecusar','eotCriarManual','eotApagarManual','retRegistar','retApagar','acordoDescarregar','folhaDescarregar'].forEach(n=>{try{travar(n);}catch(e){}});
 // ---- Teclado: tudo o que é clicável recebe foco e abre com Enter/Espaço; campos ganham nome para leitores de ecrã ----
 function tecladoAplicar(){
   const raiz=document.getElementById('app');if(!raiz)return;
@@ -7733,24 +7735,111 @@ function acordoCampos(r){const d=acordoDados(r),V=acordoValores(r),m=acordoStock
     sinal_numerario:eur(d.sinal_numerario),sinal_cheque:eur(d.sinal_cheque),sinal_transferencia:eur(d.sinal_transferencia),sinal_mb:eur(d.sinal_mb),forma_pagamento:d.forma_pagamento||'',
     valor_venda:acordoEur(V.venda),valor_sinal:V.sinal?acordoEur(V.sinal):'',valor_retoma:acordoEur(V.retoma),valor_liquidar:acordoEur(V.liquidar),observacoes:d.observacoes||''};}
 const ACORDO_DIREITA=['retoma_valor','sinal_numerario','sinal_cheque','sinal_transferencia','sinal_mb','valor_venda','valor_sinal','valor_retoma','valor_liquidar','viatura_kms','retoma_kms'];
-async function acordoBytes(r){const PDFLib=await acordoLib();
-  const resp=await fetch(ACORDO_PDF,{cache:'no-cache'});if(!resp.ok)throw new Error('não encontrei o modelo do acordo ('+resp.status+')');
+// preenche um modelo PDF (campos de texto e caixas) e devolve os bytes; o PDF continua editável
+async function docBytes(url,campos,caixas,direita,titulo,grandes){const PDFLib=await acordoLib();
+  const resp=await fetch(url,{cache:'no-cache'});if(!resp.ok)throw new Error('não encontrei o modelo do PDF ('+resp.status+')');
   const doc=await PDFLib.PDFDocument.load(await resp.arrayBuffer());const form=doc.getForm();const helv=await doc.embedFont(PDFLib.StandardFonts.Helvetica);
-  for(const [k,v0] of Object.entries(acordoCampos(r))){let f;try{f=form.getTextField(k);}catch(e){continue;}
-    const v=acordoTxt(v0);const w=f.acroField.getWidgets()[0];const larg=(w?w.getRectangle().width:100)-4;const base=k.startsWith('valor_')?10:(k==='observacoes'?9:8);
+  for(const [k,v0] of Object.entries(campos)){let f;try{f=form.getTextField(k);}catch(e){continue;}
+    const v=acordoTxt(v0);const w=f.acroField.getWidgets()[0];const larg=(w?w.getRectangle().width:100)-4;const base=(grandes||[]).includes(k)?10:(k==='observacoes'?9:8);
     let tam=base;if(k!=='observacoes')while(tam>5&&helv.widthOfTextAtSize(v,tam)>larg)tam-=0.5;   // texto comprido encolhe para caber na linha
-    f.setFontSize(tam);if(ACORDO_DIREITA.includes(k))f.setAlignment(PDFLib.TextAlignment.Right);f.setText(v);}
-  try{const cb=form.getCheckBox('bmw_fs_conhecimento');if(acordoDados(r).bmw_fs)cb.check();else cb.uncheck();}catch(e){}
-  form.updateFieldAppearances(helv);doc.setTitle('Acordo de venda'+(acordoMat(r)?' '+acordoMat(r):''));
+    f.setFontSize(tam);if(direita.includes(k))f.setAlignment(PDFLib.TextAlignment.Right);f.setText(v);}
+  for(const [k,on] of Object.entries(caixas||{})){try{const cb=form.getCheckBox(k);if(on)cb.check();else cb.uncheck();}catch(e){}}
+  form.updateFieldAppearances(helv);doc.setTitle(titulo);
   return await doc.save();}
+function docDescarregarBytes(bytes,nome){const url=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));
+  const a=document.createElement('a');a.href=url;a.download=nome;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},4000);}
+async function acordoBytes(r){return docBytes(ACORDO_PDF,acordoCampos(r),{bmw_fs_conhecimento:!!acordoDados(r).bmw_fs},ACORDO_DIREITA,'Acordo de venda'+(acordoMat(r)?' '+acordoMat(r):''),['valor_venda','valor_sinal','valor_retoma','valor_liquidar']);}
 async function acordoDescarregar(id){
   const r=(S.records||[]).find(x=>String(x.id)===String(id))||(S.selected&&String(S.selected.id)===String(id)?S.selected:null);if(!r||!acordoElegivel(r))return;
   // fica guardado tal como saiu: a data do acordo e os valores por omissão não mudam numa reimpressão
   const st=(S.acordos||{})[String(r.id)];if(st&&!st.semTabela){st.dados=acordoDados(r);clearTimeout(_acT);await acordoGravar(r.id);}
   S.acordoGerando=true;render();
-  try{const bytes=await acordoBytes(r);const url=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));
-    const a=document.createElement('a');a.href=url;a.download=acordoNomeFicheiro(r);document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},4000);
+  try{const bytes=await acordoBytes(r);docDescarregarBytes(bytes,acordoNomeFicheiro(r));
     S.acordoGerando=false;render();setTimeout(()=>toast('PDF descarregado: '+acordoNomeFicheiro(r)),450);}
+  catch(e){S.acordoGerando=false;render();toast('Não consegui fazer o PDF: '+((e&&e.message)||e),'erro');}}
+// ===== Folha de Negócio (motas novas e demos): o PDF de gestão preenchido com os dados do negócio =====
+// Mesma linha de acordos_venda (um por negócio), com as chaves fn_*. Modelo: docs/folha-negocio.pdf (gerado por docs/fontes/folha_negocio.py).
+const FOLHA_PDF='docs/folha-negocio.pdf';
+const FOLHA_TV=['Novo','Stock Tático','KM0','Demo','Cortesia','Serviço','Usado','PT'];
+const FOLHA_ORIG=['Stand','Recomendação','Lead BMW','Lead Internet','CSC','Angariação','APV','Eventos','Cliente Atual'];
+const FOLHA_FIN=[['select','Select'],['ald','ALD'],['leasing','Leasing'],['credito','Crédito'],['pp','PP'],['outro_banco','Outro Banco'],['seguro_auto','Seguro Auto'],['gap','GAP'],['protecao_credito','Proteção de crédito']];
+const FOLHA_FAT=['Empresa','Dec. Utilizador','Particular'];
+const FOLHA_ORIG_DE={Stand:'Stand','Recom.':'Recomendação',Evento:'Eventos',Cliente:'Cliente Atual'};
+const FOLHA_GRUPOS=[
+  ['Folha',[['fn_proposta','Nº proposta'],['fn_data','Data','date']]],
+  ['Cliente',[['fn_empresa','Empresa'],['fn_utilizador','Utilizador'],['fn_rgpd','Recolha de consentimento (RGPD)','sel',['','Sim','Não']]]],
+  ['Venda',[['fn_tipo_venda','Tipo de venda','sel',[''].concat(FOLHA_TV)],['fn_origem','Origem do negócio','sel',[''].concat(FOLHA_ORIG)],['fn_codigo_modelo','Código modelo']]],
+  ['Informações de negócio',[['fn_valor_fatura','Valor fatura (€)','eur'],['fn_sinal','Sinal (€)','eur'],['fn_n_stock','Nº stock'],['fn_pac','Valor PAC (€)','eur'],['fn_frota','Valor frota (€)','eur'],['fn_prp','Nº PRP'],['fn_parque','Parque (nº viaturas)','num'],['fn_faturacao','Faturação','sel',[''].concat(FOLHA_FAT)],['fn_subvencao','Subvenção taxa']]],
+  ['Seguro',[['fn_data_carta','Data de emissão da carta','date'],['fn_mat_anterior','Matrícula da viatura anterior']]],
+  ['Retoma',[['fn_retoma_ano','Ano','num'],['fn_retoma_kms','Km','num'],['fn_retoma_valor','Valor dado ao cliente (€)','eur'],['fn_retoma_bps','Valor dado pelo BPS (€)','eur']]],
+  ['Observações',[['fn_observacoes','Observações','area']]]
+];
+const FOLHA_DIREITA=['valor_fatura','sinal','valor_pac','valor_frota','retoma_valor','retoma_valor_bps','retoma_kms'];
+function folhaElegivel(r){return !!r&&(r.type==='MN'||r.type==='MD')&&(isAdmin()||(!!S.me&&r.vendedor_id===S.me.id));}
+function folhaSlug(s){return String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');}
+function folhaDefaults(r){const x=(S.folhaExtra||{})[String(r.id)]||{};const emp=r.profile==='Empresa';const h=new Date();
+  const d={fn_data:h.getFullYear()+'-'+String(h.getMonth()+1).padStart(2,'0')+'-'+String(h.getDate()).padStart(2,'0'),
+    fn_empresa:emp?String(r.id_cliente||''):'',fn_utilizador:emp?'':String(r.id_cliente||''),fn_rgpd:r.flag_rgpd?'Sim':'',
+    fn_tipo_venda:r.type==='MD'?'Demo':'Novo',fn_origem:FOLHA_ORIG_DE[r.origin]||'',fn_codigo_modelo:x.model_code||'',
+    fn_valor_fatura:x.preco_venda!=null?String(x.preco_venda):(r.pvp!=null&&r.pvp!==''?String(r.pvp):''),fn_pac:x.pac||'',
+    fn_faturacao:emp?'Empresa':(r.profile==='Particular'?'Particular':'')};
+  if(r.fin==='PP')d.fn_fin_pp=true;if(r.fin==='Fext')d.fn_fin_outro_banco=true;if(r.flag_seguro)d.fn_fin_seguro_auto=true;
+  return d;}
+function folhaDados(r){const st=(S.acordos||{})[String(r.id)];return Object.assign({},folhaDefaults(r),(st&&st.dados)||{});}
+function folhaFaltas(r){return [['id_cliente','Cliente'],['nif','NIF'],['contacto','Contacto'],['email','E-mail'],['model','Modelo']].filter(([k])=>!String(r[k]==null?'':r[k]).trim()).map(x=>x[1]);}
+function folhaNomeFicheiro(r){const c=String(r.id_cliente||'').replace(/[\\/:*?"<>|]+/g,'-').replace(/\s+/g,' ').trim().slice(0,60);return'Folha de Negócio'+(c?' '+c:'')+'.pdf';}
+// preço da ficha de margem (vendida, senão a mais recente) e código do modelo da encomenda: só para preencher por omissão
+const _fnExtra=new Set();
+async function folhaExtraCarregar(r){S.folhaExtra=S.folhaExtra||{};const k=String(r.id);if(S.folhaExtra[k]||_fnExtra.has(k))return;_fnExtra.add(k);const x={};
+  try{const F=(await supabaseApi('GET','/fichas_margem?negocio_id=eq.'+encodeURIComponent(r.id)+'&select=estado,dados,updated_at&order=updated_at.desc'))||[];
+    const f=F.find(y=>y.estado==='vendida')||F.find(y=>y.estado!=='arquivada')||F[0];
+    if(f&&f.dados){const pv=numPT(String(f.dados.preco_venda==null?'':f.dados.preco_venda));if(pv!=null&&pv>0)x.preco_venda=pv;
+      const pac=numPT(String(f.dados.pac==null?'':f.dados.pac));if(pac!=null&&pac>0)x.pac=String(pac);}}catch(e){}
+  const enc=String(r.enc||'').trim();
+  if(enc)try{const E=(await supabaseApi('GET','/encomendas_bmw?production_number=eq.'+encodeURIComponent(enc)+'&select=model_code&limit=1'))||[];if(E[0]&&E[0].model_code)x.model_code=String(E[0].model_code);}catch(e){}
+  S.folhaExtra[k]=x;_fnExtra.delete(k);render();}
+function folhaHTML(r){
+  if(String(S.folhaAberta)!==String(r.id))return'';
+  folhaExtraCarregar(r);
+  const st=(S.acordos||{})[String(r.id)];
+  if(st===undefined){acordoCarregar(r.id);return`<div class="gpp-card vd-form ac-box" id="fn-box"><div class="ac-load">A carregar a folha…</div></div>`;}
+  const d=folhaDados(r);const faltas=folhaFaltas(r);const ret=r.retoma==='Sim';
+  const inp=([k,lb,t,o])=>{const v=d[k]==null?'':d[k];
+    if(t==='area')return`<div class="vd-f" style="grid-column:1/-1"><label for="ac-${k}">${lb}</label><textarea class="norma-inp" id="ac-${k}" data-ac="${k}" rows="3" maxlength="600">${esc(v)}</textarea></div>`;
+    if(t==='sel')return`<div class="vd-f"><label for="ac-${k}">${lb}</label><select class="norma-inp" id="ac-${k}" data-ac="${k}">${o.map(x=>`<option value="${esc(x)}" ${String(v)===x?'selected':''}>${esc(x||'—')}</option>`).join('')}</select></div>`;
+    return`<div class="vd-f"><label for="ac-${k}">${lb}</label><input class="norma-inp" id="ac-${k}" data-ac="${k}"${t==='date'?' type="date"':(t==='num'||t==='eur'?' inputmode="decimal"':'')} value="${esc(v)}"></div>`;};
+  const dt=v=>v?String(v).slice(0,10).split('-').reverse().join('/'):'';
+  const deNeg=[['Vendedor',nomePerfil(r.vendedor_id),1],['Cliente',r.id_cliente,1],['NIF',r.nif,1],['Contacto',r.contacto,1],['E-mail',r.email,1],['Modelo',[r.model,r.version].filter(Boolean).join(' '),1],
+    ['Encomenda',r.enc],['Matrícula',String(r.mat||'').toUpperCase()],['Data da matrícula',dt(r.dmat)]].concat(ret?[['Retoma',[r.retoma_modelo,String(r.retoma_mat||'').trim().toUpperCase()].filter(Boolean).join(' · ')]]:[]);
+  const grupos=FOLHA_GRUPOS.filter(([g])=>g!=='Retoma'||ret);
+  const fin=`<div class="ac-sec">Tipo de financiamento</div><div class="fn-fin">${FOLHA_FIN.map(([k,l])=>`<label class="ac-chk"><input type="checkbox" id="ac-fn_fin_${k}" data-ac="fn_fin_${k}"${d['fn_fin_'+k]?' checked':''}><span>${l}</span></label>`).join('')}</div>`;
+  return`<div class="gpp-card vd-form ac-box" id="fn-box">
+    <div class="ac-top"><div><div class="vd-form-t">Folha de Negócio</div><div class="vd-form-sub">O que já está no negócio entra sozinho no PDF. Aqui escreves só o que é da folha; fica guardado neste negócio.</div></div><span class="ac-est" id="ac-est" aria-live="polite">${esc(S.acordoEstado||'')}</span></div>
+    ${st.erro?`<div class="mg-aviso" style="margin:0 0 10px">${esc(st.erro)}</div>`:''}
+    <div class="ac-neg">${deNeg.map(([l,v,obr])=>{const t=String(v==null?'':v).trim();return`<div><span>${l}</span><b class="${t||!obr?'':'ac-falta'}">${t?esc(t):(obr?'falta':'—')}</b></div>`;}).join('')}</div>
+    ${faltas.length?`<div class="ac-faltas"><span>Falta no negócio: <b>${esc(faltas.join(', '))}</b>.</span><button class="btn btn-outline btn-sm" data-action="open-edit">Editar negócio</button></div>`:''}
+    ${grupos.map(([g,campos])=>`<div class="ac-sec">${g}</div><div class="vd-grid${campos.length===2&&g==='Folha'?' ac-g2':''}">${campos.map(inp).join('')}</div>${g==='Informações de negócio'?fin:''}`).join('')}
+    <div class="ac-acts"><button class="btn btn-orange" data-action="folha-pdf" data-id="${esc(r.id)}"${S.acordoGerando?' disabled':''}>${S.acordoGerando?'A preparar o PDF…':'Descarregar PDF'}</button><span class="ac-nome">${esc(folhaNomeFicheiro(r))}</span><button class="btn btn-ghost btn-sm" data-action="folha-fechar">Fechar</button></div>
+  </div>`;
+}
+function folhaCampos(r){const d=folhaDados(r),ret=r.retoma==='Sim';
+  const dt=v=>v?String(v).slice(0,10).split('-').reverse().join('/'):'';const km=v=>{const n=acordoNum(v);return n==null?'':acordoMil(Math.round(n));};const eur=v=>acordoEur(acordoNum(v));
+  return {vendedor:nomePerfil(r.vendedor_id),n_proposta:d.fn_proposta||'',data:dt(d.fn_data),cliente_empresa:d.fn_empresa||'',cliente_utilizador:d.fn_utilizador||'',
+    cliente_nif:r.nif||'',cliente_contacto:r.contacto||'',cliente_email:r.email||'',viatura_matricula:String(r.mat||'').toUpperCase(),viatura_data_matricula:dt(r.dmat),codigo_modelo:d.fn_codigo_modelo||'',
+    modelo:[r.model,r.version].filter(Boolean).join(' '),valor_fatura:eur(d.fn_valor_fatura),sinal:eur(d.fn_sinal),encomenda:r.enc||'',n_stock:d.fn_n_stock||'',
+    valor_pac:eur(d.fn_pac),valor_frota:eur(d.fn_frota),n_prp:d.fn_prp||'',parque:d.fn_parque||'',subvencao_taxa:d.fn_subvencao||'',
+    seguro_data_carta:dt(d.fn_data_carta),seguro_mat_anterior:String(d.fn_mat_anterior||'').toUpperCase(),
+    retoma_modelo:ret?r.retoma_modelo||'':'',retoma_matricula:ret?String(r.retoma_mat||'').toUpperCase():'',retoma_ano:ret?d.fn_retoma_ano||'':'',retoma_kms:ret?km(d.fn_retoma_kms):'',
+    retoma_valor:ret?eur(d.fn_retoma_valor):'',retoma_valor_bps:ret?eur(d.fn_retoma_bps):'',observacoes:d.fn_observacoes||''};}
+function folhaCaixas(r){const d=folhaDados(r);const c={rgpd_sim:d.fn_rgpd==='Sim',rgpd_nao:d.fn_rgpd==='Não'};
+  FOLHA_TV.forEach(t=>{c['tv_'+folhaSlug(t)]=d.fn_tipo_venda===t;});FOLHA_ORIG.forEach(o=>{c['or_'+folhaSlug(o)]=d.fn_origem===o;});
+  FOLHA_FIN.forEach(([k])=>{c['fin_'+k]=!!d['fn_fin_'+k];});FOLHA_FAT.forEach(f=>{c['fat_'+folhaSlug(f)]=d.fn_faturacao===f;});return c;}
+async function folhaDescarregar(id){
+  const r=(S.records||[]).find(x=>String(x.id)===String(id))||(S.selected&&String(S.selected.id)===String(id)?S.selected:null);if(!r||!folhaElegivel(r))return;
+  const st=(S.acordos||{})[String(r.id)];if(st&&!st.semTabela){st.dados=folhaDados(r);clearTimeout(_acT);await acordoGravar(r.id);}
+  S.acordoGerando=true;render();
+  try{const bytes=await docBytes(FOLHA_PDF,folhaCampos(r),folhaCaixas(r),FOLHA_DIREITA,'Folha de Negócio'+(r.id_cliente?' '+r.id_cliente:''),['valor_fatura']);
+    docDescarregarBytes(bytes,folhaNomeFicheiro(r));S.acordoGerando=false;render();setTimeout(()=>toast('PDF descarregado: '+folhaNomeFicheiro(r)),450);}
   catch(e){S.acordoGerando=false;render();toast('Não consegui fazer o PDF: '+((e&&e.message)||e),'erro');}}
 // ===== Usadas › Retomas: registo dos valores de retoma dados (só o chefe) =====
 // Para dar o mesmo valor se o cliente voltar a perguntar e para controlar o que foi aceite.
@@ -8011,6 +8100,7 @@ function renderDetail(){
       </div>${isAdmin()?'':'<div class="cm-ficha-n">Valor definido pelo chefe de vendas.</div>'}</div>`;})()}
     <button class="btn fm-btn-neg ${(S.fichasIdx||{})[String(r.id)]?'tem':''}" data-action="fm-negocio" data-id="${r.id}">🧮 Ficha de margem ${(S.fichasIdx||{})[String(r.id)]?`<span>· ${((S.fichasN||{})[String(r.id)]||1)>1?((S.fichasN||{})[String(r.id)])+' fichas'+((S.fichasVend||{})[String(r.id)]?' · vendida escolhida':''):'guardada'}</span>`:'<span>· criar</span>'}</button>
     ${acordoElegivel(r)?`<button class="btn fm-btn-neg ac-btn" data-action="acordo-abrir" data-id="${r.id}" aria-expanded="${String(S.acordoAberto)===String(r.id)}">📄 Acordo de venda <span>· PDF preenchido com este negócio</span></button>${acordoHTML(r)}`:''}
+    ${folhaElegivel(r)?`<button class="btn fm-btn-neg ac-btn" data-action="folha-abrir" data-id="${r.id}" aria-expanded="${String(S.folhaAberta)===String(r.id)}">📋 Folha de Negócio <span>· PDF preenchido com este negócio</span></button>${folhaHTML(r)}`:''}
     <div class="copy-actions">
       <button class="btn btn-copy" data-action="copy-matricula">📋 Pedido de matrícula</button>
       <button class="btn btn-copy" data-action="copy-venda">📋 Comunicação de venda</button>
@@ -8797,8 +8887,11 @@ function EXPORT_FOLHAS(){
       {c:'notas',l:'Notas'},{c:'negocio_id',l:'Negócio ID'},{c:'no_mapa',l:'No mapa',f:sn},{c:'saiu_em',l:'Saiu do mapa',f:dt},
       {c:'origem',l:'Origem',f:v=>v==='manual'?'Criado à mão':(v?'Mapa':'')},{c:'criado_em',l:'Criado',f:dt},{c:'criado_por',l:'Criado por',f:nome},{c:'ultima_import',l:'Última importação',f:dt},{c:'updated_at',l:'Atualizado',f:dt},
     ]},
-    {nome:'Acordos de venda',path:'/acordos_venda?select=*&order=negocio_id.asc',cols:[
+    {nome:'Acordos de venda',path:'/acordos_venda?select=*,baviera_control!inner(type)&baviera_control.type=eq.MU&order=negocio_id.asc',cols:[
       {c:'negocio_id',l:'Negócio ID'},{c:'dados',l:'Data do acordo',f:v=>((v||{})['data_acordo']??'')},{c:'dados',l:'Marca',f:v=>((v||{})['viatura_marca']??'')},{c:'dados',l:'Cor',f:v=>((v||{})['viatura_cor']??'')},{c:'dados',l:'Km',f:v=>((v||{})['viatura_kms']??'')},{c:'dados',l:'Data da matrícula',f:v=>((v||{})['viatura_data_matricula']??'')},{c:'dados',l:'Empresa',f:v=>((v||{})['empresa_nome']??'')},{c:'dados',l:'NIF empresa',f:v=>((v||{})['empresa_nif']??'')},{c:'dados',l:'Morada empresa',f:v=>((v||{})['empresa_morada']??'')},{c:'dados',l:'CP empresa',f:v=>((v||{})['empresa_cp']??'')},{c:'dados',l:'Telefone empresa',f:v=>((v||{})['empresa_telefone']??'')},{c:'dados',l:'E-mail empresa',f:v=>((v||{})['empresa_email']??'')},{c:'dados',l:'Retoma marca',f:v=>((v||{})['retoma_marca']??'')},{c:'dados',l:'Retoma km',f:v=>((v||{})['retoma_kms']??'')},{c:'dados',l:'Retoma cor',f:v=>((v||{})['retoma_cor']??'')},{c:'dados',l:'Retoma data matrícula',f:v=>((v||{})['retoma_data_matricula']??'')},{c:'dados',l:'Valor de retoma',f:v=>((v||{})['retoma_valor']??'')},{c:'dados',l:'Sinal numerário',f:v=>((v||{})['sinal_numerario']??'')},{c:'dados',l:'Sinal cheque',f:v=>((v||{})['sinal_cheque']??'')},{c:'dados',l:'Sinal transferência',f:v=>((v||{})['sinal_transferencia']??'')},{c:'dados',l:'Sinal MB',f:v=>((v||{})['sinal_mb']??'')},{c:'dados',l:'Forma de pagamento',f:v=>((v||{})['forma_pagamento']??'')},{c:'dados',l:'Observações',f:v=>((v||{})['observacoes']??'')},{c:'dados',l:'Tomou conhecimento BMW FS',f:v=>(v||{}).bmw_fs?'Sim':'Não'},{c:'updated_at',l:'Atualizado',f:dt},{c:'updated_by',l:'Por',f:nome},
+    ]},
+    {nome:'Folhas de negócio',path:'/acordos_venda?select=*,baviera_control!inner(type)&baviera_control.type=in.(MN,MD)&order=negocio_id.asc',cols:[
+      {c:'negocio_id',l:'Negócio ID'},{c:'dados',l:'Data',f:v=>((v||{})['fn_data']??'')},{c:'dados',l:'Nº proposta',f:v=>((v||{})['fn_proposta']??'')},{c:'dados',l:'Empresa',f:v=>((v||{})['fn_empresa']??'')},{c:'dados',l:'Utilizador',f:v=>((v||{})['fn_utilizador']??'')},{c:'dados',l:'Consentimento RGPD',f:v=>((v||{})['fn_rgpd']??'')},{c:'dados',l:'Tipo de venda',f:v=>((v||{})['fn_tipo_venda']??'')},{c:'dados',l:'Origem',f:v=>((v||{})['fn_origem']??'')},{c:'dados',l:'Código modelo',f:v=>((v||{})['fn_codigo_modelo']??'')},{c:'dados',l:'Valor fatura',f:v=>((v||{})['fn_valor_fatura']??'')},{c:'dados',l:'Sinal',f:v=>((v||{})['fn_sinal']??'')},{c:'dados',l:'Nº stock',f:v=>((v||{})['fn_n_stock']??'')},{c:'dados',l:'Valor PAC',f:v=>((v||{})['fn_pac']??'')},{c:'dados',l:'Valor frota',f:v=>((v||{})['fn_frota']??'')},{c:'dados',l:'Nº PRP',f:v=>((v||{})['fn_prp']??'')},{c:'dados',l:'Parque',f:v=>((v||{})['fn_parque']??'')},{c:'dados',l:'Faturação',f:v=>((v||{})['fn_faturacao']??'')},{c:'dados',l:'Subvenção taxa',f:v=>((v||{})['fn_subvencao']??'')},{c:'dados',l:'Data emissão carta',f:v=>((v||{})['fn_data_carta']??'')},{c:'dados',l:'Matrícula viatura anterior',f:v=>((v||{})['fn_mat_anterior']??'')},{c:'dados',l:'Retoma ano',f:v=>((v||{})['fn_retoma_ano']??'')},{c:'dados',l:'Retoma km',f:v=>((v||{})['fn_retoma_kms']??'')},{c:'dados',l:'Retoma valor ao cliente',f:v=>((v||{})['fn_retoma_valor']??'')},{c:'dados',l:'Retoma valor BPS',f:v=>((v||{})['fn_retoma_bps']??'')},{c:'dados',l:'Observações',f:v=>((v||{})['fn_observacoes']??'')},{c:'dados',l:'Financiamento',f:v=>FOLHA_FIN.filter(([k])=>(v||{})['fn_fin_'+k]).map(x=>x[1]).join(', ')},{c:'updated_at',l:'Atualizado',f:dt},{c:'updated_by',l:'Por',f:nome},
     ]},
     {nome:'Retomas (valores dados)',path:'/retomas_valores?select=*&order=criado_em.asc,id.asc',cols:[
       {c:'id',l:'ID'},{c:'criado_em',l:'Data',f:dt},{c:'vendedor_id',l:'Vendedor',f:nome},{c:'cliente',l:'Cliente (registos antigos)'},{c:'matricula',l:'Matrícula'},{c:'modelo',l:'Modelo'},{c:'ano',l:'Ano'},{c:'kms',l:'Km'},{c:'extras',l:'Extras'},
@@ -10980,6 +11073,10 @@ function bindEvents(){
         if(!fecha)setTimeout(()=>{const b=document.getElementById('ac-box');if(b)try{b.scrollIntoView({block:'nearest',behavior:movReduzido()?'auto':'smooth'});}catch(_){}},60);break;}
       case'acordo-fechar':S.acordoAberto=null;render();break;
       case'acordo-pdf':acordoDescarregar(el.dataset.id);break;
+      case'folha-abrir':{const id=el.dataset.id;const fecha=String(S.folhaAberta)===String(id);S.folhaAberta=fecha?null:id;S.acordoEstado='';render();
+        if(!fecha)setTimeout(()=>{const b=document.getElementById('fn-box');if(b)try{b.scrollIntoView({block:'nearest',behavior:movReduzido()?'auto':'smooth'});}catch(_){}},60);break;}
+      case'folha-fechar':S.folhaAberta=null;render();break;
+      case'folha-pdf':folhaDescarregar(el.dataset.id);break;
       case'ret-limpar':S.retForm=null;render();break;
       case'ret-novo':retNovoDe(el.dataset.id);break;
       case'ret-apagar':retApagar(el.dataset.id);break;
