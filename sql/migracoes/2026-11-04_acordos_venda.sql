@@ -2,7 +2,7 @@
 -- Corre uma vez no SQL Editor do Supabase (projeto fyieckrmdrorjoevmrhm). Pode correr duas vezes sem estragar nada.
 --
 -- O PDF do acordo é preenchido com os dados do negócio (cliente, NIF, morada, CC, contactos, modelo, matrícula,
--- valor de venda, retoma…). Aqui fica só o que é do acordo e não existe no negócio: data do acordo, cor, estofos,
+-- valor de venda, retoma…). Aqui fica só o que é do acordo e não existe no negócio: data do acordo, cor,
 -- km e data da matrícula da mota, dados da empresa, dados e valor da retoma, sinal e forma de pagamento,
 -- observações e o "tomei conhecimento" da BMW Financial Services. Um acordo por negócio.
 -- Vê e escreve: o vendedor do negócio e o chefe (as mesmas regras do negócio). Fica quem e quando mudou.

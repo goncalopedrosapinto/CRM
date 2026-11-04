@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-04-a">
+<meta name="app-version" content="2026-11-04-c">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2464,7 +2464,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-04-a';
+const APP_VERSION='2026-11-04-c';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -7640,7 +7640,7 @@ const ACORDO_FIN={PP:'Pronto pagamento',Fint:'Financiamento interno',Fext:'Finan
 const ACORDO_SEM_SQL='Falta correr o SQL "2026-11-04_acordos_venda" no Supabase: o PDF sai na mesma, mas o que escreves aqui não fica guardado.';
 const ACORDO_GRUPOS=[
   ['Acordo',[['data_acordo','Data do acordo','date']]],
-  ['Mota vendida',[['viatura_marca','Marca'],['viatura_cor','Cor'],['viatura_estofos','Estofos'],['viatura_kms','Km','num'],['viatura_data_matricula','Data da matrícula','date']]],
+  ['Mota vendida',[['viatura_marca','Marca'],['viatura_cor','Cor'],['viatura_kms','Km','num'],['viatura_data_matricula','Data da matrícula','date']]],
   ['Empresa (quando aplicável)',[['empresa_nome','Empresa'],['empresa_nif','NIF'],['empresa_morada','Morada','',true],['empresa_cp','Código postal'],['empresa_telefone','Telefone/Telemóvel'],['empresa_email','E-mail']]],
   ['Retoma',[['retoma_marca','Marca'],['retoma_kms','Km','num'],['retoma_cor','Cor'],['retoma_data_matricula','Data da matrícula','date'],['retoma_valor','Valor de retoma (€)','eur']]],
   ['Sinal e pagamento',[['sinal_numerario','Sinal em numerário (€)','eur'],['sinal_cheque','Sinal em cheque (€)','eur'],['sinal_transferencia','Sinal por transferência (€)','eur'],['sinal_mb','Sinal por MB (€)','eur'],['forma_pagamento','Forma de pagamento','',true]]],
@@ -7726,7 +7726,7 @@ function acordoCampos(r){const d=acordoDados(r),V=acordoValores(r),m=acordoStock
   return {vendedor:nomePerfil(r.vendedor_id),ponto_venda:ACORDO_PV,data_acordo:dt(d.data_acordo),
     cliente_nome:r.id_cliente||'',cliente_nif:r.nif||'',cliente_morada:r.morada||'',cliente_cp:r.local||'',cliente_cc:r.cc||'',cliente_telemovel:r.contacto||'',cliente_email:r.email||'',
     empresa_nome:d.empresa_nome||'',empresa_nif:d.empresa_nif||'',empresa_morada:d.empresa_morada||'',empresa_cp:d.empresa_cp||'',empresa_telefone:d.empresa_telefone||'',empresa_email:d.empresa_email||'',
-    viatura_marca:d.viatura_marca||'',viatura_modelo:[r.model,r.version].filter(Boolean).join(' ')||(m&&m.modelo)||'',viatura_matricula:acordoMat(r),viatura_cor:d.viatura_cor||'',viatura_estofos:d.viatura_estofos||'',
+    viatura_marca:d.viatura_marca||'',viatura_modelo:[r.model,r.version].filter(Boolean).join(' ')||(m&&m.modelo)||'',viatura_matricula:acordoMat(r),viatura_cor:d.viatura_cor||'',
     viatura_kms:km(d.viatura_kms),viatura_data_matricula:dt(d.viatura_data_matricula),
     retoma_marca:ret?d.retoma_marca||'':'',retoma_modelo:ret?r.retoma_modelo||'':'',retoma_matricula:ret?String(r.retoma_mat||'').toUpperCase():'',retoma_kms:ret?km(d.retoma_kms):'',
     retoma_cor:ret?d.retoma_cor||'':'',retoma_data_matricula:ret?dt(d.retoma_data_matricula):'',retoma_valor:ret?eur(d.retoma_valor):'',
@@ -7761,24 +7761,25 @@ function retEstadoLb(e){const x=RET_ESTADOS.find(y=>y[0]===e);return x?x[1]:Stri
 async function loadRetomas(){if(!isAdmin())return;
   try{S.retomas=(await supabaseApi('GET','/retomas_valores?select=*&order=criado_em.desc,id.desc'))||[];S.retErr='';}
   catch(e){S.retomas=[];S.retErr=/PGRST205|42P01|schema cache/i.test(String(e&&e.message))?'Falta correr o SQL "2026-11-03_retomas_valores" no Supabase.':('Não consegui ler o registo: '+erroTexto(e));}}
+function retQuem(x){return x.vendedor_id?(nomePerfil(x.vendedor_id)||'?'):(String(x.cliente||'').trim()||'—');}
+function retVendOpcoes(){const L=(S.team||[]).slice();if(S.me&&!L.some(p=>p.id===S.me.id))L.push(S.me);return L.filter(p=>p&&p.id).map(p=>[p.id,(p.nome||'?')+(p.role==='admin'?' (chefe)':'')]);}
 function retMat(v){return String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'');}
 function retEur(n){return n==null||n===''?'—':Math.round(Number(n)).toLocaleString('pt-PT')+' €';}
 function retData(v){const d=new Date(v);return isNaN(d)?'':d.toLocaleDateString('pt-PT',{day:'2-digit',month:'2-digit',year:'numeric'});}
 // margem simples: venda − retoma − preparação (antes da comissão)
 function retMargem(x,venda){if(venda==null||venda==='')return null;const v=Number(venda);return isFinite(v)?v-Number(x.valor_retoma||0)-Number(x.preparacao||0):null;}
-// valores já dados parecidos com o que se está a escrever: a mesma mota (matrícula), o mesmo cliente, motas iguais (modelo e ano)
+// valores já dados parecidos com o que se está a escrever: a mesma mota (matrícula) e motas iguais (modelo e ano)
 function retParecidos(v){
-  const L=S.retomas||[];const mat=retMat(v.matricula),cli=eotNorm(v.cliente),mod=eotNorm(v.modelo),ano=String(v.ano||'').trim();
+  const L=S.retomas||[];const mat=retMat(v.matricula),mod=eotNorm(v.modelo),ano=String(v.ano||'').trim();
   const mesma=mat.length>=4?L.filter(x=>retMat(x.matricula)===mat):[];
-  const cliente=cli.length>=4?L.filter(x=>{const c=eotNorm(x.cliente);return !mesma.includes(x)&&c&&(c===cli||c.startsWith(cli+' ')||cli.startsWith(c+' '));}):[];
-  const igual=mod.length>=3?L.filter(x=>!mesma.includes(x)&&!cliente.includes(x)&&eotNorm(x.modelo)===mod&&(!ano||String(x.ano||'')===ano)):[];
-  return {mesma,cliente,igual};
+  const igual=mod.length>=3?L.filter(x=>!mesma.includes(x)&&eotNorm(x.modelo)===mod&&(!ano||String(x.ano||'')===ano)):[];
+  return {mesma,igual};
 }
 function retMatchHTML(){
   const v=(S.retForm&&S.retForm.v)||{};const P=retParecidos(v);
-  const linha=x=>`<li><b>${esc(retData(x.criado_em))}</b> · ${esc(x.cliente||'sem cliente')} · ${esc([x.modelo,x.ano,x.kms!=null?Number(x.kms).toLocaleString('pt-PT')+' km':''].filter(Boolean).join(' · '))}: ofereceste <b>${retEur(x.valor_retoma)}</b>${x.valor_venda!=null?` · venda ${retEur(x.valor_venda)}`:''}${x.venda_minima!=null?` (mín. ${retEur(x.venda_minima)})`:''} · ${esc(retEstadoLb(x.estado))}</li>`;
+  const linha=x=>`<li><b>${esc(retData(x.criado_em))}</b> · ${esc(retQuem(x))} · ${esc([x.modelo,x.ano,x.kms!=null?Number(x.kms).toLocaleString('pt-PT')+' km':''].filter(Boolean).join(' · '))}: ofereceste <b>${retEur(x.valor_retoma)}</b>${x.valor_venda!=null?` · venda ${retEur(x.valor_venda)}`:''}${x.venda_minima!=null?` (mín. ${retEur(x.venda_minima)})`:''} · ${esc(retEstadoLb(x.estado))}</li>`;
   const bloco=(t,L,cls)=>L.length?`<div class="ret-m ${cls}"><b>${t}</b><ul>${L.slice(0,4).map(linha).join('')}${L.length>4?`<li>e mais ${L.length-4}</li>`:''}</ul></div>`:'';
-  return bloco('⚠ Já deste valor a esta mota (mesma matrícula)',P.mesma,'forte')+bloco('⚠ Já deste valores a este cliente',P.cliente,'forte')+bloco('Valores que deste a motas iguais (modelo e ano)',P.igual,'');
+  return bloco('⚠ Já deste valor a esta mota (mesma matrícula)',P.mesma,'forte')+bloco('Valores que deste a motas iguais (modelo e ano)',P.igual,'');
 }
 function retomasView(){
   if(S.retomas==null&&!S._retLoad){S._retLoad=true;loadRetomas().then(()=>{S._retLoad=false;render();});}
@@ -7790,24 +7791,24 @@ function retomasView(){
   const linha=x=>{const mg=retMargem(x,x.valor_venda),mm=retMargem(x,x.venda_minima);
     return`<tr class="gpp-lrow2" data-ret-id="${esc(x.id)}">
       <td>${esc(retData(x.criado_em))}</td>
-      <td><b>${esc(x.cliente||'—')}</b></td>
+      <td><b>${esc(retQuem(x))}</b></td>
       <td>${esc(x.modelo||'')}${x.ano?' · '+esc(x.ano):''}<div class="eot-sub">${[x.kms!=null?esc(Number(x.kms).toLocaleString('pt-PT'))+' km':'',x.matricula?esc(x.matricula):''].filter(Boolean).join(' · ')}</div>${x.extras?`<div class="eot-sub ret-ext">${esc(x.extras)}</div>`:''}</td>
       <td class="r"><b>${retEur(x.valor_retoma)}</b></td>
       <td class="r">${retEur(x.preparacao)}</td>
       <td class="r">${retEur(x.valor_venda)}${x.venda_minima!=null?`<div class="eot-sub">mín. ${retEur(x.venda_minima)}</div>`:''}</td>
       <td class="r"><b class="${mg!=null&&mg<0?'neg':''}">${mg==null?'—':retEur(mg)}</b>${mm!=null?`<div class="eot-sub ${mm<0?'neg':''}">mín. ${retEur(mm)}</div>`:''}</td>
-      <td><select class="lc-sel" data-ret-estado="${esc(x.id)}" aria-label="Estado da retoma de ${esc(x.cliente||x.modelo||'')}">${RET_ESTADOS.map(([k,l])=>`<option value="${k}" ${x.estado===k?'selected':''}>${l}</option>`).join('')}</select></td>
-      <td><input class="norma-inp ret-notas" data-ret-notas="${esc(x.id)}" value="${esc(x.notas||'')}" placeholder="—" aria-label="Notas da retoma de ${esc(x.cliente||x.modelo||'')}"></td>
-      <td class="ret-acts"><button class="btn btn-outline btn-sm" data-action="ret-novo" data-id="${esc(x.id)}" title="Registar outro valor para esta mota">Novo valor</button><button class="btn btn-ghost btn-sm" data-action="ret-apagar" data-id="${esc(x.id)}" aria-label="Apagar o registo de ${esc(x.cliente||x.modelo||'')}">Apagar</button></td>
+      <td><select class="lc-sel" data-ret-estado="${esc(x.id)}" aria-label="Estado da retoma ${esc([x.modelo,x.matricula].filter(Boolean).join(' '))} de ${esc(retData(x.criado_em))}">${RET_ESTADOS.map(([k,l])=>`<option value="${k}" ${x.estado===k?'selected':''}>${l}</option>`).join('')}</select></td>
+      <td><input class="norma-inp ret-notas" data-ret-notas="${esc(x.id)}" value="${esc(x.notas||'')}" placeholder="—" aria-label="Notas da retoma ${esc([x.modelo,x.matricula].filter(Boolean).join(' '))} de ${esc(retData(x.criado_em))}"></td>
+      <td class="ret-acts"><button class="btn btn-outline btn-sm" data-action="ret-novo" data-id="${esc(x.id)}" title="Registar outro valor para esta mota">Novo valor</button><button class="btn btn-ghost btn-sm" data-action="ret-apagar" data-id="${esc(x.id)}" aria-label="Apagar o registo ${esc([x.modelo,x.matricula].filter(Boolean).join(' '))} de ${esc(retData(x.criado_em))}">Apagar</button></td>
     </tr>`;};
   return`<div class="gpp-tot-head">Valores de retoma dados</div>
     <div class="gpp-card vd-form ret-form" style="margin:0 16px 14px">
       <div class="vd-form-t">Registar um valor dado</div>
-      <div class="vd-form-sub">Fica com a data de hoje. Os valores não mudam depois de gravados (é o que disseste ao cliente): para dar outro valor, regista um novo. Se já deste valores a esta mota ou a este cliente, aparecem aqui em baixo.</div>
+      <div class="vd-form-sub">Fica com a data de hoje. Os valores não mudam depois de gravados (é o que disseste ao cliente): para dar outro valor, regista um novo. Se já deste valores a esta mota (ou a motas iguais), aparecem aqui em baixo.</div>
       ${S.retErr?`<div class="error" style="margin-bottom:10px">${esc(S.retErr)}</div>`:''}
       ${F.erro?`<div class="error" style="margin-bottom:10px">${esc(F.erro)}</div>`:''}
       <div class="vd-grid">
-        ${f('cliente','Cliente','Nome do cliente')}
+        <div class="vd-f${er.vendedor_id?' eotn-err':''}"><label for="ret-vendedor_id">Vendedor *</label><select class="norma-inp" id="ret-vendedor_id" data-ret="vendedor_id"${er.vendedor_id?' aria-invalid="true" aria-describedby="ret-vendedor_id-msg"':''}><option value="">Escolhe…</option>${retVendOpcoes().map(([id,n])=>`<option value="${esc(id)}" ${String(v.vendedor_id||'')===String(id)?'selected':''}>${esc(n)}</option>`).join('')}</select>${er.vendedor_id?`<small class="eotn-msg" id="ret-vendedor_id-msg">${esc(er.vendedor_id)}</small>`:''}</div>
         ${f('matricula','Matrícula','AA-00-AA','autocomplete="off"')}
         ${f('modelo','Modelo *','Ex: R 1250 GS Adventure')}
         ${f('ano','Ano','2021','inputmode="numeric"')}
@@ -7828,13 +7829,14 @@ function retomasView(){
     ${S.retomas==null?'<div class="gpp-empty">A carregar…</div>':(!L.length?(S.retErr?'':'<div class="gpp-empty">Ainda não registaste nenhum valor de retoma.</div>'):`
     <div class="eot-filtros"><select class="gpp-mes-sel" data-ret-filtro="1" aria-label="Filtrar por estado"><option value="" ${!filt?'selected':''}>Todos (${L.length})</option>${RET_ESTADOS.map(([k,l])=>`<option value="${k}" ${filt===k?'selected':''}>${l} (${nE(k)})</option>`).join('')}</select></div>
     <div class="gpp-card" style="margin:0 16px 20px;overflow-x:auto"><table class="gpp-ltable ret-tbl">
-      <thead><tr><th>Data</th><th>Cliente</th><th>Mota</th><th class="r">Retoma</th><th class="r">Preparação</th><th class="r">Venda</th><th class="r">Margem</th><th>Estado</th><th>Notas</th><th></th></tr></thead>
+      <thead><tr><th>Data</th><th>Vendedor</th><th>Mota</th><th class="r">Retoma</th><th class="r">Preparação</th><th class="r">Venda</th><th class="r">Margem</th><th>Estado</th><th>Notas</th><th></th></tr></thead>
       <tbody>${arr.map(linha).join('')||'<tr><td colspan="10" style="text-align:center;color:var(--text3);padding:18px">Nada com este filtro.</td></tr>'}</tbody></table></div>
     <div class="gpp-pend-desc" style="margin:0 16px 16px">Margem = venda − retoma − preparação, antes da comissão. Só tu vês este registo.</div>`)}`;
 }
 async function retRegistar(){
   if(!isAdmin())return;const F=S.retForm||{v:{},erros:{}};if(F.aGravar)return;const v=Object.assign({},F.v||{});const er={};
   const num=k=>{const t=eotTxt(v[k]);if(!t)return null;const n=numPT(t);return n==null?NaN:n;};
+  if(!String(v.vendedor_id||'').trim())er.vendedor_id='Escolhe o vendedor';
   const modelo=eotTxt(v.modelo);if(!modelo)er.modelo='Falta o modelo';
   const ret=num('valor_retoma');if(ret==null)er.valor_retoma='Falta o valor que ofereceste';else if(!(ret>=0))er.valor_retoma='Número inválido';
   const prep=num('preparacao'),venda=num('valor_venda'),vmin=num('venda_minima');
@@ -7846,14 +7848,14 @@ async function retRegistar(){
   if(!er.valor_venda&&!er.venda_minima&&venda!=null&&vmin!=null&&vmin>venda)er.venda_minima='Maior do que a venda prevista';
   S.retForm=Object.assign({},F,{v,erros:er,erro:''});
   if(Object.keys(er).length){render();setTimeout(()=>{const n=document.getElementById('ret-'+Object.keys(er)[0]);if(n)n.focus();},30);return;}
-  const body={cliente:eotTxt(v.cliente),matricula:eotTxt(v.matricula)?String(v.matricula).trim().toUpperCase():null,modelo,ano,kms,extras:eotTxt(v.extras),
+  const body={vendedor_id:String(v.vendedor_id).trim(),matricula:eotTxt(v.matricula)?String(v.matricula).trim().toUpperCase():null,modelo,ano,kms,extras:eotTxt(v.extras),
     valor_retoma:ret,preparacao:prep,valor_venda:venda,venda_minima:vmin,notas:eotTxt(v.notas)};
   S.retForm.aGravar=true;render();
   try{const r=await supabaseApi('POST','/retomas_valores',body);
     const row=Array.isArray(r)&&r[0]?r[0]:Object.assign({id:'n'+Date.now(),criado_em:new Date().toISOString(),estado:'proposta'},body);
     S.retomas=[row].concat(S.retomas||[]);S.retForm=null;render();setTimeout(()=>toast('Valor de retoma registado'),450);}
   catch(e){const m=String(e&&e.message);
-    S.retForm=Object.assign({},S.retForm||F,{aGravar:false,erro:/PGRST205|42P01|schema cache/i.test(m)?'Falta correr o SQL "2026-11-03_retomas_valores" no Supabase.':erroTexto(e)});render();}
+    S.retForm=Object.assign({},S.retForm||F,{aGravar:false,erro:/PGRST205|42P01/i.test(m)||(/schema cache/i.test(m)&&!/vendedor_id/.test(m))?'Falta correr o SQL "2026-11-03_retomas_valores" no Supabase.':(/PGRST204|vendedor_id/.test(m)?'Falta correr o SQL "2026-11-04_retomas_vendedor" no Supabase.':erroTexto(e))});render();}
 }
 async function retMudar(id,patch){
   const L=S.retomas||[];const i=L.findIndex(x=>String(x.id)===String(id));if(i<0)return;const antes=L[i];
@@ -7863,11 +7865,11 @@ async function retMudar(id,patch){
 }
 // outro valor para a mesma mota: copia o registo para o formulário (com a data de hoje ao gravar)
 function retNovoDe(id){const x=(S.retomas||[]).find(y=>String(y.id)===String(id));if(!x)return;
-  const v={};['cliente','matricula','modelo','ano','kms','extras'].concat(RET_NUM).forEach(k=>{if(x[k]!=null&&x[k]!=='')v[k]=RET_NUM.includes(k)?String(x[k]).replace('.',','):String(x[k]);});
+  const v={};['vendedor_id','matricula','modelo','ano','kms','extras'].concat(RET_NUM).forEach(k=>{if(x[k]!=null&&x[k]!=='')v[k]=RET_NUM.includes(k)?String(x[k]).replace('.',','):String(x[k]);});
   S.retForm={v,erros:{}};render();
   setTimeout(()=>{const n=document.getElementById('ret-valor_retoma');if(n){n.focus();try{n.select();n.scrollIntoView({block:'center'});}catch(_){}}},30);}
 async function retApagar(id){const x=(S.retomas||[]).find(y=>String(y.id)===String(id));if(!x)return;
-  if(!confirm(`Apagar o registo de ${x.cliente||'(sem cliente)'} · ${x.modelo||''} de ${retData(x.criado_em)}?\nSó para registos feitos por engano: o valor que deste ao cliente deixa de ficar registado.`))return;
+  if(!confirm(`Apagar o registo de ${x.modelo||''}${x.matricula?' '+x.matricula:''} (${retQuem(x)}) de ${retData(x.criado_em)}?\nSó para registos feitos por engano: o valor que deste ao cliente deixa de ficar registado.`))return;
   try{await supabaseApi('DELETE','/retomas_valores?id=eq.'+encodeURIComponent(id));S.retomas=(S.retomas||[]).filter(y=>String(y.id)!==String(id));render();setTimeout(()=>toast('Registo apagado'),450);}
   catch(e){alert('Não consegui apagar: '+erroTexto(e));}}
 // ---- Navegação agrupada (menu com separadores) ----
@@ -8796,10 +8798,10 @@ function EXPORT_FOLHAS(){
       {c:'origem',l:'Origem',f:v=>v==='manual'?'Criado à mão':(v?'Mapa':'')},{c:'criado_em',l:'Criado',f:dt},{c:'criado_por',l:'Criado por',f:nome},{c:'ultima_import',l:'Última importação',f:dt},{c:'updated_at',l:'Atualizado',f:dt},
     ]},
     {nome:'Acordos de venda',path:'/acordos_venda?select=*&order=negocio_id.asc',cols:[
-      {c:'negocio_id',l:'Negócio ID'},{c:'dados',l:'Data do acordo',f:v=>((v||{})['data_acordo']??'')},{c:'dados',l:'Marca',f:v=>((v||{})['viatura_marca']??'')},{c:'dados',l:'Cor',f:v=>((v||{})['viatura_cor']??'')},{c:'dados',l:'Estofos',f:v=>((v||{})['viatura_estofos']??'')},{c:'dados',l:'Km',f:v=>((v||{})['viatura_kms']??'')},{c:'dados',l:'Data da matrícula',f:v=>((v||{})['viatura_data_matricula']??'')},{c:'dados',l:'Empresa',f:v=>((v||{})['empresa_nome']??'')},{c:'dados',l:'NIF empresa',f:v=>((v||{})['empresa_nif']??'')},{c:'dados',l:'Morada empresa',f:v=>((v||{})['empresa_morada']??'')},{c:'dados',l:'CP empresa',f:v=>((v||{})['empresa_cp']??'')},{c:'dados',l:'Telefone empresa',f:v=>((v||{})['empresa_telefone']??'')},{c:'dados',l:'E-mail empresa',f:v=>((v||{})['empresa_email']??'')},{c:'dados',l:'Retoma marca',f:v=>((v||{})['retoma_marca']??'')},{c:'dados',l:'Retoma km',f:v=>((v||{})['retoma_kms']??'')},{c:'dados',l:'Retoma cor',f:v=>((v||{})['retoma_cor']??'')},{c:'dados',l:'Retoma data matrícula',f:v=>((v||{})['retoma_data_matricula']??'')},{c:'dados',l:'Valor de retoma',f:v=>((v||{})['retoma_valor']??'')},{c:'dados',l:'Sinal numerário',f:v=>((v||{})['sinal_numerario']??'')},{c:'dados',l:'Sinal cheque',f:v=>((v||{})['sinal_cheque']??'')},{c:'dados',l:'Sinal transferência',f:v=>((v||{})['sinal_transferencia']??'')},{c:'dados',l:'Sinal MB',f:v=>((v||{})['sinal_mb']??'')},{c:'dados',l:'Forma de pagamento',f:v=>((v||{})['forma_pagamento']??'')},{c:'dados',l:'Observações',f:v=>((v||{})['observacoes']??'')},{c:'dados',l:'Tomou conhecimento BMW FS',f:v=>(v||{}).bmw_fs?'Sim':'Não'},{c:'updated_at',l:'Atualizado',f:dt},{c:'updated_by',l:'Por',f:nome},
+      {c:'negocio_id',l:'Negócio ID'},{c:'dados',l:'Data do acordo',f:v=>((v||{})['data_acordo']??'')},{c:'dados',l:'Marca',f:v=>((v||{})['viatura_marca']??'')},{c:'dados',l:'Cor',f:v=>((v||{})['viatura_cor']??'')},{c:'dados',l:'Km',f:v=>((v||{})['viatura_kms']??'')},{c:'dados',l:'Data da matrícula',f:v=>((v||{})['viatura_data_matricula']??'')},{c:'dados',l:'Empresa',f:v=>((v||{})['empresa_nome']??'')},{c:'dados',l:'NIF empresa',f:v=>((v||{})['empresa_nif']??'')},{c:'dados',l:'Morada empresa',f:v=>((v||{})['empresa_morada']??'')},{c:'dados',l:'CP empresa',f:v=>((v||{})['empresa_cp']??'')},{c:'dados',l:'Telefone empresa',f:v=>((v||{})['empresa_telefone']??'')},{c:'dados',l:'E-mail empresa',f:v=>((v||{})['empresa_email']??'')},{c:'dados',l:'Retoma marca',f:v=>((v||{})['retoma_marca']??'')},{c:'dados',l:'Retoma km',f:v=>((v||{})['retoma_kms']??'')},{c:'dados',l:'Retoma cor',f:v=>((v||{})['retoma_cor']??'')},{c:'dados',l:'Retoma data matrícula',f:v=>((v||{})['retoma_data_matricula']??'')},{c:'dados',l:'Valor de retoma',f:v=>((v||{})['retoma_valor']??'')},{c:'dados',l:'Sinal numerário',f:v=>((v||{})['sinal_numerario']??'')},{c:'dados',l:'Sinal cheque',f:v=>((v||{})['sinal_cheque']??'')},{c:'dados',l:'Sinal transferência',f:v=>((v||{})['sinal_transferencia']??'')},{c:'dados',l:'Sinal MB',f:v=>((v||{})['sinal_mb']??'')},{c:'dados',l:'Forma de pagamento',f:v=>((v||{})['forma_pagamento']??'')},{c:'dados',l:'Observações',f:v=>((v||{})['observacoes']??'')},{c:'dados',l:'Tomou conhecimento BMW FS',f:v=>(v||{}).bmw_fs?'Sim':'Não'},{c:'updated_at',l:'Atualizado',f:dt},{c:'updated_by',l:'Por',f:nome},
     ]},
     {nome:'Retomas (valores dados)',path:'/retomas_valores?select=*&order=criado_em.asc,id.asc',cols:[
-      {c:'id',l:'ID'},{c:'criado_em',l:'Data',f:dt},{c:'cliente',l:'Cliente'},{c:'matricula',l:'Matrícula'},{c:'modelo',l:'Modelo'},{c:'ano',l:'Ano'},{c:'kms',l:'Km'},{c:'extras',l:'Extras'},
+      {c:'id',l:'ID'},{c:'criado_em',l:'Data',f:dt},{c:'vendedor_id',l:'Vendedor',f:nome},{c:'cliente',l:'Cliente (registos antigos)'},{c:'matricula',l:'Matrícula'},{c:'modelo',l:'Modelo'},{c:'ano',l:'Ano'},{c:'kms',l:'Km'},{c:'extras',l:'Extras'},
       {c:'valor_retoma',l:'Valor oferecido'},{c:'preparacao',l:'Preparação estimada'},{c:'valor_venda',l:'Venda prevista'},{c:'venda_minima',l:'Venda mínima'},
       {c:'estado',l:'Estado',f:v=>retEstadoLb(v)},{c:'notas',l:'Notas'},{c:'criado_por',l:'Registado por',f:nome},{c:'updated_at',l:'Atualizado',f:dt},
     ]},
@@ -10591,7 +10593,7 @@ function bindEvents(){
     if(el.id==='fa-motivo'){S.faMotivo=el.value;return;}
     if(el.dataset&&el.dataset.ac){acordoInput(el);return;}
     if(el.dataset&&el.dataset.ret){S.retForm=Object.assign({v:{},erros:{}},S.retForm||{});S.retForm.v=Object.assign({},S.retForm.v,{[el.dataset.ret]:el.value});campoErroLimpar(el,S.retForm);
-      if(['cliente','matricula','modelo','ano'].includes(el.dataset.ret)){const m=document.getElementById('ret-match');if(m)m.innerHTML=retMatchHTML();}return;}
+      if(['matricula','modelo','ano'].includes(el.dataset.ret)){const m=document.getElementById('ret-match');if(m)m.innerHTML=retMatchHTML();}return;}
     if(el.dataset&&el.dataset.eotn){S.eotNovo=Object.assign({v:{},erros:{}},S.eotNovo||{});S.eotNovo.v=Object.assign({},S.eotNovo.v,{[el.dataset.eotn]:el.value});campoErroLimpar(el,S.eotNovo);return;}
     if(el.dataset&&el.dataset.vhnovo){S.vhNovo=Object.assign({nome:'',tel:'',modelo:'',fase:'Morno'},S.vhNovo||{},{[el.dataset.vhnovo]:el.value});if(S.vhNovoErr&&el.dataset.vhnovo==='nome'&&el.value.trim()){S.vhNovoErr='';const er=document.querySelector('.vh-n-err');if(er)er.remove();}return;}
     if(el.id==='fm-assoc-q'){S.fmAssocQ=el.value;render();return;}

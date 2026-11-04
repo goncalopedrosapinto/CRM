@@ -43,9 +43,9 @@ async function contexto(b,uid,vp,tema){
     if(t==='stock_equip')return json(u.includes('offset=0')?seq:[]);
     if(t==='stock_usadas')return json(usadas);
     if(t==='reuniao_compromissos')return json(uid==='c1'?comp:[]);
-    if(t==='retomas_valores')return json(uid==='c1'?[{id:1,criado_em:new Date(Date.now()-40*864e5).toISOString(),cliente:'Cliente Retoma',matricula:'11-AA-22',modelo:'R 1250 GS',ano:2020,kms:40000,extras:'Malas',valor_retoma:9000,preparacao:300,valor_venda:12500,venda_minima:11800,estado:'proposta',notas:null},
+    if(t==='retomas_valores')return json(uid==='c1'?[{id:1,criado_em:new Date(Date.now()-40*864e5).toISOString(),vendedor_id:'v1',matricula:'11-AA-22',modelo:'R 1250 GS',ano:2020,kms:40000,extras:'Malas',valor_retoma:9000,preparacao:300,valor_venda:12500,venda_minima:11800,estado:'proposta',notas:null},
       {id:2,criado_em:new Date(Date.now()-20*864e5).toISOString(),cliente:'Outro Cliente',modelo:'R 1250 GS',ano:2020,kms:52000,valor_retoma:8500,preparacao:null,valor_venda:12000,venda_minima:null,estado:'recusada',notas:'Achou pouco'}]:[]);
-    if(t==='acordos_venda')return json(u.includes('negocio_id=eq.12')?[{dados:{data_acordo:d(0),viatura_cor:'Cinzento Racing',viatura_estofos:'Pele preta',viatura_kms:'41000',retoma_kms:'35000',retoma_valor:'6500',sinal_numerario:'500',sinal_transferencia:'1000',observacoes:'Inclui malas laterais.',bmw_fs:true},updated_at:new Date().toISOString()}]:[]);
+    if(t==='acordos_venda')return json(u.includes('negocio_id=eq.12')?[{dados:{data_acordo:d(0),viatura_cor:'Cinzento Racing',viatura_kms:'41000',retoma_kms:'35000',retoma_valor:'6500',sinal_numerario:'500',sinal_transferencia:'1000',observacoes:'Inclui malas laterais.',bmw_fs:true},updated_at:new Date().toISOString()}]:[]);
     if(t==='fichas_margem'){const ng=(u.match(/negocio_id=eq\.(\d+)/)||[])[1];const mine=uid==='c1'?fichas:fichas.filter(f=>recs.some(r=>r.id===f.negocio_id&&r.vendedor_id===uid));return json(mine.filter(f=>!ng||f.negocio_id===+ng));}
     return json([]);});
   return ctx;}

@@ -27,7 +27,7 @@ function linhas(tab,uid){
     }
     if(tab==='profiles'){r.id=TEAM[k][0];r.role=TEAM[k][1];r.linha='motorrad';}
     if(tab==='eot_contratos'){r.contrato=MODO==='A'?String(900+k):tag('eot_contratos.contrato')+k;if(k%2)r.origem='manual';} // metade criados à mão
-    if(tab==='acordos_venda')r.dados=Object.fromEntries(['data_acordo','viatura_marca','viatura_cor','viatura_estofos','viatura_kms','viatura_data_matricula','empresa_nome','empresa_nif','empresa_morada','empresa_cp','empresa_telefone','empresa_email','retoma_marca','retoma_kms','retoma_cor','retoma_data_matricula','retoma_valor','sinal_numerario','sinal_cheque','sinal_transferencia','sinal_mb','forma_pagamento','observacoes'].map(c=>[c,tag('acordos_venda.dados.'+c)]));
+    if(tab==='acordos_venda')r.dados=Object.fromEntries(['data_acordo','viatura_marca','viatura_cor','viatura_kms','viatura_data_matricula','empresa_nome','empresa_nif','empresa_morada','empresa_cp','empresa_telefone','empresa_email','retoma_marca','retoma_kms','retoma_cor','retoma_data_matricula','retoma_valor','sinal_numerario','sinal_cheque','sinal_transferencia','sinal_mb','forma_pagamento','observacoes'].map(c=>[c,tag('acordos_venda.dados.'+c)]));
     if(tab==='fichas_margem'){const est=k%3;if(est!==0){r.aprovada_em=null;r.aprovada_por=null;}if(est!==1){r.recusada_em=null;r.recusada_por=null;r.recusa_motivo=null;}} // aprovada / não aprovada / à espera
     out.push(r);}
   return out;
@@ -78,7 +78,7 @@ const PERIGO=/logout|sair|delete|apagar|remover|eliminar|reset|limpar|fechar-ses
     await scan(p,await ecra());
     // Usadas › Retomas (chefe): lista e "já deste valores…" com os mesmos dados
     if(role==='admin'){await p.evaluate(async()=>{const ini={screen:S.screen,gppSec:S.gppSec};await loadRetomas();const x=(S.retomas||[])[0]||{};
-        S.retForm={v:{matricula:x.matricula||'',cliente:x.cliente||'',modelo:x.modelo||'',ano:String(x.ano||'')},erros:{}};S.screen='dashboard';S.gppSec='retomas';render();window.__ini=ini;}).catch(()=>{});
+        S.retForm={v:{matricula:x.matricula||'',vendedor_id:x.vendedor_id||'',modelo:x.modelo||'',ano:String(x.ano||'')},erros:{}};S.screen='dashboard';S.gppSec='retomas';render();window.__ini=ini;}).catch(()=>{});
       await p.waitForTimeout(200);await scan(p,'dashboard/retomas');
       await p.evaluate(()=>{S.retForm=null;Object.assign(S,window.__ini||{});render();}).catch(()=>{});await p.waitForTimeout(100);}
     // Acordo de venda (chefe e vendedor): painel aberto num negócio de usada com retoma, com os dados do negócio e do acordo marcados

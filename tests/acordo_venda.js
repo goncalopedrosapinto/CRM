@@ -52,7 +52,7 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
  await p.click('[data-action="acordo-abrir"]');await p.waitForTimeout(600);const B=await painel(p);
  // escrever o que é do acordo (grava sozinho)
  const escrever=async(k,v)=>{await p.fill('#ac-'+k,v);};
- await escrever('viatura_cor','Cinzento Racing');await escrever('viatura_estofos','Pele preta');await escrever('retoma_kms','35 000');await escrever('retoma_cor','Vermelho');
+ await escrever('viatura_cor','Cinzento Racing');await escrever('retoma_kms','35 000');await escrever('retoma_cor','Vermelho');
  await escrever('retoma_data_matricula','2019-05-20');await escrever('retoma_valor','6 500');await escrever('sinal_numerario','500');await escrever('sinal_transferencia','1 000');
  await escrever('observacoes','Inclui malas laterais e revisão dos 40 000 km.');await p.check('#ac-bmw_fs');
  const caixa=await p.evaluate(()=>{const c=document.getElementById('ac-bmw_fs');const cs=getComputedStyle(c);const r=c.getBoundingClientRect();return {borda:parseFloat(cs.borderTopWidth),fundo:cs.backgroundColor,img:cs.backgroundImage!=='none',w:r.width,h:r.height};});
@@ -90,7 +90,7 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
   'nome do ficheiro: Acordo de venda + matrícula':nomeFicheiro==='Acordo de venda AA-11-BB.pdf'&&/Acordo de venda AA-11-BB\.pdf/.test(B.nome),
   'PDF: dados do negócio e do cliente':pdf.vendedor==='Vendedor Um'&&pdf.ponto_venda==='Caetano Baviera · Aveiro'&&pdf.data_acordo===hojePT&&pdf.cliente_nome==='Cliente Usada Ficticio'&&pdf.cliente_nif==='123456789'&&
     pdf.cliente_morada==='Rua das Flores 10, Esgueira, Aveiro'&&pdf.cliente_cp==='3800-100'&&pdf.cliente_cc==='12345678 9ZZ1'&&pdf.cliente_telemovel==='912 345 678'&&pdf.cliente_email==='cliente@exemplo.pt'&&!pdf.empresa_nome,
-  'PDF: mota vendida':pdf.viatura_marca==='BMW'&&pdf.viatura_modelo==='R 1250 GS Adventure'&&pdf.viatura_matricula==='AA-11-BB'&&pdf.viatura_cor==='Cinzento Racing'&&pdf.viatura_estofos==='Pele preta'&&pdf.viatura_kms==='41 000'&&pdf.viatura_data_matricula==='15/03/2021',
+  'PDF: mota vendida':pdf.viatura_marca==='BMW'&&pdf.viatura_modelo==='R 1250 GS Adventure'&&pdf.viatura_matricula==='AA-11-BB'&&pdf.viatura_cor==='Cinzento Racing'&&!('viatura_estofos' in pdf)&&pdf.viatura_kms==='41 000'&&pdf.viatura_data_matricula==='15/03/2021',
   'PDF: retoma':pdf.retoma_marca==='Honda'&&pdf.retoma_modelo==='Honda Africa Twin'&&pdf.retoma_matricula==='22-CC-33'&&pdf.retoma_kms==='35 000'&&pdf.retoma_cor==='Vermelho'&&pdf.retoma_data_matricula==='20/05/2019'&&pdf.retoma_valor==='6 500,00',
   'PDF: sinal, pagamento, valores, observações e BMW FS':pdf.sinal_numerario==='500,00'&&pdf.sinal_transferencia==='1 000,00'&&!pdf.sinal_cheque&&!pdf.sinal_mb&&pdf.forma_pagamento==='Pronto pagamento'&&
     pdf.valor_venda==='12 500,00'&&pdf.valor_sinal==='1 500,00'&&pdf.valor_retoma==='6 500,00'&&pdf.valor_liquidar==='4 500,00'&&pdf.observacoes==='Inclui malas laterais e revisão dos 40 000 km.'&&pdf.bmw_fs_conhecimento===true,
