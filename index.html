@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-03-c">
+<meta name="app-version" content="2026-11-04-a">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2210,6 +2210,19 @@ body.a-gravar [data-action]{cursor:progress}
 .mr-acts{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.mr-inp{width:150px;min-height:36px}
 .mr-nota{margin-top:6px;font-size:12px;color:var(--text2);background:var(--surface2);border-radius:8px;padding:6px 10px}.mr-nota.pend{background:var(--orange-bg);color:var(--orange2)}.mr-nota.ok{background:var(--green-bg);color:var(--green)}
 @media (max-width:760px){.mr-acts{width:100%}.mr-inp{flex:1}}
+/* Acordo de venda (usadas) */
+.ac-box{margin:10px 16px 0}.ac-load{font-size:13px;color:var(--text3)}
+.ac-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.ac-est{font-size:12px;color:var(--text3);white-space:nowrap}
+@media(max-width:480px){.ac-neg{grid-template-columns:1fr 1fr!important}}
+.ac-neg{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px 14px;padding:10px 12px;margin:4px 0 10px;border-radius:10px;background:var(--surface2);font-size:12.5px}
+.ac-neg span{display:block;color:var(--text3);font-size:11px}.ac-neg b{font-weight:600;color:var(--text);word-break:break-word}.ac-neg b.ac-falta{color:var(--red)}
+.ac-faltas{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 6px;font-size:12.5px;color:var(--text2)}
+.ac-sec,.ac-emp>summary{margin:14px 0 6px;font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--text2)}
+.ac-emp>summary{cursor:pointer}.ac-box textarea.norma-inp{width:100%;min-height:64px;resize:vertical}
+.ac-chk{display:flex;gap:8px;align-items:flex-start;margin:14px 0 4px;font-size:13px;cursor:pointer}.ac-chk input[type=checkbox]{-webkit-appearance:none;appearance:none;flex:none;width:18px;height:18px;min-height:0;margin:1px 0 0;padding:0;border:1.5px solid var(--text3);border-radius:4px;background:var(--surface);cursor:pointer;box-shadow:none}.ac-chk input[type=checkbox]:checked{background:var(--blue) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' stroke='white' stroke-width='2.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/13px no-repeat;border-color:var(--blue)}.ac-chk input[type=checkbox]:focus-visible{outline:2px solid var(--blue);outline-offset:2px}.ac-g1{grid-template-columns:minmax(150px,220px)}
+.ac-vals{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:12px 0}.ac-vals>div{border:1px solid var(--border2);border-radius:8px;padding:8px 10px}
+.ac-vals span{display:block;font-size:10.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.03em}.ac-vals b{font-size:15px}.ac-vals .liq{background:var(--surface2)}.ac-vals b.neg{color:var(--red)}
+.ac-acts{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.ac-nome{font-size:12px;color:var(--text3)}
 /* Usadas › Retomas: valores dados */
 .ret-match{display:flex;flex-direction:column;gap:8px;margin-top:10px}.ret-match:empty{display:none}
 .ret-m{padding:9px 12px;border-radius:10px;background:var(--surface2);font-size:12.5px;color:var(--text2)}.ret-m b{color:var(--text)}
@@ -2451,7 +2464,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-03-c';
+const APP_VERSION='2026-11-04-a';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -2697,7 +2710,7 @@ window.addEventListener('unhandledrejection',function(ev){const r=ev&&ev.reason;
 document.addEventListener('securitypolicyviolation',function(ev){erroRegistar('csp','Bloqueado pela política de segurança: '+(ev.violatedDirective||'')+' '+(function(u){try{return new URL(u).origin}catch(e){return String(u||'').slice(0,40)}})(ev.blockedURI),'',(ev.sourceFile||'').split('?')[0]);});
 async function supabaseApi0(m,path,body,_retry){const h={'apikey':S.config.key,'Authorization':`Bearer ${S.token}`,'Content-Type':'application/json'};if(m==='POST'||m==='PATCH')h['Prefer']='return=representation';const o={method:m,headers:h};if(body)o.body=JSON.stringify(body);let r;try{r=await fetchT(`${S.config.url}/rest/v1${path}`,o,m==='GET'?20000:45000);}catch(e){if(m==='GET'&&!o._rep){o._rep=1;r=await fetchT(`${S.config.url}/rest/v1${path}`,o,25000).catch(()=>{throw new Error('Failed to fetch: o servidor demorou demasiado a responder')});}else throw new Error(e&&e.name==='AbortError'?'Failed to fetch: o servidor demorou demasiado a responder':String(e&&e.message||e));}if(r.status===401&&!_retry){const nt=await refreshSession();if(nt){S.token=nt;return supabaseApi(m,path,body,true)}}if(!r.ok){const e=await r.text();throw new Error(e)}const t=await r.text();if(m!=='GET'&&!_retry_silencio(path))toastGravado(m);return t?JSON.parse(t):null}
 // sem o aviso «Gravado»: leituras feitas por RPC (POST) e gravações com estado próprio no ecrã
-function _retry_silencio(p){return /^\/(precos_ref|rpc\/inscricoes_ranking|rpc\/encomendas_reservas|comissoes_fecho|fichas_margem|eot_notif_lidas)/.test(String(p||''));}
+function _retry_silencio(p){return /^\/(precos_ref|rpc\/inscricoes_ranking|rpc\/encomendas_reservas|comissoes_fecho|fichas_margem|eot_notif_lidas|acordos_venda)/.test(String(p||''));}
 let _tgT=null;function toastGravado(m){clearTimeout(_tgT);_tgT=setTimeout(()=>{try{toast(m==='DELETE'?'Apagado':'Gravado')}catch(e){}},250);}
 const LINHA_LABELS={motorrad:'Motorrad',auto:'Equipa Teste'};
 const LINHA_ICONS={motorrad:'\u{1F3CD}',auto:'\u{1F697}'};
@@ -7287,7 +7300,7 @@ function travar(nome){const fn=window[nome];if(typeof fn!=='function'||fn._trava
   const w=async function(...a){let k;try{k=nome+'|'+JSON.stringify(a);}catch(_){k=nome;}if(_emCurso.has(k))return;_emCurso.add(k);document.body.classList.add('a-gravar');
     try{return await fn.apply(this,a);}finally{_emCurso.delete(k);if(!_emCurso.size)document.body.classList.remove('a-gravar');}};
   w._travado=true;window[nome]=w;}
-['mrConfirmar','mrRecusar','addStockMotaFull','addStockMota','comissaoAdd','premioAdd','saveInscricaoNova','saveEventoNovo','saveLead','saveAutomatricula','saveVendaDireta','saveRecord','deleteRecord','seqConfirmar','seqRegistar','seqForaRegistar','recontReabrir','recontAdiar','eotConfirmar','eotGuardar','eotModalGuardar','eotAtribuirLote','eotCriarNegocio','eotComentar','eqAdd','eqColar','comFechoToggle','negComentar','vhNovoRegistar','vhContactei','vhAdiar','vhPerdido','fmGuardarNovo','fmAssociar','reuCompAdd','reuCompFeito','reuCompApagar','reuCompNovaData','fichaAprovar','fichaRecusar','eotCriarManual','eotApagarManual','retRegistar','retApagar'].forEach(n=>{try{travar(n);}catch(e){}});
+['mrConfirmar','mrRecusar','addStockMotaFull','addStockMota','comissaoAdd','premioAdd','saveInscricaoNova','saveEventoNovo','saveLead','saveAutomatricula','saveVendaDireta','saveRecord','deleteRecord','seqConfirmar','seqRegistar','seqForaRegistar','recontReabrir','recontAdiar','eotConfirmar','eotGuardar','eotModalGuardar','eotAtribuirLote','eotCriarNegocio','eotComentar','eqAdd','eqColar','comFechoToggle','negComentar','vhNovoRegistar','vhContactei','vhAdiar','vhPerdido','fmGuardarNovo','fmAssociar','reuCompAdd','reuCompFeito','reuCompApagar','reuCompNovaData','fichaAprovar','fichaRecusar','eotCriarManual','eotApagarManual','retRegistar','retApagar','acordoDescarregar'].forEach(n=>{try{travar(n);}catch(e){}});
 // ---- Teclado: tudo o que é clicável recebe foco e abre com Enter/Espaço; campos ganham nome para leitores de ecrã ----
 function tecladoAplicar(){
   const raiz=document.getElementById('app');if(!raiz)return;
@@ -7620,6 +7633,125 @@ function reuniaoView(){
   </div>`;
 }
 
+// ===== Acordo de venda (só motas usadas): o PDF oficial preenchido com os dados do negócio =====
+// O que já está no negócio entra sozinho; o que só existe no acordo fica em acordos_venda.dados (um por negócio).
+const ACORDO_PDF='docs/acordo-venda-usados.pdf',ACORDO_LIB='vendor/pdf-lib.min.js',ACORDO_PV='Caetano Baviera · Aveiro';
+const ACORDO_FIN={PP:'Pronto pagamento',Fint:'Financiamento interno',Fext:'Financiamento externo'};
+const ACORDO_SEM_SQL='Falta correr o SQL "2026-11-04_acordos_venda" no Supabase: o PDF sai na mesma, mas o que escreves aqui não fica guardado.';
+const ACORDO_GRUPOS=[
+  ['Acordo',[['data_acordo','Data do acordo','date']]],
+  ['Mota vendida',[['viatura_marca','Marca'],['viatura_cor','Cor'],['viatura_estofos','Estofos'],['viatura_kms','Km','num'],['viatura_data_matricula','Data da matrícula','date']]],
+  ['Empresa (quando aplicável)',[['empresa_nome','Empresa'],['empresa_nif','NIF'],['empresa_morada','Morada','',true],['empresa_cp','Código postal'],['empresa_telefone','Telefone/Telemóvel'],['empresa_email','E-mail']]],
+  ['Retoma',[['retoma_marca','Marca'],['retoma_kms','Km','num'],['retoma_cor','Cor'],['retoma_data_matricula','Data da matrícula','date'],['retoma_valor','Valor de retoma (€)','eur']]],
+  ['Sinal e pagamento',[['sinal_numerario','Sinal em numerário (€)','eur'],['sinal_cheque','Sinal em cheque (€)','eur'],['sinal_transferencia','Sinal por transferência (€)','eur'],['sinal_mb','Sinal por MB (€)','eur'],['forma_pagamento','Forma de pagamento','',true]]],
+  ['Observações',[['observacoes','Observações','area']]]
+];
+const ACORDO_SINAIS=['sinal_numerario','sinal_cheque','sinal_transferencia','sinal_mb'];
+const ACORDO_MARCAS=['BMW','Honda','Yamaha','Kawasaki','Suzuki','KTM','Ducati','Triumph','Harley-Davidson','Aprilia','Moto Guzzi','MV Agusta','Benelli','Royal Enfield','QJMotor','Kymco','Piaggio','Vespa','Husqvarna','CFMoto','Voge','Zontes','Indian','Can-Am','Peugeot','SYM','Keeway','Macbor','Sherco','Beta','GasGas','Fantic'];
+function acordoMarca(modelo,porOmissao){const t=String(modelo||'').trim();const m=ACORDO_MARCAS.find(b=>t.toLowerCase().startsWith(b.toLowerCase()+' ')||t.toLowerCase()===b.toLowerCase());
+  if(m)return m;if(/^[RFGSKCM]\s?\d{3,4}/i.test(t))return'BMW';return porOmissao||'';}
+function acordoElegivel(r){return !!r&&r.type==='MU'&&(isAdmin()||(!!S.me&&r.vendedor_id===S.me.id));}
+function acordoStock(r){const L=S.stock||[];const nz=v=>String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  return (r.stock_id!=null&&L.find(m=>String(m.id)===String(r.stock_id)))||(nz(r.mat)&&L.find(m=>nz(m.matricula)===nz(r.mat)))||null;}
+function acordoMat(r){const m=acordoStock(r);return String(r.mat||(m&&m.matricula)||'').trim().toUpperCase();}
+function acordoDefaults(r){const m=acordoStock(r);const h=new Date();const hoje=h.getFullYear()+'-'+String(h.getMonth()+1).padStart(2,'0')+'-'+String(h.getDate()).padStart(2,'0');
+  return {data_acordo:hoje,viatura_marca:acordoMarca([r.model,r.version].filter(Boolean).join(' ')||(m&&m.modelo),'BMW'),viatura_kms:m&&m.kms!=null?String(m.kms):'',
+    viatura_data_matricula:r.dmat?String(r.dmat).slice(0,10):'',retoma_marca:r.retoma==='Sim'?acordoMarca(r.retoma_modelo,''):'',forma_pagamento:ACORDO_FIN[r.fin]||''};}
+function acordoDados(r){const st=(S.acordos||{})[String(r.id)];return Object.assign({},acordoDefaults(r),(st&&st.dados)||{});}
+function acordoNum(v){const t=eotTxt(v);if(!t)return null;const n=numPT(t);return n==null?null:n;}
+// números do acordo sempre com separador de milhares (1 500,00 e 12 500,00), sinal "-" (a fonte do PDF não tem o "−")
+function acordoMil(i){return String(i).replace(/\B(?=(\d{3})+(?!\d))/g,' ');}
+function acordoEur(n){if(n==null||!isFinite(n))return'';const [i,d]=Math.abs(n).toFixed(2).split('.');return(n<0?'-':'')+acordoMil(i)+','+d;}
+function acordoValores(r){const d=acordoDados(r);const venda=acordoNum(r.pvp);const sinal=ACORDO_SINAIS.reduce((a,k)=>a+(acordoNum(d[k])||0),0);
+  const retoma=r.retoma==='Sim'?acordoNum(d.retoma_valor):null;return {venda,sinal,retoma,liquidar:venda!=null?venda-sinal-(retoma||0):null};}
+function acordoFaltas(r){const f=[['id_cliente','Cliente'],['nif','NIF'],['morada','Morada'],['local','Código postal'],['cc','C.C.'],['contacto','Telemóvel'],['email','E-mail'],['model','Modelo']]
+    .filter(([k])=>!String(r[k]==null?'':r[k]).trim()).map(x=>x[1]);
+  if(!acordoMat(r))f.push('Matrícula');if(acordoNum(r.pvp)==null)f.push('Valor de venda (PVP)');
+  if(r.retoma==='Sim'){if(!String(r.retoma_modelo||'').trim())f.push('Modelo da retoma');if(!String(r.retoma_mat||'').trim())f.push('Matrícula da retoma');}
+  return f;}
+function acordoNomeFicheiro(r){const m=acordoMat(r).replace(/[\\/:*?"<>|]+/g,'-');return'Acordo de venda'+(m?' '+m:'')+'.pdf';}
+function acordoValsHTML(r){const V=acordoValores(r);const e=n=>n!=null?acordoEur(n)+' €':'—';
+  return`<div><span>Valor de venda</span><b>${e(V.venda)}</b></div><div><span>Sinal</span><b>${acordoEur(V.sinal)} €</b></div>${r.retoma==='Sim'?`<div><span>Retoma</span><b>${e(V.retoma)}</b></div>`:''}<div class="liq"><span>Valor a liquidar</span><b class="${V.liquidar!=null&&V.liquidar<0?'neg':''}">${e(V.liquidar)}</b></div>`;}
+const _acCarregando=new Set();
+async function acordoCarregar(id){S.acordos=S.acordos||{};const k=String(id);if(S.acordos[k]!==undefined||_acCarregando.has(k))return;_acCarregando.add(k);
+  try{const d=await supabaseApi('GET','/acordos_venda?negocio_id=eq.'+encodeURIComponent(id)+'&select=dados,updated_at');S.acordos[k]={dados:(d&&d[0]&&d[0].dados)||{},guardado:!!(d&&d[0])};}
+  catch(e){const sem=/PGRST205|42P01|schema cache/i.test(String(e&&e.message));S.acordos[k]={dados:{},semTabela:sem,erro:sem?ACORDO_SEM_SQL:'Não consegui ler o acordo guardado: '+erroTexto(e)};}
+  _acCarregando.delete(k);render();}
+function acordoEstado(t){S.acordoEstado=t;const e=document.getElementById('ac-est');if(e)e.textContent=t;}
+let _acT=null;
+function acordoAgendar(id){clearTimeout(_acT);const st=(S.acordos||{})[String(id)];if(st&&st.semTabela)return;acordoEstado('por gravar…');_acT=setTimeout(()=>acordoGravar(id),700);}
+async function acordoGravar(id){const st=(S.acordos||{})[String(id)];if(!st||st.semTabela)return false;const dados=Object.assign({},st.dados||{});
+  try{let r=await supabaseApi('PATCH','/acordos_venda?negocio_id=eq.'+encodeURIComponent(id),{dados});
+    if(Array.isArray(r)&&r.length===0)await supabaseApi('POST','/acordos_venda',{negocio_id:Number(id),dados});
+    st.guardado=true;acordoEstado('guardado');return true;}
+  catch(e){const m=String(e&&e.message);if(/PGRST205|42P01|schema cache/i.test(m)){st.semTabela=true;st.erro=ACORDO_SEM_SQL;render();}else acordoEstado('erro ao guardar: '+erroTexto(e));return false;}}
+function acordoInput(el){const r=S.selected;if(!r)return;const k=String(r.id);S.acordos=S.acordos||{};const st=S.acordos[k]||(S.acordos[k]={dados:{}});
+  st.dados=Object.assign({},st.dados||{},{[el.dataset.ac]:el.type==='checkbox'?el.checked:el.value});
+  if(ACORDO_SINAIS.includes(el.dataset.ac)||el.dataset.ac==='retoma_valor'){const v=document.getElementById('ac-vals');if(v)v.innerHTML=acordoValsHTML(r);}
+  acordoAgendar(r.id);}
+function acordoHTML(r){
+  if(String(S.acordoAberto)!==String(r.id))return'';
+  if(!S.stockLoaded&&!S.stockLoading){S.stockLoading=true;(isAdmin()?loadStock():loadStockPublico()).then(()=>{S.stockLoading=false;render();});}
+  const st=(S.acordos||{})[String(r.id)];
+  if(st===undefined){acordoCarregar(r.id);return`<div class="gpp-card vd-form ac-box" id="ac-box"><div class="ac-load">A carregar o acordo…</div></div>`;}
+  const d=acordoDados(r);const faltas=acordoFaltas(r);const mat=acordoMat(r);
+  const inp=([k,lb,t,larga])=>{const v=d[k]==null?'':d[k];
+    if(t==='area')return`<div class="vd-f" style="grid-column:1/-1"><label for="ac-${k}">${lb}</label><textarea class="norma-inp" id="ac-${k}" data-ac="${k}" rows="3" maxlength="600">${esc(v)}</textarea></div>`;
+    return`<div class="vd-f"${larga?' style="grid-column:1/-1"':''}><label for="ac-${k}">${lb}</label><input class="norma-inp" id="ac-${k}" data-ac="${k}"${t==='date'?' type="date"':(t==='num'||t==='eur'?' inputmode="decimal"':'')} value="${esc(v)}"></div>`;};
+  const deNeg=[['Cliente',r.id_cliente],['NIF',r.nif],['Morada',r.morada],['Código postal',r.local],['C.C.',r.cc],['Telemóvel',r.contacto],['E-mail',r.email],
+    ['Modelo',[r.model,r.version].filter(Boolean).join(' ')],['Matrícula',mat],['Vendedor',nomePerfil(r.vendedor_id)]].concat(r.retoma==='Sim'?[['Retoma',[r.retoma_modelo,String(r.retoma_mat||'').trim().toUpperCase()].filter(Boolean).join(' · ')]]:[]);
+  const empAberta=r.profile==='Empresa'||['empresa_nome','empresa_nif','empresa_morada'].some(k=>String(d[k]||'').trim());
+  const grupos=ACORDO_GRUPOS.filter(([g])=>g!=='Retoma'||r.retoma==='Sim');
+  return`<div class="gpp-card vd-form ac-box" id="ac-box">
+    <div class="ac-top"><div><div class="vd-form-t">Acordo de venda</div><div class="vd-form-sub">O que já está no negócio entra sozinho no PDF. Aqui escreves só o que é do acordo; fica guardado neste negócio.</div></div><span class="ac-est" id="ac-est" aria-live="polite">${esc(S.acordoEstado||'')}</span></div>
+    ${st.erro?`<div class="mg-aviso" style="margin:0 0 10px">${esc(st.erro)}</div>`:''}
+    <div class="ac-neg">${deNeg.map(([l,v])=>{const t=String(v==null?'':v).trim();return`<div><span>${l}</span><b class="${t?'':'ac-falta'}">${t?esc(t):'falta'}</b></div>`;}).join('')}</div>
+    ${faltas.length?`<div class="ac-faltas"><span>Falta no negócio: <b>${esc(faltas.join(', '))}</b>.</span><button class="btn btn-outline btn-sm" data-action="open-edit">Editar negócio</button></div>`:''}
+    ${grupos.map(([g,campos])=>g.startsWith('Empresa')?`<details class="ac-emp"${empAberta?' open':''}><summary>${g}</summary><div class="vd-grid">${campos.map(inp).join('')}</div></details>`:`<div class="ac-sec">${g}</div><div class="vd-grid${campos.length===1&&campos[0][2]==='date'?' ac-g1':''}">${campos.map(inp).join('')}</div>`).join('')}
+    <label class="ac-chk"><input type="checkbox" id="ac-bmw_fs" data-ac="bmw_fs"${d.bmw_fs?' checked':''}><span>Tomei conhecimento das condições, vantagens e campanhas da BMW Financial Services.</span></label>
+    <div class="ac-vals" id="ac-vals">${acordoValsHTML(r)}</div>
+    <div class="ac-acts"><button class="btn btn-orange" data-action="acordo-pdf" data-id="${esc(r.id)}"${S.acordoGerando?' disabled':''}>${S.acordoGerando?'A preparar o PDF…':'Descarregar PDF'}</button><span class="ac-nome">${esc(acordoNomeFicheiro(r))}</span><button class="btn btn-ghost btn-sm" data-action="acordo-fechar">Fechar</button></div>
+  </div>`;
+}
+let _pdflibP=null;
+function acordoLib(){if(window.PDFLib)return Promise.resolve(window.PDFLib);if(_pdflibP)return _pdflibP;
+  _pdflibP=new Promise((ok,ko)=>{const s=document.createElement('script');s.src=ACORDO_LIB;s.onload=()=>window.PDFLib?ok(window.PDFLib):ko(new Error('o gerador de PDF não carregou'));
+    s.onerror=()=>{_pdflibP=null;ko(new Error('não consegui carregar o gerador de PDF; verifica a internet e tenta outra vez'));};document.head.appendChild(s);});return _pdflibP;}
+// só as letras que a fonte do PDF (Helvetica / WinAnsi) consegue escrever; o resto perde o acento ou fica '?'
+const _WIN_EXTRA='€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ';
+function acordoTxt(s){return Array.from(String(s==null?'':s).replace(/[\r\t]+/g,' ')).map(ch=>{const c=ch.codePointAt(0);
+  if(ch==='\n'||(c>=32&&c<=126)||(c>=160&&c<=255)||_WIN_EXTRA.includes(ch))return ch;const b=ch.normalize('NFD').replace(/[̀-ͯ]/g,'');return /^[\x20-\x7e]+$/.test(b)?b:'?';}).join('');}
+function acordoCampos(r){const d=acordoDados(r),V=acordoValores(r),m=acordoStock(r),ret=r.retoma==='Sim';
+  const dt=v=>v?String(v).slice(0,10).split('-').reverse().join('/'):'';const km=v=>{const n=acordoNum(v);return n==null?'':acordoMil(Math.round(n));};const eur=v=>acordoEur(acordoNum(v));
+  return {vendedor:nomePerfil(r.vendedor_id),ponto_venda:ACORDO_PV,data_acordo:dt(d.data_acordo),
+    cliente_nome:r.id_cliente||'',cliente_nif:r.nif||'',cliente_morada:r.morada||'',cliente_cp:r.local||'',cliente_cc:r.cc||'',cliente_telemovel:r.contacto||'',cliente_email:r.email||'',
+    empresa_nome:d.empresa_nome||'',empresa_nif:d.empresa_nif||'',empresa_morada:d.empresa_morada||'',empresa_cp:d.empresa_cp||'',empresa_telefone:d.empresa_telefone||'',empresa_email:d.empresa_email||'',
+    viatura_marca:d.viatura_marca||'',viatura_modelo:[r.model,r.version].filter(Boolean).join(' ')||(m&&m.modelo)||'',viatura_matricula:acordoMat(r),viatura_cor:d.viatura_cor||'',viatura_estofos:d.viatura_estofos||'',
+    viatura_kms:km(d.viatura_kms),viatura_data_matricula:dt(d.viatura_data_matricula),
+    retoma_marca:ret?d.retoma_marca||'':'',retoma_modelo:ret?r.retoma_modelo||'':'',retoma_matricula:ret?String(r.retoma_mat||'').toUpperCase():'',retoma_kms:ret?km(d.retoma_kms):'',
+    retoma_cor:ret?d.retoma_cor||'':'',retoma_data_matricula:ret?dt(d.retoma_data_matricula):'',retoma_valor:ret?eur(d.retoma_valor):'',
+    sinal_numerario:eur(d.sinal_numerario),sinal_cheque:eur(d.sinal_cheque),sinal_transferencia:eur(d.sinal_transferencia),sinal_mb:eur(d.sinal_mb),forma_pagamento:d.forma_pagamento||'',
+    valor_venda:acordoEur(V.venda),valor_sinal:V.sinal?acordoEur(V.sinal):'',valor_retoma:acordoEur(V.retoma),valor_liquidar:acordoEur(V.liquidar),observacoes:d.observacoes||''};}
+const ACORDO_DIREITA=['retoma_valor','sinal_numerario','sinal_cheque','sinal_transferencia','sinal_mb','valor_venda','valor_sinal','valor_retoma','valor_liquidar','viatura_kms','retoma_kms'];
+async function acordoBytes(r){const PDFLib=await acordoLib();
+  const resp=await fetch(ACORDO_PDF,{cache:'no-cache'});if(!resp.ok)throw new Error('não encontrei o modelo do acordo ('+resp.status+')');
+  const doc=await PDFLib.PDFDocument.load(await resp.arrayBuffer());const form=doc.getForm();const helv=await doc.embedFont(PDFLib.StandardFonts.Helvetica);
+  for(const [k,v0] of Object.entries(acordoCampos(r))){let f;try{f=form.getTextField(k);}catch(e){continue;}
+    const v=acordoTxt(v0);const w=f.acroField.getWidgets()[0];const larg=(w?w.getRectangle().width:100)-4;const base=k.startsWith('valor_')?10:(k==='observacoes'?9:8);
+    let tam=base;if(k!=='observacoes')while(tam>5&&helv.widthOfTextAtSize(v,tam)>larg)tam-=0.5;   // texto comprido encolhe para caber na linha
+    f.setFontSize(tam);if(ACORDO_DIREITA.includes(k))f.setAlignment(PDFLib.TextAlignment.Right);f.setText(v);}
+  try{const cb=form.getCheckBox('bmw_fs_conhecimento');if(acordoDados(r).bmw_fs)cb.check();else cb.uncheck();}catch(e){}
+  form.updateFieldAppearances(helv);doc.setTitle('Acordo de venda'+(acordoMat(r)?' '+acordoMat(r):''));
+  return await doc.save();}
+async function acordoDescarregar(id){
+  const r=(S.records||[]).find(x=>String(x.id)===String(id))||(S.selected&&String(S.selected.id)===String(id)?S.selected:null);if(!r||!acordoElegivel(r))return;
+  // fica guardado tal como saiu: a data do acordo e os valores por omissão não mudam numa reimpressão
+  const st=(S.acordos||{})[String(r.id)];if(st&&!st.semTabela){st.dados=acordoDados(r);clearTimeout(_acT);await acordoGravar(r.id);}
+  S.acordoGerando=true;render();
+  try{const bytes=await acordoBytes(r);const url=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));
+    const a=document.createElement('a');a.href=url;a.download=acordoNomeFicheiro(r);document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},4000);
+    S.acordoGerando=false;render();setTimeout(()=>toast('PDF descarregado: '+acordoNomeFicheiro(r)),450);}
+  catch(e){S.acordoGerando=false;render();toast('Não consegui fazer o PDF: '+((e&&e.message)||e),'erro');}}
 // ===== Usadas › Retomas: registo dos valores de retoma dados (só o chefe) =====
 // Para dar o mesmo valor se o cliente voltar a perguntar e para controlar o que foi aceite.
 // Os valores ficam fixos depois de gravados (é o que foi dito ao cliente); só o estado e as notas mudam: outro valor = registo novo.
@@ -7628,7 +7760,7 @@ const RET_NUM=['valor_retoma','preparacao','valor_venda','venda_minima'];
 function retEstadoLb(e){const x=RET_ESTADOS.find(y=>y[0]===e);return x?x[1]:String(e||'');}
 async function loadRetomas(){if(!isAdmin())return;
   try{S.retomas=(await supabaseApi('GET','/retomas_valores?select=*&order=criado_em.desc,id.desc'))||[];S.retErr='';}
-  catch(e){S.retomas=[];S.retErr=/retomas_valores|PGRST205|42P01|schema cache/i.test(String(e&&e.message))?'Falta correr o SQL "2026-11-03_retomas_valores" no Supabase.':('Não consegui ler o registo: '+erroTexto(e));}}
+  catch(e){S.retomas=[];S.retErr=/PGRST205|42P01|schema cache/i.test(String(e&&e.message))?'Falta correr o SQL "2026-11-03_retomas_valores" no Supabase.':('Não consegui ler o registo: '+erroTexto(e));}}
 function retMat(v){return String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'');}
 function retEur(n){return n==null||n===''?'—':Math.round(Number(n)).toLocaleString('pt-PT')+' €';}
 function retData(v){const d=new Date(v);return isNaN(d)?'':d.toLocaleDateString('pt-PT',{day:'2-digit',month:'2-digit',year:'numeric'});}
@@ -7721,7 +7853,7 @@ async function retRegistar(){
     const row=Array.isArray(r)&&r[0]?r[0]:Object.assign({id:'n'+Date.now(),criado_em:new Date().toISOString(),estado:'proposta'},body);
     S.retomas=[row].concat(S.retomas||[]);S.retForm=null;render();setTimeout(()=>toast('Valor de retoma registado'),450);}
   catch(e){const m=String(e&&e.message);
-    S.retForm=Object.assign({},S.retForm||F,{aGravar:false,erro:/retomas_valores|PGRST205|42P01|schema cache/i.test(m)?'Falta correr o SQL "2026-11-03_retomas_valores" no Supabase.':erroTexto(e)});render();}
+    S.retForm=Object.assign({},S.retForm||F,{aGravar:false,erro:/PGRST205|42P01|schema cache/i.test(m)?'Falta correr o SQL "2026-11-03_retomas_valores" no Supabase.':erroTexto(e)});render();}
 }
 async function retMudar(id,patch){
   const L=S.retomas||[];const i=L.findIndex(x=>String(x.id)===String(id));if(i<0)return;const antes=L[i];
@@ -7876,6 +8008,7 @@ function renderDetail(){
         <div><div class="detail-label">Comissão</div><div class="detail-value" style="font-weight:800;color:${c.valor==null?'var(--amber)':'var(--green)'}">${c.valor==null?'por lançar':fE(c.valor)}</div></div>
       </div>${isAdmin()?'':'<div class="cm-ficha-n">Valor definido pelo chefe de vendas.</div>'}</div>`;})()}
     <button class="btn fm-btn-neg ${(S.fichasIdx||{})[String(r.id)]?'tem':''}" data-action="fm-negocio" data-id="${r.id}">🧮 Ficha de margem ${(S.fichasIdx||{})[String(r.id)]?`<span>· ${((S.fichasN||{})[String(r.id)]||1)>1?((S.fichasN||{})[String(r.id)])+' fichas'+((S.fichasVend||{})[String(r.id)]?' · vendida escolhida':''):'guardada'}</span>`:'<span>· criar</span>'}</button>
+    ${acordoElegivel(r)?`<button class="btn fm-btn-neg ac-btn" data-action="acordo-abrir" data-id="${r.id}" aria-expanded="${String(S.acordoAberto)===String(r.id)}">📄 Acordo de venda <span>· PDF preenchido com este negócio</span></button>${acordoHTML(r)}`:''}
     <div class="copy-actions">
       <button class="btn btn-copy" data-action="copy-matricula">📋 Pedido de matrícula</button>
       <button class="btn btn-copy" data-action="copy-venda">📋 Comunicação de venda</button>
@@ -8661,6 +8794,9 @@ function EXPORT_FOLHAS(){
       {c:'responsavel_id',l:'Responsável',f:nome},{c:'fase',l:'Fase'},{c:'adenda_em',l:'Adenda em',f:d},{c:'fin_visto_em',l:'Visto financeiros',f:dt},{c:'fin_visto_nome',l:'Visto por'},{c:'temperatura',l:'Temperatura'},{c:'proxima_acao',l:'Próxima ação'},{c:'proxima_data',l:'Data próx. ação',f:d},
       {c:'notas',l:'Notas'},{c:'negocio_id',l:'Negócio ID'},{c:'no_mapa',l:'No mapa',f:sn},{c:'saiu_em',l:'Saiu do mapa',f:dt},
       {c:'origem',l:'Origem',f:v=>v==='manual'?'Criado à mão':(v?'Mapa':'')},{c:'criado_em',l:'Criado',f:dt},{c:'criado_por',l:'Criado por',f:nome},{c:'ultima_import',l:'Última importação',f:dt},{c:'updated_at',l:'Atualizado',f:dt},
+    ]},
+    {nome:'Acordos de venda',path:'/acordos_venda?select=*&order=negocio_id.asc',cols:[
+      {c:'negocio_id',l:'Negócio ID'},{c:'dados',l:'Data do acordo',f:v=>((v||{})['data_acordo']??'')},{c:'dados',l:'Marca',f:v=>((v||{})['viatura_marca']??'')},{c:'dados',l:'Cor',f:v=>((v||{})['viatura_cor']??'')},{c:'dados',l:'Estofos',f:v=>((v||{})['viatura_estofos']??'')},{c:'dados',l:'Km',f:v=>((v||{})['viatura_kms']??'')},{c:'dados',l:'Data da matrícula',f:v=>((v||{})['viatura_data_matricula']??'')},{c:'dados',l:'Empresa',f:v=>((v||{})['empresa_nome']??'')},{c:'dados',l:'NIF empresa',f:v=>((v||{})['empresa_nif']??'')},{c:'dados',l:'Morada empresa',f:v=>((v||{})['empresa_morada']??'')},{c:'dados',l:'CP empresa',f:v=>((v||{})['empresa_cp']??'')},{c:'dados',l:'Telefone empresa',f:v=>((v||{})['empresa_telefone']??'')},{c:'dados',l:'E-mail empresa',f:v=>((v||{})['empresa_email']??'')},{c:'dados',l:'Retoma marca',f:v=>((v||{})['retoma_marca']??'')},{c:'dados',l:'Retoma km',f:v=>((v||{})['retoma_kms']??'')},{c:'dados',l:'Retoma cor',f:v=>((v||{})['retoma_cor']??'')},{c:'dados',l:'Retoma data matrícula',f:v=>((v||{})['retoma_data_matricula']??'')},{c:'dados',l:'Valor de retoma',f:v=>((v||{})['retoma_valor']??'')},{c:'dados',l:'Sinal numerário',f:v=>((v||{})['sinal_numerario']??'')},{c:'dados',l:'Sinal cheque',f:v=>((v||{})['sinal_cheque']??'')},{c:'dados',l:'Sinal transferência',f:v=>((v||{})['sinal_transferencia']??'')},{c:'dados',l:'Sinal MB',f:v=>((v||{})['sinal_mb']??'')},{c:'dados',l:'Forma de pagamento',f:v=>((v||{})['forma_pagamento']??'')},{c:'dados',l:'Observações',f:v=>((v||{})['observacoes']??'')},{c:'dados',l:'Tomou conhecimento BMW FS',f:v=>(v||{}).bmw_fs?'Sim':'Não'},{c:'updated_at',l:'Atualizado',f:dt},{c:'updated_by',l:'Por',f:nome},
     ]},
     {nome:'Retomas (valores dados)',path:'/retomas_valores?select=*&order=criado_em.asc,id.asc',cols:[
       {c:'id',l:'ID'},{c:'criado_em',l:'Data',f:dt},{c:'cliente',l:'Cliente'},{c:'matricula',l:'Matrícula'},{c:'modelo',l:'Modelo'},{c:'ano',l:'Ano'},{c:'kms',l:'Km'},{c:'extras',l:'Extras'},
@@ -10453,6 +10589,7 @@ function bindEvents(){
     const el=e.target;
     if(el.id==='reu-c-texto'){S.reuC=Object.assign({texto:'',vend:'',prazo:''},S.reuC||{},{texto:el.value});return;}
     if(el.id==='fa-motivo'){S.faMotivo=el.value;return;}
+    if(el.dataset&&el.dataset.ac){acordoInput(el);return;}
     if(el.dataset&&el.dataset.ret){S.retForm=Object.assign({v:{},erros:{}},S.retForm||{});S.retForm.v=Object.assign({},S.retForm.v,{[el.dataset.ret]:el.value});campoErroLimpar(el,S.retForm);
       if(['cliente','matricula','modelo','ano'].includes(el.dataset.ret)){const m=document.getElementById('ret-match');if(m)m.innerHTML=retMatchHTML();}return;}
     if(el.dataset&&el.dataset.eotn){S.eotNovo=Object.assign({v:{},erros:{}},S.eotNovo||{});S.eotNovo.v=Object.assign({},S.eotNovo.v,{[el.dataset.eotn]:el.value});campoErroLimpar(el,S.eotNovo);return;}
@@ -10507,6 +10644,7 @@ function bindEvents(){
   };
   app.onchange=function(e){
     const el=e.target;
+    if(el.dataset&&el.dataset.ac&&el.type==='checkbox'){acordoInput(el);return;}
     if(el.dataset&&el.dataset.retEstado){retMudar(el.dataset.retEstado,{estado:el.value});return;}
     if(el.dataset&&el.dataset.retNotas){const x=(S.retomas||[]).find(y=>String(y.id)===String(el.dataset.retNotas));const nv=eotTxt(el.value);if(x&&(x.notas||null)!==nv)retMudar(el.dataset.retNotas,{notas:nv});return;}
     if(el.dataset&&el.dataset.retFiltro){S.retF=el.value;render();return;}
@@ -10836,6 +10974,10 @@ function bindEvents(){
       case'eot-novo-criar':eotCriarManual();break;
       case'eot-apagar':eotApagarManual(el.dataset.c);break;
       case'ret-registar':retRegistar();break;
+      case'acordo-abrir':{const id=el.dataset.id;const fecha=String(S.acordoAberto)===String(id);S.acordoAberto=fecha?null:id;S.acordoEstado='';render();
+        if(!fecha)setTimeout(()=>{const b=document.getElementById('ac-box');if(b)try{b.scrollIntoView({block:'nearest',behavior:movReduzido()?'auto':'smooth'});}catch(_){}},60);break;}
+      case'acordo-fechar':S.acordoAberto=null;render();break;
+      case'acordo-pdf':acordoDescarregar(el.dataset.id);break;
       case'ret-limpar':S.retForm=null;render();break;
       case'ret-novo':retNovoDe(el.dataset.id);break;
       case'ret-apagar':retApagar(el.dataset.id);break;

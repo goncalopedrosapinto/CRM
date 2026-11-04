@@ -58,6 +58,7 @@ jobs:
       - run: npm run importacao
       - run: npm run eotmanual
       - run: npm run retomas
+      - run: npm run acordo
       - run: npm run alertas
       - run: npm run notificacoes
       - run: npm run financeiros

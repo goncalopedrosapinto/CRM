@@ -10,6 +10,7 @@ const P={c1:{id:'c1',nome:'Chefe Teste',role:'admin',linha:'motorrad',areas:[]},
   s1:{id:'s1',nome:'Sofia Secretaria',role:'secretario',linha:'motorrad',areas:[],financeiro:false},f1:{id:'f1',nome:'Filipa Financeira',role:'financeiro',linha:'motorrad',areas:[]},a1:{id:'a1',nome:'Artur Assessor',role:'assessor',linha:'motorrad',areas:[]}};
 const R=(id,v,status,extra)=>Object.assign({id,vendedor_id:v,status,id_cliente:'Cliente '+id,model:'R 1300 GS',version:'Trophy',type:'MN',neg:d(id*3),mes1:ym,pvp:24500,contacto:'912 000 00'+id,updated_at:new Date().toISOString(),status_updated_at:d(id)},extra||{});
 const recs=[R(1,'v1','Quente'),R(2,'v1','Morno',{alert_date:d(2)}),R(3,'v1','Frio'),R(4,'v1','Carteira',{enc:'9100001'}),R(5,'v1','Retail',{col_298:d(5),dmat:d(100)}),R(6,'v2','Quente'),R(7,'v2','Carteira'),R(8,'v2','Retail',{col_298:d(9)}),R(9,'v1','Perdido',{motivo_perda:'Preço'}),R(10,'v2','Retail',{type:'MU',col_298:d(2)}),R(11,'v2','Retail',{type:'MU',venda_direta:true,id_cliente:'Comércio Teste',pvp:5000,valor_entrada:5200,col_298:d(3)})];
+recs.push(R(12,'v1','Quente',{type:'MU',model:'R 1250 GS',version:'Adventure',mat:'AA-11-BB',pvp:12500,retoma:'Sim',retoma_modelo:'Honda Africa Twin',retoma_mat:'22-CC-33',fin:'PP',nif:'123456789',morada:'Rua das Flores 10, Esgueira',local:'3800-100',cc:'12345678 9ZZ1'}));
 const eot=[{contrato:'E1',cliente:'Cliente EOT Um',modelo:'F 900 GS',matricula:'AA-11-BB',data_fim:d(-60),fase:'Contactado',responsavel_id:'v1',no_mapa:true,residual:4500,prestacao:120,total:4800,fin_visto_em:null},
   {contrato:'E2',cliente:'Cliente EOT Dois',modelo:'R 1250 RT',data_fim:d(-150),fase:'Por contactar',responsavel_id:null,no_mapa:true,residual:7000,fin_visto_em:null},
   {contrato:'E3',cliente:'Cliente EOT Três',modelo:'R 1300 GS',data_fim:d(-200),fase:'Por contactar',responsavel_id:'v1',no_mapa:true,residual:9000,fin_visto_em:new Date(Date.now()-3600e3).toISOString(),fin_visto_por:'f1',fin_visto_nome:'Filipa Financeira'},
@@ -44,6 +45,7 @@ async function contexto(b,uid,vp,tema){
     if(t==='reuniao_compromissos')return json(uid==='c1'?comp:[]);
     if(t==='retomas_valores')return json(uid==='c1'?[{id:1,criado_em:new Date(Date.now()-40*864e5).toISOString(),cliente:'Cliente Retoma',matricula:'11-AA-22',modelo:'R 1250 GS',ano:2020,kms:40000,extras:'Malas',valor_retoma:9000,preparacao:300,valor_venda:12500,venda_minima:11800,estado:'proposta',notas:null},
       {id:2,criado_em:new Date(Date.now()-20*864e5).toISOString(),cliente:'Outro Cliente',modelo:'R 1250 GS',ano:2020,kms:52000,valor_retoma:8500,preparacao:null,valor_venda:12000,venda_minima:null,estado:'recusada',notas:'Achou pouco'}]:[]);
+    if(t==='acordos_venda')return json(u.includes('negocio_id=eq.12')?[{dados:{data_acordo:d(0),viatura_cor:'Cinzento Racing',viatura_estofos:'Pele preta',viatura_kms:'41000',retoma_kms:'35000',retoma_valor:'6500',sinal_numerario:'500',sinal_transferencia:'1000',observacoes:'Inclui malas laterais.',bmw_fs:true},updated_at:new Date().toISOString()}]:[]);
     if(t==='fichas_margem'){const ng=(u.match(/negocio_id=eq\.(\d+)/)||[])[1];const mine=uid==='c1'?fichas:fichas.filter(f=>recs.some(r=>r.id===f.negocio_id&&r.vendedor_id===uid));return json(mine.filter(f=>!ng||f.negocio_id===+ng));}
     return json([]);});
   return ctx;}
@@ -71,7 +73,8 @@ const ECRAS={
       ['EOTs','()=>{setState({screen:"veot"});}'],['Notificações','()=>{setState({screen:"vnotif"});}'],['Stock BMW Novas','()=>{setState({screen:"vencomendas",encOrigem:"aveiro"});}'],['Stock Equipamento','()=>{setState({screen:"vstockeq"});}'],
       ['Ficha de Margem','()=>{setState({screen:"ficha"});}'],['Comissões','()=>{setState({screen:"vcom"});}'],['Janela EOT','()=>{setState({screen:"veot"});eotAbrir("E1");}'],
       ['Stock usadas/demos','()=>{setState({screen:"stockvend"});}'],['Escala','()=>{setState({screen:"escala"});}'],['Menu aberto','()=>{setState({screen:"list",statusFilter:"_hoje",sidebarOpen:true});}'],['Alterar password','()=>{setState({screen:"password"});}'],
-      ['Ficha não aprovada (vendedor)','()=>{setState({sidebarOpen:false});fmAbrirNegocio("2","32");}']],
+      ['Ficha não aprovada (vendedor)','()=>{setState({sidebarOpen:false});fmAbrirNegocio("2","32");}'],
+      ['Acordo de venda (usada)','async()=>{if(typeof fmSairDoNegocio==="function")fmSairDoNegocio();S.acordoAberto=12;await acordoCarregar(12);setState({screen:"detail",selected:S.records.find(r=>r.id===12),openGroups:{INFO:true}});setTimeout(()=>{const e=document.getElementById("ac-box");if(e)e.scrollIntoView();},50);}']],
   s1:[['Secretaria','()=>{setState({screen:"secretaria"});}']],
   f1:[['EOTs','()=>{setState({screen:"financeiro",finTab:"todos"});}'],['Notificações','()=>{setState({screen:"notificacoes"});}'],['Janela EOT','()=>{setState({screen:"financeiro"});eotAbrir("E1");}']],
   a1:[['Assessor','()=>{setState({screen:"assessor"});}']],

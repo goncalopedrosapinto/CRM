@@ -23,3 +23,4 @@
 2026-11-02_eot_import_historico.sql
 2026-11-02_fichas_recusar.sql
 2026-11-03_eot_manual.sql
+2026-11-03_retomas_valores.sql

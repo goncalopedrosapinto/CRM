@@ -27,6 +27,7 @@ function linhas(tab,uid){
     }
     if(tab==='profiles'){r.id=TEAM[k][0];r.role=TEAM[k][1];r.linha='motorrad';}
     if(tab==='eot_contratos'){r.contrato=MODO==='A'?String(900+k):tag('eot_contratos.contrato')+k;if(k%2)r.origem='manual';} // metade criados à mão
+    if(tab==='acordos_venda')r.dados=Object.fromEntries(['data_acordo','viatura_marca','viatura_cor','viatura_estofos','viatura_kms','viatura_data_matricula','empresa_nome','empresa_nif','empresa_morada','empresa_cp','empresa_telefone','empresa_email','retoma_marca','retoma_kms','retoma_cor','retoma_data_matricula','retoma_valor','sinal_numerario','sinal_cheque','sinal_transferencia','sinal_mb','forma_pagamento','observacoes'].map(c=>[c,tag('acordos_venda.dados.'+c)]));
     if(tab==='fichas_margem'){const est=k%3;if(est!==0){r.aprovada_em=null;r.aprovada_por=null;}if(est!==1){r.recusada_em=null;r.recusada_por=null;r.recusa_motivo=null;}} // aprovada / não aprovada / à espera
     out.push(r);}
   return out;
@@ -80,6 +81,14 @@ const PERIGO=/logout|sair|delete|apagar|remover|eliminar|reset|limpar|fechar-ses
         S.retForm={v:{matricula:x.matricula||'',cliente:x.cliente||'',modelo:x.modelo||'',ano:String(x.ano||'')},erros:{}};S.screen='dashboard';S.gppSec='retomas';render();window.__ini=ini;}).catch(()=>{});
       await p.waitForTimeout(200);await scan(p,'dashboard/retomas');
       await p.evaluate(()=>{S.retForm=null;Object.assign(S,window.__ini||{});render();}).catch(()=>{});await p.waitForTimeout(100);}
+    // Acordo de venda (chefe e vendedor): painel aberto num negócio de usada com retoma, com os dados do negócio e do acordo marcados
+    if(role==='admin'||role==='vendedor'){await p.evaluate(async()=>{const ini={screen:S.screen,gppSec:S.gppSec,selected:S.selected};
+        const r0=(S.records||[]).find(x=>acordoElegivel(x))||Object.assign({},(S.records||[])[0]||{id:1},{type:'MU',vendedor_id:S.me.id});const r=Object.assign({},r0,{retoma:'Sim'});
+        S.acordos=null;S.acordoAberto=r.id;await acordoCarregar(r.id);setState({screen:'detail',selected:r,openGroups:{INFO:true}});window.__ini=ini;
+        window.__acordoCampos=Object.values(acordoCampos(r)).join('|');}).catch(e=>erros.push(role+' acordo: '+String(e.message).slice(0,120)));
+      await p.waitForTimeout(250);await scan(p,'detail/acordo');
+      console.error(role,'acordo: painel',await p.evaluate(()=>{const e=document.getElementById('ac-box');return e?((e.innerText.match(/<x\d+>/g)||[]).length+' marcadores no texto, '+[...e.querySelectorAll('input,textarea')].filter(i=>/<x\d+>/.test(i.value)).length+' campos com marcador, campos PDF '+((window.__acordoCampos||'').match(/<x\d+>/g)||[]).length):'não abriu';}).catch(()=>'?'));
+      await p.evaluate(()=>{S.acordoAberto=null;Object.assign(S,window.__ini||{});render();}).catch(()=>{});await p.waitForTimeout(100);}
     // varrimento: cada ação visível uma vez a partir do ecrã inicial, depois passeio aleatório
     const inicio=await p.evaluate(()=>JSON.stringify({screen:S.screen,gppSec:S.gppSec}));
     const acoes=async()=>p.evaluate((perigo)=>{const re=new RegExp(perigo,'i');return [...document.querySelectorAll('[data-action]')].filter(e=>{const r=e.getBoundingClientRect();return r.width>0&&r.height>0&&!re.test(e.dataset.action);}).map((e,i)=>{e.setAttribute('data-xi',i);return {i,a:e.dataset.action,sig:e.dataset.action+'|'+(e.dataset.sec||e.dataset.s||e.dataset.tab||e.dataset.status||'')};});},PERIGO.source);
