@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-05-a">
+<meta name="app-version" content="2026-11-05-b">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2467,7 +2467,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-05-a';
+const APP_VERSION='2026-11-05-b';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -7723,7 +7723,7 @@ function acordoHTML(r){
     <label class="ac-chk"><input type="checkbox" id="ac-bmw_fs" data-ac="bmw_fs"${d.bmw_fs?' checked':''}><span>Tomei conhecimento das condições, vantagens e campanhas da BMW Financial Services.</span></label>
     <div class="ac-vals" id="ac-vals">${acordoValsHTML(r)}</div>
     ${docsHTML(r,'acordo_venda')}
-    <div class="ac-acts"><button class="btn btn-orange" data-action="acordo-pdf" data-id="${esc(r.id)}"${S.acordoGerando?' disabled':''}>${S.acordoGerando?'A preparar o PDF…':'Descarregar PDF'}</button><span class="ac-nome">${esc(acordoNomeFicheiro(r))}</span><button class="btn btn-ghost btn-sm" data-action="acordo-fechar">Fechar</button></div>
+    <div class="ac-acts"><button class="btn btn-orange" data-action="acordo-pdf" data-id="${esc(r.id)}"${S.acordoGerando?' disabled':''}>${S.acordoGerando?'A preparar o PDF…':'Gerar PDF'}</button><span class="ac-nome">${esc(acordoNomeFicheiro(r))}</span><button class="btn btn-ghost btn-sm" data-action="acordo-fechar">Fechar</button></div>
   </div>`;
 }
 let _pdflibP=null;
@@ -7757,18 +7757,24 @@ async function docBytes(url,campos,caixas,direita,titulo,grandes){const PDFLib=a
   for(const [k,on] of Object.entries(caixas||{})){try{const cb=form.getCheckBox(k);if(on)cb.check();else cb.uncheck();}catch(e){}}
   form.updateFieldAppearances(helv);doc.setTitle(titulo);
   return await doc.save();}
-function docDescarregarBytes(bytes,nome){const url=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));
-  const a=document.createElement('a');a.href=url;a.download=nome;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},4000);}
+// abre o PDF logo num separador novo (a janela abre-se no clique, para o browser não a bloquear); sem janela, descarrega
+let _pdfJanela=null;
+function pdfJanelaAbrir(){try{const w=window.open('','_blank');if(w){try{w.document.title='A preparar o PDF…';w.document.body.style.cssText='font:15px system-ui,sans-serif;color:#555;display:grid;place-items:center;height:90vh';w.document.body.textContent='A preparar o PDF…';}catch(_){}}_pdfJanela=w||null;}catch(e){_pdfJanela=null;}}
+function pdfJanelaFechar(){try{if(_pdfJanela&&!_pdfJanela.closed)_pdfJanela.close();}catch(e){}_pdfJanela=null;}
+function docDescarregarBytes(bytes,nome){const w=_pdfJanela;_pdfJanela=null;
+  if(w&&!w.closed){const url=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));try{w.location.href=url;setTimeout(()=>URL.revokeObjectURL(url),300000);return 'aberto';}catch(e){try{w.close();}catch(_){}}}
+  const url=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));
+  const a=document.createElement('a');a.href=url;a.download=nome;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},4000);return 'descarregado';}
 async function acordoBytes(r){return docBytes(ACORDO_PDF,acordoCampos(r),{bmw_fs_conhecimento:!!acordoDados(r).bmw_fs},ACORDO_DIREITA,'Acordo de venda'+(acordoMat(r)?' '+acordoMat(r):''),['valor_venda','valor_sinal','valor_retoma','valor_liquidar']);}
 async function acordoDescarregar(id){
-  const r=(S.records||[]).find(x=>String(x.id)===String(id))||(S.selected&&String(S.selected.id)===String(id)?S.selected:null);if(!r||!acordoElegivel(r))return;
+  const r=(S.records||[]).find(x=>String(x.id)===String(id))||(S.selected&&String(S.selected.id)===String(id)?S.selected:null);if(!r||!acordoElegivel(r)){pdfJanelaFechar();return;}
   // fica guardado tal como saiu: a data do acordo e os valores por omissão não mudam numa reimpressão
   const st=(S.acordos||{})[String(r.id)];if(st&&!st.semTabela){st.dados=acordoDados(r);clearTimeout(_acT);await acordoGravar(r.id);}
   S.acordoGerando=true;render();
   try{const bytes=await acordoBytes(r);docDescarregarBytes(bytes,acordoNomeFicheiro(r));
     const g=await docGuardar(r.id,'acordo_venda',acordoNomeFicheiro(r),bytes,{campos:acordoCampos(r),bmw_fs:!!acordoDados(r).bmw_fs});
-    S.acordoGerando=false;render();setTimeout(()=>g.ok?toast('PDF descarregado e guardado no negócio: '+acordoNomeFicheiro(r)):toast(g.erro,'erro'),450);}
-  catch(e){S.acordoGerando=false;render();toast('Não consegui fazer o PDF: '+((e&&e.message)||e),'erro');}}
+    S.acordoGerando=false;render();setTimeout(()=>g.ok?toast('PDF gerado e guardado no negócio: '+acordoNomeFicheiro(r)):toast(g.erro,'erro'),450);}
+  catch(e){S.acordoGerando=false;render();pdfJanelaFechar();toast('Não consegui fazer o PDF: '+((e&&e.message)||e),'erro');}}
 // ===== Documentos emitidos: cada acordo / folha descarregado fica guardado tal como saiu (PDF no Storage + registo) =====
 const DOC_BUCKET='negocio-documentos';
 const DOC_SEM_SQL='Falta correr o SQL "2026-11-04_documentos_emitidos" no Supabase: o PDF saiu, mas não ficou guardado no negócio.';
@@ -7781,7 +7787,7 @@ function docsHTML(r,tipo){const k=docChave(r.id,tipo);const st=(S.docsEmit||{})[
   const quando=v=>{const d=new Date(v);return isNaN(d)?'':d.toLocaleString('pt-PT',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});};
   const L=(st&&st.L)||[];
   return`<div class="ac-sec">Emitidos (guardados tal como saíram)</div>${st&&st.erro?`<div class="mg-aviso" style="margin:0 0 8px">${esc(st.erro)}</div>`:''}
-    ${!st?'<div class="ac-load">A carregar…</div>':(!L.length?(st.erro?'':'<div class="ac-load">Ainda nenhum. Cada «Descarregar PDF» fica aqui guardado, com data e quem o fez.</div>'):`<ul class="doc-lista">${L.map(x=>`<li><span>${esc(quando(x.criado_em))} · ${esc(nomePerfil(x.criado_por)||'—')}</span><button class="btn btn-outline btn-sm" data-action="doc-abrir" data-doc="${esc(x.id)}" data-k="${esc(k)}" aria-label="Abrir o documento de ${esc(quando(x.criado_em))}">Abrir</button></li>`).join('')}</ul>`)}`;}
+    ${!st?'<div class="ac-load">A carregar…</div>':(!L.length?(st.erro?'':'<div class="ac-load">Ainda nenhum. Cada «Gerar PDF» fica aqui guardado, com data e quem o fez.</div>'):`<ul class="doc-lista">${L.map(x=>`<li><span>${esc(quando(x.criado_em))} · ${esc(nomePerfil(x.criado_por)||'—')}</span><button class="btn btn-outline btn-sm" data-action="doc-abrir" data-doc="${esc(x.id)}" data-k="${esc(k)}" aria-label="Abrir o documento de ${esc(quando(x.criado_em))}">Abrir</button></li>`).join('')}</ul>`)}`;}
 async function docGuardar(id,tipo,nome,bytes,dados){
   const h=new Date();const p2=n=>String(n).padStart(2,'0');
   const caminho=`${id}/${tipo}-${h.getFullYear()}${p2(h.getMonth()+1)}${p2(h.getDate())}-${p2(h.getHours())}${p2(h.getMinutes())}${p2(h.getSeconds())}-${Math.random().toString(36).slice(2,6)}.pdf`;
@@ -7789,9 +7795,9 @@ async function docGuardar(id,tipo,nome,bytes,dados){
     await supabaseApi('POST','/documentos_emitidos',{negocio_id:Number(id),tipo,caminho,nome,dados});
     await docsCarregar(id,tipo,true);return {ok:true};}
   catch(e){const m=String(e&&e.message||e);return {ok:false,erro:/2026-11-04_documentos_emitidos|PGRST205|42P01|schema cache/i.test(m)?DOC_SEM_SQL:'O PDF saiu, mas não ficou guardado no negócio: '+erroTexto(e)};}}
-async function docAbrir(docId,k){const st=(S.docsEmit||{})[k];const x=st&&(st.L||[]).find(y=>String(y.id)===String(docId));if(!x)return;
+async function docAbrir(docId,k){const st=(S.docsEmit||{})[k];const x=st&&(st.L||[]).find(y=>String(y.id)===String(docId));if(!x){pdfJanelaFechar();return;}
   try{const r=await storagePedido('GET',DOC_BUCKET,x.caminho);docDescarregarBytes(await r.arrayBuffer(),x.nome);}
-  catch(e){toast('Não consegui abrir o documento: '+((e&&e.message)||e),'erro');}}
+  catch(e){pdfJanelaFechar();toast('Não consegui abrir o documento: '+((e&&e.message)||e),'erro');}}
 // ===== Folha de Negócio (motas novas e demos): o PDF de gestão preenchido com os dados do negócio =====
 // Mesma linha de acordos_venda (um por negócio), com as chaves fn_*. Modelo: docs/folha-negocio.pdf (gerado por docs/fontes/folha_negocio.py).
 const FOLHA_PDF='docs/folha-negocio.pdf';
@@ -7848,7 +7854,7 @@ function folhaHTML(r){
     ${faltas.length?`<div class="ac-faltas"><span>Falta no negócio: <b>${esc(faltas.join(', '))}</b>.</span><button class="btn btn-outline btn-sm" data-action="open-edit">Editar negócio</button></div>`:''}
     ${FOLHA_GRUPOS.map(([g,campos])=>`<div class="ac-sec">${g}</div><div class="vd-grid${g==='Folha'?' ac-g2':''}">${campos.map(inp).join('')}</div>${g==='Venda'?fin:''}`).join('')}
     ${docsHTML(r,'folha_negocio')}
-    <div class="ac-acts"><button class="btn btn-orange" data-action="folha-pdf" data-id="${esc(r.id)}"${S.acordoGerando?' disabled':''}>${S.acordoGerando?'A preparar o PDF…':'Descarregar PDF'}</button><span class="ac-nome">${esc(folhaNomeFicheiro(r))}</span><button class="btn btn-ghost btn-sm" data-action="folha-fechar">Fechar</button></div>
+    <div class="ac-acts"><button class="btn btn-orange" data-action="folha-pdf" data-id="${esc(r.id)}"${S.acordoGerando?' disabled':''}>${S.acordoGerando?'A preparar o PDF…':'Gerar PDF'}</button><span class="ac-nome">${esc(folhaNomeFicheiro(r))}</span><button class="btn btn-ghost btn-sm" data-action="folha-fechar">Fechar</button></div>
   </div>`;
 }
 function folhaCampos(r){const d=folhaDados(r),ret=r.retoma==='Sim';
@@ -7863,14 +7869,14 @@ function folhaCaixas(r){const d=folhaDados(r);const c={rgpd_sim:d.fn_rgpd==='Sim
   FOLHA_TV.forEach(t=>{c['tv_'+folhaSlug(t)]=d.fn_tipo_venda===t;});FOLHA_ORIG.forEach(o=>{c['or_'+folhaSlug(o)]=d.fn_origem===o;});
   FOLHA_FIN.forEach(([k])=>{c['fin_'+k]=!!d['fn_fin_'+k];});FOLHA_FAT.forEach(f=>{c['fat_'+folhaSlug(f)]=d.fn_faturacao===f;});return c;}
 async function folhaDescarregar(id){
-  const r=(S.records||[]).find(x=>String(x.id)===String(id))||(S.selected&&String(S.selected.id)===String(id)?S.selected:null);if(!r||!folhaElegivel(r))return;
+  const r=(S.records||[]).find(x=>String(x.id)===String(id))||(S.selected&&String(S.selected.id)===String(id)?S.selected:null);if(!r||!folhaElegivel(r)){pdfJanelaFechar();return;}
   const st=(S.acordos||{})[String(r.id)];if(st&&!st.semTabela){st.dados=folhaDados(r);clearTimeout(_acT);await acordoGravar(r.id);}
   S.acordoGerando=true;render();
   try{const bytes=await docBytes(FOLHA_PDF,folhaCampos(r),folhaCaixas(r),FOLHA_DIREITA,'Folha de Negócio'+(r.id_cliente?' '+r.id_cliente:''),['valor_fatura']);
     docDescarregarBytes(bytes,folhaNomeFicheiro(r));
     const g=await docGuardar(r.id,'folha_negocio',folhaNomeFicheiro(r),bytes,{campos:folhaCampos(r),caixas:folhaCaixas(r)});
-    S.acordoGerando=false;render();setTimeout(()=>g.ok?toast('PDF descarregado e guardado no negócio: '+folhaNomeFicheiro(r)):toast(g.erro,'erro'),450);}
-  catch(e){S.acordoGerando=false;render();toast('Não consegui fazer o PDF: '+((e&&e.message)||e),'erro');}}
+    S.acordoGerando=false;render();setTimeout(()=>g.ok?toast('PDF gerado e guardado no negócio: '+folhaNomeFicheiro(r)):toast(g.erro,'erro'),450);}
+  catch(e){S.acordoGerando=false;render();pdfJanelaFechar();toast('Não consegui fazer o PDF: '+((e&&e.message)||e),'erro');}}
 // ===== Usadas › Retomas: registo dos valores de retoma dados (só o chefe) =====
 // Para dar o mesmo valor se o cliente voltar a perguntar e para controlar o que foi aceite.
 // Os valores ficam fixos depois de gravados (é o que foi dito ao cliente); só o estado e as notas mudam: outro valor = registo novo.
@@ -11105,12 +11111,12 @@ function bindEvents(){
       case'acordo-abrir':{const id=el.dataset.id;const fecha=String(S.acordoAberto)===String(id);S.acordoAberto=fecha?null:id;S.acordoEstado='';render();
         if(!fecha)setTimeout(()=>{const b=document.getElementById('ac-box');if(b)try{b.scrollIntoView({block:'nearest',behavior:movReduzido()?'auto':'smooth'});}catch(_){}},60);break;}
       case'acordo-fechar':S.acordoAberto=null;render();break;
-      case'acordo-pdf':acordoDescarregar(el.dataset.id);break;
+      case'acordo-pdf':if(!S.acordoGerando)pdfJanelaAbrir();acordoDescarregar(el.dataset.id);break;
       case'folha-abrir':{const id=el.dataset.id;const fecha=String(S.folhaAberta)===String(id);S.folhaAberta=fecha?null:id;S.acordoEstado='';render();
         if(!fecha)setTimeout(()=>{const b=document.getElementById('fn-box');if(b)try{b.scrollIntoView({block:'nearest',behavior:movReduzido()?'auto':'smooth'});}catch(_){}},60);break;}
       case'folha-fechar':S.folhaAberta=null;render();break;
-      case'folha-pdf':folhaDescarregar(el.dataset.id);break;
-      case'doc-abrir':docAbrir(el.dataset.doc,el.dataset.k);break;
+      case'folha-pdf':if(!S.acordoGerando)pdfJanelaAbrir();folhaDescarregar(el.dataset.id);break;
+      case'doc-abrir':pdfJanelaAbrir();docAbrir(el.dataset.doc,el.dataset.k);break;
       case'ret-limpar':S.retForm=null;render();break;
       case'ret-novo':retNovoDe(el.dataset.id);break;
       case'ret-apagar':retApagar(el.dataset.id);break;

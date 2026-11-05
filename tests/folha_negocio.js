@@ -38,8 +38,14 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
   if(t==='baviera_control'){if(m==='PATCH'){const bd=JSON.parse(r.request().postData());est.neg=bd;const id=+(u.match(/id=eq\.(\d+)/)||[])[1];const x=recs.find(y=>y.id===id);return json([Object.assign({},x,bd)]);}return json(recs);}
   return json([]);};
  const erros=[];
+ // «Gerar PDF» abre logo um separador com o PDF (blob); o teste lê o PDF que a página criou
+ const gerar=async(pg,sel,destino)=>{const [pop]=await Promise.all([pg.context().waitForEvent('page',{timeout:15000}),pg.click(sel)]);
+   for(let i=0;i<150;i++){if(await pg.evaluate(()=>!!window.__ultimoPdf))break;await pg.waitForTimeout(100);}
+   const b64=await pg.evaluate(async()=>{const a=new Uint8Array(await window.__ultimoPdf.arrayBuffer());window.__ultimoPdf=null;let s='';for(let i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);return btoa(s);});
+   fs.writeFileSync(destino,Buffer.from(b64,'base64'));await pg.waitForTimeout(300);const url=pop.url();await pop.close().catch(()=>{});return url;};
  const abrir=async(quem,vp)=>{const ctx=await b.newContext({viewport:vp||{width:1280,height:1000},acceptDownloads:true});
   await ctx.addInitScript(t=>localStorage.setItem('bc_session',JSON.stringify({refresh_token:'rt',access_token:t,exp:Date.now()+3600e3})),jwt(quem));
+  await ctx.addInitScript(()=>{const o=URL.createObjectURL.bind(URL);URL.createObjectURL=b=>{if(b&&b.type==='application/pdf')window.__ultimoPdf=b;return o(b);};});
   await ctx.route('**/*',rota(quem));const p=await ctx.newPage();p.on('pageerror',e=>erros.push(quem+': '+e.message));
   await p.goto(`http://localhost:${PORTA}/`);await p.waitForTimeout(1500);return {ctx,p};};
  const negocio=async(p,id)=>{await p.evaluate(id=>{S.folhaAberta=null;S.acordoAberto=null;setState({screen:'detail',selected:S.records.find(r=>r.id===id)});},id);await p.waitForTimeout(250);};
@@ -60,8 +66,8 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
  await p.selectOption('#ac-fn_origem','BSC');
  await p.waitForTimeout(1200);const C=await painel(p);const escritas1=est.escritas.slice();
  await p.evaluate(()=>document.getElementById('fn-box').scrollIntoView({block:'end'}));await p.screenshot({path:path.join(__dirname,'folha_negocio.png')});
- const [dl]=await Promise.all([p.waitForEvent('download',{timeout:15000}),p.click('[data-action="folha-pdf"]')]);
- const nomeFicheiro=dl.suggestedFilename();const destino=path.join(__dirname,'folha_negocio_teste.pdf');await dl.saveAs(destino);await p.waitForTimeout(500);
+ const destino=path.join(__dirname,'folha_negocio_teste.pdf');const urlPop=await gerar(p,'[data-action="folha-pdf"]',destino);await p.waitForTimeout(500);
+ const nomeFicheiro=((est.reg||[])[0]||{}).nome;
  const pdf=await lerPDF(destino);const guardado=est.acordos[21]||{};
  // demo de empresa sem dados: por omissão Demo, Empresa; diz o que falta
  await negocio(p,22);await p.click('[data-action="folha-abrir"]');await p.waitForTimeout(600);const D=await painel(p);
@@ -74,7 +80,7 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
  const V2=await abrir('v2',{width:390,height:844});await negocio(V2.p,21);const outro=await painel(V2.p);await V2.ctx.close();
  const V1b=await abrir('v1',{width:390,height:844});await negocio(V1b.p,21);await V1b.p.click('[data-action="folha-abrir"]');await V1b.p.waitForTimeout(600);
  const larg=await V1b.p.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1);await V1b.ctx.close();
- const R={vistos,negGravado,usada,A,B,C,escritas1,nomeFicheiro,pdf,guardado,D,chefe,outro,larg,erros};
+ const R={urlPop,vistos,negGravado,usada,A,B,C,escritas1,nomeFicheiro,pdf,guardado,D,chefe,outro,larg,erros};
  console.log(JSON.stringify(R,null,1));
  const ultima=escritas1[escritas1.length-1]||[];
  const ok={
@@ -98,6 +104,7 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
   'chefe tem o botão; outro vendedor não':/Folha de Negócio/.test(chefe.botao)&&!outro.botao,
   'telemóvel sem scroll de lado':larg,
   'negócio: sinal e retoma aparecem no formulário e gravam como números':vistos.every(Boolean)&&negGravado.sinal===2000&&negGravado.sinal_forma==='Cheque'&&negGravado.retoma_ano===2019&&negGravado.retoma_kms===12000&&negGravado.retoma_valor===9500.5&&negGravado.retoma_valor_comercio===9000,
+  '«Gerar PDF» abre logo o PDF num separador':/^blob:/.test(urlPop||''),
   'sem erros JS':!erros.length};
  let f=0;for(const [k,v] of Object.entries(ok)){console.log((v?'✓ ':'✗ ')+k);if(!v)f++;}
  if(!process.env.MANTER_PDF)try{fs.unlinkSync(path.join(__dirname,'folha_negocio_teste.pdf'));}catch(e){}

@@ -39,8 +39,14 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
   if(t==='baviera_control')return json(recs);
   return json([]);};
  const erros=[];
+ // «Gerar PDF» abre logo um separador com o PDF (blob); o teste lê o PDF que a página criou
+ const gerar=async(pg,sel,destino)=>{const [pop]=await Promise.all([pg.context().waitForEvent('page',{timeout:15000}),pg.click(sel)]);
+   for(let i=0;i<150;i++){if(await pg.evaluate(()=>!!window.__ultimoPdf))break;await pg.waitForTimeout(100);}
+   const b64=await pg.evaluate(async()=>{const a=new Uint8Array(await window.__ultimoPdf.arrayBuffer());window.__ultimoPdf=null;let s='';for(let i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);return btoa(s);});
+   fs.writeFileSync(destino,Buffer.from(b64,'base64'));await pg.waitForTimeout(300);const url=pop.url();await pop.close().catch(()=>{});return url;};
  const abrir=async(quem,vp)=>{const ctx=await b.newContext({viewport:vp||{width:1280,height:1000},acceptDownloads:true});
   await ctx.addInitScript(t=>localStorage.setItem('bc_session',JSON.stringify({refresh_token:'rt',access_token:t,exp:Date.now()+3600e3})),jwt(quem));
+  await ctx.addInitScript(()=>{const o=URL.createObjectURL.bind(URL);URL.createObjectURL=b=>{if(b&&b.type==='application/pdf')window.__ultimoPdf=b;return o(b);};});
   await ctx.route('**/*',rota(quem));const p=await ctx.newPage();p.on('pageerror',e=>erros.push(quem+': '+e.message));
   await p.goto(`http://localhost:${PORTA}/`);await p.waitForTimeout(1500);return {ctx,p};};
  const negocio=async(p,id)=>{await p.evaluate(id=>{S.acordoAberto=null;setState({screen:'detail',selected:S.records.find(r=>r.id===id)});},id);await p.waitForTimeout(250);};
@@ -64,11 +70,11 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
  await p.evaluate(()=>render());await p.waitForTimeout(150);const D=await painel(p);
  await p.evaluate(()=>document.getElementById('ac-vals').scrollIntoView({block:'end'}));await p.screenshot({path:path.join(__dirname,'acordo_venda.png'),fullPage:false});
  // descarregar
- const [dl]=await Promise.all([p.waitForEvent('download',{timeout:15000}),p.click('[data-action="acordo-pdf"]')]);
- const nomeFicheiro=dl.suggestedFilename();const destino=path.join(__dirname,'acordo_venda_teste.pdf');await dl.saveAs(destino);await p.waitForTimeout(500);
+ const destino=path.join(__dirname,'acordo_venda_teste.pdf');const urlPop=await gerar(p,'[data-action="acordo-pdf"]',destino);await p.waitForTimeout(500);
+ const nomeFicheiro=(est.reg[0]||{}).nome;
  const pdf=await lerPDF(destino);const guardadoNoFim=est.acordos[7]||{};
  await p.waitForTimeout(300);const emit=await p.evaluate(()=>[...document.querySelectorAll('#ac-box .doc-lista li')].map(li=>li.textContent.replace(/\s+/g,' ').trim()));
- const [dl3]=await Promise.all([p.waitForEvent('download',{timeout:15000}),p.click('#ac-box [data-action="doc-abrir"]')]);const nomeAbrir=dl3.suggestedFilename();const destino3=path.join(__dirname,'acordo_venda_teste2.pdf');await dl3.saveAs(destino3);const pdfGuardado=await lerPDF(destino3);try{fs.unlinkSync(destino3);}catch(e){}
+ const destino3=path.join(__dirname,'acordo_venda_teste2.pdf');const urlAbrir=await gerar(p,'#ac-box [data-action="doc-abrir"]',destino3);const nomeAbrir=(est.reg[0]||{}).nome;const pdfGuardado=await lerPDF(destino3);try{fs.unlinkSync(destino3);}catch(e){}
  // negócio usado sem dados: diz o que falta, nome sem matrícula
  await negocio(p,9);await p.click('[data-action="acordo-abrir"]');await p.waitForTimeout(500);const E=await painel(p);
  await V1.ctx.close();
@@ -78,10 +84,10 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
  // ---------- sem o SQL: avisa e o PDF sai na mesma ----------
  est.semSql=true;const V1b=await abrir('v1',{width:390,height:844});const q=V1b.p;await negocio(q,7);await q.click('[data-action="acordo-abrir"]');await q.waitForTimeout(500);const F=await painel(q);
  await q.screenshot({path:path.join(__dirname,'acordo_venda_telemovel.png'),fullPage:false});
- const [dl2]=await Promise.all([q.waitForEvent('download',{timeout:15000}),q.click('[data-action="acordo-pdf"]')]);const nome2=dl2.suggestedFilename();
+ await q.evaluate(()=>{window.open=()=>null;});const [dl2]=await Promise.all([q.waitForEvent('download',{timeout:15000}),q.click('[data-action="acordo-pdf"]')]);const nome2=dl2.suggestedFilename();
  const larg=await q.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1);
  await V1b.ctx.close();
- const R={emit,nomeAbrir,reg:est.reg.map(x=>({negocio_id:x.negocio_id,tipo:x.tipo,caminho:x.caminho,nome:x.nome})),nova,A,B,C,caixa,escritas1,D,nomeFicheiro,pdf,guardadoNoFim,E,chefe,outro,F,nome2,larg,erros};
+ const R={urlPop,urlAbrir,emit,nomeAbrir,reg:est.reg.map(x=>({negocio_id:x.negocio_id,tipo:x.tipo,caminho:x.caminho,nome:x.nome})),nova,A,B,C,caixa,escritas1,D,nomeFicheiro,pdf,guardadoNoFim,E,chefe,outro,F,nome2,larg,erros};
  console.log(JSON.stringify(R,null,1));
  const ultima=escritas1[escritas1.length-1]||[];
  const ok={
@@ -106,7 +112,8 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
   'ao descarregar fica guardado tal como saiu (data incluída)':guardadoNoFim.data_acordo&&guardadoNoFim.viatura_kms==='41000'&&guardadoNoFim.viatura_cor==='Cinzento Racing',
   'negócio usado sem dados: diz o que falta e o nome sai sem matrícula':/Falta no negócio: NIF, Morada, Código postal, C\.C\., Telemóvel, E-mail, Modelo, Matrícula, Valor de venda \(PVP\)/.test(E.faltas)&&E.nome==='Acordo de venda.pdf'&&!E.retoma,
   'chefe tem o botão; outro vendedor não':/Acordo de venda/.test(chefe.botao)&&!outro.botao,
-  'sem o SQL: avisa e o PDF sai na mesma (telemóvel sem scroll de lado)':/Falta correr o SQL "2026-11-04_acordos_venda"/.test(F.aviso)&&nome2==='Acordo de venda AA-11-BB.pdf'&&larg,
+  'sem o SQL: avisa e o PDF sai na mesma; separador bloqueado → descarrega (telemóvel sem scroll de lado)':/Falta correr o SQL "2026-11-04_acordos_venda"/.test(F.aviso)&&nome2==='Acordo de venda AA-11-BB.pdf'&&larg,
+  '«Gerar PDF» abre logo o PDF num separador (e «Abrir» também)':/^blob:/.test(urlPop||'')&&/^blob:/.test(urlAbrir||''),
   'sem erros JS':!erros.length};
  let f=0;for(const [k,v] of Object.entries(ok)){console.log((v?'✓ ':'✗ ')+k);if(!v)f++;}
  try{fs.unlinkSync(path.join(__dirname,'acordo_venda_teste.pdf'));}catch(e){}
