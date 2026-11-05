@@ -27,7 +27,7 @@ function linhas(tab,uid){
     }
     if(tab==='profiles'){r.id=TEAM[k][0];r.role=TEAM[k][1];r.linha='motorrad';}
     if(tab==='eot_contratos'){r.contrato=MODO==='A'?String(900+k):tag('eot_contratos.contrato')+k;if(k%2)r.origem='manual';} // metade criados à mão
-    if(tab==='acordos_venda')r.dados=Object.fromEntries(['data_acordo','viatura_marca','viatura_cor','viatura_kms','viatura_data_matricula','empresa_nome','empresa_nif','empresa_morada','empresa_cp','empresa_telefone','empresa_email','retoma_marca','retoma_kms','retoma_cor','retoma_data_matricula','retoma_valor','sinal_numerario','sinal_cheque','sinal_transferencia','sinal_mb','forma_pagamento','observacoes','fn_proposta','fn_empresa','fn_utilizador','fn_rgpd','fn_tipo_venda','fn_origem','fn_codigo_modelo','fn_valor_fatura','fn_sinal','fn_n_stock','fn_pac','fn_frota','fn_prp','fn_parque','fn_faturacao','fn_subvencao','fn_mat_anterior','fn_retoma_ano','fn_retoma_kms','fn_retoma_valor','fn_retoma_comercio','fn_observacoes'].map(c=>[c,tag('acordos_venda.dados.'+c)]));
+    if(tab==='acordos_venda')r.dados=Object.fromEntries(['data_acordo','viatura_marca','viatura_cor','viatura_kms','viatura_data_matricula','empresa_nome','empresa_nif','empresa_morada','empresa_cp','empresa_telefone','empresa_email','retoma_marca','retoma_kms','retoma_cor','retoma_data_matricula','retoma_valor','sinal_numerario','sinal_cheque','sinal_transferencia','sinal_mb','forma_pagamento','observacoes','fn_proposta','fn_empresa','fn_rgpd','fn_tipo_venda','fn_origem','fn_faturacao','fn_subvencao','fn_mat_anterior','fn_observacoes'].map(c=>[c,tag('acordos_venda.dados.'+c)]));
     if(tab==='fichas_margem'){const est=k%3;if(est!==0){r.aprovada_em=null;r.aprovada_por=null;}if(est!==1){r.recusada_em=null;r.recusada_por=null;r.recusa_motivo=null;}} // aprovada / não aprovada / à espera
     out.push(r);}
   return out;
@@ -91,7 +91,7 @@ const PERIGO=/logout|sair|delete|apagar|remover|eliminar|reset|limpar|fechar-ses
       await p.evaluate(()=>{S.acordoAberto=null;Object.assign(S,window.__ini||{});render();}).catch(()=>{});await p.waitForTimeout(100);}
     // Folha de Negócio (chefe e vendedor): painel aberto num negócio de mota nova com retoma
     if(role==='admin'||role==='vendedor'){await p.evaluate(async()=>{const ini={screen:S.screen,gppSec:S.gppSec,selected:S.selected};
-        FOLHA_ATIVA=true;const r0=(S.records||[]).find(x=>folhaElegivel(x))||Object.assign({},(S.records||[])[0]||{id:1},{type:'MN',vendedor_id:S.me.id});const r=Object.assign({},r0,{retoma:'Sim'});
+        const r0=(S.records||[]).find(x=>folhaElegivel(x))||Object.assign({},(S.records||[])[0]||{id:1},{type:'MN',vendedor_id:S.me.id});const r=Object.assign({},r0,{retoma:'Sim'});
         S.acordos=null;S.acordoAberto=null;S.folhaAberta=r.id;await acordoCarregar(r.id);setState({screen:'detail',selected:r,openGroups:{INFO:true}});window.__ini=ini;
         window.__folhaCampos=Object.values(folhaCampos(r)).join('|');}).catch(e=>erros.push(role+' folha: '+String(e.message).slice(0,120)));
       await p.waitForTimeout(300);await scan(p,'detail/folha');

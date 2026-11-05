@@ -14,7 +14,7 @@ const PERFIS={c1:{id:'c1',nome:'Chefe GPP',role:'admin',linha:'motorrad'},v1:{id
 const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+String(hoje.getMonth()+1).padStart(2,'0')+'/'+hoje.getFullYear();
 (async()=>{const b=await chromium.launch(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{});
  const recs=[{id:7,vendedor_id:'v1',status:'Carteira',type:'MU',id_cliente:'Cliente Usada Ficticio',nif:'123456789',morada:'Rua das Flores 10, Esgueira, Aveiro',local:'3800-100',cc:'12345678 9ZZ1',
-     contacto:'912 345 678',email:'cliente@exemplo.pt',model:'R 1250 GS',version:'Adventure',mat:'aa-11-bb',pvp:'12500',retoma:'Sim',retoma_modelo:'Honda Africa Twin',retoma_mat:'22-cc-33',fin:'PP',dmat:'2021-03-15',stock_id:31,
+     contacto:'912 345 678',email:'cliente@exemplo.pt',model:'R 1250 GS',version:'Adventure',mat:'aa-11-bb',pvp:'12500',retoma:'Sim',retoma_modelo:'Honda Africa Twin',retoma_mat:'22-cc-33',retoma_kms:35000,retoma_cor:'Vermelho',retoma_data_matricula:'2019-05-20',retoma_valor:6500,sinal:1500,sinal_forma:'Transferência',fin:'PP',dmat:'2021-03-15',stock_id:31,
      obs:'NOTA INTERNA que não pode ir para o cliente',updated_at:new Date().toISOString()},
    {id:8,vendedor_id:'v1',status:'Quente',type:'MN',id_cliente:'Cliente Nova',model:'R 1300 GS',updated_at:new Date().toISOString()},
    {id:9,vendedor_id:'v1',status:'Quente',type:'MU',id_cliente:'Cliente Sem Dados',updated_at:new Date().toISOString()}];
@@ -47,7 +47,7 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
  const painel=p=>p.evaluate(()=>{const t=e=>e?e.textContent.replace(/[\s  ]+/g,' ').trim():'';const box=document.getElementById('ac-box');
    const v={};document.querySelectorAll('#ac-box [data-ac]').forEach(e=>{v[e.dataset.ac]=e.type==='checkbox'?e.checked:e.value;});
    return {botao:t(document.querySelector('[data-action="acordo-abrir"]')),aberto:!!box,neg:t(box&&box.querySelector('.ac-neg')),faltas:t(box&&box.querySelector('.ac-faltas')),vals:t(document.getElementById('ac-vals')),
-     nome:t(box&&box.querySelector('.ac-nome')),aviso:t(box&&box.querySelector('.mg-aviso')),estado:t(document.getElementById('ac-est')),v,retoma:!!document.getElementById('ac-retoma_valor')};});
+     nome:t(box&&box.querySelector('.ac-nome')),aviso:t(box&&box.querySelector('.mg-aviso')),estado:t(document.getElementById('ac-est')),v,retoma:!!document.getElementById('ac-retoma_marca')};});
  const lerPDF=async f=>{const doc=await PDFLib.PDFDocument.load(fs.readFileSync(f));const form=doc.getForm();const o={};
    form.getFields().forEach(x=>{const n=x.getName();o[n]=x instanceof PDFLib.PDFCheckBox?x.isChecked():String(x.getText()||'').replace(/[\s  ]+/g,' ');});return o;};
  // ---------- vendedor do negócio ----------
@@ -57,8 +57,7 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
  await p.click('[data-action="acordo-abrir"]');await p.waitForTimeout(600);const B=await painel(p);
  // escrever o que é do acordo (grava sozinho)
  const escrever=async(k,v)=>{await p.fill('#ac-'+k,v);};
- await escrever('viatura_cor','Cinzento Racing');await escrever('retoma_kms','35 000');await escrever('retoma_cor','Vermelho');
- await escrever('retoma_data_matricula','2019-05-20');await escrever('retoma_valor','6 500');await escrever('sinal_numerario','500');await escrever('sinal_transferencia','1 000');
+ await escrever('viatura_cor','Cinzento Racing');
  await escrever('observacoes','Inclui malas laterais e revisão dos 40 000 km.');await p.check('#ac-bmw_fs');
  const caixa=await p.evaluate(()=>{const c=document.getElementById('ac-bmw_fs');const cs=getComputedStyle(c);const r=c.getBoundingClientRect();return {borda:parseFloat(cs.borderTopWidth),fundo:cs.backgroundColor,img:cs.backgroundImage!=='none',w:r.width,h:r.height};});
  await p.waitForTimeout(1200);const C=await painel(p);const escritas1=est.escritas.slice();
@@ -86,20 +85,20 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
  console.log(JSON.stringify(R,null,1));
  const ultima=escritas1[escritas1.length-1]||[];
  const ok={
-  'só nos negócios de usadas (o de mota nova não tem o botão; a Folha de Negócio está desligada)':!nova.botao&&!folhaNaNova&&/Acordo de venda/.test(A.botao)&&!A.aberto,
+  'só nos negócios de usadas (o de mota nova tem a Folha de Negócio, não o acordo)':!nova.botao&&folhaNaNova&&/Acordo de venda/.test(A.botao)&&!A.aberto,
   'abre na página com o que vem do negócio e sem faltas':B.aberto&&/Cliente Usada Ficticio/.test(B.neg)&&/123456789/.test(B.neg)&&/3800-100/.test(B.neg)&&/AA-11-BB/.test(B.neg)&&/Honda Africa Twin · 22-CC-33/.test(B.neg)&&!B.faltas&&!/NOTA INTERNA/.test(B.neg),
   'valores por omissão: data de hoje, marca, km do stock, data da matrícula, retoma Honda, pronto pagamento':B.v.data_acordo===hoje.toISOString().slice(0,10)||B.v.data_acordo===`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}-${String(hoje.getDate()).padStart(2,'0')}`,
   'por omissão (resto)':B.v.viatura_marca==='BMW'&&B.v.viatura_kms==='41000'&&B.v.viatura_data_matricula==='2021-03-15'&&B.v.retoma_marca==='Honda'&&B.v.forma_pagamento==='Pronto pagamento'&&B.retoma,
-  'grava sozinho o que se escreve (no negócio certo)':ultima[1]===7&&ultima[2].viatura_cor==='Cinzento Racing'&&ultima[2].retoma_valor==='6 500'&&ultima[2].bmw_fs===true&&/guardado/.test(C.estado),
+  'grava sozinho o que se escreve (no negócio certo)':ultima[1]===7&&ultima[2].viatura_cor==='Cinzento Racing'&&ultima[2].observacoes&&ultima[2].bmw_fs===true&&/guardado/.test(C.estado),
   'valores do acordo: sinal, retoma e valor a liquidar':/Sinal ?1 500,00 €/.test(C.vals)&&/Retoma ?6 500,00 €/.test(C.vals)&&/Valor a liquidar ?4 500,00 €/.test(C.vals)&&/Valor de venda ?12 500,00 €/.test(C.vals),
   'a caixa da BMW FS vê-se (borda) e mostra o visto quando marcada':caixa.borda>=1&&caixa.w>=16&&caixa.h>=16&&caixa.img&&caixa.fundo!=='rgba(0, 0, 0, 0)',
-  'o que se escreveu sobrevive a redesenhar':D.v.viatura_cor==='Cinzento Racing'&&D.v.sinal_transferencia==='1 000'&&D.v.bmw_fs===true,
+  'o que se escreveu sobrevive a redesenhar':D.v.viatura_cor==='Cinzento Racing'&&!!D.v.observacoes&&D.v.bmw_fs===true,
   'nome do ficheiro: Acordo de venda + matrícula':nomeFicheiro==='Acordo de venda AA-11-BB.pdf'&&/Acordo de venda AA-11-BB\.pdf/.test(B.nome),
   'PDF: dados do negócio e do cliente':pdf.vendedor==='Vendedor Um'&&pdf.ponto_venda==='Caetano Baviera · Aveiro'&&pdf.data_acordo===hojePT&&pdf.cliente_nome==='Cliente Usada Ficticio'&&pdf.cliente_nif==='123456789'&&
     pdf.cliente_morada==='Rua das Flores 10, Esgueira, Aveiro'&&pdf.cliente_cp==='3800-100'&&pdf.cliente_cc==='12345678 9ZZ1'&&pdf.cliente_telemovel==='912 345 678'&&pdf.cliente_email==='cliente@exemplo.pt'&&!pdf.empresa_nome,
   'PDF: mota vendida':pdf.viatura_marca==='BMW'&&pdf.viatura_modelo==='R 1250 GS Adventure'&&pdf.viatura_matricula==='AA-11-BB'&&pdf.viatura_cor==='Cinzento Racing'&&!('viatura_estofos' in pdf)&&pdf.viatura_kms==='41 000'&&pdf.viatura_data_matricula==='15/03/2021',
   'PDF: retoma':pdf.retoma_marca==='Honda'&&pdf.retoma_modelo==='Honda Africa Twin'&&pdf.retoma_matricula==='22-CC-33'&&pdf.retoma_kms==='35 000'&&pdf.retoma_cor==='Vermelho'&&pdf.retoma_data_matricula==='20/05/2019'&&pdf.retoma_valor==='6 500,00',
-  'PDF: sinal, pagamento, valores, observações e BMW FS':pdf.sinal_numerario==='500,00'&&pdf.sinal_transferencia==='1 000,00'&&!pdf.sinal_cheque&&!pdf.sinal_mb&&pdf.forma_pagamento==='Pronto pagamento'&&
+  'PDF: sinal, pagamento, valores, observações e BMW FS':!pdf.sinal_numerario&&pdf.sinal_transferencia==='1 500,00'&&!pdf.sinal_cheque&&!pdf.sinal_mb&&pdf.forma_pagamento==='Pronto pagamento'&&
     pdf.valor_venda==='12 500,00'&&pdf.valor_sinal==='1 500,00'&&pdf.valor_retoma==='6 500,00'&&pdf.valor_liquidar==='4 500,00'&&pdf.observacoes==='Inclui malas laterais e revisão dos 40 000 km.'&&pdf.bmw_fs_conhecimento===true,
   'fica guardado no negócio tal como saiu e abre-se em «Emitidos»':est.reg.length===1&&est.reg[0].negocio_id===7&&est.reg[0].tipo==='acordo_venda'&&/^7\/acordo_venda-\d{8}-\d{6}-\w+\.pdf$/.test(est.reg[0].caminho)&&
     est.reg[0].dados.campos.cliente_nome==='Cliente Usada Ficticio'&&emit.length===1&&/Vendedor Um/.test(emit[0])&&nomeAbrir==='Acordo de venda AA-11-BB.pdf'&&pdfGuardado.valor_liquidar==='4 500,00',

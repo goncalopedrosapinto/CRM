@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-04-e">
+<meta name="app-version" content="2026-11-05-a">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2467,7 +2467,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-04-e';
+const APP_VERSION='2026-11-05-a';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -2555,11 +2555,13 @@ function novaVersaoHTML(){return _novaVersao?`<div class="nv-bar" role="status">
 const STATUSES=['Retail','Carteira','Quente','Morno','Frio','Perdido'];
 const SDOT={Retail:'var(--green)',Carteira:'var(--blue)',Quente:'var(--red)',Morno:'var(--amber)',Frio:'var(--slate)',Matricula:'var(--purple)',Perdido:'#6b7280'};
 const MOTIVOS_PERDA=['Preço','Concorrência','Prazo de entrega','Financiamento','Retoma','Desistência','Adiado','Outro'];
-const TYPES=['MN','MD','MU'],ORIGINS=['','Cliente','Recom.','Stand','Evento','Lead'],PROFILES=['','Particular','Empresa','Protocolo','Estado'],GAR_PERIODOS=['1 ano','2 anos','3 anos','4 anos','5 anos'],FINS=['','PP','Fext','Fint'];
+const TYPES=['MN','MD','MU'],ORIGINS=['','Cliente','Recom.','Stand','Evento','Lead'],PROFILES=['','Particular','Empresa','Protocolo','Estado'],GAR_PERIODOS=['1 ano','2 anos','3 anos','4 anos','5 anos'],FINS=['','PP','Fext','Fint'],SINAL_FORMAS=['','Numerário','Cheque','Transferência','MB'];
+// colunas que só existem depois de correr o SQL respetivo: sem elas, o campo não aparece e não vai na gravação
+const NEG_OPCIONAIS=['data_nascimento','decl_circ','sinal','sinal_forma','retoma_ano','retoma_kms','retoma_cor','retoma_data_matricula','retoma_valor','retoma_valor_comercio'];
 const FIELD_GROUPS=[
   {g:'INFO',fields:[{k:'status',l:'Status',t:'select',o:STATUSES},{k:'motivo_perda',l:'Motivo da Perda',t:'select',o:MOTIVOS_PERDA,show:'perdido'},{k:'recontactar_em',l:'Re-contactar a partir de (6 meses depois de perdido)',t:'date',show:'perdido'},{k:'alert_date',l:'Alertar no dia (sugerido — podes mudar)',t:'date',show:'funil'}]},
   {g:'Identificação',fields:[{k:'id_cliente',l:'Cliente',t:'text'},{k:'local',l:'Código Postal',t:'text'},{k:'nif',l:'NIF',t:'text'},{k:'morada',l:'Morada',t:'text'},{k:'cc',l:'CC',t:'text'},{k:'data_nascimento',l:'Data de nascimento (aniversário)',t:'date'},{k:'email',l:'Email',t:'text'},{k:'contacto',l:'Contacto',t:'text'}]},
-  {g:'Negócio',fields:[{k:'neg',l:'Data Negócio',t:'date'},{k:'mes1',l:'Mês Referência',t:'month'},{k:'type',l:'Tipo',t:'select',o:TYPES},{k:'pvp',l:'PVP (€)',t:'number'},{k:'origin',l:'Origem',t:'select',o:ORIGINS},{k:'lead_webapp',l:'Nº Lead (WebApp)',t:'text',show:'lead'},{k:'campanha',l:'Campanha / lote (ex: P6 08/26)',t:'text',show:'lead'},{k:'profile',l:'Perfil',t:'select',o:PROFILES},{k:'retoma',l:'Retoma?',t:'select',o:['Não','Sim']},{k:'retoma_modelo',l:'Modelo da Retoma',t:'text',show:'retoma'},{k:'retoma_mat',l:'Matrícula da Retoma',t:'text',show:'retoma'},{k:'biz',l:'Bizagi',t:'text'},{k:'fin',l:'Financiamento',t:'select',o:FINS}]},
+  {g:'Negócio',fields:[{k:'neg',l:'Data Negócio',t:'date'},{k:'mes1',l:'Mês Referência',t:'month'},{k:'type',l:'Tipo',t:'select',o:TYPES},{k:'pvp',l:'PVP (€)',t:'number'},{k:'origin',l:'Origem',t:'select',o:ORIGINS},{k:'lead_webapp',l:'Nº Lead (WebApp)',t:'text',show:'lead'},{k:'campanha',l:'Campanha / lote (ex: P6 08/26)',t:'text',show:'lead'},{k:'profile',l:'Perfil',t:'select',o:PROFILES},{k:'retoma',l:'Retoma?',t:'select',o:['Não','Sim']},{k:'retoma_modelo',l:'Modelo da Retoma',t:'text',show:'retoma'},{k:'retoma_mat',l:'Matrícula da Retoma',t:'text',show:'retoma'},{k:'retoma_ano',l:'Ano da Retoma',t:'text',show:'retoma'},{k:'retoma_kms',l:'Km da Retoma',t:'text',show:'retoma'},{k:'retoma_cor',l:'Cor da Retoma',t:'text',show:'retoma'},{k:'retoma_data_matricula',l:'Data de Matrícula da Retoma',t:'date',show:'retoma'},{k:'retoma_valor',l:'Valor dado ao cliente pela retoma (€)',t:'text',show:'retoma'},{k:'retoma_valor_comercio',l:'Valor dado pelo comércio pela retoma (€)',t:'text',show:'retoma'},{k:'biz',l:'Bizagi',t:'text'},{k:'fin',l:'Financiamento',t:'select',o:FINS},{k:'sinal',l:'Sinal (€)',t:'text'},{k:'sinal_forma',l:'Forma do sinal',t:'select',o:SINAL_FORMAS}]},
   {g:'Viatura',fields:[{k:'stock_id',l:'Mota do Stock (modelo · matrícula)',t:'stockpick',show:'stockpick'},{k:'model',l:'Modelo',t:'text'},{k:'version',l:'Versão',t:'text'},{k:'stock',l:'Em Stock?',t:'select',o:['Não','Sim']},{k:'enc',l:'Encomenda',t:'text'},{k:'chas',l:'Chassis',t:'text'},{k:'mat',l:'Matrícula',t:'text'},{k:'gar',l:'Garantia?',t:'select',o:['Não','Sim']},{k:'gar_periodo',l:'Período de Garantia',t:'select',o:GAR_PERIODOS,show:'garantia'}]},
   {g:'Extras',fields:[{k:'flag_ccgo',l:'CC Go',t:'toggle'},{k:'flag_rgpd',l:'RGPD',t:'toggle'},{k:'flag_seguro',l:'Seguro Nosso',t:'toggle'},{k:'flag_lifestyle',l:'Lifestyle',t:'toggle'}]},
   {g:'Datas',fields:[{k:'status_mota',l:'Status da mota',t:'text'},{k:'col_198',l:'198',t:'text'},{k:'dmat',l:'Data Matrícula',t:'date'},{k:'decl_circ',l:'Declaração de circulação',t:'select',o:['','Atualizada','Por atualizar'],show:'declcirc'},{k:'col_298',l:'298',t:'date'}]},
@@ -4308,7 +4310,7 @@ async function saveRecord(){
   if((S.form.type==='MU'||S.form.type==='MD')&&!S.form.stock_id&&(S.form.status==='Retail'||S.form.status==='Carteira')){
     if(!confirm('Esta venda de usada/demo não tem a Mota do Stock associada.\n\nSem isso não consegues ver a margem real nem o stock fica marcado como vendido.\n\nGravar mesmo assim?'))return;
   }
-  setState({loading:true,error:''});try{const b={...S.form};['neg','dmat','col_298','alert_date','recontactar_em','data_nascimento','decl_circ'].forEach(k=>{if(!b[k])b[k]=null});negColunasNovas(b);if(b.recontactar_em==null||(S.selected&&String(b.recontactar_em)===String(S.selected.recontactar_em||'')))delete b.recontactar_em;['qor','xev','bev','m_flag','csc','cme'].forEach(k=>{b[k]=b[k]?parseInt(b[k]):null});b.pvp=b.pvp?parseFloat(b.pvp):null;b.stock_id=b.stock_id?parseInt(b.stock_id):null;if(!isAdmin())delete b.obs_gestor;delete b.id;delete b.created_at;delete b.updated_at;delete b.updated_by;if(!S.selected&&isAdmin())b.vendedor_id=encNovoVendDe(S.form)||S.viewVendedor||S.me.id;S._avisoMes='';if(!isAdmin()&&b.status==='Carteira'){const _o=S.selected;if(!_o||_o.status!=='Carteira')S._avisoMes='Mês de entrega enviado ao chefe para validar';else if(_o.mes1&&_o.mes1_validado===true&&(b.mes1||'')!==(_o.mes1||''))S._avisoMes='Pedido enviado ao chefe: mudar para '+mrTxt(b.mes1)+' (até lá conta '+mrTxt(_o.mes1)+')';}if(S.selected){if(b.status!==S.selected.status)b.status_updated_at=new Date().toISOString();delete b.status_updated_at_keep;await supabaseApi('PATCH',`/baviera_control?id=eq.${S.selected.id}`,b)}else{b.status_updated_at=new Date().toISOString();const _novo=await supabaseApi('POST','/baviera_control',b);if(S.fmRascunho&&Array.isArray(_novo)&&_novo[0]&&_novo[0].id)await fmLigarAoNovo(_novo[0].id);}await syncStockComNegocio(b.stock_id,b.status);await loadRecords();setState({screen:'list',selected:null,loading:false});if(S._avisoMes){const _t=S._avisoMes;S._avisoMes='';setTimeout(()=>toast(_t),450);}}catch(e){setState({error:'Erro ao guardar: '+erroTexto(e),loading:false})}}
+  setState({loading:true,error:''});try{const b={...S.form};['neg','dmat','col_298','alert_date','recontactar_em','data_nascimento','decl_circ','sinal_forma','retoma_cor','retoma_data_matricula'].forEach(k=>{if(!b[k])b[k]=null});['sinal','retoma_valor','retoma_valor_comercio'].forEach(k=>{if(k in b){const n=numPT(String(b[k]==null?'':b[k]));b[k]=n==null?null:n;}});['retoma_ano','retoma_kms'].forEach(k=>{if(k in b){const t=String(b[k]==null?'':b[k]).replace(/\D/g,'');b[k]=t?parseInt(t,10):null;}});negColunasNovas(b);if(b.recontactar_em==null||(S.selected&&String(b.recontactar_em)===String(S.selected.recontactar_em||'')))delete b.recontactar_em;['qor','xev','bev','m_flag','csc','cme'].forEach(k=>{b[k]=b[k]?parseInt(b[k]):null});b.pvp=b.pvp?parseFloat(b.pvp):null;b.stock_id=b.stock_id?parseInt(b.stock_id):null;if(!isAdmin())delete b.obs_gestor;delete b.id;delete b.created_at;delete b.updated_at;delete b.updated_by;if(!S.selected&&isAdmin())b.vendedor_id=encNovoVendDe(S.form)||S.viewVendedor||S.me.id;S._avisoMes='';if(!isAdmin()&&b.status==='Carteira'){const _o=S.selected;if(!_o||_o.status!=='Carteira')S._avisoMes='Mês de entrega enviado ao chefe para validar';else if(_o.mes1&&_o.mes1_validado===true&&(b.mes1||'')!==(_o.mes1||''))S._avisoMes='Pedido enviado ao chefe: mudar para '+mrTxt(b.mes1)+' (até lá conta '+mrTxt(_o.mes1)+')';}if(S.selected){if(b.status!==S.selected.status)b.status_updated_at=new Date().toISOString();delete b.status_updated_at_keep;await supabaseApi('PATCH',`/baviera_control?id=eq.${S.selected.id}`,b)}else{b.status_updated_at=new Date().toISOString();const _novo=await supabaseApi('POST','/baviera_control',b);if(S.fmRascunho&&Array.isArray(_novo)&&_novo[0]&&_novo[0].id)await fmLigarAoNovo(_novo[0].id);}await syncStockComNegocio(b.stock_id,b.status);await loadRecords();setState({screen:'list',selected:null,loading:false});if(S._avisoMes){const _t=S._avisoMes;S._avisoMes='';setTimeout(()=>toast(_t),450);}}catch(e){setState({error:'Erro ao guardar: '+erroTexto(e),loading:false})}}
 async function syncStockComNegocio(stockId,status){
   // Estado da mota acompanha o negocio: funil=A negociar; carteira/retail=Vendida; perdido=Disponivel
   if(!stockId)return;
@@ -4372,7 +4374,7 @@ function funilAtrasado(r){
 const DECL_CIRC_DIAS=90,DECL_CIRC_MAX=365;
 // antes de correr o SQL "2026-10-23_declaracao_aniversario" estas colunas não existem: não as manda ao gravar
 function negTemColuna(k){return (S.records||[]).some(r=>r&&(k in r));}
-function negColunasNovas(b){const R=S.records||[];['data_nascimento','decl_circ'].forEach(k=>{if(R.length?!R.some(r=>r&&(k in r)):(b[k]==null||b[k]===''))delete b[k];});return b;}
+function negColunasNovas(b){const R=S.records||[];NEG_OPCIONAIS.forEach(k=>{if(R.length?!R.some(r=>r&&(k in r)):(b[k]==null||b[k]===''))delete b[k];});return b;}
 function declCircDias(r){if(!r||!r.dmat)return null;const t=new Date(String(r.dmat).slice(0,10)+'T00:00:00');if(isNaN(t))return null;const h=new Date();h.setHours(0,0,0,0);return Math.round((h-t)/864e5);}
 // mota nova vendida, matriculada há 90 dias ou mais, sem resposta (até 1 ano) ou marcada "Por atualizar" (até resolver)
 function declCircPendente(r){
@@ -7645,8 +7647,8 @@ const ACORDO_GRUPOS=[
   ['Acordo',[['data_acordo','Data do acordo','date']]],
   ['Mota vendida',[['viatura_marca','Marca'],['viatura_cor','Cor'],['viatura_kms','Km','num'],['viatura_data_matricula','Data da matrícula','date']]],
   ['Empresa (quando aplicável)',[['empresa_nome','Empresa'],['empresa_nif','NIF'],['empresa_morada','Morada','',true],['empresa_cp','Código postal'],['empresa_telefone','Telefone/Telemóvel'],['empresa_email','E-mail']]],
-  ['Retoma',[['retoma_marca','Marca'],['retoma_kms','Km','num'],['retoma_cor','Cor'],['retoma_data_matricula','Data da matrícula','date'],['retoma_valor','Valor de retoma (€)','eur']]],
-  ['Sinal e pagamento',[['sinal_numerario','Sinal em numerário (€)','eur'],['sinal_cheque','Sinal em cheque (€)','eur'],['sinal_transferencia','Sinal por transferência (€)','eur'],['sinal_mb','Sinal por MB (€)','eur'],['forma_pagamento','Forma de pagamento','',true]]],
+  ['Retoma',[['retoma_marca','Marca']]],
+  ['Pagamento',[['forma_pagamento','Forma de pagamento','',true]]],
   ['Observações',[['observacoes','Observações','area']]]
 ];
 const ACORDO_SINAIS=['sinal_numerario','sinal_cheque','sinal_transferencia','sinal_mb'];
@@ -7665,8 +7667,14 @@ function acordoNum(v){const t=eotTxt(v);if(!t)return null;const n=numPT(t);retur
 // números do acordo sempre com separador de milhares (1 500,00 e 12 500,00), sinal "-" (a fonte do PDF não tem o "−")
 function acordoMil(i){return String(i).replace(/\B(?=(\d{3})+(?!\d))/g,' ');}
 function acordoEur(n){if(n==null||!isFinite(n))return'';const [i,d]=Math.abs(n).toFixed(2).split('.');return(n<0?'-':'')+acordoMil(i)+','+d;}
-function acordoValores(r){const d=acordoDados(r);const venda=acordoNum(r.pvp);const sinal=ACORDO_SINAIS.reduce((a,k)=>a+(acordoNum(d[k])||0),0);
-  const retoma=r.retoma==='Sim'?acordoNum(d.retoma_valor):null;return {venda,sinal,retoma,liquidar:venda!=null?venda-sinal-(retoma||0):null};}
+const ACORDO_SINAL_DE={'Numerário':'sinal_numerario','Cheque':'sinal_cheque','Transferência':'sinal_transferencia','MB':'sinal_mb'};
+// sinal por forma: do negócio; nos acordos feitos antes destes campos, o que ficou escrito no acordo
+function acordoSinais(r){const d=acordoDados(r);const n=acordoNum(r.sinal);const o={};
+  if(n!=null){o[ACORDO_SINAL_DE[r.sinal_forma]||'sinal_numerario']=n;return {porForma:o,total:n,semForma:!ACORDO_SINAL_DE[r.sinal_forma]};}
+  ACORDO_SINAIS.forEach(k=>{const v=acordoNum(d[k]);if(v!=null)o[k]=v;});return {porForma:o,total:Object.values(o).reduce((a,b)=>a+b,0),semForma:false};}
+function acordoRet(r,k){const d=acordoDados(r);const v=r[k];return v!=null&&v!==''?v:(d[k]==null?'':d[k]);}
+function acordoValores(r){const venda=acordoNum(r.pvp);const sinal=acordoSinais(r).total;
+  const retoma=r.retoma==='Sim'?acordoNum(acordoRet(r,'retoma_valor')):null;return {venda,sinal,retoma,liquidar:venda!=null?venda-sinal-(retoma||0):null};}
 function acordoFaltas(r){const f=[['id_cliente','Cliente'],['nif','NIF'],['morada','Morada'],['local','Código postal'],['cc','C.C.'],['contacto','Telemóvel'],['email','E-mail'],['model','Modelo']]
     .filter(([k])=>!String(r[k]==null?'':r[k]).trim()).map(x=>x[1]);
   if(!acordoMat(r))f.push('Matrícula');if(acordoNum(r.pvp)==null)f.push('Valor de venda (PVP)');
@@ -7702,13 +7710,14 @@ function acordoHTML(r){
     if(t==='area')return`<div class="vd-f" style="grid-column:1/-1"><label for="ac-${k}">${lb}</label><textarea class="norma-inp" id="ac-${k}" data-ac="${k}" rows="3" maxlength="600">${esc(v)}</textarea></div>`;
     return`<div class="vd-f"${larga?' style="grid-column:1/-1"':''}><label for="ac-${k}">${lb}</label><input class="norma-inp" id="ac-${k}" data-ac="${k}"${t==='date'?' type="date"':(t==='num'||t==='eur'?' inputmode="decimal"':'')} value="${esc(v)}"></div>`;};
   const deNeg=[['Cliente',r.id_cliente],['NIF',r.nif],['Morada',r.morada],['Código postal',r.local],['C.C.',r.cc],['Telemóvel',r.contacto],['E-mail',r.email],
-    ['Modelo',[r.model,r.version].filter(Boolean).join(' ')],['Matrícula',mat],['Vendedor',nomePerfil(r.vendedor_id)]].concat(r.retoma==='Sim'?[['Retoma',[r.retoma_modelo,String(r.retoma_mat||'').trim().toUpperCase()].filter(Boolean).join(' · ')]]:[]);
+    ['Modelo',[r.model,r.version].filter(Boolean).join(' ')],['Matrícula',mat],['Vendedor',nomePerfil(r.vendedor_id)],['Sinal',acordoNum(r.sinal)!=null?negEur(r.sinal)+(r.sinal_forma?' · '+r.sinal_forma:''):'']]
+    .concat(r.retoma==='Sim'?[['Retoma',[r.retoma_modelo,String(r.retoma_mat||'').trim().toUpperCase(),acordoRet(r,'retoma_kms')!==''?acordoMil(acordoRet(r,'retoma_kms'))+' km':'',acordoRet(r,'retoma_cor')].filter(Boolean).join(' · ')],['Valor de retoma',negEur(acordoRet(r,'retoma_valor'))]]:[]);
   const empAberta=r.profile==='Empresa'||['empresa_nome','empresa_nif','empresa_morada'].some(k=>String(d[k]||'').trim());
   const grupos=ACORDO_GRUPOS.filter(([g])=>g!=='Retoma'||r.retoma==='Sim');
   return`<div class="gpp-card vd-form ac-box" id="ac-box">
-    <div class="ac-top"><div><div class="vd-form-t">Acordo de venda</div><div class="vd-form-sub">O que já está no negócio entra sozinho no PDF. Aqui escreves só o que é do acordo; fica guardado neste negócio.</div></div><span class="ac-est" id="ac-est" aria-live="polite">${esc(S.acordoEstado||'')}</span></div>
+    <div class="ac-top"><div><div class="vd-form-t">Acordo de venda</div><div class="vd-form-sub">O que já está no negócio entra sozinho no PDF (sinal e retoma incluídos; para mudar, edita o negócio). Aqui escreves só o que é do acordo; fica guardado neste negócio.</div></div><span class="ac-est" id="ac-est" aria-live="polite">${esc(S.acordoEstado||'')}</span></div>
     ${st.erro?`<div class="mg-aviso" style="margin:0 0 10px">${esc(st.erro)}</div>`:''}
-    <div class="ac-neg">${deNeg.map(([l,v])=>{const t=String(v==null?'':v).trim();return`<div><span>${l}</span><b class="${t?'':'ac-falta'}">${t?esc(t):'falta'}</b></div>`;}).join('')}</div>
+    <div class="ac-neg">${deNeg.map(([l,v])=>{const t=String(v==null?'':v).trim();const obr=!['Sinal','Valor de retoma'].includes(l);return`<div><span>${l}</span><b class="${t||!obr?'':'ac-falta'}">${t?esc(t):(obr?'falta':'—')}</b></div>`;}).join('')}</div>
     ${faltas.length?`<div class="ac-faltas"><span>Falta no negócio: <b>${esc(faltas.join(', '))}</b>.</span><button class="btn btn-outline btn-sm" data-action="open-edit">Editar negócio</button></div>`:''}
     ${grupos.map(([g,campos])=>g.startsWith('Empresa')?`<details class="ac-emp"${empAberta?' open':''}><summary>${g}</summary><div class="vd-grid">${campos.map(inp).join('')}</div></details>`:`<div class="ac-sec">${g}</div><div class="vd-grid${campos.length===1&&campos[0][2]==='date'?' ac-g1':''}">${campos.map(inp).join('')}</div>`).join('')}
     <label class="ac-chk"><input type="checkbox" id="ac-bmw_fs" data-ac="bmw_fs"${d.bmw_fs?' checked':''}><span>Tomei conhecimento das condições, vantagens e campanhas da BMW Financial Services.</span></label>
@@ -7732,9 +7741,9 @@ function acordoCampos(r){const d=acordoDados(r),V=acordoValores(r),m=acordoStock
     empresa_nome:d.empresa_nome||'',empresa_nif:d.empresa_nif||'',empresa_morada:d.empresa_morada||'',empresa_cp:d.empresa_cp||'',empresa_telefone:d.empresa_telefone||'',empresa_email:d.empresa_email||'',
     viatura_marca:d.viatura_marca||'',viatura_modelo:[r.model,r.version].filter(Boolean).join(' ')||(m&&m.modelo)||'',viatura_matricula:acordoMat(r),viatura_cor:d.viatura_cor||'',
     viatura_kms:km(d.viatura_kms),viatura_data_matricula:dt(d.viatura_data_matricula),
-    retoma_marca:ret?d.retoma_marca||'':'',retoma_modelo:ret?r.retoma_modelo||'':'',retoma_matricula:ret?String(r.retoma_mat||'').toUpperCase():'',retoma_kms:ret?km(d.retoma_kms):'',
-    retoma_cor:ret?d.retoma_cor||'':'',retoma_data_matricula:ret?dt(d.retoma_data_matricula):'',retoma_valor:ret?eur(d.retoma_valor):'',
-    sinal_numerario:eur(d.sinal_numerario),sinal_cheque:eur(d.sinal_cheque),sinal_transferencia:eur(d.sinal_transferencia),sinal_mb:eur(d.sinal_mb),forma_pagamento:d.forma_pagamento||'',
+    retoma_marca:ret?d.retoma_marca||'':'',retoma_modelo:ret?r.retoma_modelo||'':'',retoma_matricula:ret?String(r.retoma_mat||'').toUpperCase():'',retoma_kms:ret?km(acordoRet(r,'retoma_kms')):'',
+    retoma_cor:ret?String(acordoRet(r,'retoma_cor')):'',retoma_data_matricula:ret?dt(acordoRet(r,'retoma_data_matricula')):'',retoma_valor:ret?eur(acordoRet(r,'retoma_valor')):'',
+    ...Object.fromEntries(ACORDO_SINAIS.map(k=>[k,acordoEur(acordoSinais(r).porForma[k]??null)])),forma_pagamento:d.forma_pagamento||'',
     valor_venda:acordoEur(V.venda),valor_sinal:V.sinal?acordoEur(V.sinal):'',valor_retoma:acordoEur(V.retoma),valor_liquidar:acordoEur(V.liquidar),observacoes:d.observacoes||''};}
 const ACORDO_DIREITA=['retoma_valor','sinal_numerario','sinal_cheque','sinal_transferencia','sinal_mb','valor_venda','valor_sinal','valor_retoma','valor_liquidar','viatura_kms','retoma_kms'];
 // preenche um modelo PDF (campos de texto e caixas) e devolve os bytes; o PDF continua editável
@@ -7786,79 +7795,70 @@ async function docAbrir(docId,k){const st=(S.docsEmit||{})[k];const x=st&&(st.L|
 // ===== Folha de Negócio (motas novas e demos): o PDF de gestão preenchido com os dados do negócio =====
 // Mesma linha de acordos_venda (um por negócio), com as chaves fn_*. Modelo: docs/folha-negocio.pdf (gerado por docs/fontes/folha_negocio.py).
 const FOLHA_PDF='docs/folha-negocio.pdf';
-let FOLHA_ATIVA=false;   // desligada a pedido do chefe até chegar o Excel revisto; o código e o teste ficam prontos
-const FOLHA_TV=['Novo','Stock Tático','KM0','Demo','Cortesia','Serviço','Usado','PT'];
-const FOLHA_ORIG=['Stand','Recomendação','Lead BMW','Lead Internet','CSC','Angariação','APV','Eventos','Cliente Atual'];
-const FOLHA_FIN=[['select','Select'],['ald','ALD'],['leasing','Leasing'],['credito','Crédito'],['pp','PP'],['outro_banco','Outro Banco'],['seguro_auto','Seguro Auto'],['gap','GAP'],['protecao_credito','Proteção de crédito']];
+let FOLHA_ATIVA=true;
+const FOLHA_TV=['Novo','Demo'];
+const FOLHA_ORIG=['Stand','Recomendação','Lead','BSC','Angariação','APV','Eventos','Cliente Atual'];
+const FOLHA_FIN=[['pp','PP'],['f_ext','F. Ext'],['f_bmw','F BMW'],['gap','GAP'],['protecao_credito','Proteção de Crédito']];
 const FOLHA_FAT=['Empresa','Dec. Utilizador','Particular'];
-const FOLHA_ORIG_DE={Stand:'Stand','Recom.':'Recomendação',Evento:'Eventos',Cliente:'Cliente Atual'};
+const FOLHA_ORIG_DE={Stand:'Stand','Recom.':'Recomendação',Evento:'Eventos',Cliente:'Cliente Atual',Lead:'Lead'};
+const FOLHA_FIN_DE={PP:'pp',Fext:'f_ext',Fint:'f_bmw'};
+// só o que não existe no negócio; o resto (cliente, Bizagi, PVP, sinal, encomenda, retoma…) vem do negócio
 const FOLHA_GRUPOS=[
   ['Folha',[['fn_proposta','Nº proposta'],['fn_data','Data','date']]],
-  ['Cliente',[['fn_empresa','Empresa'],['fn_utilizador','Utilizador'],['fn_rgpd','Recolha de consentimento (RGPD)','sel',['','Sim','Não']]]],
-  ['Venda',[['fn_tipo_venda','Tipo de venda','sel',[''].concat(FOLHA_TV)],['fn_origem','Origem do negócio','sel',[''].concat(FOLHA_ORIG)],['fn_codigo_modelo','Código modelo']]],
-  ['Informações de negócio',[['fn_valor_fatura','Valor fatura (€)','eur'],['fn_sinal','Sinal (€)','eur'],['fn_n_stock','Nº stock'],['fn_pac','Valor PAC (€)','eur'],['fn_frota','Valor frota (€)','eur'],['fn_prp','Nº PRP'],['fn_parque','Parque (nº viaturas)','num'],['fn_faturacao','Faturação','sel',[''].concat(FOLHA_FAT)],['fn_subvencao','Subvenção taxa']]],
+  ['Cliente',[['fn_empresa','Empresa'],['fn_rgpd','Recolha de consentimento (RGPD)','sel',['','Sim','Não']]]],
+  ['Venda',[['fn_tipo_venda','Tipo de venda','sel',[''].concat(FOLHA_TV)],['fn_origem','Origem do negócio','sel',[''].concat(FOLHA_ORIG)],['fn_faturacao','Faturação','sel',[''].concat(FOLHA_FAT)],['fn_subvencao','Subvenção taxa']]],
   ['Seguro',[['fn_data_carta','Data de emissão da carta','date'],['fn_mat_anterior','Matrícula da viatura anterior']]],
-  ['Retoma',[['fn_retoma_ano','Ano','num'],['fn_retoma_kms','Km','num'],['fn_retoma_valor','Valor dado ao cliente (€)','eur'],['fn_retoma_comercio','Valor dado pelo comércio (€)','eur']]],
   ['Observações',[['fn_observacoes','Observações','area']]]
 ];
-const FOLHA_DIREITA=['valor_fatura','sinal','valor_pac','valor_frota','retoma_valor','retoma_valor_comercio','retoma_kms'];
+const FOLHA_DIREITA=['valor_fatura','sinal','retoma_valor','retoma_valor_comercio','retoma_kms'];
 function folhaElegivel(r){return FOLHA_ATIVA&&!!r&&(r.type==='MN'||r.type==='MD')&&(isAdmin()||(!!S.me&&r.vendedor_id===S.me.id));}
 function folhaSlug(s){return String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');}
-function folhaDefaults(r){const x=(S.folhaExtra||{})[String(r.id)]||{};const emp=r.profile==='Empresa';const h=new Date();
+function folhaDefaults(r){const emp=r.profile==='Empresa';const h=new Date();
   const d={fn_data:h.getFullYear()+'-'+String(h.getMonth()+1).padStart(2,'0')+'-'+String(h.getDate()).padStart(2,'0'),
-    fn_empresa:emp?String(r.id_cliente||''):'',fn_utilizador:emp?'':String(r.id_cliente||''),fn_rgpd:r.flag_rgpd?'Sim':'',
-    fn_tipo_venda:r.type==='MD'?'Demo':'Novo',fn_origem:FOLHA_ORIG_DE[r.origin]||'',fn_codigo_modelo:x.model_code||'',
-    fn_valor_fatura:x.preco_venda!=null?String(x.preco_venda):(r.pvp!=null&&r.pvp!==''?String(r.pvp):''),fn_pac:x.pac||'',
+    fn_empresa:emp?String(r.id_cliente||''):'',fn_rgpd:r.flag_rgpd?'Sim':'',fn_tipo_venda:r.type==='MD'?'Demo':'Novo',fn_origem:FOLHA_ORIG_DE[r.origin]||'',
     fn_faturacao:emp?'Empresa':(r.profile==='Particular'?'Particular':'')};
-  if(r.fin==='PP')d.fn_fin_pp=true;if(r.fin==='Fext')d.fn_fin_outro_banco=true;if(r.flag_seguro)d.fn_fin_seguro_auto=true;
+  if(FOLHA_FIN_DE[r.fin])d['fn_fin_'+FOLHA_FIN_DE[r.fin]]=true;
   return d;}
 function folhaDados(r){const st=(S.acordos||{})[String(r.id)];return Object.assign({},folhaDefaults(r),(st&&st.dados)||{});}
-function folhaFaltas(r){return [['id_cliente','Cliente'],['nif','NIF'],['contacto','Contacto'],['email','E-mail'],['model','Modelo']].filter(([k])=>!String(r[k]==null?'':r[k]).trim()).map(x=>x[1]);}
+function folhaFaltas(r){const f=[['id_cliente','Cliente'],['nif','NIF'],['morada','Morada'],['contacto','Contacto'],['email','E-mail'],['model','Modelo'],['biz','Bizagi']].filter(([k])=>!String(r[k]==null?'':r[k]).trim()).map(x=>x[1]);
+  if(acordoNum(r.pvp)==null)f.push('PVP (valor fatura)');
+  if(r.retoma==='Sim'){if(!String(r.retoma_modelo||'').trim())f.push('Modelo da retoma');if(!String(r.retoma_mat||'').trim())f.push('Matrícula da retoma');}
+  return f;}
 function folhaNomeFicheiro(r){const c=String(r.id_cliente||'').replace(/[\\/:*?"<>|]+/g,'-').replace(/\s+/g,' ').trim().slice(0,60);return'Folha de Negócio'+(c?' '+c:'')+'.pdf';}
-// preço da ficha de margem (vendida, senão a mais recente) e código do modelo da encomenda: só para preencher por omissão
-const _fnExtra=new Set();
-async function folhaExtraCarregar(r){S.folhaExtra=S.folhaExtra||{};const k=String(r.id);if(S.folhaExtra[k]||_fnExtra.has(k))return;_fnExtra.add(k);const x={};
-  try{const F=(await supabaseApi('GET','/fichas_margem?negocio_id=eq.'+encodeURIComponent(r.id)+'&select=estado,dados,updated_at&order=updated_at.desc'))||[];
-    const f=F.find(y=>y.estado==='vendida')||F.find(y=>y.estado!=='arquivada')||F[0];
-    if(f&&f.dados){const pv=numPT(String(f.dados.preco_venda==null?'':f.dados.preco_venda));if(pv!=null&&pv>0)x.preco_venda=pv;
-      const pac=numPT(String(f.dados.pac==null?'':f.dados.pac));if(pac!=null&&pac>0)x.pac=String(pac);}}catch(e){}
-  const enc=String(r.enc||'').trim();
-  if(enc)try{const E=(await supabaseApi('GET','/encomendas_bmw?production_number=eq.'+encodeURIComponent(enc)+'&select=model_code&limit=1'))||[];if(E[0]&&E[0].model_code)x.model_code=String(E[0].model_code);}catch(e){}
-  S.folhaExtra[k]=x;_fnExtra.delete(k);render();}
+function negMorada(r){return [String(r.morada||'').trim(),String(r.local||'').trim()].filter(Boolean).join(', ');}
+function negEur(v){const n=acordoNum(v);return n==null?'':acordoEur(n)+' €';}
 function folhaHTML(r){
   if(String(S.folhaAberta)!==String(r.id))return'';
-  folhaExtraCarregar(r);
   const st=(S.acordos||{})[String(r.id)];
   if(st===undefined){acordoCarregar(r.id);return`<div class="gpp-card vd-form ac-box" id="fn-box"><div class="ac-load">A carregar a folha…</div></div>`;}
   const d=folhaDados(r);const faltas=folhaFaltas(r);const ret=r.retoma==='Sim';
   const inp=([k,lb,t,o])=>{const v=d[k]==null?'':d[k];
     if(t==='area')return`<div class="vd-f" style="grid-column:1/-1"><label for="ac-${k}">${lb}</label><textarea class="norma-inp" id="ac-${k}" data-ac="${k}" rows="3" maxlength="600">${esc(v)}</textarea></div>`;
     if(t==='sel')return`<div class="vd-f"><label for="ac-${k}">${lb}</label><select class="norma-inp" id="ac-${k}" data-ac="${k}">${o.map(x=>`<option value="${esc(x)}" ${String(v)===x?'selected':''}>${esc(x||'—')}</option>`).join('')}</select></div>`;
-    return`<div class="vd-f"><label for="ac-${k}">${lb}</label><input class="norma-inp" id="ac-${k}" data-ac="${k}"${t==='date'?' type="date"':(t==='num'||t==='eur'?' inputmode="decimal"':'')} value="${esc(v)}"></div>`;};
+    return`<div class="vd-f"><label for="ac-${k}">${lb}</label><input class="norma-inp" id="ac-${k}" data-ac="${k}"${t==='date'?' type="date"':''} value="${esc(v)}"></div>`;};
   const dt=v=>v?String(v).slice(0,10).split('-').reverse().join('/'):'';
-  const deNeg=[['Vendedor',nomePerfil(r.vendedor_id),1],['Cliente',r.id_cliente,1],['NIF',r.nif,1],['Contacto',r.contacto,1],['E-mail',r.email,1],['Modelo',[r.model,r.version].filter(Boolean).join(' '),1],
-    ['Encomenda',r.enc],['Matrícula',String(r.mat||'').toUpperCase()],['Data da matrícula',dt(r.dmat)]].concat(ret?[['Retoma',[r.retoma_modelo,String(r.retoma_mat||'').trim().toUpperCase()].filter(Boolean).join(' · ')]]:[]);
-  const grupos=FOLHA_GRUPOS.filter(([g])=>g!=='Retoma'||ret);
+  const deNeg=[['Vendedor',nomePerfil(r.vendedor_id),1],['Bizagi',r.biz,1],['Cliente',r.id_cliente,1],['Morada',negMorada(r),1],['NIF',r.nif,1],['Contacto',r.contacto,1],['E-mail',r.email,1],
+    ['Modelo',[r.model,r.version].filter(Boolean).join(' '),1],['Valor fatura (PVP)',negEur(r.pvp),1],['Sinal',negEur(r.sinal)],['Encomenda',r.enc],['Matrícula',String(r.mat||'').toUpperCase()],['Data da matrícula',dt(r.dmat)]]
+    .concat(ret?[['Retoma',[r.retoma_modelo,String(r.retoma_mat||'').trim().toUpperCase(),r.retoma_ano,r.retoma_kms!=null&&r.retoma_kms!==''?acordoMil(r.retoma_kms)+' km':''].filter(Boolean).join(' · ')],['Valor dado ao cliente',negEur(r.retoma_valor)],['Valor dado pelo comércio',negEur(r.retoma_valor_comercio)]]:[]);
   const fin=`<div class="ac-sec">Tipo de financiamento</div><div class="fn-fin">${FOLHA_FIN.map(([k,l])=>`<label class="ac-chk"><input type="checkbox" id="ac-fn_fin_${k}" data-ac="fn_fin_${k}"${d['fn_fin_'+k]?' checked':''}><span>${l}</span></label>`).join('')}</div>`;
   return`<div class="gpp-card vd-form ac-box" id="fn-box">
-    <div class="ac-top"><div><div class="vd-form-t">Folha de Negócio</div><div class="vd-form-sub">O que já está no negócio entra sozinho no PDF. Aqui escreves só o que é da folha; fica guardado neste negócio.</div></div><span class="ac-est" id="ac-est" aria-live="polite">${esc(S.acordoEstado||'')}</span></div>
+    <div class="ac-top"><div><div class="vd-form-t">Folha de Negócio</div><div class="vd-form-sub">O que já está no negócio entra sozinho no PDF (para mudar, edita o negócio). Aqui escreves só o que é da folha; fica guardado neste negócio.</div></div><span class="ac-est" id="ac-est" aria-live="polite">${esc(S.acordoEstado||'')}</span></div>
     ${st.erro?`<div class="mg-aviso" style="margin:0 0 10px">${esc(st.erro)}</div>`:''}
     <div class="ac-neg">${deNeg.map(([l,v,obr])=>{const t=String(v==null?'':v).trim();return`<div><span>${l}</span><b class="${t||!obr?'':'ac-falta'}">${t?esc(t):(obr?'falta':'—')}</b></div>`;}).join('')}</div>
     ${faltas.length?`<div class="ac-faltas"><span>Falta no negócio: <b>${esc(faltas.join(', '))}</b>.</span><button class="btn btn-outline btn-sm" data-action="open-edit">Editar negócio</button></div>`:''}
-    ${grupos.map(([g,campos])=>`<div class="ac-sec">${g}</div><div class="vd-grid${campos.length===2&&g==='Folha'?' ac-g2':''}">${campos.map(inp).join('')}</div>${g==='Informações de negócio'?fin:''}`).join('')}
+    ${FOLHA_GRUPOS.map(([g,campos])=>`<div class="ac-sec">${g}</div><div class="vd-grid${g==='Folha'?' ac-g2':''}">${campos.map(inp).join('')}</div>${g==='Venda'?fin:''}`).join('')}
     ${docsHTML(r,'folha_negocio')}
     <div class="ac-acts"><button class="btn btn-orange" data-action="folha-pdf" data-id="${esc(r.id)}"${S.acordoGerando?' disabled':''}>${S.acordoGerando?'A preparar o PDF…':'Descarregar PDF'}</button><span class="ac-nome">${esc(folhaNomeFicheiro(r))}</span><button class="btn btn-ghost btn-sm" data-action="folha-fechar">Fechar</button></div>
   </div>`;
 }
 function folhaCampos(r){const d=folhaDados(r),ret=r.retoma==='Sim';
   const dt=v=>v?String(v).slice(0,10).split('-').reverse().join('/'):'';const km=v=>{const n=acordoNum(v);return n==null?'':acordoMil(Math.round(n));};const eur=v=>acordoEur(acordoNum(v));
-  return {vendedor:nomePerfil(r.vendedor_id),n_proposta:d.fn_proposta||'',data:dt(d.fn_data),cliente_empresa:d.fn_empresa||'',cliente_utilizador:d.fn_utilizador||'',
-    cliente_nif:r.nif||'',cliente_contacto:r.contacto||'',cliente_email:r.email||'',viatura_matricula:String(r.mat||'').toUpperCase(),viatura_data_matricula:dt(r.dmat),codigo_modelo:d.fn_codigo_modelo||'',
-    modelo:[r.model,r.version].filter(Boolean).join(' '),valor_fatura:eur(d.fn_valor_fatura),sinal:eur(d.fn_sinal),encomenda:r.enc||'',n_stock:d.fn_n_stock||'',
-    valor_pac:eur(d.fn_pac),valor_frota:eur(d.fn_frota),n_prp:d.fn_prp||'',parque:d.fn_parque||'',subvencao_taxa:d.fn_subvencao||'',
+  return {vendedor:nomePerfil(r.vendedor_id),n_bizagi:r.biz||'',data:dt(d.fn_data),cliente_nome:r.id_cliente||'',cliente_morada:negMorada(r),cliente_empresa:d.fn_empresa||'',
+    cliente_nif:r.nif||'',cliente_contacto:r.contacto||'',cliente_email:r.email||'',viatura_matricula:String(r.mat||'').toUpperCase(),viatura_data_matricula:dt(r.dmat),
+    n_proposta:d.fn_proposta||'',modelo:[r.model,r.version].filter(Boolean).join(' '),valor_fatura:eur(r.pvp),sinal:eur(r.sinal),encomenda:r.enc||'',subvencao_taxa:d.fn_subvencao||'',
     seguro_data_carta:dt(d.fn_data_carta),seguro_mat_anterior:String(d.fn_mat_anterior||'').toUpperCase(),
-    retoma_modelo:ret?r.retoma_modelo||'':'',retoma_matricula:ret?String(r.retoma_mat||'').toUpperCase():'',retoma_ano:ret?d.fn_retoma_ano||'':'',retoma_kms:ret?km(d.fn_retoma_kms):'',
-    retoma_valor:ret?eur(d.fn_retoma_valor):'',retoma_valor_comercio:ret?eur(d.fn_retoma_comercio):'',observacoes:d.fn_observacoes||''};}
+    retoma_modelo:ret?r.retoma_modelo||'':'',retoma_matricula:ret?String(r.retoma_mat||'').toUpperCase():'',retoma_ano:ret&&r.retoma_ano!=null?String(r.retoma_ano):'',retoma_kms:ret?km(r.retoma_kms):'',
+    retoma_valor:ret?eur(r.retoma_valor):'',retoma_valor_comercio:ret?eur(r.retoma_valor_comercio):'',observacoes:d.fn_observacoes||''};}
 function folhaCaixas(r){const d=folhaDados(r);const c={rgpd_sim:d.fn_rgpd==='Sim',rgpd_nao:d.fn_rgpd==='Não'};
   FOLHA_TV.forEach(t=>{c['tv_'+folhaSlug(t)]=d.fn_tipo_venda===t;});FOLHA_ORIG.forEach(o=>{c['or_'+folhaSlug(o)]=d.fn_origem===o;});
   FOLHA_FIN.forEach(([k])=>{c['fin_'+k]=!!d['fn_fin_'+k];});FOLHA_FAT.forEach(f=>{c['fat_'+folhaSlug(f)]=d.fn_faturacao===f;});return c;}
@@ -8117,7 +8117,7 @@ function renderDetail(){
         <span class="section-arrow ${S.openGroups[g.g]?'open':''}">›</span>
       </div>
       ${S.openGroups[g.g]?`<div class="section-body"><div class="detail-grid ${g.g==='Flags'?'flags':''}">
-        ${g.fields.filter(fd=>(fd.k!=='decl_circ'||r.type==='MN')&&(!['data_nascimento','decl_circ'].includes(fd.k)||negTemColuna(fd.k))).map(fd=>`<div><div class="detail-label">${esc(fd.l)}</div><div class="detail-value">${fd.t==='toggle'?(r[fd.k]?'<span style="color:var(--green)">✓ Sim</span>':'<span style="color:var(--text3)">✗ Não</span>'):fd.t==='date'?fmtDate(fd.k==='recontactar_em'?recontData(r):r[fd.k]):esc(r[fd.k])||'<span style="color:var(--text4)">—</span>'}</div></div>`).join('')}
+        ${g.fields.filter(fd=>(fd.k!=='decl_circ'||r.type==='MN')&&(fd.show!=='retoma'||r.retoma==='Sim')&&(!NEG_OPCIONAIS.includes(fd.k)||negTemColuna(fd.k))).map(fd=>`<div><div class="detail-label">${esc(fd.l)}</div><div class="detail-value">${fd.t==='toggle'?(r[fd.k]?'<span style="color:var(--green)">✓ Sim</span>':'<span style="color:var(--text3)">✗ Não</span>'):fd.t==='date'?fmtDate(fd.k==='recontactar_em'?recontData(r):r[fd.k]):esc(r[fd.k])||'<span style="color:var(--text4)">—</span>'}</div></div>`).join('')}
       </div></div>`:''}
     </div>`).join('')}
     ${S.confirmDelete?`<div class="confirm-bar"><p>Apagar este registo?</p><button class="btn btn-sm" data-action="confirm-delete" ${S.loading?'disabled':''} style="background:var(--red);color:#fff">${S.loading?'…':'Sim'}</button><button class="btn btn-outline btn-sm" data-action="cancel-delete">Não</button></div>`:''}
@@ -8292,7 +8292,7 @@ function renderEdit(){
       </div>
       ${S.openGroups[g.g]?`<div class="section-body">
         ${g.g==='Extras'?`<div class="toggles">${g.fields.map(fd=>`<button class="toggle-btn ${S.form[fd.k]?'on':''}" data-action="toggle-flag" data-field="${fd.k}">${S.form[fd.k]?'✓ ':''}${esc(fd.l)}</button>`).join('')}</div>`:`
-        ${g.fields.filter(fd=>!['data_nascimento','decl_circ'].includes(fd.k)||negTemColuna(fd.k)).filter(fd=>!fd.show||(fd.show==='funil'&&FUNIL.includes(S.form.status))||(fd.show==='retoma'&&S.form.retoma==='Sim')||(fd.show==='perdido'&&S.form.status==='Perdido')||(fd.show==='garantia'&&S.form.gar==='Sim')||(fd.show==='stockpick'&&(S.form.type==='MD'||S.form.type==='MU'))||(fd.show==='lead'&&S.form.origin==='Lead')||(fd.show==='declcirc'&&S.form.type==='MN'&&!!S.form.dmat)).map(fd=>`<div class="field"><label class="field-label">${esc(fd.l)}${fd.show==='funil'?' (padrão: 10)':''}</label>${
+        ${g.fields.filter(fd=>!NEG_OPCIONAIS.includes(fd.k)||negTemColuna(fd.k)).filter(fd=>!fd.show||(fd.show==='funil'&&FUNIL.includes(S.form.status))||(fd.show==='retoma'&&S.form.retoma==='Sim')||(fd.show==='perdido'&&S.form.status==='Perdido')||(fd.show==='garantia'&&S.form.gar==='Sim')||(fd.show==='stockpick'&&(S.form.type==='MD'||S.form.type==='MU'))||(fd.show==='lead'&&S.form.origin==='Lead')||(fd.show==='declcirc'&&S.form.type==='MN'&&!!S.form.dmat)).map(fd=>`<div class="field"><label class="field-label">${esc(fd.l)}${fd.show==='funil'?' (padrão: 10)':''}</label>${
           fd.t==='vendedores'?renderVendedorSelect(fd.k):
           (fd.k==='obs_gestor'&&!isAdmin())?`<div class="obs-chefe-ro">${S.form.obs_gestor?esc(S.form.obs_gestor):'<span style="color:var(--text3)">— sem nota —</span>'}</div>`:
           fd.t==='stockpick'?renderStockPick():
@@ -8921,7 +8921,7 @@ function EXPORT_FOLHAS(){
       {c:'negocio_id',l:'Negócio ID'},{c:'dados',l:'Data do acordo',f:v=>((v||{})['data_acordo']??'')},{c:'dados',l:'Marca',f:v=>((v||{})['viatura_marca']??'')},{c:'dados',l:'Cor',f:v=>((v||{})['viatura_cor']??'')},{c:'dados',l:'Km',f:v=>((v||{})['viatura_kms']??'')},{c:'dados',l:'Data da matrícula',f:v=>((v||{})['viatura_data_matricula']??'')},{c:'dados',l:'Empresa',f:v=>((v||{})['empresa_nome']??'')},{c:'dados',l:'NIF empresa',f:v=>((v||{})['empresa_nif']??'')},{c:'dados',l:'Morada empresa',f:v=>((v||{})['empresa_morada']??'')},{c:'dados',l:'CP empresa',f:v=>((v||{})['empresa_cp']??'')},{c:'dados',l:'Telefone empresa',f:v=>((v||{})['empresa_telefone']??'')},{c:'dados',l:'E-mail empresa',f:v=>((v||{})['empresa_email']??'')},{c:'dados',l:'Retoma marca',f:v=>((v||{})['retoma_marca']??'')},{c:'dados',l:'Retoma km',f:v=>((v||{})['retoma_kms']??'')},{c:'dados',l:'Retoma cor',f:v=>((v||{})['retoma_cor']??'')},{c:'dados',l:'Retoma data matrícula',f:v=>((v||{})['retoma_data_matricula']??'')},{c:'dados',l:'Valor de retoma',f:v=>((v||{})['retoma_valor']??'')},{c:'dados',l:'Sinal numerário',f:v=>((v||{})['sinal_numerario']??'')},{c:'dados',l:'Sinal cheque',f:v=>((v||{})['sinal_cheque']??'')},{c:'dados',l:'Sinal transferência',f:v=>((v||{})['sinal_transferencia']??'')},{c:'dados',l:'Sinal MB',f:v=>((v||{})['sinal_mb']??'')},{c:'dados',l:'Forma de pagamento',f:v=>((v||{})['forma_pagamento']??'')},{c:'dados',l:'Observações',f:v=>((v||{})['observacoes']??'')},{c:'dados',l:'Tomou conhecimento BMW FS',f:v=>(v||{}).bmw_fs?'Sim':'Não'},{c:'updated_at',l:'Atualizado',f:dt},{c:'updated_by',l:'Por',f:nome},
     ]},
     {nome:'Folhas de negócio',path:'/acordos_venda?select=*,baviera_control!inner(type)&baviera_control.type=in.(MN,MD)&order=negocio_id.asc',cols:[
-      {c:'negocio_id',l:'Negócio ID'},{c:'dados',l:'Data',f:v=>((v||{})['fn_data']??'')},{c:'dados',l:'Nº proposta',f:v=>((v||{})['fn_proposta']??'')},{c:'dados',l:'Empresa',f:v=>((v||{})['fn_empresa']??'')},{c:'dados',l:'Utilizador',f:v=>((v||{})['fn_utilizador']??'')},{c:'dados',l:'Consentimento RGPD',f:v=>((v||{})['fn_rgpd']??'')},{c:'dados',l:'Tipo de venda',f:v=>((v||{})['fn_tipo_venda']??'')},{c:'dados',l:'Origem',f:v=>((v||{})['fn_origem']??'')},{c:'dados',l:'Código modelo',f:v=>((v||{})['fn_codigo_modelo']??'')},{c:'dados',l:'Valor fatura',f:v=>((v||{})['fn_valor_fatura']??'')},{c:'dados',l:'Sinal',f:v=>((v||{})['fn_sinal']??'')},{c:'dados',l:'Nº stock',f:v=>((v||{})['fn_n_stock']??'')},{c:'dados',l:'Valor PAC',f:v=>((v||{})['fn_pac']??'')},{c:'dados',l:'Valor frota',f:v=>((v||{})['fn_frota']??'')},{c:'dados',l:'Nº PRP',f:v=>((v||{})['fn_prp']??'')},{c:'dados',l:'Parque',f:v=>((v||{})['fn_parque']??'')},{c:'dados',l:'Faturação',f:v=>((v||{})['fn_faturacao']??'')},{c:'dados',l:'Subvenção taxa',f:v=>((v||{})['fn_subvencao']??'')},{c:'dados',l:'Data emissão carta',f:v=>((v||{})['fn_data_carta']??'')},{c:'dados',l:'Matrícula viatura anterior',f:v=>((v||{})['fn_mat_anterior']??'')},{c:'dados',l:'Retoma ano',f:v=>((v||{})['fn_retoma_ano']??'')},{c:'dados',l:'Retoma km',f:v=>((v||{})['fn_retoma_kms']??'')},{c:'dados',l:'Retoma valor ao cliente',f:v=>((v||{})['fn_retoma_valor']??'')},{c:'dados',l:'Retoma valor dado pelo comércio',f:v=>((v||{})['fn_retoma_comercio']??'')},{c:'dados',l:'Observações',f:v=>((v||{})['fn_observacoes']??'')},{c:'dados',l:'Financiamento',f:v=>FOLHA_FIN.filter(([k])=>(v||{})['fn_fin_'+k]).map(x=>x[1]).join(', ')},{c:'updated_at',l:'Atualizado',f:dt},{c:'updated_by',l:'Por',f:nome},
+      {c:'negocio_id',l:'Negócio ID'},{c:'dados',l:'Data',f:v=>((v||{})['fn_data']??'')},{c:'dados',l:'Nº proposta',f:v=>((v||{})['fn_proposta']??'')},{c:'dados',l:'Empresa',f:v=>((v||{})['fn_empresa']??'')},{c:'dados',l:'Consentimento RGPD',f:v=>((v||{})['fn_rgpd']??'')},{c:'dados',l:'Tipo de venda',f:v=>((v||{})['fn_tipo_venda']??'')},{c:'dados',l:'Origem',f:v=>((v||{})['fn_origem']??'')},{c:'dados',l:'Faturação',f:v=>((v||{})['fn_faturacao']??'')},{c:'dados',l:'Subvenção taxa',f:v=>((v||{})['fn_subvencao']??'')},{c:'dados',l:'Data emissão carta',f:v=>((v||{})['fn_data_carta']??'')},{c:'dados',l:'Matrícula viatura anterior',f:v=>((v||{})['fn_mat_anterior']??'')},{c:'dados',l:'Observações',f:v=>((v||{})['fn_observacoes']??'')},{c:'dados',l:'Financiamento',f:v=>FOLHA_FIN.filter(([k])=>(v||{})['fn_fin_'+k]).map(x=>x[1]).join(', ')},{c:'updated_at',l:'Atualizado',f:dt},{c:'updated_by',l:'Por',f:nome},
     ]},
     {nome:'Documentos emitidos',path:'/documentos_emitidos?select=id,negocio_id,tipo,nome,caminho,criado_em,criado_por&order=criado_em.asc',cols:[
       {c:'id',l:'ID'},{c:'negocio_id',l:'Negócio ID'},{c:'tipo',l:'Documento',f:v=>v==='acordo_venda'?'Acordo de venda':(v==='folha_negocio'?'Folha de Negócio':v)},{c:'nome',l:'Ficheiro'},{c:'criado_em',l:'Emitido em',f:dt},{c:'criado_por',l:'Por',f:nome},{c:'caminho',l:'Caminho (Storage)'},

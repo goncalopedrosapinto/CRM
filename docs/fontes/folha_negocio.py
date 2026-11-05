@@ -85,9 +85,9 @@ def fila_caixas(itens, base, x=X0 + 4, fim=X1 - 4):
         x += l + folga
 
 
-# ---------- cabeçalho ----------
-c.drawImage(os.path.join(AQUI, 'logo-caetano.png'), 32, 779.89, width=148, height=31.59551)
-c.drawImage(os.path.join(AQUI, 'logo-ser-kaizen.png'), 459.28, 781.89, width=106, height=25.25632)
+# ---------- cabeçalho (BMW Motorrad à esquerda, Caetano à direita, como no Excel) ----------
+c.drawImage(os.path.join(AQUI, 'logo-bmw-motorrad.png'), 32, 772, width=44, height=44)
+c.drawImage(os.path.join(AQUI, 'logo-caetano.png'), 417.28, 779.89, width=148, height=31.59551)
 c.setFont('Carlito-Bold', 17)
 c.drawCentredString(W / 2, 791.89, 'FOLHA DE NEGÓCIO')
 c.setFillColor(CINZA_TXT)
@@ -100,14 +100,16 @@ y = TOPO
 # ---------- negócio ----------
 b = barra(y, 'DADOS DO NEGÓCIO')
 campo('vendedor', 'Vendedor:', 34, b, 236.9)
-campo('n_proposta', 'Nº Proposta:', 246.9, b, 419.4)
+campo('n_bizagi', 'Nº Bizagi:', 246.9, b, 419.4)
 campo('data', 'Data:', 429.4, b, 561.28)
 y = b - 8
 # ---------- cliente ----------
-b = barra(y, 'DADOS DO CLIENTE')
-campo('cliente_empresa', 'Empresa:', 34, b, 561.28)
+b = barra(y, 'CLIENTE')
+campo('cliente_nome', 'Nome:', 34, b, 561.28)
 b -= 19
-campo('cliente_utilizador', 'Utilizador:', 34, b, 561.28)
+campo('cliente_morada', 'Morada:', 34, b, 561.28)
+b -= 19
+campo('cliente_empresa', 'Empresa:', 34, b, 561.28)
 b -= 19
 campo('cliente_nif', 'NIF:', 34, b, 170)
 campo('cliente_contacto', 'Contacto:', 180, b, 330)
@@ -121,38 +123,29 @@ caixa('rgpd_nao', 'Não', xx, b)
 y = b - 8
 # ---------- tipo de venda ----------
 b = barra(y, 'TIPO DE VENDA')
-fila_caixas([('tv_novo', 'Novo'), ('tv_stock_tatico', 'Stock Tático'), ('tv_km0', 'KM0'), ('tv_demo', 'Demo'),
-             ('tv_cortesia', 'Cortesia'), ('tv_servico', 'Serviço'), ('tv_usado', 'Usado'), ('tv_pt', 'PT')], b)
-b -= 19
-campo('viatura_matricula', 'Matrícula:', 34, b, 190)
-campo('viatura_data_matricula', 'Data da Matrícula:', 200, b, 370)
-campo('codigo_modelo', 'Código Modelo:', 380, b, 561.28)
+xx = caixa('tv_novo', 'Novo', 34, b) + 24
+caixa('tv_demo', 'Demo', xx, b)
+campo('viatura_matricula', 'Matrícula:', 200, b, 370)
+campo('viatura_data_matricula', 'Data da Matrícula:', 380, b, 561.28)
 y = b - 8
 # ---------- origem ----------
 b = barra(y, 'ORIGEM DO NEGÓCIO')
-fila_caixas([('or_stand', 'Stand'), ('or_recomendacao', 'Recomendação'), ('or_lead_bmw', 'Lead BMW'),
-             ('or_lead_internet', 'Lead Internet'), ('or_csc', 'CSC')], b, fim=420)
+fila_caixas([('or_stand', 'Stand'), ('or_recomendacao', 'Recomendação'), ('or_lead', 'Lead'), ('or_bsc', 'BSC')], b, fim=380)
 b -= 19
-fila_caixas([('or_angariacao', 'Angariação'), ('or_apv', 'APV'), ('or_eventos', 'Eventos'),
-             ('or_cliente_atual', 'Cliente Atual')], b, fim=420)
+fila_caixas([('or_angariacao', 'Angariação'), ('or_apv', 'APV'), ('or_eventos', 'Eventos'), ('or_cliente_atual', 'Cliente Atual')], b, fim=380)
 y = b - 8
 # ---------- negócio + financiamento ----------
-XD = 352  # divisória entre as duas colunas
+XD = 352
 b = barra(y, 'INFORMAÇÕES DE NEGÓCIO', 'TIPO DE FINANCIAMENTO', XD)
 topo_cols = y - 14
-campo('modelo', 'Modelo:', 34, b, XD - 8)
+campo('n_proposta', 'Nº Proposta:', 34, b, XD - 8)
 b1 = b - 19
+campo('modelo', 'Modelo:', 34, b1, XD - 8)
+b1 -= 19
 campo('valor_fatura', 'Valor Fatura (€):', 34, b1, 186)
 campo('sinal', 'Sinal (€):', 196, b1, XD - 8)
 b1 -= 19
-campo('encomenda', 'Encomenda:', 34, b1, 186)
-campo('n_stock', 'Nº Stock:', 196, b1, XD - 8)
-b1 -= 19
-campo('valor_pac', 'Valor PAC (€):', 34, b1, 186)
-campo('valor_frota', 'Valor Frota (€):', 196, b1, XD - 8)
-b1 -= 19
-campo('n_prp', 'Nº PRP:', 34, b1, 186)
-campo('parque', 'Parque (nº viaturas):', 196, b1, XD - 8)
+campo('encomenda', 'Encomenda:', 34, b1, XD - 8)
 b1 -= 19
 c.setFont('Carlito', 8.5)
 c.drawString(34, b1, 'Faturação:')
@@ -160,10 +153,7 @@ xx = 34 + pdfmetrics.stringWidth('Faturação:', 'Carlito', 8.5) + 10
 xx = caixa('fat_empresa', 'Empresa', xx, b1) + 14
 xx = caixa('fat_dec_utilizador', 'Dec. Utilizador', xx, b1) + 14
 caixa('fat_particular', 'Particular', xx, b1)
-# coluna da direita: financiamento
-fins = [('fin_select', 'Select'), ('fin_ald', 'ALD'), ('fin_leasing', 'Leasing'), ('fin_credito', 'Crédito'),
-        ('fin_pp', 'PP'), ('fin_outro_banco', 'Outro Banco'), ('fin_seguro_auto', 'Seguro Auto'), ('fin_gap', 'GAP'),
-        ('fin_protecao_credito', 'Proteção de crédito')]
+fins = [('fin_pp', 'PP'), ('fin_f_ext', 'F. Ext'), ('fin_f_bmw', 'F BMW'), ('fin_gap', 'GAP'), ('fin_protecao_credito', 'Proteção de Crédito')]
 bf = b
 for i, (nome, r) in enumerate(fins):
     caixa(nome, r, XD + 8 + (i % 2) * 100, bf)
