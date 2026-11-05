@@ -42,7 +42,7 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
  const gerar=async(pg,sel,destino)=>{const [pop]=await Promise.all([pg.context().waitForEvent('page',{timeout:15000}),pg.click(sel)]);
    for(let i=0;i<150;i++){if(await pg.evaluate(()=>!!window.__ultimoPdf))break;await pg.waitForTimeout(100);}
    const b64=await pg.evaluate(async()=>{const a=new Uint8Array(await window.__ultimoPdf.arrayBuffer());window.__ultimoPdf=null;let s='';for(let i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);return btoa(s);});
-   fs.writeFileSync(destino,Buffer.from(b64,'base64'));await pg.waitForTimeout(300);const url=pop.url();await pop.close().catch(()=>{});return url;};
+   fs.writeFileSync(destino,Buffer.from(b64,'base64'));await pg.waitForTimeout(300);const modo=await pg.evaluate(()=>S.pdfModo);await pg.evaluate(()=>{S.pdfModo=null;});await pop.close().catch(()=>{});return modo;};
  const abrir=async(quem,vp)=>{const ctx=await b.newContext({viewport:vp||{width:1280,height:1000},acceptDownloads:true});
   await ctx.addInitScript(t=>localStorage.setItem('bc_session',JSON.stringify({refresh_token:'rt',access_token:t,exp:Date.now()+3600e3})),jwt(quem));
   await ctx.addInitScript(()=>{const o=URL.createObjectURL.bind(URL);URL.createObjectURL=b=>{if(b&&b.type==='application/pdf')window.__ultimoPdf=b;return o(b);};});
@@ -104,7 +104,7 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
   'chefe tem o botão; outro vendedor não':/Folha de Negócio/.test(chefe.botao)&&!outro.botao,
   'telemóvel sem scroll de lado':larg,
   'negócio: sinal e retoma aparecem no formulário e gravam como números':vistos.every(Boolean)&&negGravado.sinal===2000&&negGravado.sinal_forma==='Cheque'&&negGravado.retoma_ano===2019&&negGravado.retoma_kms===12000&&negGravado.retoma_valor===9500.5&&negGravado.retoma_valor_comercio===9000,
-  '«Gerar PDF» abre logo o PDF num separador':/^blob:/.test(urlPop||''),
+  '«Gerar PDF» abre logo o PDF num separador':urlPop==='aberto',
   'sem erros JS':!erros.length};
  let f=0;for(const [k,v] of Object.entries(ok)){console.log((v?'✓ ':'✗ ')+k);if(!v)f++;}
  if(!process.env.MANTER_PDF)try{fs.unlinkSync(path.join(__dirname,'folha_negocio_teste.pdf'));}catch(e){}

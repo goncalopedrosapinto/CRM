@@ -43,7 +43,7 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
  const gerar=async(pg,sel,destino)=>{const [pop]=await Promise.all([pg.context().waitForEvent('page',{timeout:15000}),pg.click(sel)]);
    for(let i=0;i<150;i++){if(await pg.evaluate(()=>!!window.__ultimoPdf))break;await pg.waitForTimeout(100);}
    const b64=await pg.evaluate(async()=>{const a=new Uint8Array(await window.__ultimoPdf.arrayBuffer());window.__ultimoPdf=null;let s='';for(let i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);return btoa(s);});
-   fs.writeFileSync(destino,Buffer.from(b64,'base64'));await pg.waitForTimeout(300);const url=pop.url();await pop.close().catch(()=>{});return url;};
+   fs.writeFileSync(destino,Buffer.from(b64,'base64'));await pg.waitForTimeout(300);const modo=await pg.evaluate(()=>S.pdfModo);await pg.evaluate(()=>{S.pdfModo=null;});await pop.close().catch(()=>{});return modo;};
  const abrir=async(quem,vp)=>{const ctx=await b.newContext({viewport:vp||{width:1280,height:1000},acceptDownloads:true});
   await ctx.addInitScript(t=>localStorage.setItem('bc_session',JSON.stringify({refresh_token:'rt',access_token:t,exp:Date.now()+3600e3})),jwt(quem));
   await ctx.addInitScript(()=>{const o=URL.createObjectURL.bind(URL);URL.createObjectURL=b=>{if(b&&b.type==='application/pdf')window.__ultimoPdf=b;return o(b);};});
@@ -113,7 +113,7 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
   'negócio usado sem dados: diz o que falta e o nome sai sem matrícula':/Falta no negócio: NIF, Morada, Código postal, C\.C\., Telemóvel, E-mail, Modelo, Matrícula, Valor de venda \(PVP\)/.test(E.faltas)&&E.nome==='Acordo de venda.pdf'&&!E.retoma,
   'chefe tem o botão; outro vendedor não':/Acordo de venda/.test(chefe.botao)&&!outro.botao,
   'sem o SQL: avisa e o PDF sai na mesma; separador bloqueado → descarrega (telemóvel sem scroll de lado)':/Falta correr o SQL "2026-11-04_acordos_venda"/.test(F.aviso)&&nome2==='Acordo de venda AA-11-BB.pdf'&&larg,
-  '«Gerar PDF» abre logo o PDF num separador (e «Abrir» também)':/^blob:/.test(urlPop||'')&&/^blob:/.test(urlAbrir||''),
+  '«Gerar PDF» abre logo o PDF num separador (e «Abrir» também)':urlPop==='aberto'&&urlAbrir==='aberto',
   'sem erros JS':!erros.length};
  let f=0;for(const [k,v] of Object.entries(ok)){console.log((v?'✓ ':'✗ ')+k);if(!v)f++;}
  try{fs.unlinkSync(path.join(__dirname,'acordo_venda_teste.pdf'));}catch(e){}

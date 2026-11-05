@@ -7762,9 +7762,9 @@ let _pdfJanela=null;
 function pdfJanelaAbrir(){try{const w=window.open('','_blank');if(w){try{w.document.title='A preparar o PDF…';w.document.body.style.cssText='font:15px system-ui,sans-serif;color:#555;display:grid;place-items:center;height:90vh';w.document.body.textContent='A preparar o PDF…';}catch(_){}}_pdfJanela=w||null;}catch(e){_pdfJanela=null;}}
 function pdfJanelaFechar(){try{if(_pdfJanela&&!_pdfJanela.closed)_pdfJanela.close();}catch(e){}_pdfJanela=null;}
 function docDescarregarBytes(bytes,nome){const w=_pdfJanela;_pdfJanela=null;
-  if(w&&!w.closed){const url=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));try{w.location.href=url;setTimeout(()=>URL.revokeObjectURL(url),300000);return 'aberto';}catch(e){try{w.close();}catch(_){}}}
+  if(w&&!w.closed){const url=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));try{w.location.href=url;setTimeout(()=>URL.revokeObjectURL(url),300000);S.pdfModo='aberto';return 'aberto';}catch(e){try{w.close();}catch(_){}}}
   const url=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));
-  const a=document.createElement('a');a.href=url;a.download=nome;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},4000);return 'descarregado';}
+  const a=document.createElement('a');a.href=url;a.download=nome;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},4000);S.pdfModo='descarregado';return 'descarregado';}
 async function acordoBytes(r){return docBytes(ACORDO_PDF,acordoCampos(r),{bmw_fs_conhecimento:!!acordoDados(r).bmw_fs},ACORDO_DIREITA,'Acordo de venda'+(acordoMat(r)?' '+acordoMat(r):''),['valor_venda','valor_sinal','valor_retoma','valor_liquidar']);}
 async function acordoDescarregar(id){
   const r=(S.records||[]).find(x=>String(x.id)===String(id))||(S.selected&&String(S.selected.id)===String(id)?S.selected:null);if(!r||!acordoElegivel(r)){pdfJanelaFechar();return;}
