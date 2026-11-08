@@ -68,7 +68,8 @@ const PERIGO=/logout|sair|delete|apagar|remover|eliminar|reset|limpar|fechar-ses
     const ecra=async()=>p.evaluate(()=>(typeof S!=="undefined"?S.screen+'/'+(S.gppSec||''):'?')).catch(()=>'?');
     console.error(role,'boot',await ecra(),'texto com marcador:',await p.evaluate(()=>(document.body.innerText.match(/<x\d+>/g)||[]).length));
     const pdf=await p.evaluate(async()=>{const caps=[];const o=window.open;window.open=function(){const d={_h:'',open(){},write(h){this._h+=h;},close(){caps.push(this._h);}};return {document:d,focus(){},print(){},close(){},addEventListener(){},onload:null};};
-      const res={};for(const f of ['fmPDF','triPDF','exportNormaPDF','exportEscalaPDF','exportStockPDF']){try{const fn=eval(f);await fn();res[f]='ok';}catch(e){res[f]='erro '+String(e.message).slice(0,50);}}
+      if(isAdmin()){try{if(!S.stockLoaded)await loadStock();await loadMargens();}catch(e){}}
+      const res={};for(const f of ['fmPDF','triPDF','exportNormaPDF','exportEscalaPDF','exportStockPDF','dzPDF']){try{const fn=typeof window[f]==="function"?window[f]:eval(f);await fn();res[f]="ok";}catch(e){res[f]='erro '+String(e.message).slice(0,50);}}
       for(const q of ['vend','ass']){try{await exportComissoesPDF(q);res['com_'+q]='ok';}catch(e){res['com_'+q]='erro '+String(e.message).slice(0,50);}}
       window.open=o;const tags=[];for(const h of caps){const doc=new DOMParser().parseFromString(h,'text/html');doc.querySelectorAll('*').forEach(e=>{if(/^X\d+$/.test(e.tagName))tags.push(e.tagName);});
         tags.push('#marcadores_texto:'+((doc.body&&doc.body.textContent.match(/<x\d+>/g))||[]).length);}
@@ -81,6 +82,12 @@ const PERIGO=/logout|sair|delete|apagar|remover|eliminar|reset|limpar|fechar-ses
         S.retForm={v:{matricula:x.matricula||'',vendedor_id:x.vendedor_id||'',modelo:x.modelo||'',ano:String(x.ano||'')},erros:{}};S.screen='dashboard';S.gppSec='retomas';render();window.__ini=ini;}).catch(()=>{});
       await p.waitForTimeout(200);await scan(p,'dashboard/retomas');
       await p.evaluate(()=>{S.retForm=null;Object.assign(S,window.__ini||{});render();}).catch(()=>{});await p.waitForTimeout(100);}
+    // Usadas › Desempenho e Melhorias (chefe): stock, negócios e margens com os mesmos dados
+    if(role==='admin'){for(const s of ['desempenho','melhorias']){await p.evaluate(async s=>{const ini={screen:S.screen,gppSec:S.gppSec};if(!S.stockLoaded)await loadStock();await loadMargens();S._dzMargOk=true;
+          S.screen='dashboard';S.gppSec=s;render();window.__ini=ini;},s).catch(e=>erros.push(role+' '+s+': '+String(e.message).slice(0,120)));
+        await p.waitForTimeout(250);await scan(p,'dashboard/'+s);
+        console.error(role,s+':',await p.evaluate(()=>{const e=document.querySelector('.dz');return e?(e.innerText.match(/<x\d+>/g)||[]).length+' marcadores no texto':'não abriu';}).catch(()=>'?'));
+        await p.evaluate(()=>{Object.assign(S,window.__ini||{});render();}).catch(()=>{});await p.waitForTimeout(100);}}
     // Acordo de venda (chefe e vendedor): painel aberto num negócio de usada com retoma, com os dados do negócio e do acordo marcados
     if(role==='admin'||role==='vendedor'){await p.evaluate(async()=>{const ini={screen:S.screen,gppSec:S.gppSec,selected:S.selected};
         const r0=(S.records||[]).find(x=>acordoElegivel(x))||Object.assign({},(S.records||[])[0]||{id:1},{type:'MU',vendedor_id:S.me.id});const r=Object.assign({},r0,{retoma:'Sim'});

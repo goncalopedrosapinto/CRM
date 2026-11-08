@@ -60,6 +60,7 @@ jobs:
       - run: npm run retomas
       - run: npm run acordo
       - run: npm run folha
+      - run: npm run desempenho
       - run: npm run alertas
       - run: npm run notificacoes
       - run: npm run financeiros

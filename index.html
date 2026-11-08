@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-05-b">
+<meta name="app-version" content="2026-11-08-a">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1171,6 +1171,50 @@ html,body{overflow-x:hidden;max-width:100vw}
 .gpp-nav-item.active{color:#fff;background:rgba(255,255,255,.08);border-left-color:var(--orange);font-weight:600}
 .gpp-tot-head{padding:16px 16px 4px;font-size:14px;font-weight:700;color:var(--text)}
 .gpp-sub-h{margin:14px 16px 6px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--text2);background:var(--bg);border-radius:0 var(--r) var(--r) 0}
+/* Usadas › Desempenho e Melhorias (cores dos gráficos validadas para daltonismo em claro e escuro) */
+.dz{--dz-s1:#2a78d6;--dz-s2:#eb6834;--dz-s0:#94a3b8;--dz-pos:#0ca30c;--dz-neg:#d03b3b;--dz-grid:#e2e8f0;--dz-base:#94a3b8;padding:4px 16px 24px}
+:root[data-theme="dark"] .dz{--dz-s1:#3987e5;--dz-s2:#d95926;--dz-s0:#64748b;--dz-grid:#1f2b45;--dz-base:#3a4a66}
+.dz .gpp-card{margin:0 0 12px}
+.dz-cab{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin:8px 0 12px}
+.dz-h1{font-size:19px;font-weight:800;color:var(--text)}.dz-h2{font-size:12.5px;color:var(--text2);margin-top:2px}.dz-h3{font-size:14px;font-weight:800;margin:0 0 8px;color:var(--text)}
+.dz-ctrl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--text2)}.dz-ctrl label{display:flex;align-items:center;gap:6px}.dz-ctrl input[type=date]{width:auto;min-width:140px}
+.dz-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 12px}
+@media(max-width:700px){.dz-tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.dz-tile{padding:10px 11px}.dz-tv{font-size:21px}.dz-tl{font-size:10.5px}}
+.dz-tile{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:12px 14px;box-shadow:var(--elev1)}
+.dz-tl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--text3)}
+.dz-tv{font-size:24px;font-weight:800;color:var(--text);margin:4px 0 2px;line-height:1.15}.dz-tv small{font-size:13px;font-weight:600;color:var(--text2)}
+.dz-ts{font-size:12px;color:var(--text2);line-height:1.35}
+.dz-card{padding:14px 16px}
+.dz-grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:12px;margin:0 0 12px}.dz-grid2>.gpp-card{margin:0}
+.dz-resumo ul{margin:0;padding-left:18px}.dz-resumo li{margin:5px 0;line-height:1.5;font-size:13.5px;color:var(--text)}
+.dz-fig{margin:0}.dz-fig figcaption b{display:block;font-size:14px;color:var(--text)}.dz-fig figcaption span{font-size:12px;color:var(--text3)}
+.dz-leg{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--text2);margin:6px 0 2px}.dz-leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.dz-svgwrap{overflow-x:auto}.dz-nota{font-size:11.5px;color:var(--text3);margin-top:4px;line-height:1.4}
+svg .dz-s1,.dz-leg i.dz-s1{fill:var(--dz-s1);background:var(--dz-s1)}svg .dz-s2,.dz-leg i.dz-s2{fill:var(--dz-s2);background:var(--dz-s2)}svg .dz-s0,.dz-leg i.dz-s0{fill:var(--dz-s0);background:var(--dz-s0)}
+svg .dz-pos,.dz-leg i.dz-pos{fill:var(--dz-pos);background:var(--dz-pos)}svg .dz-neg,.dz-leg i.dz-neg{fill:var(--dz-neg);background:var(--dz-neg)}
+.dz-grid{stroke:var(--dz-grid);stroke-width:1}.dz-grid.dz-base{stroke:var(--dz-base)}.dz-ax{fill:var(--text3);font-size:10.5px}.dz-val{fill:var(--text);font-size:11px;font-weight:700}.dz-vaz{fill:var(--text3);font-size:10px;font-style:italic}
+.dz-col path:hover{opacity:.82}
+.dz-tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.dz-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.dz .dz-tbl th{text-align:left;padding:7px 10px;background:var(--bg);color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.4px;font-weight:700;border-bottom:1px solid var(--border);vertical-align:bottom}
+.dz .dz-tbl td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--text)}
+.dz-tbl th.r,.dz-tbl td.r{text-align:right}.dz-tbl .dz-nw{white-space:nowrap}.dz-tbl th .dz-sub{text-transform:none;letter-spacing:0}
+@media(max-width:700px){.dz{padding:4px 12px 20px}.dz .dz-tbl{font-size:12px}.dz .dz-tbl th{padding:6px 7px;font-size:10px}.dz .dz-tbl td{padding:6px 7px}.dz .dz-card{padding:12px}}
+.dz-motas{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,430px),1fr));gap:10px}
+.dz-mota{border:1px solid var(--border);border-radius:var(--r2);padding:12px 14px;background:var(--surface)}.dz-mota.dz-m180{border-left:3px solid var(--red)}
+.dz-mota-cab{display:flex;justify-content:space-between;gap:8px;align-items:baseline}.dz-mota-cab b{font-size:14px;color:var(--text)}.dz-dias{font-size:12px;color:var(--text2);white-space:nowrap}.dz-dias b{font-size:16px}
+.dz-mota-num{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px;margin:10px 0}
+.dz-ml{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.03em;font-weight:700;line-height:1.25}
+.dz-mv{font-size:14px;font-weight:700;color:var(--text);margin-top:2px}.dz-mv.dz-tpos{color:var(--green)}.dz-mv.dz-tneg{color:var(--red)}.dz-ms{font-size:11px;color:var(--text3)}
+
+.dz-sub{color:var(--text3);font-size:11px;font-weight:400}.dz-tpos{color:var(--green);font-weight:700}.dz-tneg{color:var(--red);font-weight:700}
+.dz-tot td{font-weight:700;border-top:1px solid var(--border2)}
+.dz-or{display:inline-block;padding:1px 8px;border-radius:var(--rp);font-size:11px;font-weight:700;white-space:nowrap}.dz-or-herdada{background:var(--blue-bg);color:var(--blue)}.dz-or-nova{background:var(--orange-bg);color:var(--orange)}.dz-or-sem{background:var(--slate-bg);color:var(--slate)}
+.dz-mini{display:inline-block;width:56px;height:6px;background:var(--surface2);border-radius:3px;margin-right:8px;vertical-align:middle;overflow:hidden}.dz-mini i{display:block;height:100%;background:var(--text3);border-radius:3px}
+.dz-scroll{overflow-x:auto}.dz-notas{font-size:12px;color:var(--text2);line-height:1.55;margin:2px 2px 0}
+.dz-msub{font-size:12.5px;color:var(--text2);margin:-2px 0 10px;line-height:1.45}.dz-sug{font-size:12.5px;line-height:1.5;color:var(--text)}
+.dz-p{font-size:13px;line-height:1.5;margin:4px 0;color:var(--text)}.dz-leitura{font-size:13px;line-height:1.5;margin:0 0 10px;padding:9px 12px;border-radius:8px;background:var(--bg);color:var(--text)}.dz-ok{font-size:13px;color:var(--green);font-weight:600}
+.dz-ul{margin:0;padding-left:18px;font-size:13px;line-height:1.5;color:var(--text)}.dz-ul li{margin:4px 0}
 .gpp-ltable{width:100%;border-collapse:collapse;font-size:13px}
 .gpp-ltable th{text-align:left;padding:8px 12px;background:var(--bg);color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.4px;font-weight:700;border-bottom:1px solid var(--border)}
 .gpp-ltable td{padding:10px 12px;border-bottom:1px solid var(--border)}
@@ -2467,7 +2511,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-05-b';
+const APP_VERSION='2026-11-08-a';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -7877,6 +7921,406 @@ async function folhaDescarregar(id){
     const g=await docGuardar(r.id,'folha_negocio',folhaNomeFicheiro(r),bytes,{campos:folhaCampos(r),caixas:folhaCaixas(r)});
     S.acordoGerando=false;render();setTimeout(()=>g.ok?toast('PDF gerado e guardado no negócio: '+folhaNomeFicheiro(r)):toast(g.erro,'erro'),450);}
   catch(e){S.acordoGerando=false;render();pdfJanelaFechar();toast('Não consegui fazer o PDF: '+((e&&e.message)||e),'erro');}}
+// ===== Usadas › Desempenho: o que mudou desde que o chefe ficou responsável (só o chefe vê) =====
+// Vendas de usadas a clientes, stock herdado vs entradas novas, dias até vender, margem libertada real (a que o chefe
+// lança nas comissões), stock médio e custo do stock parado (depreciação da Calculadora), mês a mês desde o início.
+const DZ_INICIO_DEF='2026-07-01',DZ_DIA=864e5;
+function dzInicio(){try{const v=localStorage.getItem('bc_dz_inicio');if(/^\d{4}-\d{2}-\d{2}$/.test(v||''))return v;}catch(e){}return DZ_INICIO_DEF;}
+function dzModo(){try{return localStorage.getItem('bc_dz_modo')==='negocio'?'negocio':'retail';}catch(e){return 'retail';}}
+function dzT(s){const m=String(s||'').slice(0,10).match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?Date.UTC(+m[1],+m[2]-1,+m[3]):null;}
+function dzISO(t){return new Date(t).toISOString().slice(0,10);}
+function dzHoje(){const h=new Date();return h.getFullYear()+'-'+String(h.getMonth()+1).padStart(2,'0')+'-'+String(h.getDate()).padStart(2,'0');}
+function dzDias(a,b){return Math.round((dzT(b)-dzT(a))/DZ_DIA);}
+function dzMesesInteiros(a,b){const x=String(a).slice(0,10),y=String(b).slice(0,10);let m=(+y.slice(0,4)-+x.slice(0,4))*12+(+y.slice(5,7)-+x.slice(5,7));if(+y.slice(8,10)<+x.slice(8,10))m-=1;return Math.max(0,m);}
+function dzMesesEntre(ini,fim){const L=[];let y=+ini.slice(0,4),m=+ini.slice(5,7);const fy=+fim.slice(0,4),fm=+fim.slice(5,7);while(y<fy||(y===fy&&m<=fm)){L.push(y+'-'+String(m).padStart(2,'0'));m++;if(m>12){m=1;y++;}}return L;}
+function dzMesLbl(ym,longo){const M=longo?['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro']:['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];return M[+String(ym).slice(5,7)-1]+(longo?'':' '+String(ym).slice(2,4));}
+function dzData(s){return s?String(s).slice(0,10).split('-').reverse().join('/'):'—';}
+function dzDataCurta(s){const M=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];return s?(+String(s).slice(8,10))+' '+M[+String(s).slice(5,7)-1]+' '+String(s).slice(0,4):'—';}
+// euros sem cêntimos, com espaço nos milhares (1 855 €) e sinal − verdadeiro
+function dzEur(n,sinal){if(n==null||!isFinite(n))return'—';const r=Math.round(n);const s=r<0?'−':(sinal&&r>0?'+':'');return s+acordoMil(Math.abs(r))+' €';}
+function dzNum(n,dec){if(n==null||!isFinite(n))return'—';return Number(n).toLocaleString('pt-PT',{minimumFractionDigits:dec||0,maximumFractionDigits:dec||0});}
+function dzPct(a,b){return b?Math.round(100*a/b):null;}
+function dzMedia(L){return L.length?L.reduce((s,x)=>s+x,0)/L.length:null;}
+function dzMediana(L){if(!L.length)return null;const a=L.slice().sort((x,y)=>x-y);const k=Math.floor(a.length/2);return a.length%2?a[k]:(a[k-1]+a[k])/2;}
+const DZ_FAIXAS=[['0–30 dias',0,30],['31–90 dias',31,90],['91–180 dias',91,180],['181–365 dias',181,365],['mais de 1 ano',366,1e9]];
+// tudo calculado a partir de S (ou de o, nos testes): stock de usadas, negócios MU fechados, margens libertadas
+function dzDados(o){
+  o=o||{};
+  const ini=o.inicio||dzInicio(),modo=o.modo||dzModo(),hoje=o.hoje||dzHoje(),taxa=o.depTaxa!=null?Number(o.depTaxa)||0:(Number(S.depTaxa)||0);
+  const tIni=dzT(ini),tHoje=dzT(hoje);
+  const norm=v=>String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  const num=v=>(v==null||v===''||!isFinite(Number(v)))?null:Number(v);
+  const d10=v=>v?String(v).slice(0,10):null;
+  const todos=o.stock||S.stock||[];
+  const ehTeste=m=>/teste/i.test(String(m.modelo||'')+' '+String(m.matricula||''));
+  const usadas=todos.filter(m=>(m.categoria||'usada')==='usada');
+  const testes=usadas.filter(ehTeste);
+  const stock=usadas.filter(m=>!ehTeste(m));
+  const recs=o.records||S.records||[];
+  const margens=o.margens||S.margens||{};
+  const margemDeR=r=>{const x=margens[String(r.id)];return x&&x.margem!=null&&x.margem!==''&&isFinite(Number(x.margem))?Number(x.margem):null;};
+  const fechadas=recs.filter(r=>r.type==='MU'&&(r.status==='Retail'||r.status==='Carteira'));
+  // antes deste dia não havia fichas de stock na plataforma (o registo foi carregado de uma vez)
+  const regIni=stock.map(m=>d10(m.created_at)).filter(Boolean).sort()[0]||null;
+  const acha=r=>{if(r.stock_id!=null&&r.stock_id!==''){const m=stock.find(x=>String(x.id)===String(r.stock_id));if(m)return m;}const k=norm(r.mat);return k?(stock.find(x=>norm(x.matricula)===k)||null):null;};
+  // saída do stock = data do negócio (o dia em que ficou vendida), também nas vendas a comerciante
+  const saida=new Map();
+  fechadas.forEach(r=>{const m=acha(r);if(!m)return;const d=d10(r.neg)||d10(r.col_298);if(!d)return;const ex=saida.get(m.id);if(!ex||d<ex.d)saida.set(m.id,{r,d});});
+  const dataVenda=r=>{const neg=d10(r.neg),ret=d10(r.col_298);return modo==='negocio'?(neg||ret):((r.status==='Retail'&&ret)||neg||ret);};
+  const motas=stock.map(m=>{
+    let rec=d10(m.data_rececao),recAprox=false;const cri=d10(m.created_at);
+    if(!rec&&cri&&regIni&&cri>regIni){rec=cri;recAprox=true;}
+    const v=saida.get(m.id);let fim=v?v.d:null,fimAprox=false;
+    if(!fim&&m.estado==='Vendida'){fim=d10(m.updated_at);fimAprox=!!fim;}
+    if(fim&&fim>hoje)fim=null;
+    const ent=num(m.valor_entrada),consig=!!m.consignada;
+    const origem=!rec?'sem':(rec<ini?'herdada':'nova');
+    const fimDep=fim||hoje,dm=num(m.dep_manual);
+    let depTot=0,depMan=false;
+    if(dm!=null){depTot=dm;depMan=true;}else if(ent!=null&&rec&&taxa>0)depTot=ent*taxa/100*dzMesesInteiros(rec,fimDep);
+    const diasTot=rec?Math.max(1,dzDias(rec,fimDep)):null;
+    const preco=num(m.valor_campanha)!=null?num(m.valor_campanha):num(m.valor_anunciado);
+    return {m,id:m.id,modelo:String(m.modelo||'').trim()||'—',mat:String(m.matricula||'').trim(),ano:m.ano,kms:m.kms,rec,recAprox,fim,fimAprox,venda:v?v.r:null,ent,consig,origem,depTot,depMan,depDia:diasTot?depTot/diasTot:0,
+      preco,precoMin:num(m.valor_min),prep:(Number(m.prep_oficina)||0)+(Number(m.prep_garantia)||0)+(Number(m.prep_legalizacao)||0),estado:m.estado||''};
+  });
+  const porId=new Map(motas.map(x=>[x.id,x]));
+  // vendas a clientes e a comerciantes desde o início
+  const vendas=[],comerciante=[];
+  fechadas.forEach(r=>{
+    const d=dataVenda(r);if(!d||d<ini||d>hoje)return;
+    if(r.venda_direta){comerciante.push({r,d,mes:d.slice(0,7),valor:num(r.pvp),ent:num(r.valor_entrada),modelo:[r.model,r.version].filter(Boolean).join(' ').trim(),mat:r.mat||''});return;}
+    const m=acha(r),mi=m?porId.get(m.id):null,neg=d10(r.neg)||d;
+    let origem,semFicha=false,dias=null,diasAprox=null;
+    if(mi){origem=mi.origem;if(mi.rec){const dd=Math.max(0,dzDias(mi.rec,neg));if(mi.recAprox)diasAprox=dd;else dias=dd;}}
+    else{semFicha=true;origem=(neg<ini||(regIni&&neg<regIni)||dzDias(ini,neg)<=30)?'herdada':'sem';}
+    vendas.push({r,id:r.id,d,mes:d.slice(0,7),neg,mota:mi,origem,semFicha,dias,diasAprox,consig:!!(mi&&mi.consig),margem:margemDeR(r),
+      modelo:((mi&&mi.modelo!=='—'&&mi.modelo)||[r.model,r.version].filter(Boolean).join(' ')).trim()||'—',mat:String(r.mat||(mi&&mi.mat)||'').trim(),vend:r.vendedor_id});
+  });
+  vendas.sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:(a.id-b.id));
+  comerciante.sort((a,b)=>a.d<b.d?-1:1);
+  const proprias=motas.filter(x=>!x.consig);
+  // stock herdado: motas próprias que já estavam em stock no dia do início
+  const herdIni=proprias.filter(x=>x.origem==='herdada'&&(!x.fim||x.fim>=ini));
+  const semFichaHerd=vendas.filter(v=>v.semFicha&&v.origem==='herdada'&&v.neg>=ini);
+  const herdVendidas=herdIni.filter(x=>x.fim);
+  const herdDias=herdVendidas.filter(x=>x.rec&&!x.recAprox).map(x=>dzDias(x.rec,x.fim));
+  const herdRestam=herdIni.filter(x=>!x.fim);
+  const maisAntigas=herdVendidas.filter(x=>x.rec&&!x.recAprox).map(x=>({x,dias:dzDias(x.rec,x.fim)})).sort((a,b)=>b.dias-a.dias);
+  // entradas novas (compras desde o início; as consignadas ficam à parte)
+  const novas=proprias.filter(x=>x.origem==='nova');
+  const novasVend=novas.filter(x=>x.fim);
+  const novasDias=novasVend.filter(x=>!x.recAprox).map(x=>dzDias(x.rec,x.fim));
+  const novasRestam=novas.filter(x=>!x.fim);
+  const consigEnt=motas.filter(x=>x.consig&&x.rec&&x.rec>=ini);
+  // margem libertada (real, lançada nas comissões)
+  const comMarg=vendas.filter(v=>v.margem!=null);
+  const margTot=comMarg.reduce((s,v)=>s+v.margem,0);
+  // meses
+  const meses=dzMesesEntre(ini.slice(0,7),hoje.slice(0,7));
+  const M={};meses.forEach(k=>M[k]={k,vH:0,vN:0,vS:0,com:0,marg:0,margH:0,margN:0,margS:0,nMarg:0,nPend:0,stockH:0,stockN:0,valor:0,dias:0,depH:0,depN:0,entradas:0,consig:0,idade:null});
+  const sx=o=>o==='herdada'?'H':(o==='nova'?'N':'S');
+  vendas.forEach(v=>{const x=M[v.mes];if(!x)return;x['v'+sx(v.origem)]++;if(v.margem!=null){x.marg+=v.margem;x['marg'+sx(v.origem)]+=v.margem;x.nMarg++;}else x.nPend++;});
+  comerciante.forEach(c=>{const x=M[c.mes];if(x)x.com++;});
+  proprias.forEach(m=>{if(m.rec&&m.rec>=ini&&M[m.rec.slice(0,7)])M[m.rec.slice(0,7)].entradas++;});
+  consigEnt.forEach(m=>{if(M[m.rec.slice(0,7)])M[m.rec.slice(0,7)].consig++;});
+  // stock e depreciação dia a dia (só motas próprias; consignadas não empatam capital nem depreciam)
+  const noStock=(x,t)=>x.rec&&dzT(x.rec)<=t&&(!x.fim||dzT(x.fim)>t);
+  for(let t=tIni;t<=tHoje;t+=DZ_DIA){
+    const k=dzISO(t).slice(0,7),x=M[k];if(!x)continue;x.dias++;
+    proprias.forEach(m=>{if(!noStock(m,t))return;if(m.origem==='herdada'){x.stockH++;x.depH+=m.depDia;}else{x.stockN++;x.depN+=m.depDia;}if(m.ent!=null)x.valor+=m.ent;});
+    semFichaHerd.forEach(v=>{if(t<dzT(v.neg))x.stockH++;});
+  }
+  meses.forEach(k=>{const x=M[k];const dd=x.dias||1;x.stockMedH=x.stockH/dd;x.stockMedN=x.stockN/dd;x.stockMed=(x.stockH+x.stockN)/dd;x.valorMed=x.valor/dd;x.dep=x.depH+x.depN;
+    const fimM=Math.min(tHoje,Date.UTC(+k.slice(0,4),+k.slice(5,7),0));const id=proprias.filter(m=>noStock(m,fimM)).map(m=>(fimM-dzT(m.rec))/DZ_DIA);x.idade=dzMedia(id);x.nFim=id.length;});
+  // fotografia do stock no início e hoje
+  const foto=t=>{const L=proprias.filter(m=>noStock(m,t));const id=L.map(m=>Math.round((t-dzT(m.rec))/DZ_DIA));
+    const f=[[0,90],[91,180],[181,1e9]].map(([a,b])=>({n:id.filter(d=>d>=a&&d<=b).length,herd:L.filter((m,i)=>id[i]>=a&&id[i]<=b&&m.origem==='herdada').length}));
+    return {n:L.length,valor:L.reduce((s,m)=>s+(m.ent||0),0),semValor:L.filter(m=>m.ent==null).length,idadeMed:dzMedia(id),idadeMediana:dzMediana(id),faixas:f,herd:L.filter(m=>m.origem==='herdada').length,lista:L.map((m,i)=>({m,dias:id[i]}))};};
+  const fotoIni=foto(tIni-DZ_DIA),fotoHoje=foto(tHoje);
+  // vendas por antiguidade (dias desde a entrada em stock até ao negócio)
+  const faixas=DZ_FAIXAS.map(([lbl,a,b])=>{const L=vendas.filter(v=>v.dias!=null&&v.dias>=a&&v.dias<=b);const cm=L.filter(v=>v.margem!=null);
+    return {lbl,n:L.length,dias:dzMedia(L.map(v=>v.dias)),nMarg:cm.length,marg:cm.reduce((s,v)=>s+v.margem,0),pos:cm.filter(v=>v.margem>=0).length};});
+  const semDias=vendas.filter(v=>v.dias==null);
+  const depTot=meses.reduce((s,k)=>s+M[k].dep,0),depH=meses.reduce((s,k)=>s+M[k].depH,0);
+  // sem depreciação = sem valor escrito e sem taxa mensal que se lhe aplique (taxa a 0 % ou mota sem valor de entrada)
+  const semDep=proprias.filter(m=>m.rec&&(!m.fim||m.fim>=ini)&&!m.depMan&&!(taxa>0&&m.ent!=null));
+  // pela data de retail entram vendas negociadas antes do início (entregues depois): ficam identificadas
+  const negAntes=vendas.filter(v=>v.neg<ini);
+  return {ini,modo,hoje,taxa,regIni,motas,vendas,comerciante,testes,meses,M,herdIni,semFichaHerd,herdVendidas,herdDias,herdRestam,maisAntigas,novas,novasVend,novasDias,novasRestam,consigEnt,
+    comMarg,margTot,margPos:comMarg.filter(v=>v.margem>=0).length,porLancar:vendas.filter(v=>v.margem==null),fotoIni,fotoHoje,faixas,semDias,depTot,depH,semDep,negAntes,
+    vendasSemFicha:vendas.filter(v=>v.semFicha),recAprox:motas.filter(x=>x.recAprox&&(!x.fim||x.fim>=ini)),semEntrada:proprias.filter(x=>x.ent==null&&x.rec&&(!x.fim||x.fim>=ini)),vendidaSemNegocio:motas.filter(x=>x.fimAprox)};
+}
+// gráfico de colunas em SVG (empilhadas ou com sinal), no estilo da casa: barras finas, topo arredondado, grelha discreta
+function dzTicks(min,max,n){const span=max-min||1;const raw=span/(n||4);const p=Math.pow(10,Math.floor(Math.log10(raw)));const f=raw/p;const step=(f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p;
+  const a=Math.floor(min/step)*step,b=Math.ceil(max/step)*step;const L=[];for(let v=a;v<=b+step/2;v+=step)L.push(Math.round(v*1e6)/1e6);return L.length>1?L:[a,a+step];}
+// barra com a ponta de fora arredondada ('cima' ou 'baixo'); segmentos de dentro ficam retos
+function dzBarra(x,yTop,w,h,arred){if(h<=0)return'';const f=v=>Math.round(v*10)/10;x=f(x);yTop=f(yTop);h=f(h);const r=arred?Math.min(4,h,w/2):0;
+  if(arred==='cima')return`M${x},${f(yTop+h)}V${f(yTop+r)}Q${x},${yTop} ${f(x+r)},${yTop}H${f(x+w-r)}Q${f(x+w)},${yTop} ${f(x+w)},${f(yTop+r)}V${f(yTop+h)}Z`;
+  if(arred==='baixo')return`M${x},${yTop}V${f(yTop+h-r)}Q${x},${f(yTop+h)} ${f(x+r)},${f(yTop+h)}H${f(x+w-r)}Q${f(x+w)},${f(yTop+h)} ${f(x+w)},${f(yTop+h-r)}V${yTop}Z`;
+  return`M${x},${yTop}H${f(x+w)}V${f(yTop+h)}H${x}Z`;}
+function dzGrafico(o){
+  const meses=o.meses,n=meses.length,band=n>8?52:72,padL=56,padR=10,padT=24,padB=26,plotH=o.altura||150;
+  const W=padL+padR+n*band,H=padT+plotH+padB;
+  const val=(k,s)=>Number(o.val(k,s))||0;
+  // divergente: as partes positivas empilham para cima do zero e as negativas para baixo (cor = série)
+  const pos=meses.map(k=>o.series.reduce((s,se)=>s+Math.max(0,val(k,se.k)),0)),neg=meses.map(k=>o.series.reduce((s,se)=>s+Math.min(0,val(k,se.k)),0));
+  const tot=meses.map((k,i)=>pos[i]+neg[i]);
+  let vmax=Math.max(0,...(o.divergente?pos:tot)),vmin=o.divergente?Math.min(0,...neg):(o.assinado?Math.min(0,...tot):0);if(vmax===vmin)vmax=vmin+(o.passo||1);
+  const tk=dzTicks(vmin,vmax,4),y0=tk[0],y1=tk[tk.length-1];
+  const Y=v=>padT+plotH*(1-(v-y0)/(y1-y0));
+  const bw=Math.min(24,Math.round(band*0.42));
+  const fmt=v=>o.fmtV?o.fmtV(v):String(v);
+  let g=tk.map(v=>`<line class="dz-grid${v===0?' dz-base':''}" x1="${padL}" x2="${W-padR}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}"/><text class="dz-ax" x="${padL-6}" y="${(Y(v)+3.5).toFixed(1)}" text-anchor="end">${esc(o.fmtTick?o.fmtTick(v):String(v))}</text>`).join('');
+  meses.forEach((k,i)=>{
+    const cx=padL+band*i+band/2,x=cx-bw/2;let partes='',rot='';
+    const tit=(se,v)=>`<title>${esc(dzMesLbl(k)+(o.series.length>1?' · '+se.lbl:'')+': '+fmt(v))}</title>`;
+    if(o.divergente){
+      const vis=o.series.map(se=>({se,v:val(k,se.k)})).filter(p=>p.v);const up=vis.filter(p=>p.v>0),dn=vis.filter(p=>p.v<0);let a=0,b=0;
+      up.forEach((p,j)=>{const yT=Y(a+p.v),yB=Y(a)-(j>0?2:0);a+=p.v;if(yB-yT>0.4)partes+=`<path class="${p.se.cls}" d="${dzBarra(x,yT,bw,yB-yT,j===up.length-1?'cima':'')}">${tit(p.se,p.v)}</path>`;});
+      dn.forEach((p,j)=>{const yT=Y(b)+(j>0?2:0),yB=Y(b+p.v);b+=p.v;if(yB-yT>0.4)partes+=`<path class="${p.se.cls}" d="${dzBarra(x,yT,bw,yB-yT,j===dn.length-1?'baixo':'')}">${tit(p.se,p.v)}</path>`;});
+      if(pos[i])rot+=`<text class="dz-val" x="${cx}" y="${(Y(pos[i])-6).toFixed(1)}" text-anchor="middle">${esc(fmt(pos[i]))}</text>`;
+      if(neg[i])rot+=`<text class="dz-val" x="${cx}" y="${(Y(neg[i])+13).toFixed(1)}" text-anchor="middle">${esc(fmt(neg[i]))}</text>`;}
+    else if(o.assinado){const v=tot[i];if(v){const yA=Y(Math.max(v,0)),yB=Y(Math.min(v,0));partes+=`<path class="${v>=0?'dz-pos':'dz-neg'}" d="${dzBarra(x,yA,bw,Math.max(1,yB-yA),v>=0?'cima':'baixo')}">${tit(o.series[0],v)}</path>`;
+        rot+=`<text class="dz-val" x="${cx}" y="${(v<0?Y(v)+13:Y(v)-6).toFixed(1)}" text-anchor="middle">${esc(fmt(v))}</text>`;}}
+    else{const vis=o.series.map(se=>({se,v:val(k,se.k)})).filter(p=>p.v>0);let cum=0;
+      vis.forEach((p,j)=>{const yT=Y(cum+p.v),yBt=Y(cum)-(j>0?2:0);cum+=p.v;const h=yBt-yT;if(h<=0.4)return;
+        partes+=`<path class="${p.se.cls}" d="${dzBarra(x,yT,bw,h,j===vis.length-1?'cima':'')}">${tit(p.se,p.v)}</path>`;});
+      if(tot[i])rot+=`<text class="dz-val" x="${cx}" y="${(Y(tot[i])-6).toFixed(1)}" text-anchor="middle">${esc(fmt(tot[i]))}</text>`;}
+    const vaz=o.vazio?o.vazio(k):'';
+    if(vaz){const L=String(vaz).split('\n');rot+=`<text class="dz-vaz" x="${cx}" y="${(Y(0)-6-11*(L.length-1)).toFixed(1)}" text-anchor="middle">${L.map((t,j)=>`<tspan x="${cx}"${j?' dy="11"':''}>${esc(t)}</tspan>`).join('')}</text>`;}
+    g+=`<g class="dz-col">${partes}${rot}<text class="dz-ax dz-mes" x="${cx}" y="${H-8}" text-anchor="middle">${esc(dzMesLbl(k))}</text></g>`;
+  });
+  const leg=o.series.length>1?`<div class="dz-leg">${o.series.map(se=>`<span><i class="${se.cls}"></i>${esc(se.lbl)}</span>`).join('')}</div>`:(o.legenda||'');
+  return`<figure class="dz-fig"><figcaption><b>${esc(o.titulo)}</b>${o.sub?`<span>${esc(o.sub)}</span>`:''}</figcaption>${leg}
+    <div class="dz-svgwrap"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.aria||o.titulo)}" style="width:100%;max-width:${Math.max(W,420)}px;min-width:${Math.min(W,300)}px;height:auto;display:block">${g}</svg></div>${o.nota?`<div class="dz-nota">${o.nota}</div>`:''}</figure>`;
+}
+function dzOrigemLbl(o){return o==='herdada'?'Herdada':(o==='nova'?'Entrada nova':'Sem data de entrada');}
+// frases do resumo (só factos tirados dos dados)
+function dzResumo(D){
+  const L=[],iniTxt=dzDataCurta(D.ini);const nV=D.vendas.length,nH=D.vendas.filter(v=>v.origem==='herdada').length,nN=D.vendas.filter(v=>v.origem==='nova').length;
+  if(nV)L.push(`Desde ${iniTxt} venderam-se <b>${nV}</b> usada${nV!==1?'s':''} a clientes${D.comerciante.length?` (e mais ${D.comerciante.length} ${D.comerciante.length===1?'retoma passada a comerciante':'retomas passadas a comerciantes'})`:''}: <b>${nH}</b> do stock que já existia e <b>${nN}</b> das que entraram depois${nV-nH-nN?` (${nV-nH-nN} sem data de entrada)`:''}.`);
+  const hT=D.herdIni.length+D.semFichaHerd.length,hV=D.herdVendidas.length+D.semFichaHerd.length;
+  if(hT){const a=D.maisAntigas.filter(z=>z.dias>180).slice(0,2).map(z=>`${esc(z.x.modelo)} com ${z.dias} dias`);
+    L.push(`Do stock herdado (<b>${hT}</b> motas próprias no início) já foram vendidas <b>${hV}</b> (${dzPct(hV,hT)} %)${a.length?`, incluindo ${a.length>1?'as mais antigas':'a mais antiga'}: ${a.join(' e ')} em stock`:''}.`);}
+  if(D.novasDias.length){const md=Math.round(dzMedia(D.novasDias));
+    L.push(`As motas compradas desde ${iniTxt} vendem-se, em média, em <b>${md} dias</b> (${D.novasVend.length} de ${D.novas.length} já vendidas${D.novasDias.length<D.novasVend.length?`; a média conta as ${D.novasDias.length} com data de receção`:''})${D.herdDias.length?`; as herdadas tinham, em média, ${Math.round(dzMedia(D.herdDias))} dias em stock quando foram vendidas`:''}.`);}
+  if(D.comMarg.length){const neg=D.comMarg.filter(v=>v.margem<0);const negH=neg.filter(v=>v.origem==='herdada').length;
+    const ms=[...new Set(D.comMarg.map(v=>v.mes))].sort();const pl=(n,a,b)=>n===1?a:b;
+    const cN=D.comMarg.filter(v=>v.origem==='nova'),sN=cN.reduce((s,v)=>s+v.margem,0);
+    const na=D.negAntes.filter(v=>v.margem!=null),sNa=na.reduce((s,v)=>s+v.margem,0);
+    L.push(`Margem libertada lançada (${ms.map(k=>dzMesLbl(k,true)).join(', ')}): <b>${dzEur(D.margTot,true)}</b> em ${D.comMarg.length} vendas; <b>${D.margPos}</b> foram positivas${neg.length?` e ${neg.length===1?'a negativa':'as '+neg.length+' negativas'} ${negH===neg.length?(neg.length===1?'era uma mota herdada':'eram motas herdadas'):'incluem '+negH+' herdada'+(negH!==1?'s':'')}`:''}.`
+      +(cN.length?` Nas compras novas: <b>${dzEur(sN,true)}</b> (${cN.length} ${pl(cN.length,'venda','vendas')}${cN.every(v=>v.margem>=0)?pl(cN.length,', positiva',', todas positivas'):''}).`:'')
+      +(na.length?` Inclui ${na.length} ${pl(na.length,'venda negociada','vendas negociadas')} antes de ${iniTxt} e ${pl(na.length,'entregue','entregues')} depois (${dzEur(sNa,true)}): pela data do negócio, a margem lançada é ${dzEur(D.margTot-sNa,true)}.`:'')
+      +(D.porLancar.length?` Ainda por lançar: ${D.porLancar.length} ${pl(D.porLancar.length,'venda','vendas')}.`:''));}
+  const ms=D.meses,mA=D.M[ms[0]],mZ=D.M[ms[ms.length-1]];
+  if(ms.length>1&&mA&&mZ){
+    const ultC=ms.length>2?D.M[ms[ms.length-2]]:mZ;// último mês completo para o custo
+    const semDepN=!D.taxa&&D.semDep.some(m=>m.origem==='nova');
+    L.push(`Stock médio de motas próprias: <b>${dzNum(mA.stockMed,1)}</b> em ${dzMesLbl(ms[0],true)} e <b>${dzNum(mZ.stockMed,1)}</b> em ${dzMesLbl(ms[ms.length-1],true)} (herdadas: ${dzNum(mA.stockMedH,1)} → ${dzNum(mZ.stockMedH,1)}); o custo do stock parado (depreciação) foi de ${dzEur(mA.dep)} em ${dzMesLbl(ms[0],true)} e de ${dzEur(ultC.dep)} em ${dzMesLbl(ultC.k,true)}${semDepN?' (as compras novas sem depreciação na Calculadora contam 0 €)':''}.`);}
+  if(D.herdRestam.length){const v180=D.herdRestam.filter(x=>x.rec&&dzDias(x.rec,D.hoje)>180).length;
+    L.push(`Falta vender: <b>${D.herdRestam.length}</b> mota${D.herdRestam.length!==1?'s':''} herdada${D.herdRestam.length!==1?'s':''}${v180?` (${v180} com mais de 180 dias)`:''}. Das que entraram desde ${iniTxt}, a mais antiga ainda em stock tem ${D.novasRestam.length?Math.max(...D.novasRestam.map(x=>dzDias(x.rec,D.hoje)))+' dias':'—'}.`);}
+  return L;
+}
+function dzDesempenhoHTML(D,imprimir){
+  const nV=D.vendas.length,hT=D.herdIni.length+D.semFichaHerd.length,hV=D.herdVendidas.length+D.semFichaHerd.length;
+  const ms=D.meses,mZ=D.M[ms[ms.length-1]],mA=D.M[ms[0]];
+  const tile=(lb,v,sub)=>`<div class="dz-tile"><div class="dz-tl">${lb}</div><div class="dz-tv">${v}</div>${sub?`<div class="dz-ts">${sub}</div>`:''}</div>`;
+  const md=D.novasDias.length?Math.round(dzMedia(D.novasDias)):null,mdH=D.herdDias.length?Math.round(dzMedia(D.herdDias)):null;
+  const tiles=`<div class="dz-tiles">
+    ${tile('Usadas vendidas a clientes',String(nV),D.comerciante.length?`+ ${D.comerciante.length} a comerciante${D.comerciante.length!==1?'s':''}`:'desde '+esc(dzDataCurta(D.ini)))}
+    ${tile('Stock herdado vendido',`${hV} <small>de ${hT}</small>`,hT?`${dzPct(hV,hT)} %${D.maisAntigas[0]?` · a mais antiga com ${D.maisAntigas[0].dias} dias`:''}`:'')}
+    ${tile('Compras novas: dias até vender',md!=null?`${md} <small>dias</small>`:'—',`${D.novasVend.length} de ${D.novas.length} vendidas${mdH!=null?` · herdadas: ${mdH} dias`:''}`)}
+    ${tile('Margem libertada lançada',dzEur(D.margTot,true),D.comMarg.length?`${D.margPos} de ${D.comMarg.length} positivas${D.porLancar.length?` · ${D.porLancar.length} por lançar`:''}`:'ainda sem margens lançadas')}
+    ${tile('Stock médio'+(mZ&&ms.length>1?' em '+dzMesLbl(ms[ms.length-1],true):''),mZ?`${dzNum(mZ.stockMed,1)} <small>motas</small>`:'—',mA&&ms.length>1?`${dzMesLbl(ms[0],true)}: ${dzNum(mA.stockMed,1)} · herdadas ${dzNum(mA.stockMedH,1)} → ${dzNum(mZ.stockMedH,1)}`:'')}
+    ${tile('Custo do stock parado',dzEur(D.depTot),`depreciação desde ${esc(dzDataCurta(D.ini))}${!D.taxa&&D.semDep.length?` · ${D.semDep.length} motas sem valor contam 0 €`:(D.depTot?` · ${dzPct(D.depH,D.depTot)} % das herdadas`:'')}`)}
+  </div>`;
+  const resumo=dzResumo(D);
+  const S1={k:'H',lbl:'Herdadas',cls:'dz-s1'},S2={k:'N',lbl:'Entradas novas',cls:'dz-s2'},S0={k:'S',lbl:'Sem data de entrada',cls:'dz-s0'};
+  const temS=ms.some(k=>D.M[k].vS);
+  const gV=dzGrafico({titulo:'Usadas vendidas por mês',sub:D.modo==='negocio'?'pela data do negócio':'pela data de retail (como a empresa)',meses:ms,series:temS?[S1,S2,S0]:[S1,S2],val:(k,s)=>s==='H'?D.M[k].vH:s==='N'?D.M[k].vN:D.M[k].vS,fmtV:v=>String(v),fmtTick:v=>Number.isInteger(v)?String(v):'',passo:4,aria:'Usadas vendidas por mês: '+ms.map(k=>dzMesLbl(k,true)+' '+(D.M[k].vH+D.M[k].vN+D.M[k].vS)).join(', ')});
+  const temMS=ms.some(k=>D.M[k].margS),comM=ms.filter(k=>D.M[k].nMarg),parc=ms.filter(k=>D.M[k].nMarg&&D.M[k].nPend);
+  const gM=dzGrafico({titulo:'Margem libertada por mês',sub:'a real, lançada nas comissões · acima do zero ganhou, abaixo perdeu',meses:ms,series:temMS?[S1,S2,S0]:[S1,S2],divergente:true,val:(k,s)=>D.M[k].nMarg?D.M[k]['marg'+s]:0,fmtV:v=>dzEur(v,true),fmtTick:v=>dzEur(v),passo:500,
+    vazio:(k)=>!D.M[k].nMarg&&D.M[k].nPend?`por lançar\n(${D.M[k].nPend})`:'',
+    nota:(comM.length?'Saldo do mês: '+comM.map(k=>dzMesLbl(k,true)+' <b>'+dzEur(D.M[k].marg,true)+'</b>').join(' · ')+'.':'')+(parc.length?' Vendas ainda sem margem não entram na barra: '+parc.map(k=>dzMesLbl(k,true)+' ('+D.M[k].nPend+' por lançar)').join(', ')+'.':''),
+    aria:'Margem libertada por mês: '+ms.map(k=>dzMesLbl(k,true)+' '+(D.M[k].nMarg?dzEur(D.M[k].marg,true)+' (herdadas '+dzEur(D.M[k].margH,true)+', compras novas '+dzEur(D.M[k].margN,true)+')':(D.M[k].nPend?'por lançar':'sem vendas'))).join(', ')});
+  const gS=dzGrafico({titulo:'Stock médio de usadas próprias',sub:'motas em stock, média por dia',meses:ms,series:[S1,S2],val:(k,s)=>s==='H'?D.M[k].stockMedH:D.M[k].stockMedN,fmtV:v=>dzNum(v,1),fmtTick:v=>dzNum(v),passo:5,altura:120,aria:'Stock médio por mês: '+ms.map(k=>dzMesLbl(k,true)+' '+dzNum(D.M[k].stockMed,1)).join(', ')});
+  const sdN=D.semDep.filter(m=>m.origem==='nova').length;
+  const notaDep=D.semDep.length?(D.taxa?'':`<b>${D.semDep.length} motas não têm depreciação na Calculadora</b>${sdN?` (${sdN===D.semDep.length?'todas':sdN} compras novas)`:''} e a taxa mensal está a 0 % neste browser: contam 0 €. Se a empresa as deprecia, este custo está por baixo, sobretudo nas entradas novas.`):'';
+  const gD=dzGrafico({titulo:'Custo do stock parado',sub:'depreciação por mês (Calculadora de Depreciação)',meses:ms,series:[S1,S2],val:(k,s)=>s==='H'?D.M[k].depH:D.M[k].depN,fmtV:v=>dzEur(v),fmtTick:v=>v>=1000?dzNum(v/1000)+' mil':dzNum(v),passo:500,altura:120,nota:notaDep,aria:'Custo do stock parado por mês: '+ms.map(k=>dzMesLbl(k,true)+' '+dzEur(D.M[k].dep)).join(', ')});
+  const fI=D.fotoIni,fH=D.fotoHoje,diaIni=dzISO(dzT(D.ini)-DZ_DIA);
+  const faixaLb=['até 90 dias','91 a 180 dias','mais de 180 dias'];
+  const maxF=Math.max(1,...fI.faixas.map(f=>f.n),...fH.faixas.map(f=>f.n));
+  const barra=(n)=>`<span class="dz-mini"><i style="width:${Math.round(100*n/maxF)}%"></i></span>`;
+  const tAntig=`<div class="dz-tw" tabindex="0" role="region" aria-label="Antiguidade do stock: início vs hoje"><table class="dz-tbl"><thead><tr><th>Motas próprias em stock</th><th class="r">${esc(dzDataCurta(diaIni))}</th><th class="r">Hoje</th></tr></thead><tbody>
+    ${faixaLb.map((lb,i)=>`<tr><td>${lb}</td><td class="r">${barra(fI.faixas[i].n)}<b>${fI.faixas[i].n}</b></td><td class="r">${barra(fH.faixas[i].n)}<b>${fH.faixas[i].n}</b>${fH.faixas[i].herd&&fH.faixas[i].herd<fH.faixas[i].n?` <span class="dz-sub">(${fH.faixas[i].herd} herdada${fH.faixas[i].herd!==1?'s':''})</span>`:(fH.faixas[i].n&&fH.faixas[i].herd===fH.faixas[i].n&&i>0?' <span class="dz-sub">(todas herdadas)</span>':'')}</td></tr>`).join('')}
+    <tr class="dz-tot"><td>Total</td><td class="r">${fI.n}</td><td class="r">${fH.n}</td></tr>
+    <tr><td>Valor de entrada</td><td class="r">${dzEur(fI.valor)}</td><td class="r">${dzEur(fH.valor)}</td></tr>
+    <tr><td>Idade média · mediana</td><td class="r">${dzNum(fI.idadeMed)} · ${dzNum(fI.idadeMediana)} dias</td><td class="r">${dzNum(fH.idadeMed)} · ${dzNum(fH.idadeMediana)} dias</td></tr>
+  </tbody></table></div>`;
+  const tFaixas=`<div class="dz-tw" tabindex="0" role="region" aria-label="Vendas por tempo em stock"><table class="dz-tbl"><thead><tr><th>Tempo em stock até vender</th><th class="r">Vendas</th><th class="r">Dias médios</th><th class="r">Margem libertada lançada</th><th class="r">Média por mota</th></tr></thead><tbody>
+    ${D.faixas.map(f=>`<tr><td>${f.lbl}</td><td class="r">${f.n}</td><td class="r">${f.n?dzNum(f.dias):'—'}</td><td class="r">${f.nMarg?dzEur(f.marg,true)+` <span class="dz-sub">(${f.nMarg})</span>`:(f.n?'por lançar':'—')}</td><td class="r">${f.nMarg?dzEur(f.marg/f.nMarg,true):'—'}</td></tr>`).join('')}
+    ${D.semDias.length?`<tr><td>sem data de receção</td><td class="r">${D.semDias.length}</td><td class="r">—</td><td class="r">${(()=>{const c=D.semDias.filter(v=>v.margem!=null);return c.length?dzEur(c.reduce((s,v)=>s+v.margem,0),true)+` <span class="dz-sub">(${c.length})</span>`:'por lançar';})()}</td><td class="r">${(()=>{const c=D.semDias.filter(v=>v.margem!=null);return c.length?dzEur(c.reduce((s,v)=>s+v.margem,0)/c.length,true):'—';})()}</td></tr>`:''}
+  </tbody></table></div>`;
+  const comp=(L)=>{const c=L.filter(v=>v.margem!=null);return c.length?`${dzEur(c.reduce((s,v)=>s+v.margem,0)/c.length,true)} <span class="dz-sub">(${c.length})</span>`:'por lançar';};
+  const vH=D.vendas.filter(v=>v.origem==='herdada'),vN=D.vendas.filter(v=>v.origem==='nova'&&!v.consig);
+  const tComp=`<div class="dz-tw" tabindex="0" role="region" aria-label="Herdadas vs compras novas"><table class="dz-tbl"><thead><tr><th></th><th class="r">Herdadas</th><th class="r">Compras novas</th></tr></thead><tbody>
+    <tr><td>Motas próprias</td><td class="r">${hT} <span class="dz-sub">em stock no início</span></td><td class="r">${D.novas.length} <span class="dz-sub">entraram</span></td></tr>
+    <tr><td>Já vendidas</td><td class="r"><b>${hV}</b> · ${hT?dzPct(hV,hT)+' %':'—'}</td><td class="r"><b>${D.novasVend.length}</b> · ${D.novas.length?dzPct(D.novasVend.length,D.novas.length)+' %':'—'}</td></tr>
+    <tr><td>Dias em stock até vender</td><td class="r">${mdH!=null?mdH+' dias':'—'} <span class="dz-sub">(${D.herdDias.length} com data)</span></td><td class="r"><b>${md!=null?md+' dias':'—'}</b></td></tr>
+    <tr><td>Margem libertada média</td><td class="r">${comp(vH)}</td><td class="r">${comp(vN)}</td></tr>
+    <tr><td>Ainda em stock</td><td class="r">${D.herdRestam.length}${D.herdRestam.length?` <span class="dz-sub">· ${dzNum(dzMedia(D.herdRestam.map(x=>dzDias(x.rec,D.hoje))))} dias em média</span>`:''}</td><td class="r">${D.novasRestam.length}${D.novasRestam.length?` <span class="dz-sub">· ${dzNum(dzMedia(D.novasRestam.map(x=>dzDias(x.rec,D.hoje))))} dias em média</span>`:''}</td></tr>
+    ${D.consigEnt.length?`<tr><td>Consignadas (à parte)</td><td class="r">—</td><td class="r">${D.consigEnt.length} ${D.consigEnt.length===1?'entrou':'entraram'} · ${D.consigEnt.filter(x=>x.fim).length} vendida${D.consigEnt.filter(x=>x.fim).length!==1?'s':''}</td></tr>`:''}
+  </tbody></table></div>`;
+  const tMes=`<div class="dz-tw" tabindex="0" role="region" aria-label="Mês a mês"><table class="dz-tbl dz-tmes"><thead><tr><th>Mês</th><th class="r">Vendidas<br><span class="dz-sub">herdadas · novas</span></th><th class="r">A comerciante</th><th class="r">Margem libertada<br><span class="dz-sub">lançadas · por lançar</span></th><th class="r">Stock médio</th><th class="r">Valor médio<br><span class="dz-sub">de entrada</span></th><th class="r">Custo do stock<br><span class="dz-sub">parado</span></th><th class="r">Entradas</th><th class="r">Idade média<br><span class="dz-sub">no fim do mês</span></th></tr></thead><tbody>
+    ${ms.map(k=>{const x=D.M[k];return`<tr><td class="dz-nw">${dzMesLbl(k,true)} ${k.slice(0,4)}${k===D.hoje.slice(0,7)?'<div class="dz-sub">até hoje</div>':''}</td><td class="r"><b>${x.vH+x.vN+x.vS}</b> <span class="dz-sub">${x.vH} · ${x.vN}${x.vS?' · '+x.vS+' s/ data':''}</span></td><td class="r">${x.com||'—'}</td><td class="r">${x.nMarg?dzEur(x.marg,true):'—'} <span class="dz-sub">${x.nMarg} · ${x.nPend}</span></td><td class="r">${dzNum(x.stockMed,1)}</td><td class="r">${dzEur(x.valorMed)}</td><td class="r">${dzEur(x.dep)}</td><td class="r">${x.entradas}${x.consig?` <span class="dz-sub">+${x.consig} consig.</span>`:''}</td><td class="r">${x.idade!=null?dzNum(x.idade)+' dias':'—'}</td></tr>`;}).join('')}
+  </tbody></table></div>`;
+  const tVendas=`<div class="dz-tw" tabindex="0" role="region" aria-label="Vendas a clientes"><table class="gpp-ltable dz-tbl" data-no-cards="1"><thead><tr><th>${D.modo==='negocio'?'Data do negócio':'Data de retail'}</th><th>Modelo</th><th>Matrícula</th><th>Origem</th><th class="r">Dias em stock</th><th class="r">Margem libertada</th>${imprimir?'':'<th>Vendedor</th>'}</tr></thead><tbody>
+    ${D.vendas.slice().reverse().map(v=>`<tr${imprimir?'':` class="gpp-lrow2"`}><td${imprimir?'':` class="gpp-lclick" data-action="open-record-from-dash" data-id="${esc(v.id)}"`}>${esc(dzData(v.d))}</td><td>${esc(v.modelo)}${v.consig?' <span class="dz-sub">(consignada)</span>':''}</td><td>${esc(v.mat||'—')}</td><td><span class="dz-or dz-or-${v.origem}">${esc(dzOrigemLbl(v.origem))}</span>${v.semFicha?' <span class="dz-sub">sem ficha</span>':''}</td><td class="r">${v.dias!=null?v.dias:(v.diasAprox!=null?v.diasAprox+' <span class="dz-sub" title="sem data de receção: conta desde o registo">≈</span>':'—')}</td><td class="r ${v.margem==null?'':(v.margem>=0?'dz-tpos':'dz-tneg')}">${v.margem!=null?dzEur(v.margem,true):'<span class="dz-sub">por lançar</span>'}</td>${imprimir?'':`<td>${vendTag(v.vend,false)}</td>`}</tr>`).join('')||`<tr><td colspan="7" class="dz-sub">Sem vendas desde ${esc(dzDataCurta(D.ini))}.</td></tr>`}
+  </tbody></table></div>`;
+  const notas=`<div class="dz-notas"><b>Como se conta.</b> <b>Herdadas</b> = motas próprias que já estavam em stock antes de ${esc(dzDataCurta(D.ini))}; <b>entradas novas</b> = as que entraram desde então (as consignadas ficam à parte e não contam para o stock nem para a depreciação). <b>Dias em stock</b> = da data de receção à data do negócio. <b>Margem libertada</b> = a que lanças nas comissões (só conta quando está lançada; não há estimativas aqui). <b>Custo do stock parado</b> = depreciação da Calculadora de Depreciação (o valor que escreves em cada mota ou, sem ele, a taxa mensal: ${D.taxa?dzNum(D.taxa,1)+' %':'0 % neste browser'}), repartida pelos dias em que cada mota esteve em stock. Vendas ${D.modo==='negocio'?'contadas pela data do negócio':'contadas pela data de retail (data 298), como nas comissões; as que estão em Carteira contam pela data do negócio'}.
+    ${D.vendasSemFicha.length?` ${D.vendasSemFicha.length} venda${D.vendasSemFicha.length!==1?'s':''} saíram de stock antes de haver ficha na plataforma (sem data de entrada nem valor): conta${D.vendasSemFicha.length!==1?'m':''} como herdada${D.vendasSemFicha.length!==1?'s':''}, mas sem dias em stock.`:''}
+    ${D.recAprox.length?` ${D.recAprox.length} mota${D.recAprox.length!==1?'s':''} sem data de receção: conta${D.recAprox.length!==1?'m':''} no stock desde o dia em que ${D.recAprox.length!==1?'foram registadas':'foi registada'} (≈), mas fica${D.recAprox.length!==1?'m':''} fora das médias de dias.`:''}
+    ${D.testes.length?` Registos de teste no stock não contam.`:''}</div>`;
+  const cab=`<div class="dz-cab"><div><div class="dz-h1">Usadas · desde ${esc(dzDataCurta(D.ini))}</div><div class="dz-h2">${imprimir?'Bimby Motorrad · Caetano BMW Motorrad Aveiro · '+esc(dzDataCurta(D.hoje)):'O que mudou desde que ficaste responsável — para mostrar e explicar'}</div></div>${imprimir?'':`
+    <div class="dz-ctrl"><label>Desde <input type="date" class="stock-inp" data-dz="inicio" value="${esc(D.ini)}" max="${esc(D.hoje)}"></label>
+    <label>Contar vendas pela <select class="gpp-mes-sel" data-dz="modo"><option value="retail"${D.modo==='retail'?' selected':''}>data de retail</option><option value="negocio"${D.modo==='negocio'?' selected':''}>data do negócio</option></select></label>
+    <button class="btn btn-dark btn-sm" data-action="dz-pdf">🖨 Relatório (PDF)</button></div>`}</div>`;
+  return`<div class="dz">${cab}${tiles}
+    ${resumo.length?`<div class="gpp-card dz-card dz-resumo"><div class="dz-h3">Em resumo</div><ul>${resumo.map(s=>`<li>${s}</li>`).join('')}</ul></div>`:''}
+    <div class="dz-grid2"><div class="gpp-card dz-card">${gV}</div><div class="gpp-card dz-card">${gM}</div></div>
+    <div class="dz-grid2"><div class="gpp-card dz-card">${gS}</div><div class="gpp-card dz-card">${gD}</div></div>
+    <div class="dz-grid2"><div class="gpp-card dz-card"><div class="dz-h3">Herdadas vs compras novas</div>${tComp}</div><div class="gpp-card dz-card"><div class="dz-h3">Antiguidade do stock: início vs hoje</div>${tAntig}</div></div>
+    <div class="gpp-card dz-card"><div class="dz-h3">Vendas por tempo em stock</div>${tFaixas}</div>
+    <div class="gpp-card dz-card dz-scroll"><div class="dz-h3">Mês a mês</div>${tMes}</div>
+    <div class="gpp-card dz-card dz-scroll"><div class="dz-h3">Vendas a clientes desde ${esc(dzDataCurta(D.ini))} · ${nV}</div>${tVendas}</div>
+    ${notas}</div>`;
+}
+// o chefe não carrega as margens ao entrar (só nas Comissões): pede-as uma vez, com o stock completo
+function dzCarregar(){
+  if(!S.stockLoaded&&!S._dzStock){S._dzStock=true;loadStock().then(()=>{S._dzStock=false;render();});}
+  if(!S._dzMargOk&&!S._dzMarg){S._dzMarg=true;loadMargens().then(()=>{S._dzMarg=false;S._dzMargOk=true;render();});}
+  return !!(S.stockLoaded&&S._dzMargOk);
+}
+function dzAvisoMargens(){return S.margensErr?`<div class="mg-aviso">Não consegui ler as margens libertadas (${esc(S.margensErr)}): a margem aparece como «por lançar» até voltar a abrir.</div>`:'';}
+function desempenhoView(){
+  if(!isAdmin())return'';
+  if(!dzCarregar())return'<div class="gpp-empty">A carregar o stock e as margens…</div>';
+  return dzAvisoMargens()+dzDesempenhoHTML(dzDados(),false);
+}
+function dzMudar(el){const k=el.dataset.dz;try{if(k==='inicio'&&/^\d{4}-\d{2}-\d{2}$/.test(el.value))localStorage.setItem('bc_dz_inicio',el.value);if(k==='modo')localStorage.setItem('bc_dz_modo',el.value==='negocio'?'negocio':'retail');}catch(e){}render();}
+// relatório para imprimir / guardar em PDF (sem as sugestões)
+function dzPDF(){
+  if(!isAdmin())return;const D=dzDados();
+  const css='@page{size:A4;margin:11mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:0;font-size:11px}'
+   +'.dz-barra{position:sticky;top:0;background:#0b1220;color:#fff;padding:8px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px}.dz-barra button{background:#c2410c;color:#fff;border:0;border-radius:6px;padding:7px 14px;font-weight:700;cursor:pointer}@media print{.dz-barra{display:none}}'
+   +'.dz{padding:4px 2px}.dz-cab{border-bottom:2px solid #0f172a;padding-bottom:6px;margin-bottom:10px}.dz-h1{font-size:18px;font-weight:800}.dz-h2{color:#475569;font-size:11px;margin-top:2px}.dz-h3{font-size:12px;font-weight:800;margin:0 0 6px}'
+   +'.dz-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}.dz-tile{border:1px solid #cbd5e1;border-radius:6px;padding:7px 9px}.dz-tl{font-size:9px;text-transform:uppercase;letter-spacing:.03em;color:#475569;font-weight:700}.dz-tv{font-size:18px;font-weight:800;margin:2px 0}.dz-tv small{font-size:11px;font-weight:600;color:#475569}.dz-ts{font-size:9.5px;color:#475569}'
+   +'.dz-card{border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;margin-bottom:8px;page-break-inside:avoid}.dz-grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.dz-grid2>.dz-card{margin-bottom:8px}'
+   +'.dz-resumo ul{margin:0;padding-left:16px}.dz-resumo li{margin:3px 0;line-height:1.35}'
+   +'.dz-fig{margin:0}.dz-fig figcaption b{display:block;font-size:12px}.dz-fig figcaption span{color:#475569;font-size:10px}.dz-leg{display:flex;gap:12px;font-size:10px;color:#475569;margin:4px 0}.dz-leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}.dz-nota{font-size:9.5px;color:#475569;margin-top:2px}'
+   +'.dz-grid{stroke:#e2e8f0;stroke-width:1}.dz-base{stroke:#94a3b8}.dz-ax{fill:#64748b;font-size:9.5px}.dz-val{fill:#0f172a;font-size:10px;font-weight:700}.dz-vaz{fill:#64748b;font-size:9px;font-style:italic}'
+   +'.dz-s1{fill:#2a78d6;background:#2a78d6}.dz-s2{fill:#eb6834;background:#eb6834}.dz-s0{fill:#94a3b8;background:#94a3b8}.dz-pos{fill:#0ca30c;background:#0ca30c}.dz-neg{fill:#d03b3b;background:#d03b3b}'
+   +'table{width:100%;border-collapse:collapse;font-size:10px}th,td{border-bottom:1px solid #e2e8f0;padding:3px 5px;text-align:left;vertical-align:top}th{background:#f1f5f9;font-size:9px;text-transform:uppercase}.r{text-align:right}.dz-tot td{font-weight:700;border-top:1px solid #94a3b8}'
+   +'.dz-sub{color:#64748b;font-size:9px;font-weight:400}.dz-tpos{color:#15803d;font-weight:700}.dz-tneg{color:#b91c1c;font-weight:700}.dz-or{font-weight:600}.dz-mini{display:none}.dz-notas{font-size:9px;color:#475569;line-height:1.4;margin-top:6px}';
+  const html='<!doctype html><html lang="pt"><head><meta charset="utf-8"><title>Usadas desde '+esc(dzDataCurta(D.ini))+'</title><style>'+css+'</style></head><body>'
+   +'<div class="dz-barra"><span>Relatório das usadas · para guardar em PDF escolhe «Guardar como PDF» na janela de impressão</span><button onclick="window.print()">Imprimir / Guardar PDF</button></div>'
+   +dzDesempenhoHTML(D,true)+'</body></html>';
+  const w=window.open('','_blank');
+  if(!w){alert('Permite pop-ups neste site para abrir o relatório.');return;}
+  w.document.open();w.document.write(html);w.document.close();w.focus();
+}
+// ===== Usadas › Melhorias: sugestões calculadas, só para o chefe (fora do relatório) =====
+// Parâmetros do método de avaliação do chefe (skill avaliar-mota, out/2026): margem bruta 1 500 €, garantia 250 €,
+// preparação 300 €, comerciante paga ≈ 82,5 % do preço, custo de stock 0,5 % do preço por mês, comerciante aos 180 dias.
+const DZ_MET={bruta:1500,garantia:250,prep:300,comerciante:0.825,stockMes:0.005,diasComerciante:180};
+// estimativa da margem libertada: venda − entrada − IVA sobre a margem − preparação (oficina, garantia, legalização)
+function dzMargemEst(p,ent,prep){if(p==null||ent==null)return null;const d=p-ent;return d-(d>0?d*23/123:0)-(prep||0);}
+// margem líquida também da comissão do vendedor (25 % da margem, mínimo 35 €)
+function dzLiquida(est){if(est==null)return null;return est-Math.max(COM_REGRAS.minimo,COM_REGRAS.pctUsadas*est);}
+function dzR50(v){return Math.round(v/50)*50;}
+function dzFamilia(modelo){const t=' '+String(modelo||'').toUpperCase().replace(/[^A-Z0-9/ ]/g,' ').replace(/\s+/g,' ')+' ';
+  if(/ F ?\d{3}/.test(t))return'F 750–900';if(/ C ?\d{3}| CE ?\d| PCX /.test(t))return'Scooters';if(/ [SM] ?1000/.test(t))return'S / M 1000';if(/ K ?1600/.test(t))return'K 1600';
+  if(/ GSA? | G\/S | GS\/A /.test(t)||/ ADVENTURE /.test(t))return'GS / GSA';
+  if(/ RT /.test(t))return'RT';if(/ RS /.test(t))return'RS';if(/ R ?18 /.test(t))return'R 18';if(/NINE|R ?12 /.test(t))return'R 12 / nineT';if(/ R ?1\d{3} R /.test(t))return'Roadster R';
+  return (String(modelo||'').trim().split(/\s+/)[0]||'Outras');}
+// quanto custa cada mês parada: depreciação (Calculadora) + custo de stock do método (capital e seguro)
+function dzCustoMes(x){return {dep:x.depDia*30.4,stk:x.preco!=null?x.preco*DZ_MET.stockMes:0};}
+function melhoriasView(){
+  if(!isAdmin())return'';
+  if(!dzCarregar())return'<div class="gpp-empty">A carregar o stock e as margens…</div>';
+  const D=dzDados(),hoje=D.hoje,M180=DZ_MET.diasComerciante;
+  const proprias=D.motas.filter(x=>!x.consig&&x.rec&&!x.fim);
+  const mdNovas=D.novasDias.length?dzMedia(D.novasDias):null;
+  // calibração da estimativa com as margens reais já lançadas
+  const cal=D.comMarg.filter(v=>v.mota&&v.mota.ent!=null&&v.r.pvp!=null&&v.r.pvp!=='').map(v=>Math.abs(dzMargemEst(Number(v.r.pvp),v.mota.ent,v.mota.prep)-v.margem));
+  const erroEst=cal.length?Math.round(dzMedia(cal)):null;
+  const card=(t,sub,corpo)=>`<div class="gpp-card dz-card"><div class="dz-h3">${t}</div>${sub?`<div class="dz-msub">${sub}</div>`:''}${corpo}</div>`;
+  // 1) motas paradas
+  const paradas=proprias.map(x=>({x,dias:dzDias(x.rec,hoje)})).filter(z=>z.dias>90||(z.x.origem==='nova'&&mdNovas!=null&&z.dias>Math.max(45,2*mdNovas))).sort((a,b)=>b.dias-a.dias);
+  const sug=z=>{const x=z.x,p=x.preco,pm=x.precoMin,c=dzCustoMes(x),mes=c.dep+c.stk,L=[];
+    const vc=p!=null?dzR50(p*DZ_MET.comerciante):null;
+    if(z.dias>=M180){L.push(`<b>Passou os ${M180} dias</b>: pela tua regra, é altura de comerciante.`);
+      if(pm!=null&&p!=null&&p>pm)L.push(`Última tentativa no retalho: preço mínimo (${dzEur(pm)}).`);
+      if(vc!=null)L.push(`Comerciante ≈ ${dzEur(vc)} (82,5 % do preço${x.ent!=null?`, ${vc>=x.ent?dzEur(vc-x.ent)+' acima':dzEur(x.ent-vc)+' abaixo'} da entrada`:''}): pede proposta a 1 ou 2.`);
+      if(mes>=1&&p!=null&&vc!=null&&p>vc)L.push(`Esperar custa ≈ ${dzEur(mes)}/mês; o desconto do comerciante (${dzEur(p-vc)}) equivale a ≈ ${dzNum((p-vc)/mes)} meses parada.`);}
+    else if(z.dias>90){
+      if(p==null)L.push('Sem preço anunciado: define o preço.');
+      else if(pm!=null&&p>pm)L.push(`Desce para o mínimo (${dzEur(pm)}): aos ${M180} dias passa a comerciante (faltam ${M180-z.dias}).`);
+      else L.push(`Já está no mínimo: reforça o anúncio (fotos, portais) ou usa-a como mota de stock numa retoma (folga 0). Faltam ${M180-z.dias} dias para os ${M180}.`);}
+    else L.push(`Compra recente parada há mais do dobro da média das tuas compras (${Math.round(mdNovas)} dias): revê preço e anúncio${pm!=null&&p!=null&&p>pm?`; o mínimo é ${dzEur(pm)}`:''}.`);
+    return L.join(' ');};
+  const motaCard=z=>{const x=z.x,c=dzCustoMes(x),est=x.preco!=null?dzMargemEst(x.preco,x.ent,x.prep):null;
+    return`<div class="dz-mota${z.dias>=M180?' dz-m180':''}"><div class="dz-mota-cab"><div><b>${esc(x.modelo)}</b> <span class="dz-sub">${esc(x.mat||'—')} · ${esc(dzOrigemLbl(x.origem))}</span></div><div class="dz-dias"><b>${z.dias}</b> dias</div></div>
+      <div class="dz-mota-num"><div><div class="dz-ml">Entrada</div><div class="dz-mv">${dzEur(x.ent)}</div></div><div><div class="dz-ml">Preço atual</div><div class="dz-mv">${dzEur(x.preco)}</div><div class="dz-ms">mín. ${dzEur(x.precoMin)}</div></div>
+      <div><div class="dz-ml">Custo por mês</div><div class="dz-mv">${dzEur(c.dep+c.stk)}</div><div class="dz-ms">${c.dep>=1?'dep. '+dzEur(c.dep)+' + ':''}stock ${dzEur(c.stk)}</div></div>
+      <div><div class="dz-ml">Margem ≈ a este preço</div><div class="dz-mv${est==null?'':(est>=0?' dz-tpos':' dz-tneg')}">${est!=null?dzEur(est,true):'—'}</div>${x.depTot?`<div class="dz-ms">já desvalorizou ${dzEur(x.depTot)}</div>`:''}</div></div>
+      <div class="dz-sug">${sug(z)}</div></div>`;};
+  // leitura: quantos meses parada equivale o desconto do comerciante nas motas com 180+ dias
+  const eq=paradas.filter(z=>z.dias>=M180).map(z=>{const c=dzCustoMes(z.x),mes=c.dep+c.stk,p=z.x.preco;return (p!=null&&mes>=1)?(p-dzR50(p*DZ_MET.comerciante))/mes:null;}).filter(v=>v!=null);
+  const leitura=eq.length?`<div class="dz-leitura"><b>Leitura.</b> ${eq.length===1?'Na mota':'Nas '+eq.length+' motas'} com ${M180}+ dias, ir já a comerciante perde o equivalente a ${Math.round(Math.min(...eq))===Math.round(Math.max(...eq))?'≈ '+Math.round(eq[0]):Math.round(Math.min(...eq))+' a '+Math.round(Math.max(...eq))} meses parada (depreciação + custo de stock). Enquanto houver procura, baixar ao mínimo e insistir no retalho sai mais barato; o comerciante faz sentido quando a mota não tem procura nem ao preço mínimo. Se a empresa depreciar mais depois de 1 ano, as contas mudam.</div>`:'';
+  const tParadas=paradas.length?`${leitura}<div class="dz-motas">${paradas.map(motaCard).join('')}</div>`:'<div class="dz-ok">Nenhuma mota própria com mais de 90 dias nem compra recente parada. 👌</div>';
+  // 2) margem vs tempo em stock e quanto custa o stock parado
+  const ate90=D.comMarg.filter(v=>v.dias!=null&&v.dias<=90),mais90=D.comMarg.filter(v=>v.dias!=null&&v.dias>90),nT=ate90.length+mais90.length;
+  const cT=proprias.reduce((o,x)=>{const c=dzCustoMes(x);o.dep+=c.dep;o.stk+=c.stk;return o;},{dep:0,stk:0});
+  const tempo=((ate90.length&&mais90.length)?`<p class="dz-p">Vendas com margem lançada e data de receção: <b>até 90 dias</b> em stock, média <b>${dzEur(dzMedia(ate90.map(v=>v.margem)),true)}</b> (${ate90.length}); <b>mais de 90 dias</b>, média <b>${dzEur(dzMedia(mais90.map(v=>v.margem)),true)}</b> (${mais90.length}).${nT<10?` <span class="dz-sub">Amostra pequena (${nT} vendas): é um sinal, ainda não é prova.</span>`:''}</p>`
+    :'<p class="dz-p dz-sub">Ainda não há margens lançadas com data de receção nos dois grupos (até e depois de 90 dias) para comparar.</p>')
+    +(proprias.length?`<p class="dz-p">O stock próprio de hoje (${proprias.length} motas) custa ≈ <b>${dzEur(cT.dep+cT.stk)} por mês</b> parado: depreciação ${dzEur(cT.dep)} (Calculadora) + custo de stock ${dzEur(cT.stk)} (0,5 % do preço por mês, do teu método).</p>`:'');
+  // 3) compras: margem bruta ao preço mínimo vs o método (mínimo de venda = entrada + garantia + preparação + 1 500 €)
+  const prepM=x=>x.prep>0?x.prep:DZ_MET.garantia+DZ_MET.prep;
+  const regra=proprias.filter(x=>x.origem==='nova'&&x.ent!=null&&x.precoMin!=null).map(x=>{const pr=prepM(x),bruta=x.precoMin-x.ent-pr;
+    return {x,pr,padrao:!(x.prep>0),bruta,liq:dzLiquida(dzMargemEst(x.precoMin,x.ent,pr)),compraMax:Math.floor((x.precoMin-pr-DZ_MET.bruta)/50)*50};}).filter(z=>z.bruta<DZ_MET.bruta).sort((a,b)=>a.bruta-b.bruta);
+  const tRegra=regra.length?`<div class="dz-tw" tabindex="0" role="region" aria-label="Compras: margem ao preço mínimo"><table class="dz-tbl"><thead><tr><th>Mota</th><th class="r">Entrada</th><th class="r">Preço mínimo</th><th class="r">Garantia + prep.</th><th class="r">Margem bruta<br><span class="dz-sub">ao preço mínimo</span></th><th class="r">Líquido ≈</th><th class="r">Compra máx.<br><span class="dz-sub">para 1 500 €</span></th></tr></thead><tbody>
+    ${regra.map(z=>`<tr><td><b>${esc(z.x.modelo)}</b><div class="dz-sub">${esc(z.x.mat||'—')}</div></td><td class="r">${dzEur(z.x.ent)}</td><td class="r">${dzEur(z.x.precoMin)}</td><td class="r">${dzEur(z.pr)}${z.padrao?'<div class="dz-sub">padrão</div>':''}</td><td class="r ${z.bruta>=0?'':'dz-tneg'}"><b>${dzEur(z.bruta,true)}</b></td><td class="r ${z.liq>=0?'':'dz-tneg'}">${dzEur(z.liq,true)}</td><td class="r"><b>${dzEur(z.compraMax)}</b></td></tr>`).join('')}</tbody></table></div>
+    <p class="dz-p dz-sub">O teu método (desde 23 out): mínimo de venda = entrada + 250 € de garantia + preparação + 1 500 € de margem bruta. Garantia + prep. = o que está lançado na mota ou, sem nada lançado, 550 € (padrão). Líquido ≈ = depois do IVA sobre a margem e da comissão. Compra máx. = o que podias ter pago para chegar aos 1 500 € a esse preço mínimo: referência para a próxima mota igual. Compras anteriores a 23 out foram feitas com a regra antiga.</p>`
+    :'<div class="dz-ok">As compras novas em stock chegam à margem bruta de 1 500 € ao preço mínimo. 👌</div>';
+  // 4) margens por lançar
+  const pl=D.porLancar;const plMes=[...new Set(pl.map(v=>v.mes))].sort();
+  const tPl=pl.length?`<p class="dz-p"><b>${pl.length}</b> venda${pl.length!==1?'s':''} sem margem libertada lançada (${plMes.map(k=>dzMesLbl(k,true)).join(', ')}). Sem elas, a margem do relatório fica incompleta: lança-as nas Comissões assim que tiveres a rentabilidade.</p>`:'<div class="dz-ok">Todas as vendas desde o início têm margem lançada. 👌</div>';
+  // 5) rotação por família
+  const fam={};D.vendas.filter(v=>v.dias!=null).forEach(v=>{const f=dzFamilia(v.modelo);(fam[f]=fam[f]||{v:[],s:[]}).v.push(v.dias);});
+  proprias.forEach(x=>{const f=dzFamilia(x.modelo);(fam[f]=fam[f]||{v:[],s:[]}).s.push(dzDias(x.rec,hoje));});
+  const fl=Object.entries(fam).sort((a,b)=>(dzMedia(a[1].v)??1e9)-(dzMedia(b[1].v)??1e9));
+  const tFam=`<div class="dz-tw" tabindex="0" role="region" aria-label="Rotação por família"><table class="dz-tbl"><thead><tr><th>Família</th><th class="r">Vendidas</th><th class="r">Dias médios até vender</th><th class="r">Em stock</th><th class="r">Idade média em stock</th></tr></thead><tbody>
+    ${fl.map(([f,z])=>`<tr><td>${esc(f)}</td><td class="r">${z.v.length}</td><td class="r">${z.v.length?dzNum(dzMedia(z.v)):'—'}</td><td class="r">${z.s.length}</td><td class="r">${z.s.length?dzNum(dzMedia(z.s))+' dias':'—'}</td></tr>`).join('')}</tbody></table></div>
+    <p class="dz-p dz-sub">Só vendas com data de receção. Poucos dados por família: lê como tendência. Compra mais do que roda depressa; nas famílias lentas, só com preço de compra que aguente 3–4 meses de stock.</p>`;
+  // 6) dados a corrigir
+  const fx=[];
+  if(D.vendasSemFicha.length)fx.push(`<b>${D.vendasSemFicha.length}</b> venda${D.vendasSemFicha.length!==1?'s':''} sem mota no stock (${D.vendasSemFicha.map(v=>esc(v.modelo+(v.mat?' '+v.mat:''))).join(', ')}): junta-as ao Stock Usadas como «Vendida», com data de receção e valor de entrada, para contarem os dias em stock.`);
+  if(D.recAprox.length)fx.push(`<b>${D.recAprox.length}</b> mota${D.recAprox.length!==1?'s':''} sem data de receção (${D.recAprox.map(x=>esc(x.modelo+(x.mat?' '+x.mat:''))).join(', ')}): ficam fora das médias de dias até lhes pores a data.`);
+  if(D.semEntrada.length)fx.push(`<b>${D.semEntrada.length}</b> mota${D.semEntrada.length!==1?'s':''} sem valor de entrada (${D.semEntrada.map(x=>esc(x.modelo)).join(', ')}): ficam fora do valor do stock.`);
+  if(D.semDep.length)fx.push(`<b>${D.semDep.length}</b> mota${D.semDep.length!==1?'s':''} sem depreciação (nem valor escrito nem taxa mensal${D.taxa?'':'; a taxa está a 0 % neste browser'}): se a empresa as deprecia, escreve o valor na Calculadora de Depreciação, senão o custo do stock parado fica por baixo.`);
+  if(D.vendidaSemNegocio.length)fx.push(`<b>${D.vendidaSemNegocio.length}</b> mota${D.vendidaSemNegocio.length!==1?'s':''} «Vendida» sem negócio ligado (${D.vendidaSemNegocio.map(x=>esc(x.modelo)).join(', ')}): usa-se a última alteração como data de venda.`);
+  if(D.testes.length)fx.push(`Há ${D.testes.length} registo${D.testes.length!==1?'s':''} de teste no stock (${D.testes.map(m=>esc(m.modelo||'')).join(', ')}): apaga-o${D.testes.length!==1?'s':''} para não confundir.`);
+  return`${dzAvisoMargens()}<div class="dz">
+    <div class="dz-cab"><div><div class="dz-h1">Melhorias · só tu vês</div><div class="dz-h2">Sugestões calculadas a partir do stock, das vendas e do teu método de avaliação. Não entram no relatório do Desempenho.</div></div></div>
+    ${card('Motas paradas: onde mexer no preço',`Motas próprias com mais de 90 dias e compras recentes paradas há mais do dobro da tua média, das mais antigas para as mais recentes. Margem ≈ = venda − entrada − IVA sobre a margem − preparação lançada${erroEst!=null?`; nas vendas já lançadas falhou, em média, ${dzEur(erroEst)} face à margem libertada real`:''}. Custo por mês = depreciação da Calculadora + custo de stock (0,5 % do preço por mês). Comerciante ≈ 82,5 % do preço: é fórmula, não é oferta.`,tParadas)}
+    ${card('Margem e tempo em stock','',tempo)}
+    ${card('Compras: margem ao preço mínimo vs o teu método','',tRegra)}
+    ${card('Margem libertada por lançar','',tPl)}
+    ${card('Rotação por família','',tFam)}
+    ${fx.length?card('Dados a corrigir (melhoram o relatório)','',`<ul class="dz-ul">${fx.map(s=>`<li>${s}</li>`).join('')}</ul>`):''}
+  </div>`;
+}
 // ===== Usadas › Retomas: registo dos valores de retoma dados (só o chefe) =====
 // Para dar o mesmo valor se o cliente voltar a perguntar e para controlar o que foi aceite.
 // Os valores ficam fixos depois de gravados (é o que foi dito ao cliente); só o estado e as notas mudam: outro valor = registo novo.
@@ -8001,7 +8445,7 @@ async function retApagar(id){const x=(S.retomas||[]).find(y=>String(y.id)===Stri
 const GRUPOS_SEC={
   atratar:{ic:'📋',lb:'A tratar',tabs:[['pendentes','A tratar hoje'],['notificacoes','Notificações EOT'],['entregas','Entregas']]},
   vendas:{ic:'✅',lb:'Vendas',tabs:[['retail','Retail'],['carteira','Carteira'],['fechados','Fechados'],['perdidos','Perdidos'],['comercio','Comerciante'],['trimestre','Trimestre'],['saude','Saúde da equipa']]},
-  usadas:{ic:'🏍️',lb:'Usadas',tabs:[['stock','Stock'],['depreciacao','Depreciação'],['margem','Margem'],['retomas','Retomas']]},
+  usadas:{ic:'🏍️',lb:'Usadas',tabs:[['stock','Stock'],['depreciacao','Depreciação'],['margem','Margem'],['retomas','Retomas'],['desempenho','Desempenho'],['melhorias','Melhorias']]},
   comissoesg:{ic:'💰',lb:'Comissões',tabs:[['comissoes','Resumo'],['premios','Os meus prémios']]}
 };
 function grupoDe(sec){for(const k in GRUPOS_SEC){if(GRUPOS_SEC[k].tabs.some(t=>t[0]===sec))return k;}return null;}
@@ -8053,6 +8497,9 @@ function tblCSV(k){
   const a=document.createElement('a');a.href=url;a.download=(S.gppSec||'tabela')+'_'+new Date().toISOString().slice(0,10)+'.csv';
   document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(url),2000);
 }
+// separadores de secção que não cabem (telemóvel): o separador aberto fica à vista
+function secTabsVer(){const st=document.querySelector('.sec-tabs');const on=st&&st.querySelector('.sec-tab.on');if(!on||st.scrollWidth<=st.clientWidth+1)return;
+  const l=on.offsetLeft-st.offsetLeft;if(l+on.offsetWidth>st.clientWidth)st.scrollLeft=Math.max(0,l-16);}
 function tblAplicar(){
   if(!['dashboard','secretaria','assessor','financeiro'].includes(S.screen))return;
   const tabs=document.querySelectorAll('.main-panel table.gpp-ltable');
@@ -9220,6 +9667,8 @@ function renderDashboard(){
     ['eots','🔁','EOTs'],
     ['margem','💶','Margem Usadas'],
     ['retomas','🧾','Valores de retoma'],
+    ['desempenho','📈','Desempenho'],
+    ['melhorias','💡','Melhorias'],
     ['premios','🏆','Os Meus Prémios'],
     ['perdidos','❌','Perdidos'],
     ['pendentes','⚠️','Pendentes'],
@@ -10664,6 +11113,8 @@ function renderDashboard(){
   else if(sec==='stock')body=stockView('usada');
   else if(sec==='depreciacao')body=depreciacaoView();
   else if(sec==='retomas')body=retomasView();
+  else if(sec==='desempenho')body=desempenhoView();
+  else if(sec==='melhorias')body=melhoriasView();
   else if(sec==='demos')body=normaView();
   else if(sec==='comissoes')body=comissoesView();
   else if(sec==='evento')body=eventoView();
@@ -10710,6 +11161,7 @@ function render0(){
   if(ps===S.screen){const nc=app.querySelector('.content');if(nc)nc.scrollTop=st}
   bindEvents();
   try{tblAplicar();}catch(e){}
+  try{secTabsVer();}catch(e){}
   try{eotImgsAplicar();}catch(e){}
   try{negImgsAplicar();}catch(e){}
   try{cardsAplicar();}catch(e){}
@@ -10782,6 +11234,7 @@ function bindEvents(){
     if(el.dataset&&el.dataset.retEstado){retMudar(el.dataset.retEstado,{estado:el.value});return;}
     if(el.dataset&&el.dataset.retNotas){const x=(S.retomas||[]).find(y=>String(y.id)===String(el.dataset.retNotas));const nv=eotTxt(el.value);if(x&&(x.notas||null)!==nv)retMudar(el.dataset.retNotas,{notas:nv});return;}
     if(el.dataset&&el.dataset.retFiltro){S.retF=el.value;render();return;}
+    if(el.dataset&&el.dataset.dz){dzMudar(el);return;}
     if(el.id==='reu-c-vend'||el.id==='reu-c-prazo'){S.reuC=Object.assign({texto:'',vend:'',prazo:''},S.reuC||{},{[el.id==='reu-c-vend'?'vend':'prazo']:el.value});return;}
     if(el.dataset&&el.dataset.reuPreco){reuPrecoGuardar(el);return;}
     if(el.dataset&&el.dataset.reuPrazo){reuCompNovaData(el);return;}
@@ -11115,6 +11568,7 @@ function bindEvents(){
       case'folha-abrir':{const id=el.dataset.id;const fecha=String(S.folhaAberta)===String(id);S.folhaAberta=fecha?null:id;S.acordoEstado='';render();
         if(!fecha)setTimeout(()=>{const b=document.getElementById('fn-box');if(b)try{b.scrollIntoView({block:'nearest',behavior:movReduzido()?'auto':'smooth'});}catch(_){}},60);break;}
       case'folha-fechar':S.folhaAberta=null;render();break;
+      case'dz-pdf':dzPDF();break;
       case'folha-pdf':if(!S.acordoGerando)pdfJanelaAbrir();folhaDescarregar(el.dataset.id);break;
       case'doc-abrir':pdfJanelaAbrir();docAbrir(el.dataset.doc,el.dataset.k);break;
       case'ret-limpar':S.retForm=null;render();break;

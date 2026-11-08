@@ -18,7 +18,9 @@ const eot=[{contrato:'E1',cliente:'Cliente EOT Um',modelo:'F 900 GS',matricula:'
 const hist=[{id:1,contrato:'E1',tipo:'comentario',autor_id:'v1',autor_nome:'Vera Vendas',autor_role:'vendedor',criado_em:new Date(Date.now()-3600e3).toISOString(),texto:'Cliente quer saber o valor para refinanciar'}];
 const enc=[1,2,3,4].map(i=>({origem:'aveiro',production_number:String(9100000+i),chassis:'6N1000'+i,model_code:'0M21',model_desc:'R 1300 GS',color_code:'N52',options:'20B 389 7A8 413 5AG',order_status:i<3?'198':'150',ts_order_status:d(i*40),processing_type:['ST','US','DE','CS'][i-1],conf_f3_from:d(-10),conf_f3_to:d(-17),customer_last:i===4?'Apelido':'',importado_em:new Date().toISOString()}));
 const usadas=[{id:51,modelo:'R 1250 GS',matricula:'AA-00-AA',ano:2021,kms:30000,data_rececao:d(120),valor_anunciado:15900,valor_campanha:15500,categoria:'usada',estado:'Disponível'},
-  {id:52,modelo:'R 1300 GS',matricula:'BB-11-BB',categoria:'demo',estado:'Disponível',data_rececao:d(30)}];
+  {id:52,modelo:'R 1300 GS',matricula:'BB-11-BB',categoria:'demo',estado:'Disponível',data_rececao:d(30)},
+  {id:53,modelo:'F 900 R',matricula:'CC-22-CC',ano:2020,kms:21000,data_rececao:d(250),valor_entrada:8000,valor_anunciado:9500,valor_min:9000,dep_manual:400,categoria:'usada',estado:'Disponível'},
+  {id:54,modelo:'F 900 GS',matricula:'DD-33-DD',ano:2024,kms:9000,data_rececao:d(20),valor_entrada:13800,valor_anunciado:15000,valor_min:14500,categoria:'usada',estado:'Disponível'}];
 const comp=[{id:1,reuniao:d(14),vendedor_id:'v1',ponto:'eots',texto:'Ligar aos clientes EOT',prazo:d(3),feito:false,feito_em:null,adiamentos:1,adiado_em:d(7),criado_em:new Date(Date.now()-14*864e5).toISOString()},
   {id:2,reuniao:d(14),vendedor_id:null,ponto:'equip',texto:'Desafio do stock morto',prazo:d(2),feito:true,feito_em:new Date(Date.now()-864e5).toISOString(),criado_em:new Date(Date.now()-14*864e5).toISOString()}];
 const seq=[1,2,3].map(i=>({id:i,lote:'L1',ponto_venda:'Caetano Aveiro',ref:'7622852610'+i,descricao:'Botas Teste '+i,categoria:'botas',qualidade:['Vivo','Moribundo','Morto'][i-1],antig_saida:['Últ. Saída até 3 meses','Últ. Saída de 1 a 2 anos','Sem Movimento de Saída'][i-1],ult_saida:i<3?d(i*200):null,qtd:i,custo_unit:80,desc_max:i/10,importado_em:new Date().toISOString()}));
@@ -42,6 +44,7 @@ async function contexto(b,uid,vp,tema){
     if(t==='encomendas_bmw')return json(u.includes('offset=0')?enc:[]);
     if(t==='stock_equip')return json(u.includes('offset=0')?seq:[]);
     if(t==='stock_usadas')return json(usadas);
+    if(t==='margens')return json(uid==='c1'?[{negocio_id:10,margem:-250}]:[]);
     if(t==='reuniao_compromissos')return json(uid==='c1'?comp:[]);
     if(t==='retomas_valores')return json(uid==='c1'?[{id:1,criado_em:new Date(Date.now()-40*864e5).toISOString(),vendedor_id:'v1',matricula:'11-AA-22',modelo:'R 1250 GS',ano:2020,kms:40000,extras:'Malas',valor_retoma:9000,preparacao:300,valor_venda:12500,venda_minima:11800,estado:'proposta',notas:null},
       {id:2,criado_em:new Date(Date.now()-20*864e5).toISOString(),cliente:'Outro Cliente',modelo:'R 1250 GS',ano:2020,kms:52000,valor_retoma:8500,preparacao:null,valor_venda:12000,venda_minima:null,estado:'recusada',notas:'Achou pouco'}]:[]);
@@ -62,6 +65,7 @@ const ECRAS={
       ['Vendas a comerciante (margem)','()=>{S.screen="dashboard";S.gppSec="comercio";render();}'],['Usadas · Margem','()=>{S.screen="dashboard";S.gppSec="margem";S.perTipo="mes";render();}'],
       ['Reunião (preparação)','()=>{S.screen="dashboard";S.gppSec="reuniao";S.reu={dia:reuISO(reuData()),modo:"prep",passo:0,t0:null,tp:null};render();}'],
       ['Reunião (a conduzir)','()=>{S.screen="dashboard";S.gppSec="reuniao";S.reu={dia:reuISO(reuData()),modo:"conduzir",passo:4,t0:Date.now()-150000,tp:Date.now()-30000};render();}'],
+      ['Usadas · Desempenho','()=>{S.screen="dashboard";S.gppSec="desempenho";render();}'],['Usadas · Melhorias','()=>{S.screen="dashboard";S.gppSec="melhorias";render();}'],
       ['Usadas · Retomas (já deste valores)','()=>{S.screen="dashboard";S.gppSec="retomas";S.retomas=null;S.retForm={v:{matricula:"11 aa 22",modelo:"R 1250 GS",ano:"2020"},erros:{valor_retoma:"Falta o valor que ofereceste"}};render();}'],
       ['EOTs: contrato à mão (erros e repetido)','()=>{S.screen="dashboard";S.gppSec="eots";S.eotNovo={v:{contrato:"E1"},erros:{cliente:"Falta o cliente",data_fim:"Falta a data de fim"},dup:"E1"};render();}'],
       ['Janela EOT (criada à mão)','()=>{S.eotNovo=null;S.screen="dashboard";S.gppSec="eots";render();eotAbrir("E4");}'],
