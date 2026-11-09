@@ -143,7 +143,7 @@ const nb=s=>String(s||'').replace(/[\s  ]+/g,' ').trim();
   'autorização grava logo e liberta os documentos (cliente e pendura)':consGravado&&ups.length===4&&ups.every(x=>/:on$/.test(x)),
   'documento vai para a pasta evento/inscrição e fica na ficha':!!caminho&&new RegExp('^1/'+(nova&&nova.id)+'/cc-cliente-[a-z0-9]+\\.pdf$').test(caminho)&&docGuardado[0].nome==='cc-ana.pdf'&&!!est.docs[caminho],
   'ficheiro que não é foto nem PDF é recusado; com documentos a autorização não se tira':(nova.docs||[]).length===1&&/✓ cc-ana\.pdf/.test(docsDepois.txt)&&docsDepois.consDis,
-  'abre o documento num separador':/^blob:/.test(popUrl),
+  'abre o documento num separador (lido do armazenamento privado com a sessão)':!!popUrl&&est.pedidos.includes('e1 storage GET '+caminho)&&(/^blob:/.test(popUrl)||popUrl==='about:blank'),
   'externo completa a ficha do vendedor sem ver o funil e sem mudar quem registou':fichaVend.nome==='Cliente Do Vendedor'&&!fichaVend.funil&&fichaVend.obs==='Quer ver a R 1300 GS'&&!!patch11&&patch11[3].camisola==='XL'&&!('vendedor_id' in patch11[3])&&!('funil' in patch11[3])&&est.insc.find(i=>i.id===11).funil==='Quente',
   'lista mostra o resumo da ficha':/NIF 123456789/.test(listaFim)&&/pendura: Rui Ficticio/.test(listaFim)&&/leva mota própria · R 1250 GS/.test(listaFim)&&/1 documento/.test(listaFim),
   'Excel com tudo (sem funil), NIF como texto':cab.includes('Nome completo')&&cab.includes('Pendura: NIF')&&cab.includes('Mota que leva')&&!cab.includes('Funil')&&col('NIF')==='123456789'&&col('Pendura: nome completo')==='Rui Ficticio'&&col('Camisola')==='M'&&col('Data de nascimento')==='04/05/1990'&&
