@@ -6,7 +6,7 @@ const SCHEMA=require('./schema.js');
 const path=require('path');const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'));const MODO=process.argv[3]||'A';const CLIQUES=+(process.argv[4]||250);
 const now=new Date();const YM=now.getFullYear()+'/'+String(now.getMonth()+1).padStart(2,'0');const ISO=now.toISOString().slice(0,10);
 const TEAM=[['00000000-0000-0000-0000-0000000000a1','admin'],['00000000-0000-0000-0000-0000000000b1','vendedor'],['00000000-0000-0000-0000-0000000000b2','vendedor'],
- ['00000000-0000-0000-0000-0000000000c1','secretario'],['00000000-0000-0000-0000-0000000000d1','assessor'],['00000000-0000-0000-0000-0000000000e1','financeiro']];
+ ['00000000-0000-0000-0000-0000000000c1','secretario'],['00000000-0000-0000-0000-0000000000d1','assessor'],['00000000-0000-0000-0000-0000000000e1','financeiro'],['00000000-0000-0000-0000-0000000000f1','eventos']];
 const TAGS=[];const tag=(nome)=>{let i=TAGS.indexOf(nome);if(i<0){TAGS.push(nome);i=TAGS.length-1;}return `"'><x${i}>`;};
 const ENUM={status:['Retail','Carteira','Quente','Morno','Frio','Perdido'],de:['Quente','Carteira'],para:['Carteira','Retail'],status_antigo:['Quente'],status_novo:['Carteira'],
  type:['MN','MU','MD'],linha:['motorrad'],mes1:[YM],mes:[YM],fase:['Por contactar','Contactado','Proposta'],temperatura:['Quente','Morno','Frio'],
@@ -14,7 +14,7 @@ const ENUM={status:['Retail','Carteira','Quente','Morno','Frio','Perdido'],de:['
  funil:['Quente','Morno'],escopo:['vendedor','equipa'],qualidade:['Novo'],campo:['status','pvp']};
 function linhas(tab,uid){
   const cols=SCHEMA[tab].split(',').map(c=>c.split(':'));const out=[];
-  for(let k=0;k<6;k++){const r={};
+  for(let k=0;k<(tab==="profiles"?TEAM.length:6);k++){const r={};
     for(const [c,t] of cols){
       if(t==='n')r[c]=(c==='id'||c==='negocio_id'||c==='registo_id'||c==='evento_id'||c==='stock_id'||c==='parent')?k+1:(100+k*37);
       else if(t==='d')r[c]=ISO;else if(t==='ts')r[c]=new Date(Date.now()-k*3600e3).toISOString();
@@ -88,6 +88,12 @@ const PERIGO=/logout|sair|delete|apagar|remover|eliminar|reset|limpar|fechar-ses
         await p.waitForTimeout(250);await scan(p,'dashboard/'+s);
         console.error(role,s+':',await p.evaluate(()=>{const e=document.querySelector('.dz');return e?(e.innerText.match(/<x\d+>/g)||[]).length+' marcadores no texto':'não abriu';}).catch(()=>'?'));
         await p.evaluate(()=>{Object.assign(S,window.__ini||{});render();}).catch(()=>{});await p.waitForTimeout(100);}}
+    // Ficha de inscrição de evento (chefe, vendedor e externo) com os dados e documentos marcados
+    if(['admin','vendedor','eventos'].includes(role)){await p.evaluate(async()=>{const ini={screen:S.screen,gppSec:S.gppSec};const i=(S.inscricoes||[])[0];if(!i)return;
+        if(isAdmin()){S.screen='dashboard';S.gppSec='evento';}else if(!isEventosExt())S.screen='evento';S.eventoSel=i.evento_id;inscFichaAbrir(i.id);window.__ini=ini;}).catch(e=>erros.push(role+' ficha: '+String(e.message).slice(0,120)));
+      await p.waitForTimeout(250);await scan(p,'ficha de inscrição');
+      console.error(role,'ficha:',await p.evaluate(()=>{const e=document.getElementById('if-box');return e?((e.innerText.match(/<x\d+>/g)||[]).length+' marcadores no texto, '+[...e.querySelectorAll('input,textarea,select')].filter(x=>/<x\d+>/.test(x.value)).length+' campos com marcador'):'não abriu';}).catch(()=>'?'));
+      await p.evaluate(()=>{S.inscFicha=null;Object.assign(S,window.__ini||{});render();}).catch(()=>{});await p.waitForTimeout(100);}
     // Acordo de venda (chefe e vendedor): painel aberto num negócio de usada com retoma, com os dados do negócio e do acordo marcados
     if(role==='admin'||role==='vendedor'){await p.evaluate(async()=>{const ini={screen:S.screen,gppSec:S.gppSec,selected:S.selected};
         const r0=(S.records||[]).find(x=>acordoElegivel(x))||Object.assign({},(S.records||[])[0]||{id:1},{type:'MU',vendedor_id:S.me.id});const r=Object.assign({},r0,{retoma:'Sim'});

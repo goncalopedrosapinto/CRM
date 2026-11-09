@@ -38,6 +38,16 @@ await db.query(`update public.baviera_control set enc='7000001' where id=${N.v2q
 await db.query(`update public.baviera_control set enc='7000005' where id in (${N.carteira},${N.retail2})`);
 await db.exec("set session_replication_role = origin");
 
+// eventos: perfil externo com acesso só ao «Test ride»; outro externo sem acessos
+U.evt='00000000-0000-0000-0000-000000000901';U.evt2='00000000-0000-0000-0000-000000000902';
+await db.query("insert into auth.users(id,email) values($1,'evt@teste.pt'),($2,'evt2@teste.pt')",[U.evt,U.evt2]);
+await db.query("update public.profiles set role='eventos', nome='Externo' where id in ($1,$2)",[U.evt,U.evt2]);
+const EV1=(await db.query("select id from public.eventos where nome='Test ride'")).rows[0].id;
+const EV2=(await db.query("insert into public.eventos(nome) values('Passeio') returning id")).rows[0].id;
+await db.query("insert into public.evento_acessos(evento_id,user_id) values($1,$2)",[EV1,U.evt]);
+const insc=async(ev,v,c)=>(await db.query("insert into public.inscricoes(evento_id,cliente,vendedor_id,funil) values($1,$2,$3,'Quente') returning id",[ev,c,v])).rows[0].id;
+const I1=await insc(EV1,U.vend,'Cliente do vendedor'),I2=await insc(EV2,U.vend2,'Cliente do colega'),I3=await insc(EV1,U.evt,'Cliente do externo');
+await db.query("insert into storage.objects(bucket_id,name,owner) values('evento-documentos',$1,$2),('evento-documentos',$3,$4)",[EV1+'/'+I1+'/cc.pdf',U.vend,EV2+'/'+I2+'/cc.pdf',U.vend2]);
 // ---------- motor ----------
 async function como(quem,fn){
   await db.exec('begin');
@@ -56,6 +66,41 @@ const bloq=q=>async()=>{try{await db.query(q);return 'passou';}catch(e){return /
 
 const C=[ // [área, perfil, descrição, função, esperado]
   ['anónimo','anon','lê negócios',conta('baviera_control'),'recusado'],
+  ['eventos','evt','lê negócios',conta('baviera_control'),0],
+  ['eventos','evt','lê só os eventos a que tem acesso',conta('eventos'),1],
+  ['eventos','evt','lê as inscrições desses eventos (também dos vendedores)',conta('inscricoes'),2],
+  ['eventos','evt','inscreve cliente num evento seu',()=>ok(`insert into public.inscricoes(evento_id,cliente,vendedor_id) values(${EV1},'Novo',auth.uid())`),'consegue'],
+  ['eventos','evt','inscreve cliente noutro evento',()=>ok(`insert into public.inscricoes(evento_id,cliente,vendedor_id) values(${EV2},'Novo',auth.uid())`),'recusado'],
+  ['eventos','evt','inscreve em nome de um vendedor',()=>ok(`insert into public.inscricoes(evento_id,cliente,vendedor_id) values(${EV1},'Novo','${U.vend}')`),'recusado'],
+  ['eventos','evt','completa a ficha de uma inscrição do vendedor',()=>n(`with u as (update public.inscricoes set nif='123456789',pendura=true,pendura_nome='Pendura' where id=${I1} returning 1) select count(*) n from u`),1],
+  ['eventos','evt','muda quem registou',()=>ok(`update public.inscricoes set vendedor_id=auth.uid() where id=${I1}`),'recusado'],
+  ['eventos','evt','apaga inscrição do vendedor',()=>n(`with d as (delete from public.inscricoes where id=${I1} returning 1) select count(*) n from d`),0],
+  ['eventos','evt','apaga inscrição que registou',()=>n(`with d as (delete from public.inscricoes where id=${I3} returning 1) select count(*) n from d`),1],
+  ['eventos','evt','lê escala, configurações e fecho de comissões',async()=>[await n('select count(*) n from public.escala'),await n('select count(*) n from public.configuracoes'),await n('select count(*) n from public.comissoes_fecho')].join('/'),'0/0/0'],
+  ['eventos','evt','lê perfis (só o seu)',conta('profiles'),1],
+  ['eventos','evt','lê stock, demos e inscrições da equipa (vistas)',async()=>[await n('select count(*) n from public.stock_usadas_publico'),await n('select count(*) n from public.stock_norma_publico'),await n('select count(*) n from public.inscricoes_publico')].join('/'),'0/0/0'],
+  ['eventos','evt','ranking de evento sem acesso',()=>n(`select count(*) n from public.inscricoes_ranking(${EV2})`),0],
+  ['eventos','evt','nomes de quem registou: no seu evento / noutro',async()=>(await n(`select count(*) n from public.evento_registos(${EV1})`))+'/'+(await n(`select count(*) n from public.evento_registos(${EV2})`)),'2/0'],
+  ['eventos','evt','dá a si próprio acesso a outro evento',()=>ok(`insert into public.evento_acessos(evento_id,user_id) values(${EV2},auth.uid())`),'recusado'],
+  ['eventos','evt','muda o próprio perfil para chefe',async()=>{await db.query("update public.profiles set role='admin' where id=auth.uid()");return n("select count(*) n from public.profiles where id=auth.uid() and role='admin'");},0],
+  ['eventos','evt','dá perfis (função do chefe)',()=>ok(`select public.perfil_eventos('${U.novo}',true)`),'recusado'],
+  ['eventos','evt','vê documentos (só do seu evento)',()=>n("select count(*) n from storage.objects where bucket_id='evento-documentos'"),1],
+  ['eventos','evt','junta documento sem consentimento',()=>ok(`insert into storage.objects(bucket_id,name) values('evento-documentos','${EV1}/${I1}/carta.pdf')`),'recusado'],
+  ['eventos','evt','junta documento com consentimento',async()=>{await db.query(`update public.inscricoes set docs_consentimento=true where id=${I1}`);return ok(`insert into storage.objects(bucket_id,name) values('evento-documentos','${EV1}/${I1}/carta.pdf')`);},'consegue'],
+  ['eventos','evt','junta documento noutro evento',()=>ok(`insert into storage.objects(bucket_id,name) values('evento-documentos','${EV2}/${I2}/x.pdf')`),'recusado'],
+  ['eventos','evt2','sem acessos: eventos / inscrições',async()=>(await n('select count(*) n from public.eventos'))+'/'+(await n('select count(*) n from public.inscricoes')),'0/0'],
+  ['vendedor','vend','não lê a inscrição registada pelo externo',conta('inscricoes'),1],
+  ['vendedor','vend','muda quem registou a sua inscrição',()=>ok(`update public.inscricoes set vendedor_id='${U.vend2}' where id=${I1}`),'recusado'],
+  ['vendedor','vend','vê documentos (só das suas inscrições)',()=>n("select count(*) n from storage.objects where bucket_id='evento-documentos'"),1],
+  ['vendedor','vend','dá acesso externo a um evento',()=>ok(`insert into public.evento_acessos(evento_id,user_id) values(${EV2},'${U.evt}')`),'recusado'],
+  ['conta nova','novo','inscreve cliente num evento',()=>ok(`insert into public.inscricoes(evento_id,cliente,vendedor_id) values(${EV1},'X',auth.uid())`),'recusado'],
+  ['chefe','chefe','muda quem registou',()=>n(`with u as (update public.inscricoes set vendedor_id='${U.vend2}' where id=${I1} returning 1) select count(*) n from u`),1],
+  ['chefe','chefe','dá acesso externo a um evento',()=>ok(`insert into public.evento_acessos(evento_id,user_id) values(${EV2},'${U.evt}')`),'consegue'],
+  ['chefe','chefe','dá o perfil Eventos a uma conta nova',()=>db.query(`select public.perfil_eventos('${U.novo}',true) r`).then(r=>r.rows[0].r),'eventos'],
+  ['chefe','chefe','não transforma um vendedor em Eventos',async()=>{await db.exec('savepoint s');try{await db.query(`select public.perfil_eventos('${U.vend}',true)`);return 'aceitou';}catch(e){await db.exec('rollback to savepoint s');return 'recusado';}},'recusado'],
+  ['chefe','chefe','tira o perfil Eventos (e os acessos)',async()=>{await db.query(`select public.perfil_eventos('${U.evt}',false)`);return (await n(`select count(*) n from public.evento_acessos where user_id='${U.evt}'`))+'/'+(await db.query(`select role from public.profiles where id='${U.evt}'`)).rows[0].role;},'0/pendente'],
+  ['chefe','chefe','documentos sem consentimento são recusados',async()=>{await db.exec('savepoint s');try{await db.query(`update public.inscricoes set docs='[{"tipo":"cc"}]'::jsonb, docs_consentimento=false where id=${I1}`);return 'aceitou';}catch(e){await db.exec('rollback to savepoint s');return 'recusado';}},'recusado'],
+  ['chefe','chefe','NIF inválido é recusado',async()=>{await db.exec('savepoint s');try{await db.query(`update public.inscricoes set nif='12AB' where id=${I1}`);return 'aceitou';}catch(e){await db.exec('rollback to savepoint s');return 'recusado';}},'recusado'],
   ['anónimo','anon','lê margens',conta('margens'),'recusado'],
   ['anónimo','anon','lê perfis',conta('profiles'),'recusado'],
   ['anónimo','anon','lê eventos',conta('eventos'),'recusado'],

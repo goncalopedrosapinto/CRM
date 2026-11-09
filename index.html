@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-09-b">
+<meta name="app-version" content="2026-11-09-c">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1144,6 +1144,28 @@ html,body{overflow-x:hidden;max-width:100vw}
 .ev-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .ev-form-grid label{display:flex;flex-direction:column;font-size:11px;font-weight:600;color:var(--text2);gap:4px}
 .ev-form-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+/* Eventos: ficha de inscrição completa, documentos e acesso externo */
+.if-ficha{border-color:var(--orange)}
+.if-sec{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--text3);margin:14px 0 8px}
+.if-chk{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text);margin:10px 0 4px;cursor:pointer}
+.if-chk input{appearance:auto;-webkit-appearance:checkbox;width:18px;height:18px;margin:0;accent-color:var(--orange);flex-shrink:0}
+.if-nota{font-size:12px;color:var(--text3);margin:6px 0;line-height:1.45}
+.if-ok{font-size:12.5px;font-weight:600;color:var(--green);margin:0 0 10px}
+.if-docs{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.if-doc{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg)}
+.if-doc-lb{font-size:13px;font-weight:600;color:var(--text);flex:1;min-width:160px}
+.if-doc-ok{font-size:12px;color:var(--green);font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.if-doc-up{position:relative;overflow:hidden;cursor:pointer}.if-doc-up.off{opacity:.55;cursor:not-allowed}
+.if-file{position:absolute;inset:0;opacity:0;cursor:inherit;width:100%;height:100%}
+.if-file:focus-visible{outline:none}.if-doc-up:focus-within{outline:2px solid var(--focus);outline-offset:2px}
+.if-res{white-space:normal}
+.ev-form-grid textarea.field-input{resize:vertical;min-height:52px;font-family:inherit}
+.evx-bar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.evx-bar .btn{flex:1;min-width:140px}
+.evx-acc{margin:0 0 12px}.evx-lista{list-style:none;margin:6px 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.evx-lista li{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:6px 0;border-bottom:1px solid var(--border)}
+.evx-lista .if-chk{margin:0}
+.evx-quem{max-width:120px}
+@media(max-width:600px){.ev-form-grid{grid-template-columns:1fr}.ev-item{flex-wrap:wrap}.evx-quem{max-width:none}}
 .ev-topbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
 .ev-gestao{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
 .ev-badge-ativo{font-size:12px;font-weight:700;color:var(--green);background:var(--green-bg);padding:5px 10px;border-radius:6px}
@@ -2511,7 +2533,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-09-b';
+const APP_VERSION='2026-11-09-c';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -2558,6 +2580,7 @@ async function atualizarDadosSilencioso(){
   if(isAdmin())L.push(loadFichasAprovar(),loadEnc(),loadObjetivos(),loadObjEquipa(),loadTeam(),loadNps(),loadEot(),loadEntregas(),loadMargens(),loadEquipamento(),loadComsRecentes(),loadComFecho());
   else if(isVendedor())L.push(loadEnc(),loadTeam(),loadEot(),loadEntregas(),loadMargens(),loadEquipamento(),loadComsRecentes(),loadComFecho());
   else if(rl==='secretario')L.push(loadTeam(),loadEntregas(),...(isFinanceiro()?[loadEot()]:[]));
+  else if(rl==='eventos')L.push(loadEventos(),loadInscricoes());
   if(!isAdmin()&&temArea('previsao'))L.push(loadObjEquipa());
   if(notifAtivo())L.push(loadNotif());
   else if(rl==='assessor')L.push(loadTeam(),loadEquipamento(),...(isSecretaria()?[loadEntregas()]:[]));
@@ -2768,8 +2791,8 @@ function jwtSub(t){try{return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').
 async function loadMe(){const uid=jwtSub(S.token);if(!uid)throw new Error('Token invalido');const d=await supabaseApi('GET',`/profiles?id=eq.${uid}&select=*`);if(!d||!d.length)throw new Error('Perfil nao encontrado. Corre o schema SQL (tabela profiles + trigger).');S.me=d[0]}
 function isAdmin(){return S.me&&S.me.role==='admin'}
 function isVendedor(){return S.me&&S.me.role==='vendedor'}
-const ROLE_LBL={admin:'Chefe de Vendas',vendedor:'Vendedor',assessor:'Assessor de Serviço',secretario:'Secretário Comercial',financeiro:'Financeiro',pendente:'À espera de aprovação do chefe'};
-function ecraInicial(){const r=S.me&&S.me.role;if(r!=='admin'&&r!=='vendedor'&&temArea('previsao'))return'previsao';return r==='admin'?'dashboard':(r==='vendedor'?'list':(r==='secretario'?'secretaria':(r==='assessor'?'assessor':(r==='financeiro'?'financeiro':'semacesso'))));}
+const ROLE_LBL={admin:'Chefe de Vendas',vendedor:'Vendedor',assessor:'Assessor de Serviço',secretario:'Secretário Comercial',financeiro:'Financeiro',eventos:'Eventos (externo)',pendente:'À espera de aprovação do chefe'};
+function ecraInicial(){const r=S.me&&S.me.role;if(r!=='admin'&&r!=='vendedor'&&temArea('previsao'))return'previsao';return r==='admin'?'dashboard':(r==='vendedor'?'list':(r==='secretario'?'secretaria':(r==='assessor'?'assessor':(r==='financeiro'?'financeiro':(r==='eventos'?'eventosext':'semacesso')))));}
 // ---- Secretaria comercial: Retail, Carteira e Entregas — só leitura ----
 function secMesesDisp(){const m=new Set([curYM()]);(S.records||[]).forEach(r=>{if(r.status==='Retail'&&retailYM(r))m.add(retailYM(r));if(r.status==='Carteira'&&r.mes1)m.add(r.mes1);});return [...m].sort();}
 function secDetalhe(r,cols){
@@ -4197,7 +4220,7 @@ async function loadRanking(evId){if(!evId){S.ranking=[];return}try{const d=await
 function eventoAtivo(){return (S.eventos||[]).find(e=>e.ativo)||null}
 function eventosAtivos(){return (S.eventos||[]).filter(e=>e.ativo)}
 function eventoAtual(){const sel=S.eventoSel!=null?(S.eventos||[]).find(e=>e.id===S.eventoSel):null;return sel||eventoAtivo()||((S.eventos||[])[0])||null}
-async function recarregarEvento(){const ev=eventoAtual();await Promise.all([loadEventos(),loadInscricoes(),loadInscricoesAll()]);const ev2=eventoAtual();await loadRanking(ev2?ev2.id:(ev?ev.id:null))}
+async function recarregarEvento(){const ev=eventoAtual();await Promise.all([loadEventos(),loadInscricoes(),isEventosExt()?null:loadInscricoesAll(),isAdmin()?loadEvtAcessos():null]);const ev2=eventoAtual();const id=ev2?ev2.id:(ev?ev.id:null);await Promise.all([isEventosExt()?null:loadRanking(id),loadEvtRegistos(isEventosExt()?((S.eventos||[]).find(e=>e.id===S.eventoSel)||(S.eventos||[])[0]||{}).id:id)])}
 async function saveInscricaoNova(){
   const ev=eventoAtual();if(!ev)return;
   const cliente=(document.getElementById('insc-cliente')?.value||'').trim();
@@ -4230,6 +4253,189 @@ async function saveEventoNovo(){
 async function saveEventoCampo(id,campo,valor){try{const b={};b[campo]=valor;await supabaseApi('PATCH',`/eventos?id=eq.${id}`,b);await recarregarEvento();render();}catch(e){setState({eventoErr:'Erro: '+erroTexto(e)})}}
 async function toggleEventoAtivo(id){const ev=(S.eventos||[]).find(e=>e.id===id);if(!ev)return;setState({loading:true,eventoErr:''});try{await supabaseApi('PATCH',`/eventos?id=eq.${id}`,{ativo:!ev.ativo});S.eventoSel=id;await recarregarEvento();setState({loading:false});}catch(e){setState({loading:false,eventoErr:'Erro: '+erroTexto(e)});}}
 async function delEvento(id){const n=(S.inscricoes||[]).filter(i=>i.evento_id===id).length;if(n>0){setState({eventoErr:`Não podes apagar: este evento tem ${n} inscrição(ões). Apaga-as primeiro.`});return;}try{await supabaseApi('DELETE',`/eventos?id=eq.${id}`);S.eventoSel=null;await recarregarEvento();render();}catch(e){setState({eventoErr:'Erro ao apagar: '+erroTexto(e)})}}
+// ===== Eventos: ficha de inscrição completa, documentos e acesso externo (perfil «eventos») =====
+// A ficha serve o vendedor, o chefe e a pessoa de fora (perfil «eventos»), que só vê os eventos a que o chefe lhe dá acesso.
+const INSC_CAMISOLAS=['XS','S','M','L','XL','XXL','3XL'];
+const INSC_MOTA_ORIG=['Própria','Caetano','Outra'];
+const INSC_ESTADOS=['Confirmado','Lista de espera','Não veio','Cancelado'];
+const INSC_DOCS=[['cc','cliente','Cartão de cidadão'],['carta','cliente','Carta de condução'],['cc','pendura','Cartão de cidadão'],['carta','pendura','Carta de condução']];
+const EVT_DOC_BUCKET='evento-documentos',EVT_DOC_MAX=10*1024*1024,EVT_DOC_TIPOS=['image/jpeg','image/png','image/webp','image/heic','application/pdf'];
+const INSC_CAMPOS=['cliente','data_nascimento','nif','telefone','camisola','pendura','pendura_nome','pendura_data_nascimento','pendura_nif','pendura_telefone','pendura_camisola','mota_origem','mota_modelo','estado','obs'];
+const INSC_CAMPOS_EQUIPA=['acompanhantes','funil','mota'];
+const INSC_PENDURA=['pendura_nome','pendura_data_nascimento','pendura_nif','pendura_telefone','pendura_camisola'];
+function isEventosExt(){return !!(S.me&&S.me.role==='eventos');}
+function inscQuem(id){if(!id)return'?';const v=vendName(id);if(v&&v!=='?')return v;const p=(S.perfisTodos||[]).find(x=>x.id===id);if(p)return p.nome||'?';return (S.evtRegistos||{})[id]||'?';}
+function inscErro(e){const m=String((e&&e.message)||e||'');
+  if(/PGRST204|42703|does not exist|schema cache|Bucket not found|evento_acessos/i.test(m))return'Falta correr o SQL "2026-11-09_eventos_externos" no Supabase.';
+  if(/inscricoes_ficha_check/.test(m))return'Há um valor inválido: o NIF tem 9 algarismos; camisola e mota escolhem-se da lista.';
+  if(/só o chefe muda/i.test(m))return'Só o chefe muda quem registou a inscrição.';
+  if(/row-level security|permiss|42501|403/i.test(m))return'Não tens permissão para esta inscrição.';
+  return erroTexto(e);}
+async function loadEvtRegistos(evId){if(!evId||isAdmin())return;try{const d=await supabaseApi('POST','/rpc/evento_registos',{p_evento:evId});const mp=Object.assign({},S.evtRegistos||{});(d||[]).forEach(x=>{mp[x.id]=x.nome;});S.evtRegistos=mp;}catch(e){}}
+async function loadEvtAcessos(){if(!isAdmin())return;try{S.evtAcessos=(await supabaseApi('GET','/evento_acessos?select=*'))||[];S.evtAcessosErr='';}
+  catch(e){S.evtAcessos=[];S.evtAcessosErr=/PGRST205|42P01|schema cache/i.test(String(e&&e.message))?'Falta correr o SQL "2026-11-09_eventos_externos" no Supabase.':erroTexto(e);}}
+function inscResumo(i){const d=x=>x?String(x).slice(0,10).split('-').reverse().join('/'):'';const L=[];
+  if(i.data_nascimento)L.push('nasc. '+d(i.data_nascimento));if(i.nif)L.push('NIF '+i.nif);if(i.camisola)L.push('camisola '+i.camisola);
+  if(i.pendura)L.push('pendura: '+(i.pendura_nome||'sem nome'));
+  if(i.mota_origem||i.mota_modelo)L.push('leva '+[i.mota_origem==='Própria'?'mota própria':(i.mota_origem==='Caetano'?'mota da Caetano':(i.mota_origem?'outra mota':'')),i.mota_modelo].filter(Boolean).join(' · '));
+  const nd=Array.isArray(i.docs)?i.docs.length:0;if(nd)L.push(nd+' documento'+(nd!==1?'s':''));
+  return L.length?`<div class="ev-item-sub if-res">${L.map(esc).join(' · ')}</div>`:'';}
+function inscFichaAbrir(id,evId){
+  if(id){const i=(S.inscricoes||[]).find(x=>String(x.id)===String(id));if(!i)return;const v={};INSC_CAMPOS.concat(INSC_CAMPOS_EQUIPA,['vendedor_id']).forEach(k=>{v[k]=i[k]==null?'':i[k];});v.pendura=!!i.pendura;
+    S.inscFicha={id:i.id,evento_id:i.evento_id,v,erros:{},msg:'',err:''};}
+  else S.inscFicha={id:null,evento_id:evId,v:{estado:'Confirmado',acompanhantes:0,pendura:false},erros:{},msg:'',err:''};
+  S.inscAdding=false;S.inscDocApagar=null;render();
+  setTimeout(()=>{const b=document.getElementById('if-box');if(b)try{b.scrollIntoView({block:'start',behavior:movReduzido()?'auto':'smooth'});}catch(_){}const n=document.getElementById('if-cliente');if(n&&!id)n.focus();},40);}
+function inscFichaLer(){const F=S.inscFicha;if(!F)return;document.querySelectorAll('#if-box [data-if]').forEach(el=>{F.v[el.dataset.if]=el.type==='checkbox'?el.checked:el.value;});}
+function inscFichaHTML(ev){
+  const F=S.inscFicha;if(!F)return'';const v=F.v||{},er=F.erros||{};const ext=isEventosExt(),chefe=isAdmin();
+  const i=F.id?(S.inscricoes||[]).find(x=>String(x.id)===String(F.id)):null;
+  const msg=k=>er[k]?`<small class="eotn-msg" id="if-${k}-e">${esc(er[k])}</small>`:'';
+  const at=k=>er[k]?` aria-invalid="true" aria-describedby="if-${k}-e"`:'';
+  const inp=(k,lb,extra,larga)=>`<label${larga?' style="grid-column:1/-1"':''}>${lb}<input class="field-input" id="if-${k}" data-if="${k}" ${extra||''} value="${esc(v[k]==null?'':v[k])}"${at(k)}>${msg(k)}</label>`;
+  const sel=(k,lb,ops,vazio)=>`<label>${lb}<select class="field-input" id="if-${k}" data-if="${k}"${at(k)}>${vazio===false?'':'<option value="">—</option>'}${ops.map(o=>{const [val,txt]=Array.isArray(o)?o:[o,o];return`<option value="${esc(val)}"${String(v[k]==null?'':v[k])===String(val)?' selected':''}>${esc(txt)}</option>`;}).join('')}</select>${msg(k)}</label>`;
+  const motasEv=!ext&&ev&&Array.isArray(ev.motas)?ev.motas:[];
+  const quem=chefe?(S.perfisTodos||[]).filter(p=>['admin','vendedor','assessor','eventos'].includes(p.role)).map(p=>[p.id,(p.nome||'?')+(p.role==='eventos'?' (externo)':(p.role==='admin'?' (chefe)':''))]):[];
+  const pendura=v.pendura?`<div class="ev-form-grid">${inp('pendura_nome','Nome completo do pendura *','autocomplete="off"',true)}${inp('pendura_data_nascimento','Data de nascimento','type="date"')}
+      ${inp('pendura_nif','NIF','inputmode="numeric" maxlength="9" autocomplete="off"')}${inp('pendura_telefone','Telemóvel','inputmode="tel" autocomplete="off"')}${sel('pendura_camisola','Tamanho da camisola',INSC_CAMISOLAS)}</div>`:'';
+  let docs;
+  if(!F.id)docs=`<p class="if-nota">Grava a inscrição para juntar o cartão de cidadão e a carta de condução.</p>`;
+  else{const L=i&&Array.isArray(i.docs)?i.docs:[];const cons=!!(i&&i.docs_consentimento);
+    const slot=([tipo,qm,lb])=>{if(qm==='pendura'&&!(i&&i.pendura))return'';const d=L.find(x=>x.tipo===tipo&&x.quem===qm);const k=tipo+'|'+qm;const nome=lb+(qm==='pendura'?' do pendura':' do cliente');
+      return`<div class="if-doc"><span class="if-doc-lb">${esc(nome)}</span>${d?`<span class="if-doc-ok">✓ ${esc(d.nome||'ficheiro')}</span><button class="btn btn-dark btn-sm" data-action="insc-doc-abrir" data-k="${esc(d.caminho)}">Abrir</button><button class="btn btn-ghost btn-sm" data-action="insc-doc-apagar" data-k="${esc(d.caminho)}">${S.inscDocApagar===d.caminho?'Confirmar apagar':'Apagar'}</button>`:''}
+        <label class="btn btn-outline btn-sm if-doc-up${cons?'':' off'}">${d?'Substituir':'Juntar'}<input type="file" class="if-file" accept="image/*,application/pdf" data-if-doc="${k}" aria-label="${esc((d?'Substituir ':'Juntar ')+nome)}"${cons&&!S.inscFichaBusy?'':' disabled'}></label></div>`;};
+    docs=`<label class="if-chk"><input type="checkbox" data-if-cons="1"${cons?' checked':''}${L.length?' disabled':''}> O cliente${i&&i.pendura?' e o pendura':''} autorizaram por escrito a cópia dos documentos</label>
+      ${cons?'':'<p class="if-nota">Sem esta autorização não se juntam cópias do cartão de cidadão (Lei 7/2007).</p>'}
+      <div class="if-docs">${INSC_DOCS.map(slot).join('')}</div>`;}
+  return`<div class="ev-form if-ficha" id="if-box">
+    <div class="ev-form-h">${F.id?'Ficha de inscrição':'Inscrever cliente'} · ${esc(ev?ev.nome:'')}</div>
+    ${F.err?`<div class="error" role="alert" style="margin-bottom:10px">${esc(F.err)}</div>`:''}${F.msg&&!F.err?`<div class="if-ok" role="status">${esc(F.msg)}</div>`:''}
+    <div class="if-sec">Cliente</div>
+    <div class="ev-form-grid">${inp('cliente','Nome completo *','autocomplete="off"',true)}${inp('data_nascimento','Data de nascimento','type="date"')}${inp('nif','NIF','inputmode="numeric" maxlength="9" autocomplete="off"')}
+      ${inp('telefone','Telemóvel','inputmode="tel" autocomplete="off"')}${sel('camisola','Tamanho da camisola',INSC_CAMISOLAS)}</div>
+    <label class="if-chk"><input type="checkbox" data-if="pendura" data-if-r="1"${v.pendura?' checked':''}> Leva pendura</label>
+    ${pendura}
+    <div class="if-sec">Mota que leva</div>
+    <div class="ev-form-grid">${sel('mota_origem','Mota',INSC_MOTA_ORIG.map(o=>[o,o==='Própria'?'Própria':(o==='Caetano'?'Da Caetano':'Outra')]))}${inp('mota_modelo','Modelo','placeholder="Ex: R 1300 GS" autocomplete="off"')}
+      ${motasEv.length?sel('mota','Mota do evento (vaga)',[...new Set(motasEv)]):''}</div>
+    <div class="if-sec">Inscrição</div>
+    <div class="ev-form-grid">${sel('estado','Estado',INSC_ESTADOS,false)}${ext?'':inp('acompanhantes','Acompanhantes','type="number" min="0"')+sel('funil','Funil',['Frio','Morno','Quente'])}
+      ${chefe&&F.id?sel('vendedor_id','Registado por',quem,false):''}
+      <label style="grid-column:1/-1">Observações<textarea class="field-input" id="if-obs" data-if="obs" rows="2">${esc(v.obs==null?'':v.obs)}</textarea></label></div>
+    <div class="ev-form-btns"><button class="btn btn-dark btn-sm" data-action="insc-ficha-fechar">${F.id?'Fechar':'Cancelar'}</button><button class="btn btn-orange btn-sm" data-action="insc-ficha-gravar"${S.inscFichaBusy?' disabled':''}>${S.inscFichaBusy?'A gravar…':(F.id?'Gravar alterações':'Inscrever')}</button></div>
+    <div class="if-sec">Documentos</div>${docs}
+  </div>`;}
+async function inscFichaGravar(){
+  const F=S.inscFicha;if(!F||S.inscFichaBusy)return;inscFichaLer();const v=F.v;const er={};const t=k=>String(v[k]==null?'':v[k]).trim();
+  if(!t('cliente'))er.cliente='Falta o nome completo';
+  if(t('nif')&&!/^\d{9}$/.test(t('nif').replace(/\s/g,'')))er.nif='O NIF tem 9 algarismos';
+  if(v.pendura){if(!t('pendura_nome'))er.pendura_nome='Falta o nome do pendura';if(t('pendura_nif')&&!/^\d{9}$/.test(t('pendura_nif').replace(/\s/g,'')))er.pendura_nif='O NIF tem 9 algarismos';}
+  const ev=(S.eventos||[]).find(e=>e.id===F.evento_id);
+  if(!isEventosExt()&&!F.id&&ev&&Array.isArray(ev.motas)&&ev.motas.length&&!t('mota'))er.mota='Escolhe a mota (vaga) para este cliente';
+  F.erros=er;F.msg='';F.err='';
+  if(Object.keys(er).length){render();const k=Object.keys(er)[0];setTimeout(()=>{const n=document.getElementById('if-'+k);if(n)n.focus();},30);return;}
+  const b={};INSC_CAMPOS.concat(isEventosExt()?[]:INSC_CAMPOS_EQUIPA).concat(isAdmin()&&F.id?['vendedor_id']:[]).forEach(k=>{let x=v[k];
+    if(k==='pendura')x=!!x;else if(k==='acompanhantes')x=parseInt(x)||0;else{x=x==null?'':String(x).trim();if(k==='nif'||k==='pendura_nif')x=x.replace(/\s/g,'');x=x||null;}b[k]=x;});
+  if(!b.pendura)INSC_PENDURA.forEach(k=>{b[k]=null;});
+  if(!b.estado)b.estado='Confirmado';if(b.vendedor_id==null)delete b.vendedor_id;
+  S.inscFichaBusy=true;render();
+  try{if(F.id){await supabaseApi('PATCH',`/inscricoes?id=eq.${F.id}`,b);F.msg='Gravado.';}
+    else{const r=await supabaseApi('POST','/inscricoes',Object.assign({evento_id:F.evento_id},b));F.id=(Array.isArray(r)&&r[0]&&r[0].id)||null;F.msg=F.id?'Inscrição gravada. Já podes juntar os documentos.':'Inscrição gravada.';}
+    await recarregarEvento();}
+  catch(e){F.err=inscErro(e);}
+  S.inscFichaBusy=false;render();}
+function inscAtual(){const F=S.inscFicha;return F&&F.id?(S.inscricoes||[]).find(x=>String(x.id)===String(F.id))||null:null;}
+async function inscDocsConsent(on){const i=inscAtual();if(!i)return;const L=Array.isArray(i.docs)?i.docs:[];
+  if(!on&&L.length){toast('Apaga primeiro os documentos para tirar a autorização','erro');render();return;}
+  try{await supabaseApi('PATCH',`/inscricoes?id=eq.${i.id}`,{docs_consentimento:!!on});await recarregarEvento();S.inscFicha.err='';}catch(e){S.inscFicha.err=inscErro(e);}render();}
+async function inscDocJuntar(k,file){const i=inscAtual();if(!i||!file)return;const [tipo,quem]=String(k).split('|');
+  if(!i.docs_consentimento){toast('Marca primeiro a autorização escrita do cliente','erro');return;}
+  if(!EVT_DOC_TIPOS.includes(file.type)){toast('Só fotografias (JPG, PNG, WEBP, HEIC) ou PDF','erro');return;}
+  if(file.size>EVT_DOC_MAX){toast('O ficheiro tem mais de 10 MB','erro');return;}
+  const ext=file.type==='application/pdf'?'pdf':(file.type.split('/')[1]||'jpg').replace('jpeg','jpg');
+  const caminho=`${i.evento_id}/${i.id}/${tipo}-${quem}-${Date.now().toString(36)}${Math.random().toString(36).slice(2,6)}.${ext}`;
+  S.inscFichaBusy=true;render();
+  try{await storagePedido('POST',EVT_DOC_BUCKET,caminho,file);
+    const L=Array.isArray(i.docs)?i.docs:[];const velho=L.find(d=>d.tipo===tipo&&d.quem===quem);
+    const novos=L.filter(d=>d!==velho).concat([{tipo,quem,caminho,nome:String(file.name||'').slice(0,120),tamanho:file.size,em:new Date().toISOString()}]);
+    await supabaseApi('PATCH',`/inscricoes?id=eq.${i.id}`,{docs:novos});
+    if(velho)storagePedido('DELETE',EVT_DOC_BUCKET,velho.caminho).catch(()=>{});
+    await recarregarEvento();S.inscFicha.msg='Documento guardado.';S.inscFicha.err='';}
+  catch(e){S.inscFicha.err=inscErro(e);}
+  S.inscFichaBusy=false;render();}
+async function inscDocApagar(caminho){const i=inscAtual();if(!i)return;
+  if(S.inscDocApagar!==caminho){S.inscDocApagar=caminho;render();return;}
+  S.inscDocApagar=null;S.inscFichaBusy=true;render();
+  try{await storagePedido('DELETE',EVT_DOC_BUCKET,caminho).catch(()=>{});
+    await supabaseApi('PATCH',`/inscricoes?id=eq.${i.id}`,{docs:(Array.isArray(i.docs)?i.docs:[]).filter(d=>d.caminho!==caminho)});
+    await recarregarEvento();S.inscFicha.msg='Documento apagado.';S.inscFicha.err='';}
+  catch(e){S.inscFicha.err=inscErro(e);}
+  S.inscFichaBusy=false;render();}
+async function inscDocAbrir(caminho){const w=window.open('','_blank');
+  try{const r=await storagePedido('GET',EVT_DOC_BUCKET,caminho);const bl=await r.blob();const u=URL.createObjectURL(bl);
+    if(w&&!w.closed)w.location.href=u;else{const a=document.createElement('a');a.href=u;a.download=caminho.split('/').pop();document.body.appendChild(a);a.click();a.remove();}
+    setTimeout(()=>URL.revokeObjectURL(u),60000);}
+  catch(e){try{if(w)w.close();}catch(_){}toast(inscErro(e),'erro');}}
+// Excel com tudo o que está na ficha (o externo não leva o funil nem as vagas internas)
+async function inscExportXLSX(evId){
+  const ev=(S.eventos||[]).find(e=>String(e.id)===String(evId));if(!ev)return;
+  let X;try{X=await eotCarregarXLSX();}catch(e){toast((e&&e.message)||'Sem Excel','erro');return;}
+  const ext=isEventosExt();const d=x=>x?String(x).slice(0,10).split('-').reverse().join('/'):'';const sn=x=>x?'Sim':'Não';
+  const docs=i=>(Array.isArray(i.docs)?i.docs:[]).map(x=>(x.tipo==='cc'?'Cartão de cidadão':'Carta de condução')+' ('+x.quem+')').join(', ');
+  const cab=['Nome completo','Data de nascimento','NIF','Telemóvel','Camisola','Pendura','Pendura: nome completo','Pendura: data de nascimento','Pendura: NIF','Pendura: telemóvel','Pendura: camisola','Mota que leva','Modelo']
+    .concat(ext?[]:['Mota do evento','Acompanhantes','Funil']).concat(['Estado','Registado por','Documentos na plataforma','Autorização da cópia','Observações']);
+  const L=(S.inscricoes||[]).filter(i=>i.evento_id===ev.id);
+  const rows=L.map(i=>[i.cliente||'',d(i.data_nascimento),i.nif||'',i.telefone||'',i.camisola||'',sn(i.pendura),i.pendura?i.pendura_nome||'':'',i.pendura?d(i.pendura_data_nascimento):'',i.pendura?i.pendura_nif||'':'',i.pendura?i.pendura_telefone||'':'',i.pendura?i.pendura_camisola||'':'',i.mota_origem||'',i.mota_modelo||'']
+    .concat(ext?[]:[i.mota||'',i.acompanhantes||0,i.funil||'']).concat([i.estado||'',inscQuem(i.vendedor_id),docs(i),sn(i.docs_consentimento),i.obs||'']));
+  const ws=X.utils.aoa_to_sheet([cab].concat(rows));ws['!cols']=cab.map((c,j)=>({wch:Math.min(40,Math.max(c.length,...rows.map(r=>String(r[j]==null?'':r[j]).length))+2)}));
+  ['C','I'].forEach(col=>{for(let r=2;r<=rows.length+1;r++){const c=ws[col+r];if(c){c.t='s';c.z='@';}}});// NIF como texto (zeros à esquerda)
+  const wb=X.utils.book_new();X.utils.book_append_sheet(wb,ws,'Inscrições');
+  X.writeFile(wb,('Inscrições '+ev.nome).replace(/[\\/:*?"<>|]+/g,' ').trim()+'.xlsx');}
+// chefe: quem de fora tem acesso a este evento; contas novas que podem passar a «Eventos»
+function evtAcessosHTML(ev){
+  if(!isAdmin()||!ev)return'';
+  if(S.evtAcessos==null&&!S._evtAccL){S._evtAccL=true;loadEvtAcessos().then(()=>{S._evtAccL=false;render();});}
+  const P=S.perfisTodos||[];const ext=P.filter(p=>p.role==='eventos'),novas=P.filter(p=>p.role==='pendente');const A=S.evtAcessos||[];
+  const tem=uid=>A.some(a=>a.user_id===uid&&a.evento_id===ev.id);
+  return`<div class="gpp-card evx-acc"><div class="ev-motas-h">👤 Acesso externo (perfil Eventos)</div>
+    ${S.evtAcessosErr?`<div class="mg-aviso" style="margin:6px 0">${esc(S.evtAcessosErr)}</div>`:''}
+    <p class="if-nota">Quem tem o perfil Eventos só entra nos eventos que marcares aqui — vê e preenche as fichas e tira o Excel, mesmo depois de o evento acabar. Não vê mais nada da plataforma.</p>
+    ${ext.length?`<ul class="evx-lista">${ext.map(p=>`<li><label class="if-chk"><input type="checkbox" data-evt-acesso="${esc(p.id)}" data-ev="${ev.id}"${tem(p.id)?' checked':''}> ${esc(p.nome||'?')} <span class="dz-sub">acesso a «${esc(ev.nome)}»</span></label><button class="btn btn-ghost btn-sm" data-action="evt-perfil" data-uid="${esc(p.id)}" data-on="0">${S.evtPerfilTirar===p.id?'Confirmar: tirar o perfil':'Tirar o perfil'}</button></li>`).join('')}</ul>`:'<p class="if-nota">Ainda não há ninguém com o perfil Eventos.</p>'}
+    ${novas.length?`<div class="if-sec">Contas à espera de perfil</div><ul class="evx-lista">${novas.map(p=>`<li><span>${esc(p.nome||'?')}</span><button class="btn btn-dark btn-sm" data-action="evt-perfil" data-uid="${esc(p.id)}" data-on="1">Dar o perfil Eventos</button></li>`).join('')}</ul>`
+      :'<p class="if-nota">Para uma pessoa nova: cria-lhe a conta no Supabase (Authentication → convidar por e-mail). Aparece aqui «à espera» e dás-lhe o perfil.</p>'}
+  </div>`;}
+async function evtAcessoMudar(uid,evId,on){
+  try{if(on)await supabaseApi('POST','/evento_acessos',{evento_id:Number(evId),user_id:uid});else await supabaseApi('DELETE',`/evento_acessos?evento_id=eq.${Number(evId)}&user_id=eq.${encodeURIComponent(uid)}`);await loadEvtAcessos();}
+  catch(e){S.eventoErr=inscErro(e);}render();}
+async function evtPerfil(uid,on){
+  if(!on&&S.evtPerfilTirar!==uid){S.evtPerfilTirar=uid;render();return;}
+  S.evtPerfilTirar=null;
+  try{await supabaseApi('POST','/rpc/perfil_eventos',{p_user:uid,p_ativo:!!on});await Promise.all([loadTeam(),loadEvtAcessos()]);toast(on?'Perfil Eventos dado: marca agora os eventos':'Perfil tirado (e os acessos)');}
+  catch(e){S.eventoErr=inscErro(e);}render();}
+// ecrã da pessoa de fora: só os eventos a que tem acesso
+function renderEventosExt(){
+  const evs=S.eventos||[];const ev=evs.find(e=>e.id===S.eventoSel)||evs[0]||null;
+  const picker=evs.length>1?`<div class="ev-vend-picker">${evs.map(e=>`<button class="ev-pick ${ev&&e.id===ev.id?'on':''}" data-action="evento-sel-ext" data-id="${e.id}">${esc(e.nome)}</button>`).join('')}</div>`:'';
+  const estadoCor={'Confirmado':'var(--green)','Lista de espera':'var(--amber)','Não veio':'var(--text3)','Cancelado':'var(--red)'};
+  let body;
+  if(!ev)body='<div class="ev-empty" style="margin-top:24px">Ainda não tens acesso a nenhum evento. Pede ao chefe de vendas para te dar acesso.</div>';
+  else{const todas=(S.inscricoes||[]).filter(i=>i.evento_id===ev.id);const ativas=todas.filter(i=>i.estado!=='Cancelado');
+    const q=(S.inscBusca||'').toLowerCase();const lista=q?todas.filter(i=>[i.cliente,i.telefone,i.nif,i.pendura_nome].join(' ').toLowerCase().includes(q)):todas;
+    body=`${picker}<div class="ev-head-card"><div class="ev-head-top"><div><div class="ev-head-nome">${esc(ev.nome)}</div><div class="ev-head-meta">${ev.data?fmtDate(ev.data):''}${ev.local?` · ${esc(ev.local)}`:''}</div></div>
+        <div class="ev-head-num"><div class="ev-head-num-b">${ativas.length}</div><div class="ev-head-num-l">inscritos · ${ativas.length+ativas.filter(i=>i.pendura).length} pessoas</div></div></div></div>
+      <div class="evx-bar">${S.inscFicha?'':`<button class="btn btn-orange" data-action="insc-ficha-nova" data-ev="${ev.id}">＋ Inscrever cliente</button>`}<button class="btn btn-dark" data-action="insc-xlsx" data-ev="${ev.id}">⬇ Excel</button></div>
+      ${S.inscFicha&&S.inscFicha.evento_id===ev.id?inscFichaHTML(ev):''}
+      <div class="ev-sec-h">Inscrições · ${todas.length}</div>
+      ${todas.length>5?`<input id="insc-busca" class="field-input" placeholder="Procurar nome, telemóvel ou NIF" aria-label="Procurar inscrições" value="${esc(S.inscBusca||'')}" style="margin-bottom:10px">`:''}
+      ${lista.length?`<div class="ev-list">${lista.map(i=>`<div class="ev-item"><div class="ev-item-main"><div class="ev-item-nome">${esc(i.cliente)}<span class="ev-item-vend">· ${esc(inscQuem(i.vendedor_id).split(' ')[0])}</span></div>
+          <div class="ev-item-sub">${i.telefone?esc(i.telefone):'sem telefone'}${i.obs?` · ${esc(i.obs)}`:''}</div>${inscResumo(i)}</div>
+          <span class="ev-estado-pill" style="color:${estadoCor[i.estado]||'var(--text)'}">${esc(i.estado||'')}</span><button class="btn btn-dark btn-sm" data-action="insc-ficha" data-id="${i.id}" aria-label="Abrir a ficha de ${esc(i.cliente)}">Ficha</button></div>`).join('')}</div>`:'<div class="ev-empty">Sem inscrições.</div>'}`;}
+  return`<div class="app-layout"><div class="main-panel" style="width:100%">
+    <div class="hdr"><div class="hdr-accent"></div><div class="hdr-title">🎟️ Eventos</div>
+      <button class="hdr-btn hdr-ic" data-action="refresh" ${S.loading?'disabled':''} aria-label="Atualizar" title="Atualizar">${S.loading?'…':ico('refresh')}</button>
+      <button class="hdr-btn" data-action="logout">Sair</button></div>
+    <div class="content"><div class="ev-wrap">${S.eventoErr?`<div class="error" style="margin:12px 0">${esc(S.eventoErr)}</div>`:''}${body}<div style="height:20px"></div></div></div>
+  </div></div>`;}
 function exportInscricoes(){
   const ev=eventoAtual();if(!ev)return;
   const list=(S.inscricoes||[]).filter(i=>i.evento_id===ev.id);
@@ -4850,7 +5056,7 @@ function renderEventoVend(){
   const estados=['Confirmado','Lista de espera','Não veio','Cancelado'];
   const estadoCor={'Confirmado':'var(--green)','Lista de espera':'var(--amber)','Não veio':'var(--text3)','Cancelado':'var(--red)'};
   const minhas=ev?(S.inscricoes||[]).filter(i=>i.evento_id===ev.id):[];
-  const form=S.inscAdding?`
+  const form=(S.inscFicha&&ev&&S.inscFicha.evento_id===ev.id)?inscFichaHTML(ev):S.inscAdding?`
     <div class="ev-form">
       <div class="ev-form-h">Inscrever cliente</div>
       ${S.eventoErr?`<div class="error" style="margin-bottom:10px">${esc(S.eventoErr)}</div>`:''}
@@ -4872,7 +5078,7 @@ function renderEventoVend(){
   if(!ev){body='<div class="ev-empty" style="margin-top:24px">Não há nenhum evento ativo de momento.</div>';}
   else{
     body=`${picker}${eventoCabecalhoHtml(ev)}
-      ${!S.inscAdding?`<button class="btn btn-orange" style="width:100%;margin:12px 0" data-action="insc-add-open">＋ Inscrever cliente</button>`:''}
+      ${!S.inscAdding&&!S.inscFicha?`<button class="btn btn-orange" style="width:100%;margin:12px 0" data-action="insc-ficha-nova" data-ev="${ev.id}">＋ Inscrever cliente</button>`:''}
       ${form}
       <div class="ev-sec-h">🏆 Ranking da equipa</div>
       ${eventoRankingHtml()}
@@ -4884,9 +5090,10 @@ function renderEventoVend(){
         <div class="ev-item">
           <div class="ev-item-main">
             <div class="ev-item-nome">${esc(i.cliente)} ${eventoFunilPill(i.funil)}</div>
-            <div class="ev-item-sub">${i.mota?`🏍️ <b>${esc(i.mota)}</b> · `:''}${i.telefone?esc(i.telefone):'sem telefone'}${i.acompanhantes>0?` · +${i.acompanhantes} acomp.`:''}${i.obs?` · ${esc(i.obs)}`:''}</div>
+            <div class="ev-item-sub">${i.mota?`🏍️ <b>${esc(i.mota)}</b> · `:''}${i.telefone?esc(i.telefone):'sem telefone'}${i.acompanhantes>0?` · +${i.acompanhantes} acomp.`:''}${i.obs?` · ${esc(i.obs)}`:''}</div>${inscResumo(i)}
           </div>
-          <select class="insc-inp" data-insc-id="${i.id}" data-insc-f="estado" style="color:${estadoCor[i.estado]||'var(--text)'};font-weight:700">${estados.map(e=>`<option value="${e}" ${i.estado===e?'selected':''}>${e}</option>`).join('')}</select>
+          <select class="insc-inp" data-insc-id="${i.id}" data-insc-f="estado" aria-label="Estado de ${esc(i.cliente)}" style="color:${estadoCor[i.estado]||'var(--text)'};font-weight:700">${estados.map(e=>`<option value="${e}" ${i.estado===e?'selected':''}>${e}</option>`).join('')}</select>
+          <button class="btn btn-dark btn-sm" data-action="insc-ficha" data-id="${i.id}" aria-label="Abrir a ficha de ${esc(i.cliente)}">Ficha</button>
           <button class="stock-del" data-action="insc-del" data-id="${i.id}" title="Apagar">🗑</button>
         </div>`).join('')}</div>`}`;
   }
@@ -6925,8 +7132,10 @@ async function storagePedido(metodo,bucket,path,blob){
   let r=await fazer(S.token);
   if(r.status===401||r.status===403||r.status===400){const tx=await r.clone().text();if(/jwt|token|expired|unauthori/i.test(tx)){const nt=await refreshSession();if(nt){S.token=nt;r=await fazer(nt);}}}
   if(!r.ok){let tx='';try{tx=await r.text();}catch(e){}let m=tx;try{const j=JSON.parse(tx);m=j.message||j.error||tx;}catch(e){}
-    const eotB=bucket===EOT_IMG_BUCKET,docB=bucket===DOC_BUCKET;
-    if(/bucket not found/i.test(m))m=`Falta correr o SQL "${docB?'2026-11-04_documentos_emitidos':(eotB?'2026-10-22_eot_imagens':'2026-10-26_negocio_imagens')}" no Supabase.`;
+    const eotB=bucket===EOT_IMG_BUCKET,docB=bucket===DOC_BUCKET,evtB=bucket===EVT_DOC_BUCKET;
+    if(evtB&&/bucket not found/i.test(m))m='Falta correr o SQL "2026-11-09_eventos_externos" no Supabase.';
+    else if(evtB&&/row-level security|unauthorized|403/i.test(m+r.status))m='Não tens permissão para os documentos desta inscrição (confirma a autorização do cliente).';
+    else if(/bucket not found/i.test(m))m=`Falta correr o SQL "${docB?'2026-11-04_documentos_emitidos':(eotB?'2026-10-22_eot_imagens':'2026-10-26_negocio_imagens')}" no Supabase.`;
     else if(/row-level security|unauthorized|403/i.test(m+r.status))m=docB?'Não tens permissão para os documentos deste negócio.':`Não tens permissão para imagens ${eotB?'desta EOT':'deste negócio'}.`;
     throw new Error(m||('HTTP '+r.status));}
   return r;
@@ -9430,6 +9639,14 @@ function EXPORT_FOLHAS(){
       {c:'cliente',l:'Cliente'},{c:'telefone',l:'Telefone'},{c:'acompanhantes',l:'Acompanhantes'},
       {c:'estado',l:'Estado'},{c:'funil',l:'Funil'},{c:'vendedor_id',l:'Vendedor',f:nome},
       {c:'mota',l:'Mota'},{c:'obs',l:'Observações'},{c:'created_at',l:'Criado',f:dt},
+      {c:'data_nascimento',l:'Data de nascimento',f:d},{c:'nif',l:'NIF'},{c:'camisola',l:'Camisola'},{c:'pendura',l:'Pendura',f:sn},
+      {c:'pendura_nome',l:'Pendura: nome'},{c:'pendura_data_nascimento',l:'Pendura: nascimento',f:d},{c:'pendura_nif',l:'Pendura: NIF'},
+      {c:'pendura_telefone',l:'Pendura: telemóvel'},{c:'pendura_camisola',l:'Pendura: camisola'},{c:'mota_origem',l:'Mota que leva'},{c:'mota_modelo',l:'Modelo'},
+      {c:'docs',l:'Documentos',f:v=>Array.isArray(v)?v.map(x=>(x.tipo==='cc'?'CC':'Carta')+' '+x.quem).join(', '):''},{c:'docs_consentimento',l:'Autorização da cópia',f:sn},
+    ]},
+    {nome:'Acessos externos',path:'/evento_acessos?select=*&order=evento_id.asc',cols:[
+      {c:'evento_id',l:'Evento',f:v=>{const e=(S.eventos||[]).find(x=>String(x.id)===String(v));return e?e.nome:(v||'')}},
+      {c:'user_id',l:'Pessoa',f:v=>{const p=(S.perfisTodos||[]).find(x=>x.id===v);return p?p.nome:(v||'')}},{c:'criado_em',l:'Desde',f:dt},
     ]},
     {nome:'Histórico Status',path:'/status_historico?select=*&order=id.asc',cols:[
       {c:'id',l:'ID'},{c:'negocio_id',l:'Negócio ID'},{c:'de',l:'De'},{c:'para',l:'Para'},
@@ -11020,7 +11237,9 @@ function renderDashboard(){
     </div>`;
     return`<div class="ev-wrap">
       <div class="gpp-card">${seletor}${formNovo}${gestao}</div>
+      ${evtAcessosHTML(ev)}
       ${eventoCabecalhoHtml(ev)}
+      ${S.inscFicha&&S.inscFicha.evento_id===ev.id?inscFichaHTML(ev):`<button class="btn btn-orange" style="width:100%;margin:12px 0" data-action="insc-ficha-nova" data-ev="${ev.id}">＋ Inscrever cliente</button>`}
       <div class="ev-sec-h">🏆 Ranking por vendedor</div>
       ${eventoRankingHtml()}
       <div class="ev-sec-h">Todas as inscrições · ${inscr.length}</div>
@@ -11031,16 +11250,18 @@ function renderDashboard(){
           <option value="">Todos os vendedores</option>
           ${team.map(p=>`<option value="${p.id}" ${vf===p.id?'selected':''}>${esc((p.nome||'').split(' ')[0])}</option>`).join('')}
         </select>
-        <button class="btn btn-dark btn-sm" data-action="export-inscricoes">⬇ CSV</button>
+        <button class="btn btn-dark btn-sm" data-action="insc-xlsx" data-ev="${ev.id}">⬇ Excel</button>
       </div>
       ${lista.length===0?'<div class="ev-empty">Sem inscrições.</div>':`
       <div class="ev-list">${lista.map(i=>`
         <div class="ev-item">
           <div class="ev-item-main">
-            <div class="ev-item-nome">${esc(i.cliente)} ${eventoFunilPill(i.funil)}<span class="ev-item-vend">· ${esc((vendName(i.vendedor_id)||'?').split(' ')[0])}</span></div>
-            <div class="ev-item-sub">${i.mota?`🏍️ <b>${esc(i.mota)}</b> · `:''}${i.telefone?esc(i.telefone):'sem telefone'}${i.acompanhantes>0?` · +${i.acompanhantes} acomp.`:''}${i.obs?` · ${esc(i.obs)}`:''}</div>
+            <div class="ev-item-nome">${esc(i.cliente)} ${eventoFunilPill(i.funil)}</div>
+            <div class="ev-item-sub">${i.mota?`🏍️ <b>${esc(i.mota)}</b> · `:''}${i.telefone?esc(i.telefone):'sem telefone'}${i.acompanhantes>0?` · +${i.acompanhantes} acomp.`:''}${i.obs?` · ${esc(i.obs)}`:''}</div>${inscResumo(i)}
           </div>
+          <select class="insc-inp evx-quem" data-insc-id="${i.id}" data-insc-f="vendedor_id" aria-label="Registado por (${esc(i.cliente)})">${(S.perfisTodos||[]).filter(p=>['admin','vendedor','assessor','eventos'].includes(p.role)||p.id===i.vendedor_id).map(p=>`<option value="${esc(p.id)}"${p.id===i.vendedor_id?' selected':''}>${esc((p.nome||'?').split(' ')[0])}${p.role==='eventos'?' (ext.)':''}</option>`).join('')}</select>
           <span class="ev-estado-pill" style="color:${estadoCor[i.estado]||'var(--text)'}">${esc(i.estado||'')}</span>
+          <button class="btn btn-dark btn-sm" data-action="insc-ficha" data-id="${i.id}" aria-label="Abrir a ficha de ${esc(i.cliente)}">Ficha</button>
         </div>`).join('')}</div>`}
       <div style="height:20px"></div>
     </div>`;
@@ -11147,7 +11368,7 @@ function render0(){
   const app=document.getElementById('app');
   const ce=app.querySelector('.content'),st=ce?ce.scrollTop:0,ps=app.dataset.screen||'';
   const screens={loading:'<div class="content"><div class="center-screen"><p style="color:var(--text3)">A carregar...</p>'+(S._lento?'<p style="color:var(--text2);max-width:360px;text-align:center;line-height:1.5;margin-top:10px">A ligação ao servidor está lenta. Continua a tentar sozinho; se preferires, recomeça.</p><button class="btn btn-dark" data-action="recarregar" style="margin-top:8px">Tentar outra vez</button>':'')+'</div></div>',
-    semrede:'<div class="content"><div class="center-screen"><p style="font-weight:700;font-size:16px">Sem resposta do servidor</p><p style="color:var(--text2);max-width:380px;text-align:center;line-height:1.5">A ligação está lenta ou falhou. A tua sessão continua guardada — não precisas de voltar a entrar.</p><button class="btn btn-dark" data-action="recarregar" style="margin-top:10px">Tentar outra vez</button></div></div>',login:renderLogin,financeiro:renderFinanceiro,notificacoes:renderNotificacoes,vnotif:renderVNotif,list:renderList,detail:renderDetail,edit:renderEdit,dashboard:renderDashboard,escala:renderEscala,password:renderPassword,ventregas:renderMinhasEntregas,vcom:renderMinhasComissoes,semacesso:renderSemAcesso,previsao:renderPrevisao,ficha:renderFichaMargem,secretaria:renderSecretaria,assessor:renderAssessor,stockvend:renderStockVend,evento:renderEventoVend,veot:renderMinhasEot,vstockeq:renderStockEqVend,vencomendas:renderEncVend};
+    semrede:'<div class="content"><div class="center-screen"><p style="font-weight:700;font-size:16px">Sem resposta do servidor</p><p style="color:var(--text2);max-width:380px;text-align:center;line-height:1.5">A ligação está lenta ou falhou. A tua sessão continua guardada — não precisas de voltar a entrar.</p><button class="btn btn-dark" data-action="recarregar" style="margin-top:10px">Tentar outra vez</button></div></div>',login:renderLogin,financeiro:renderFinanceiro,notificacoes:renderNotificacoes,vnotif:renderVNotif,list:renderList,detail:renderDetail,edit:renderEdit,dashboard:renderDashboard,escala:renderEscala,password:renderPassword,ventregas:renderMinhasEntregas,vcom:renderMinhasComissoes,semacesso:renderSemAcesso,previsao:renderPrevisao,ficha:renderFichaMargem,secretaria:renderSecretaria,assessor:renderAssessor,stockvend:renderStockVend,evento:renderEventoVend,eventosext:renderEventosExt,veot:renderMinhasEot,vstockeq:renderStockEqVend,vencomendas:renderEncVend};
   if(S.screen==='ventregas'&&S.me&&!isAdmin())S.screen='list';
   if(S.screen==='financeiro'&&S.me&&!isFinanceiro())S.screen=ecraInicial();
   if(S.screen==='notificacoes'&&S.me&&!isFinanceiro())S.screen=ecraInicial();
@@ -11313,6 +11534,10 @@ function bindEvents(){
       });
       return;
     }
+    if(el.dataset&&el.dataset.ifDoc){const f=el.files&&el.files[0];el.value='';inscDocJuntar(el.dataset.ifDoc,f);return;}
+    if(el.dataset&&el.dataset.ifCons){inscDocsConsent(el.checked);return;}
+    if(el.dataset&&el.dataset.if){inscFichaLer();if(el.dataset.ifR)render();return;}
+    if(el.dataset&&el.dataset.evtAcesso){evtAcessoMudar(el.dataset.evtAcesso,el.dataset.ev,el.checked);return;}
     if(el.dataset&&el.dataset.inscId){saveInscricaoCampo(el.dataset.inscId,el.dataset.inscF,el.value);return;}
     if(el.dataset&&el.dataset.action==='evento-sel'){const id=parseInt(el.value);S.eventoSel=id;loadRanking(id).then(()=>render());return;}
     if(el.dataset&&el.dataset.action==='insc-vend-filtro'){S.inscVendFiltro=el.value;render();return;}
@@ -11358,7 +11583,7 @@ function bindEvents(){
           .catch(e=>setState({pwLoading:false,pwErr:e.message,pwMsg:''}));
         break;
       }
-      case'logout':clearSession();setState({token:null,records:[],me:null,team:[],objetivos:[],viewVendedor:null,screen:'login',error:''});break;
+      case'logout':clearSession();S.inscFicha=null;S.evtRegistos={};setState({token:null,records:[],me:null,team:[],objetivos:[],viewVendedor:null,screen:'login',error:''});break;
       case'toggle-vsel':setState({vselOpen:!S.vselOpen});break;
       case'dash-linha':setState({dashLinha:el.dataset.linha});break;
       case'dash-periodo':setState({dashPeriodo:el.dataset.p});break;
@@ -11374,7 +11599,16 @@ function bindEvents(){
       case'go-evento':{setState({loading:true});const id=el.dataset.id?parseInt(el.dataset.id):null;const ev=id?(S.eventos||[]).find(e=>e.id===id):eventoAtual();S.eventoSel=ev?ev.id:null;recarregarEvento().then(()=>setState({screen:'evento',loading:false,inscAdding:false}));break}
       case'evento-voltar':setState({screen:isAdmin()?'dashboard':'list'});break;
       case'evento-sel-vend':{const id=parseInt(el.dataset.id);S.eventoSel=id;loadRanking(id).then(()=>render());break;}
-      case'insc-add-open':setState({inscAdding:true,inscForm:{estado:'Confirmado',acompanhantes:0},eventoErr:''});break;
+      case'insc-add-open':{const at=eventosAtivos();const ev=at.find(e=>e.id===S.eventoSel)||at[0]||eventoAtual();if(ev)inscFichaAbrir(null,ev.id);break;}
+      case'insc-ficha-nova':inscFichaAbrir(null,Number(el.dataset.ev));break;
+      case'insc-ficha':inscFichaAbrir(el.dataset.id);break;
+      case'insc-ficha-fechar':S.inscFicha=null;S.inscDocApagar=null;render();break;
+      case'insc-ficha-gravar':inscFichaGravar();break;
+      case'insc-doc-abrir':inscDocAbrir(el.dataset.k);break;
+      case'insc-doc-apagar':inscDocApagar(el.dataset.k);break;
+      case'insc-xlsx':inscExportXLSX(el.dataset.ev);break;
+      case'evt-perfil':evtPerfil(el.dataset.uid,el.dataset.on==='1');break;
+      case'evento-sel-ext':{S.eventoSel=parseInt(el.dataset.id);S.inscFicha=null;S.inscBusca='';loadEvtRegistos(S.eventoSel).then(()=>render());render();break;}
       case'insc-add-cancel':setState({inscAdding:false,inscForm:{},eventoErr:''});break;
       case'insc-save-new':saveInscricaoNova();break;
       case'insc-del':delInscricao(el.dataset.id);break;
@@ -11728,7 +11962,7 @@ function bindEvents(){
 
 function collectFormData(){document.querySelectorAll('input[data-field],select[data-field],textarea[data-field]').forEach(el=>{const k=el.dataset.field;let v=el.value;if(el.dataset.fmt==='month'&&v)v=v.replace('-','/');S.form[k]=v})}
 
-function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadComsRecentes(),loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes(),loadTransicoes(),loadNorma(),loadFichasIdx(),loadFichasAprovar(),loadEot(),loadComFecho()]):(isVendedor()?Promise.all([loadComsRecentes(),loadTeam(),loadEventos(),loadInscricoes(),loadInscricoesAll(),loadMargens(),loadEntregas(),loadEquipamento(),loadFichasIdx(),loadEot(),loadComFecho()]):(S.me&&S.me.role==='secretario'?Promise.all([loadTeam(),loadEntregas(),...(isFinanceiro()?[loadEot()]:[])]):(S.me&&S.me.role==='assessor'?Promise.all([loadTeam(),loadEquipamento(),...(isSecretaria()?[loadEntregas()]:[])]):(S.me&&S.me.role==='financeiro'?Promise.all([loadTeam(),loadEot()]):Promise.all([loadTeam()])))));return Promise.all([extra,(!isAdmin()&&temArea('previsao'))?loadObjEquipa():null])}).then(function(){return loadRecords()}).then(function(){/* notificações e stock não atrasam a entrada */const _rs=function(){if(S.screen&&S.screen!=='loading'){if(typeof aEscrever==='function'&&aEscrever())S._renderPend=true;else renderSeguro();}};loadNotif().then(_rs);if(isAdmin()&&!S.encLoaded&&!S._encLoading){S._encLoading=true;loadEnc().finally(function(){S._encLoading=false;_rs();});}}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:ecraInicial(),loading:false,statusFilter:isAdmin()?S.statusFilter:'_hoje'});_ultimoAuto=Date.now();restaurarRascunho();})}
+function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadComsRecentes(),loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes(),loadTransicoes(),loadNorma(),loadFichasIdx(),loadFichasAprovar(),loadEot(),loadComFecho()]):(isVendedor()?Promise.all([loadComsRecentes(),loadTeam(),loadEventos(),loadInscricoes(),loadInscricoesAll(),loadMargens(),loadEntregas(),loadEquipamento(),loadFichasIdx(),loadEot(),loadComFecho()]):(S.me&&S.me.role==='secretario'?Promise.all([loadTeam(),loadEntregas(),...(isFinanceiro()?[loadEot()]:[])]):(S.me&&S.me.role==='assessor'?Promise.all([loadTeam(),loadEquipamento(),...(isSecretaria()?[loadEntregas()]:[])]):(S.me&&S.me.role==='financeiro'?Promise.all([loadTeam(),loadEot()]):(S.me&&S.me.role==='eventos'?Promise.all([loadEventos(),loadInscricoes()]):Promise.all([loadTeam()]))))));return Promise.all([extra,(!isAdmin()&&temArea('previsao'))?loadObjEquipa():null])}).then(function(){return loadRecords()}).then(function(){/* notificações e stock não atrasam a entrada */const _rs=function(){if(S.screen&&S.screen!=='loading'){if(typeof aEscrever==='function'&&aEscrever())S._renderPend=true;else renderSeguro();}};loadNotif().then(_rs);if(isAdmin()&&!S.encLoaded&&!S._encLoading){S._encLoading=true;loadEnc().finally(function(){S._encLoading=false;_rs();});}}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:ecraInicial(),loading:false,statusFilter:isAdmin()?S.statusFilter:'_hoje'});_ultimoAuto=Date.now();restaurarRascunho();})}
 (function(){
   S.screen='loading';render();
   // Link de recuperacao do Supabase: #access_token=...&type=recovery

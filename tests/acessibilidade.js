@@ -7,7 +7,7 @@ const PORTA=8773;const srv=http.createServer((q,s)=>{s.writeHead(200,{'content-t
 const b64=o=>Buffer.from(JSON.stringify(o)).toString('base64url');const jwt=sub=>b64({alg:'ES256'})+'.'+b64({sub,exp:Math.floor(Date.now()/1000)+3600})+'.x';
 const hoje=new Date();const d=n=>{const x=new Date(hoje);x.setDate(x.getDate()-n);return x.toISOString().slice(0,10);};const ym=hoje.getFullYear()+'/'+String(hoje.getMonth()+1).padStart(2,'0');
 const P={c1:{id:'c1',nome:'Chefe Teste',role:'admin',linha:'motorrad',areas:[]},v1:{id:'v1',nome:'Vera Vendas',role:'vendedor',linha:'motorrad',areas:[]},v2:{id:'v2',nome:'Victor Valente',role:'vendedor',linha:'motorrad',areas:[]},
-  s1:{id:'s1',nome:'Sofia Secretaria',role:'secretario',linha:'motorrad',areas:[],financeiro:false},f1:{id:'f1',nome:'Filipa Financeira',role:'financeiro',linha:'motorrad',areas:[]},a1:{id:'a1',nome:'Artur Assessor',role:'assessor',linha:'motorrad',areas:[]}};
+  s1:{id:'s1',nome:'Sofia Secretaria',role:'secretario',linha:'motorrad',areas:[],financeiro:false},f1:{id:'f1',nome:'Filipa Financeira',role:'financeiro',linha:'motorrad',areas:[]},a1:{id:'a1',nome:'Artur Assessor',role:'assessor',linha:'motorrad',areas:[]},e1:{id:'e1',nome:'Clube Externo',role:'eventos',linha:'auto',areas:[]},p1:{id:'p1',nome:'Conta Nova',role:'pendente',linha:'auto',areas:[]}};
 const R=(id,v,status,extra)=>Object.assign({id,vendedor_id:v,status,id_cliente:'Cliente '+id,model:'R 1300 GS',version:'Trophy',type:'MN',neg:d(id*3),mes1:ym,pvp:24500,contacto:'912 000 00'+id,updated_at:new Date().toISOString(),status_updated_at:d(id)},extra||{});
 const recs=[R(1,'v1','Quente'),R(2,'v1','Morno',{alert_date:d(2)}),R(3,'v1','Frio'),R(4,'v1','Carteira',{enc:'9100001'}),R(5,'v1','Retail',{col_298:d(5),dmat:d(100)}),R(6,'v2','Quente'),R(7,'v2','Carteira'),R(8,'v2','Retail',{col_298:d(9)}),R(9,'v1','Perdido',{motivo_perda:'Preço'}),R(10,'v2','Retail',{type:'MU',col_298:d(2)}),R(11,'v2','Retail',{type:'MU',venda_direta:true,id_cliente:'Comércio Teste',pvp:5000,valor_entrada:5200,col_298:d(3)})];
 recs.push(R(12,'v1','Quente',{type:'MU',model:'R 1250 GS',version:'Adventure',mat:'AA-11-BB',pvp:12500,retoma:'Sim',retoma_modelo:'Honda Africa Twin',retoma_mat:'22-CC-33',fin:'PP',nif:'123456789',morada:'Rua das Flores 10, Esgueira',local:'3800-100',cc:'12345678 9ZZ1'}));
@@ -21,6 +21,11 @@ const usadas=[{id:51,modelo:'R 1250 GS',matricula:'AA-00-AA',ano:2021,kms:30000,
   {id:52,modelo:'R 1300 GS',matricula:'BB-11-BB',categoria:'demo',estado:'Disponível',data_rececao:d(30)},
   {id:53,modelo:'F 900 R',matricula:'CC-22-CC',ano:2020,kms:21000,data_rececao:d(250),valor_entrada:8000,valor_anunciado:9500,valor_min:9000,dep_manual:400,categoria:'usada',estado:'Disponível'},
   {id:54,modelo:'F 900 GS',matricula:'DD-33-DD',ano:2024,kms:9000,data_rececao:d(20),valor_entrada:13800,valor_anunciado:15000,valor_min:14500,categoria:'usada',estado:'Disponível'}];
+const evts=[{id:1,nome:'Passeio Teste',data:d(-10),local:'Aveiro',ativo:true,motas:[],lotacao:null,created_at:new Date().toISOString()}];
+const inscs=[{id:1,evento_id:1,cliente:'Cliente Evento',telefone:'912 000 001',vendedor_id:'v1',estado:'Confirmado',funil:'Quente',obs:'Leva malas',acompanhantes:0,mota:null,data_nascimento:'1990-05-04',nif:'123456789',camisola:'M',
+  pendura:true,pendura_nome:'Pendura Teste',pendura_data_nascimento:'1991-01-02',pendura_nif:'987654321',pendura_telefone:'913 000 002',pendura_camisola:'S',mota_origem:'Própria',mota_modelo:'R 1250 GS',
+  docs:[{tipo:'cc',quem:'cliente',caminho:'1/1/cc.pdf',nome:'cc.pdf'}],docs_consentimento:true,created_at:new Date().toISOString()},
+  {id:2,evento_id:1,cliente:'Cliente Externo',telefone:null,vendedor_id:'e1',estado:'Lista de espera',funil:null,obs:null,acompanhantes:0,mota:null,pendura:false,docs:[],docs_consentimento:false,created_at:new Date().toISOString()}];
 const comp=[{id:1,reuniao:d(14),vendedor_id:'v1',ponto:'eots',texto:'Ligar aos clientes EOT',prazo:d(3),feito:false,feito_em:null,adiamentos:1,adiado_em:d(7),criado_em:new Date(Date.now()-14*864e5).toISOString()},
   {id:2,reuniao:d(14),vendedor_id:null,ponto:'equip',texto:'Desafio do stock morto',prazo:d(2),feito:true,feito_em:new Date(Date.now()-864e5).toISOString(),criado_em:new Date(Date.now()-14*864e5).toISOString()}];
 const seq=[1,2,3].map(i=>({id:i,lote:'L1',ponto_venda:'Caetano Aveiro',ref:'7622852610'+i,descricao:'Botas Teste '+i,categoria:'botas',qualidade:['Vivo','Moribundo','Morto'][i-1],antig_saida:['Últ. Saída até 3 meses','Últ. Saída de 1 a 2 anos','Sem Movimento de Saída'][i-1],ult_saida:i<3?d(i*200):null,qtd:i,custo_unit:80,desc_max:i/10,importado_em:new Date().toISOString()}));
@@ -44,6 +49,9 @@ async function contexto(b,uid,vp,tema){
     if(t==='encomendas_bmw')return json(u.includes('offset=0')?enc:[]);
     if(t==='stock_equip')return json(u.includes('offset=0')?seq:[]);
     if(t==='stock_usadas')return json(usadas);
+    if(t==='eventos')return json(evts);
+    if(t==='inscricoes')return json(uid==='v1'?inscs.filter(x=>x.vendedor_id==='v1'):inscs);
+    if(t==='evento_acessos')return json([{evento_id:1,user_id:'e1',criado_em:new Date().toISOString()}]);
     if(t==='margens')return json(uid==='c1'?[{negocio_id:10,margem:-250}]:[]);
     if(t==='reuniao_compromissos')return json(uid==='c1'?comp:[]);
     if(t==='retomas_valores')return json(uid==='c1'?[{id:1,criado_em:new Date(Date.now()-40*864e5).toISOString(),vendedor_id:'v1',matricula:'11-AA-22',modelo:'R 1250 GS',ano:2020,kms:40000,extras:'Malas',valor_retoma:9000,preparacao:300,valor_venda:12500,venda_minima:11800,estado:'proposta',notas:null},
@@ -71,6 +79,7 @@ const ECRAS={
       ['Janela EOT (criada à mão)','()=>{S.eotNovo=null;S.screen="dashboard";S.gppSec="eots";render();eotAbrir("E4");}'],
       ['Fichas: não aprovar (motivo) e não aprovadas','()=>{S.screen="dashboard";S.gppSec="home";S.faRecusar=31;S.faMotivo="";S.faRecsAberto=true;render();}'],
       ['Ficha: não aprovar (motivo)','()=>{S.faRecusar=null;fmAbrirNegocio("1","31").then(()=>{S.faRecusar=31;render();});}'],
+      ['Evento: ficha de inscrição e acesso externo','()=>{S.screen="dashboard";S.gppSec="evento";S.eventoSel=1;render();inscFichaAbrir(1);}'],
       ['Ficha não aprovada (chefe)','()=>{S.faRecusar=null;fmSairDoNegocio();fmAbrirNegocio("2","32");}']],
   v1:[['Hoje','()=>{S.screen="list";S.statusFilter="_hoje";S.alertFilter=null;render();}'],['Funil','()=>{S.screen="list";S.statusFilter="Funil";render();}'],['Carteira','()=>{S.screen="list";S.statusFilter="Carteira";render();}'],
       ['Negócio (detalhe)','()=>{setState({screen:"detail",selected:S.records.find(r=>r.id===5),openGroups:{INFO:true}});}'],['Negócio (editar)','()=>{const r=S.records.find(x=>x.id===1);setState({selected:r,form:recordToForm(r),screen:"edit",openGroups:{INFO:true,"Identificação":true}});}'],
@@ -83,8 +92,9 @@ const ECRAS={
   s1:[['Secretaria','()=>{setState({screen:"secretaria"});}']],
   f1:[['EOTs','()=>{setState({screen:"financeiro",finTab:"todos"});}'],['Notificações','()=>{setState({screen:"notificacoes"});}'],['Janela EOT','()=>{setState({screen:"financeiro"});eotAbrir("E1");}']],
   a1:[['Assessor','()=>{setState({screen:"assessor"});}']],
+  e1:[['Eventos (externo)','()=>{S.inscFicha=null;setState({screen:"eventosext"});}'],['Ficha de inscrição (externo)','()=>{setState({screen:"eventosext"});inscFichaAbrir(1);}'],['Ficha nova (externo)','()=>{setState({screen:"eventosext"});inscFichaAbrir(null,1);}']],
   '':[['Entrada (login)','()=>{}']]};
-const PERFIL={c1:'Chefe',v1:'Vendedor',s1:'Secretário',f1:'Financeiro',a1:'Assessor','':'Sem sessão'};
+const PERFIL={c1:'Chefe',v1:'Vendedor',s1:'Secretário',f1:'Financeiro',a1:'Assessor',e1:'Eventos (externo)','':'Sem sessão'};
 (async()=>{const b=await chromium.launch(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{});const res=[];
  for(const [vpN,vp] of [['computador',{width:1440,height:900}],['telemovel',{width:390,height:844}]])for(const tema of ['claro','escuro'])for(const uid of Object.keys(ECRAS)){
   const ctx=await contexto(b,uid,vp,tema);const p=await ctx.newPage();const erros=[];p.on('pageerror',e=>erros.push(e.message));
