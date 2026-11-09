@@ -27,3 +27,4 @@
 2026-11-04_acordos_venda.sql
 2026-11-04_retomas_vendedor.sql
 2026-11-04_documentos_emitidos.sql
+2026-11-05_negocio_sinal_retoma.sql
