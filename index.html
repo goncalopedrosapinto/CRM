@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-09-a">
+<meta name="app-version" content="2026-11-09-b">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2511,7 +2511,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-09-a';
+const APP_VERSION='2026-11-09-b';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -7846,7 +7846,7 @@ async function docAbrir(docId,k){const st=(S.docsEmit||{})[k];const x=st&&(st.L|
 // Mesma linha de acordos_venda (um por negócio), com as chaves fn_*. Modelo: docs/folha-negocio.pdf (gerado por docs/fontes/folha_negocio.py).
 const FOLHA_PDF='docs/folha-negocio.pdf';
 let FOLHA_ATIVA=true;
-const FOLHA_TV=['Novo','Demo'];
+const FOLHA_TV=['Novo','Demo','Usado'];
 const FOLHA_ORIG=['Stand','Recomendação','Lead','BSC','Angariação','APV','Eventos','Cliente Atual'];
 const FOLHA_FIN=[['pp','PP'],['f_ext','F. Ext'],['f_bmw','F BMW'],['gap','GAP'],['protecao_credito','Proteção de Crédito']];
 const FOLHA_FAT=['Empresa','Dec. Utilizador','Particular'];
@@ -7865,7 +7865,7 @@ function folhaElegivel(r){return FOLHA_ATIVA&&!!r&&(r.type==='MN'||r.type==='MD'
 function folhaSlug(s){return String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');}
 function folhaDefaults(r){const emp=r.profile==='Empresa';const h=new Date();
   const d={fn_data:h.getFullYear()+'-'+String(h.getMonth()+1).padStart(2,'0')+'-'+String(h.getDate()).padStart(2,'0'),
-    fn_empresa:emp?String(r.id_cliente||''):'',fn_rgpd:r.flag_rgpd?'Sim':'',fn_tipo_venda:r.type==='MD'?'Demo':(r.type==='MN'?'Novo':''),fn_origem:FOLHA_ORIG_DE[r.origin]||'',
+    fn_empresa:emp?String(r.id_cliente||''):'',fn_rgpd:r.flag_rgpd?'Sim':'',fn_tipo_venda:r.type==='MD'?'Demo':(r.type==='MU'?'Usado':'Novo'),fn_origem:FOLHA_ORIG_DE[r.origin]||'',
     fn_faturacao:emp?'Empresa':(r.profile==='Particular'?'Particular':'')};
   if(FOLHA_FIN_DE[r.fin])d['fn_fin_'+FOLHA_FIN_DE[r.fin]]=true;
   return d;}

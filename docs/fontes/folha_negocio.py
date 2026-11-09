@@ -1,4 +1,4 @@
-# Gera docs/folha-negocio.pdf: a Folha de Negócio (motas novas e demos) com campos preenchíveis.
+# Gera docs/folha-negocio.pdf: a Folha de Negócio (motas novas, demos e usadas) com campos preenchíveis.
 # Mesmo aspeto do acordo de venda das usadas. Os nomes dos campos são os que a app preenche (index.html, FOLHA_*).
 # Uso: python3 docs/fontes/folha_negocio.py   (precisa de reportlab e das fontes Carlito: fonts-crosextra-carlito)
 import os
@@ -31,7 +31,7 @@ CINZA_TXT = Color(.419608, .419608, .419608)
 c = canvas.Canvas(SAIDA, pagesize=(W, H))
 c.setTitle('Folha de Negócio')
 c.setAuthor(EMPRESA)
-c.setSubject('Folha de Negócio - Viaturas Novas e Demonstração')
+c.setSubject('Folha de Negócio - Viaturas Novas, Demonstração e Usadas')
 c.setCreator('Baviera Control')
 form = c.acroForm
 
@@ -92,7 +92,7 @@ c.setFont('Carlito-Bold', 17)
 c.drawCentredString(W / 2, 791.89, 'FOLHA DE NEGÓCIO')
 c.setFillColor(CINZA_TXT)
 c.setFont('Carlito', 9)
-c.drawCentredString(W / 2, 779.89, 'Viaturas Novas e Demonstração  ·  BMW Motorrad')
+c.drawCentredString(W / 2, 779.89, 'Viaturas Novas, Demonstração e Usadas  ·  BMW Motorrad')
 c.setFillColor(black)
 
 TOPO = 763.89
@@ -123,8 +123,9 @@ caixa('rgpd_nao', 'Não', xx, b)
 y = b - 8
 # ---------- tipo de venda ----------
 b = barra(y, 'TIPO DE VENDA')
-xx = caixa('tv_novo', 'Novo', 34, b) + 24
-caixa('tv_demo', 'Demo', xx, b)
+xx = caixa('tv_novo', 'Novo', 34, b) + 20
+xx = caixa('tv_demo', 'Demo', xx, b) + 20
+caixa('tv_usado', 'Usado', xx, b)
 campo('viatura_matricula', 'Matrícula:', 200, b, 370)
 campo('viatura_data_matricula', 'Data da Matrícula:', 380, b, 561.28)
 y = b - 8

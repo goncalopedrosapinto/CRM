@@ -57,7 +57,7 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
    form.getFields().forEach(x=>{const n=x.getName();o[n]=x instanceof PDFLib.PDFCheckBox?x.isChecked():String(x.getText()||'').replace(/[\s  ]+/g,' ');});return o;};
  // ---------- vendedor do negócio ----------
  const V1=await abrir('v1');const p=V1.p;
- await negocio(p,23);const usada=await painel(p);
+ await negocio(p,23);const usada=await painel(p);const tvUsada=await p.evaluate(()=>folhaCaixas(S.records.find(r=>r.id===23)));
  await negocio(p,21);const A=await painel(p);
  await p.click('[data-action="folha-abrir"]');await p.waitForTimeout(700);const B=await painel(p);
  const escrever=async(k,v)=>{await p.fill('#ac-'+k,v);};
@@ -93,7 +93,7 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
   'nome do ficheiro: Folha de Negócio + cliente':nomeFicheiro==='Folha de Negócio Cliente Nova Ficticia.pdf'&&/Folha de Negócio Cliente Nova Ficticia\.pdf/.test(B.nome),
   'PDF: negócio e cliente':pdf.vendedor==='Vendedor Um'&&pdf.n_bizagi==='BZ-77001'&&pdf.data===hojePT&&pdf.cliente_nome==='Cliente Nova Ficticia'&&pdf.cliente_morada==='Rua Nova 5, Aveiro, 3810-001'&&!pdf.cliente_empresa&&
     pdf.cliente_nif==='234567890'&&pdf.cliente_contacto==='913 000 111'&&pdf.cliente_email==='nova@exemplo.pt'&&pdf.rgpd_sim===true&&pdf.rgpd_nao===false,
-  'PDF: tipo de venda e origem (uma caixa cada)':pdf.tv_novo===true&&pdf.tv_demo===false&&pdf.or_bsc===true&&['or_stand','or_recomendacao','or_lead','or_angariacao','or_apv','or_eventos','or_cliente_atual'].every(k=>pdf[k]===false),
+  'PDF: tipo de venda e origem (uma caixa cada; a usada sai como «Usado»)':pdf.tv_novo===true&&pdf.tv_demo===false&&pdf.tv_usado===false&&tvUsada.tv_usado===true&&tvUsada.tv_novo===false&&pdf.or_bsc===true&&['or_stand','or_recomendacao','or_lead','or_angariacao','or_apv','or_eventos','or_cliente_atual'].every(k=>pdf[k]===false),
   'PDF: informações de negócio e financiamento':pdf.n_proposta==='P-2026-118'&&pdf.modelo==='R 1300 GS Trophy'&&pdf.valor_fatura==='24 500,00'&&pdf.sinal==='1 000,00'&&pdf.encomenda==='9100007'&&pdf.subvencao_taxa==='1,5%'&&
     pdf.fat_particular===true&&pdf.fat_empresa===false&&pdf.fin_f_bmw===true&&pdf.fin_gap===true&&pdf.fin_pp===false&&pdf.fin_f_ext===false&&pdf.seguro_mat_anterior==='AA-00-BB',
   'PDF: retoma (do negócio) e observações':pdf.retoma_modelo==='F 800 GS'&&pdf.retoma_matricula==='11-ZZ-22'&&pdf.retoma_ano==='2017'&&pdf.retoma_kms==='48 000'&&pdf.retoma_valor==='6 000,00'&&pdf.retoma_valor_comercio==='5 500,00'&&pdf.observacoes==='Entrega com malas.',
