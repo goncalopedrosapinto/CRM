@@ -84,7 +84,7 @@ const hoje=new Date();const hojePT=String(hoje.getDate()).padStart(2,'0')+'/'+St
  console.log(JSON.stringify(R,null,1));
  const ultima=escritas1[escritas1.length-1]||[];
  const ok={
-  'só nos negócios de novas e demos (a usada tem o acordo, não a folha)':!usada.botao&&usada.acordo&&/Folha de Negócio/.test(A.botao)&&!A.acordo&&!A.aberto,
+  'novas e demos têm a folha; a usada tem a folha e o acordo':/Folha de Negócio/.test(usada.botao)&&usada.acordo&&/Folha de Negócio/.test(A.botao)&&!A.acordo&&!A.aberto,
   'abre com o que vem do negócio (Bizagi, morada, PVP, sinal, retoma), sem faltas e sem a nota interna':B.aberto&&/BZ-77001/.test(B.neg)&&/Rua Nova 5, Aveiro, 3810-001/.test(B.neg)&&/24 500,00 €/.test(B.neg)&&/1 000,00 €/.test(B.neg)&&
     /F 800 GS · 11-ZZ-22 · 2017 · 48 000 km/.test(B.neg)&&/5 500,00 €/.test(B.neg)&&!B.faltas&&!/NOTA INTERNA/.test(B.neg),
   'por omissão: data, RGPD, Novo, origem Lead, faturação, F BMW':B.v.fn_data===`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}-${String(hoje.getDate()).padStart(2,'0')}`&&!B.v.fn_empresa&&B.v.fn_rgpd==='Sim'&&
