@@ -48,6 +48,7 @@ const rota=quem=>async r=>{const u=decodeURIComponent(r.request().url());const m
     if(m==='POST'){if(role==='eventos'&&!temAcesso(quem,b.evento_id))return json({code:'42501',message:'new row violates row-level security policy'},403);
       const n=Object.assign({},VAZIA,{id:++nextId,vendedor_id:quem,estado:'Confirmado',acompanhantes:0,created_at:new Date().toISOString()},b);est.insc.push(n);return json([n],201);}
     const i=est.insc.find(x=>x.id===id);if(!i||!vis(i))return json([]);
+    if(m==='PATCH'&&role==='eventos'&&i.vendedor_id!==quem)return json([]);
     if(m==='PATCH'){if(b.vendedor_id&&b.vendedor_id!==i.vendedor_id&&role!=='admin')return json({code:'42501',message:'Sem permissão: só o chefe muda quem registou a inscrição'},403);Object.assign(i,b);return json([i]);}
     if(m==='DELETE'){est.insc=est.insc.filter(x=>x!==i);return json([]);}}
   if(t==='inscricoes_publico')return json(role==='admin'||role==='vendedor'?est.insc.map(i=>({id:i.id,evento_id:i.evento_id,cliente:i.cliente,mota:i.mota,vendedor_id:i.vendedor_id,estado:i.estado,funil:i.funil,acompanhantes:i.acompanhantes})):[]);
@@ -89,13 +90,16 @@ const nb=s=>String(s||'').replace(/[\s  ]+/g,' ').trim();
  const docsDepois=await p.evaluate(()=>({txt:document.querySelector('#if-box .if-docs').textContent.replace(/\s+/g,' '),consDis:document.querySelector('#if-box [data-if-cons]').disabled}));
  const [pop]=await Promise.all([p.context().waitForEvent('page',{timeout:8000}),p.click('#if-box [data-action="insc-doc-abrir"]')]);await p.waitForTimeout(500);const popUrl=pop.url();await pop.close().catch(()=>{});
  await p.click('[data-action="insc-ficha-fechar"]');await p.waitForTimeout(150);
- // ficha de uma inscrição do vendedor: completa sem funil e sem mudar quem registou
+ // inscrição de um vendedor: o externo só vê (sem funil, sem gravar, sem mexer nos documentos)
+ const botaoVer=await txt(p,'[data-action="insc-ficha"][data-id="11"]');
  await p.click('[data-action="insc-ficha"][data-id="11"]');await p.waitForTimeout(200);
- const fichaVend=await p.evaluate(()=>({nome:document.getElementById('if-cliente').value,funil:!!document.getElementById('if-funil'),obs:document.getElementById('if-obs').value}));
- await p.selectOption('#if-camisola','XL');await p.click('[data-action="insc-ficha-gravar"]');await p.waitForTimeout(400);
+ const fichaVend=await p.evaluate(()=>({nome:document.getElementById('if-cliente').value,funil:!!document.getElementById('if-funil'),obs:document.getElementById('if-obs').value,
+   desligados:[...document.querySelectorAll('#if-box [data-if]')].every(x=>x.disabled),gravar:!!document.querySelector('[data-action="insc-ficha-gravar"]'),up:document.querySelectorAll('#if-box [data-if-doc]').length,
+   cons:(document.querySelector('#if-box [data-if-cons]')||{}).disabled,aviso:(document.querySelector('#if-box .if-ro')||{}).textContent||''}));
+ await p.evaluate(()=>inscFichaGravar());await p.waitForTimeout(300);
  const patch11=est.escritas.filter(x=>x[0]==='e1'&&x[1]==='PATCH'&&x[2]===11).pop();
  await p.click('[data-action="insc-ficha-fechar"]');await p.waitForTimeout(150);
- const listaFim=await txt(p,'.ev-list');
+ const listaFim=await txt(p,'.ev-list');const botaoMeu=await txt(p,`[data-action="insc-ficha"][data-id="${nova.id}"]`);
  await p.screenshot({path:path.join(__dirname,'eventos_externos.png'),fullPage:false});
  // Excel
  const [dl]=await Promise.all([p.waitForEvent('download',{timeout:15000}),p.click('[data-action="insc-xlsx"]')]);const xf=path.join(__dirname,'eventos_externos_teste.xlsx');await dl.saveAs(xf);
@@ -104,7 +108,7 @@ const nb=s=>String(s||'').replace(/[\s  ]+/g,' ').trim();
  const pedidosE=est.pedidos.filter(x=>x.startsWith('e1 ')).map(x=>x.split(' ').pop());
  await E.ctx.close();
  // telemóvel
- const T=await abrir('e1',{width:390,height:844});await T.p.click('[data-action="insc-ficha"][data-id="11"]');await T.p.waitForTimeout(200);
+ const T=await abrir('e1',{width:390,height:844});await T.p.click(`[data-action="insc-ficha"][data-id="${nova.id}"]`);await T.p.waitForTimeout(200);
  const larg=await T.p.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1);await T.p.screenshot({path:path.join(__dirname,'eventos_externos_telemovel.png'),fullPage:false});await T.ctx.close();
  // ---------- vendedor ----------
  const V=await abrir('v1');await V.p.evaluate(()=>setState({screen:'evento'}));await V.p.waitForTimeout(400);
@@ -144,8 +148,8 @@ const nb=s=>String(s||'').replace(/[\s  ]+/g,' ').trim();
   'documento vai para a pasta evento/inscrição e fica na ficha':!!caminho&&new RegExp('^1/'+(nova&&nova.id)+'/cc-cliente-[a-z0-9]+\\.pdf$').test(caminho)&&docGuardado[0].nome==='cc-ana.pdf'&&!!est.docs[caminho],
   'ficheiro que não é foto nem PDF é recusado; com documentos a autorização não se tira':(nova.docs||[]).length===1&&/✓ cc-ana\.pdf/.test(docsDepois.txt)&&docsDepois.consDis,
   'abre o documento num separador (lido do armazenamento privado com a sessão)':!!popUrl&&est.pedidos.includes('e1 storage GET '+caminho)&&(/^blob:/.test(popUrl)||popUrl==='about:blank'),
-  'externo completa a ficha do vendedor sem ver o funil e sem mudar quem registou':fichaVend.nome==='Cliente Do Vendedor'&&!fichaVend.funil&&fichaVend.obs==='Quer ver a R 1300 GS'&&!!patch11&&patch11[3].camisola==='XL'&&!('vendedor_id' in patch11[3])&&!('funil' in patch11[3])&&est.insc.find(i=>i.id===11).funil==='Quente',
-  'lista mostra o resumo da ficha':/NIF 123456789/.test(listaFim)&&/pendura: Rui Ficticio/.test(listaFim)&&/leva mota própria · R 1250 GS/.test(listaFim)&&/1 documento/.test(listaFim),
+  'inscrição do vendedor: o externo só vê (campos desligados, sem gravar, sem documentos novos, sem funil)':botaoVer==='Ver'&&fichaVend.nome==='Cliente Do Vendedor'&&!fichaVend.funil&&fichaVend.obs==='Quer ver a R 1300 GS'&&fichaVend.desligados&&!fichaVend.gravar&&fichaVend.up===0&&fichaVend.cons===true&&/Só para ver: inscrição registada por Vendedor Um/.test(fichaVend.aviso)&&!patch11,
+  'lista mostra o resumo da ficha («Ficha» nos seus, «Ver» nos dos vendedores)':botaoMeu==='Ficha'&&/NIF 123456789/.test(listaFim)&&/pendura: Rui Ficticio/.test(listaFim)&&/leva mota própria · R 1250 GS/.test(listaFim)&&/1 documento/.test(listaFim),
   'Excel com tudo (sem funil), NIF como texto':cab.includes('Nome completo')&&cab.includes('Pendura: NIF')&&cab.includes('Mota que leva')&&!cab.includes('Funil')&&col('NIF')==='123456789'&&col('Pendura: nome completo')==='Rui Ficticio'&&col('Camisola')==='M'&&col('Data de nascimento')==='04/05/1990'&&
     col('Registado por')==='Clube Externo'&&/Cartão de cidadão \(cliente\)/.test(col('Documentos na plataforma')||'')&&col('Autorização da cópia')==='Sim',
   'externo não pede stock, margens, comissões nem EOTs':!pedidosE.some(t=>['stock_usadas','stock_usadas_publico','margens','comissoes','eot_contratos','configuracoes','escala','stock_norma'].includes(t)),
