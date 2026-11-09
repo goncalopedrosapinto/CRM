@@ -4339,8 +4339,13 @@ async function inscFichaGravar(){
   if(!b.pendura)INSC_PENDURA.forEach(k=>{b[k]=null;});
   if(!b.estado)b.estado='Confirmado';if(b.vendedor_id==null)delete b.vendedor_id;
   S.inscFichaBusy=true;render();
-  try{if(F.id){await supabaseApi('PATCH',`/inscricoes?id=eq.${F.id}`,b);F.msg='Gravado.';}
-    else{const r=await supabaseApi('POST','/inscricoes',Object.assign({evento_id:F.evento_id},b));F.id=(Array.isArray(r)&&r[0]&&r[0].id)||null;F.msg=F.id?'Inscrição gravada. Já podes juntar os documentos.':'Inscrição gravada.';}
+  const gravar=async c=>{if(F.id){await supabaseApi('PATCH',`/inscricoes?id=eq.${F.id}`,c);F.msg='Gravado.';}
+    else{const r=await supabaseApi('POST','/inscricoes',Object.assign({evento_id:F.evento_id},c));F.id=(Array.isArray(r)&&r[0]&&r[0].id)||null;F.msg=F.id?'Inscrição gravada. Já podes juntar os documentos.':'Inscrição gravada.';}};
+  try{try{await gravar(b);}
+    catch(e){// sem o SQL novo: grava o que a tabela antiga aceita e avisa
+      if(!/PGRST204|42703/.test(String(e&&e.message))||isEventosExt())throw e;
+      const v1={};['cliente','telefone','estado','obs','acompanhantes','funil','mota','vendedor_id'].forEach(k=>{if(k in b)v1[k]=b[k];});await gravar(v1);
+      F.msg='Gravado só o nome, telemóvel, estado e observações: falta correr o SQL "2026-11-09_eventos_externos" para o resto da ficha.';}
     await recarregarEvento();}
   catch(e){F.err=inscErro(e);}
   S.inscFichaBusy=false;render();}
