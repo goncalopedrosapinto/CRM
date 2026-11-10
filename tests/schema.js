@@ -17,7 +17,7 @@ fichas_margem:'id:n,negocio_id:n,nome:t,estado:t,criado_em:ts,dados:j,updated_at
 inscricoes:'id:n,evento_id:n,cliente:t,telefone:t,acompanhantes:n,estado:t,obs:t,vendedor_id:u,created_at:ts,funil:t,mota:t,data_nascimento:d,nif:t,camisola:t,pendura:b,pendura_nome:t,pendura_data_nascimento:d,pendura_nif:t,pendura_telefone:t,pendura_camisola:t,mota_origem:t,mota_modelo:t,docs:j,docs_consentimento:b,updated_at:ts',
 evento_acessos:'evento_id:n,user_id:u,criado_em:ts,criado_por:u',
 inscricoes_publico:'id:n,evento_id:n,cliente:t,mota:t,vendedor_id:u,estado:t,funil:t,acompanhantes:n,created_at:ts',
-margens:'negocio_id:n,margem:n,updated_at:ts',
+margens:'negocio_id:n,margem:n,updated_at:ts,comissao_fixa:n',
 negocio_historico:'id:n,negocio_id:n,criado_em:ts,autor_id:u,autor_nome:t,autor_role:t,tipo:t,campo:t,valor_antes:t,valor_depois:t,texto:t,imagens:j',
 negocios_secretaria:'id:n,status:t,type:t,vendedor_id:u,id_cliente:t,nif:t,morada:t,email:t,contacto:t,model:t,version:t,mat:t,chas:t,enc:t,col_298:d,mes1:t,neg:d,dmat:d,biz:t,fin:t,retoma:t,retoma_modelo:t,retoma_mat:t,pvp:n,gar:t,gar_periodo:t,venda_direta:b,automatricula:b,obs:t',
 nps:'id:n,vendedor_id:u,mes:d,num_inqueritos:n,nps:n,csi:n,created_at:ts,updated_at:ts,updated_by:u',

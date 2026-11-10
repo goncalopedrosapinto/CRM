@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-09-d">
+<meta name="app-version" content="2026-11-10-a">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1144,6 +1144,7 @@ html,body{overflow-x:hidden;max-width:100vw}
 .ev-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .ev-form-grid label{display:flex;flex-direction:column;font-size:11px;font-weight:600;color:var(--text2);gap:4px}
 .ev-form-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+.cm-fixa{max-width:96px}
 /* Eventos: ficha de inscrição completa, documentos e acesso externo */
 .if-ficha{border-color:var(--orange)}
 .if-sec{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--text3);margin:14px 0 8px}
@@ -2534,7 +2535,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-09-d';
+const APP_VERSION='2026-11-10-a';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -4870,7 +4871,7 @@ function renderMinhasComissoes(){
       <div class="v-item-m"><b>${esc(r.mat||r.id_cliente||'—')}</b><span class="v-tipo">${esc(r.type||'')}</span>
         <span class="v-com ${c.valor==null?'pend':''}">${c.valor==null?'por lançar':fmtE(c.valor)}</span></div>
       <div class="v-item-s">${esc(r.id_cliente||'')} · ${esc(r.model||'')}</div>
-      <div class="v-item-o">${r.type==='MD'?'Demo — valor fixo':(m!=null?`Margem ${fmtE(m)} · ${esc(c.regra)}`:'Margem ainda não lançada pelo chefe')}</div>
+      <div class="v-item-o">${c.fixa?(m!=null?`Margem ${fmtE(m)}`:''):(r.type==='MD'?'Demo — valor fixo':(m!=null?`Margem ${fmtE(m)} · ${esc(c.regra)}`:'Margem ainda não lançada pelo chefe'))}</div>
     </div>`;};
   return`
   <div class="app-layout"><div class="main-panel" style="width:100%">
@@ -7456,8 +7457,11 @@ async function eqColar(vid){
 }
 function comElegivel(r){return !!r&&!r.venda_direta&&!r.automatricula&&!!r.vendedor_id;}
 function margemDe(id){const m=(S.margens||{})[String(id)];return (m&&m.margem!=null)?Number(m.margem):null;}
+// comissão fixa: valor em € que o chefe escreve num negócio e substitui a regra (o vendedor só vê o valor)
+function comFixaDe(id){const m=(S.margens||{})[String(id)];return (m&&m.comissao_fixa!=null&&m.comissao_fixa!==''&&isFinite(Number(m.comissao_fixa)))?Number(m.comissao_fixa):null;}
 function comissaoDe(r){
   if(!comElegivel(r))return {valor:null,regra:'não conta para vendedor'};
+  const fx=comFixaDe(r.id);if(fx!=null)return {valor:fx,regra:isAdmin()?'comissão fixa (substitui a regra)':'',fixa:true};
   if(r.type==='MD')return {valor:COM_REGRAS.valorDemo,regra:'demo/cortesia — valor fixo'};
   const m=margemDe(r.id);
   if(m==null)return {valor:null,regra:'falta margem libertada'};
@@ -7470,16 +7474,18 @@ async function loadMargens(){
   try{const d=await supabaseApi('GET','/margens?select=*');const mp={};(d||[]).forEach(x=>{mp[String(x.negocio_id)]=x;});S.margens=mp;S.margensErr='';}
   catch(e){S.margens={};S.margensErr=(e&&e.message)||'erro';}
 }
-async function saveMargem(id,valor){
-  id=String(id);const ex=(S.margens||{})[id];
-  const body={margem:(valor===''||valor==null)?null:Number(valor),updated_at:new Date().toISOString()};
+async function saveMargem(id,valor,campo){
+  id=String(id);const ex=(S.margens||{})[id];campo=campo||'margem';
+  const num=(valor===''||valor==null)?null:Number(String(valor).replace(',','.'));
+  if(campo==='comissao_fixa'&&num!=null&&!(num>=0)){alert('A comissão fixa é um valor em € igual ou maior que zero.');render();return;}
+  const body={[campo]:num,updated_at:new Date().toISOString()};
   S.margens=Object.assign({},S.margens||{});S.margens[id]=Object.assign({negocio_id:Number(id)},ex||{},body);render();
   try{
     if(ex){const r=await supabaseApi('PATCH',`/margens?negocio_id=eq.${id}`,body);
       if(Array.isArray(r)&&r.length===0)await supabaseApi('POST','/margens',Object.assign({negocio_id:Number(id)},body));}
     else{try{await supabaseApi('POST','/margens',Object.assign({negocio_id:Number(id)},body));}
       catch(e){await supabaseApi('PATCH',`/margens?negocio_id=eq.${id}`,body);}}
-  }catch(e){alert('Erro ao gravar margem: '+erroTexto(e));await loadMargens();render();}
+  }catch(e){alert((/comissao_fixa|PGRST204|42703/.test(String(e&&e.message))?'Falta correr o SQL "2026-11-10_comissao_fixa" no Supabase.':'Erro ao gravar '+(campo==='comissao_fixa'?'a comissão fixa: ':'margem: ')+erroTexto(e)));await loadMargens();render();}
 }
 
 // ---- Integridade da escrita: nada do que se escreve num campo se perde por causa de um redesenho ----
@@ -11081,6 +11087,7 @@ function renderDashboard(){
         <td>${esc(r.model||'')} ${esc(r.version||'')}</td>
         <td><span class="gpp-tipo-badge">${esc(r.type||'?')}</span></td>
         <td style="text-align:right">${md?'<span class="cm-na">n/a (demo)</span>':(lk?`<span class="cf-val" title="Comissões lançadas — desbloqueia o mês para alterar">${m!=null?fmtE(m):'—'}</span>`:`<div class="stock-eurwrap"><input class="stock-inp stock-num" data-mrg-id="${r.id}" type="number" step="0.01" value="${m!=null?m:''}" placeholder="—"><span class="stock-eur2">€</span></div>`)}</td>
+        <td style="text-align:right">${(()=>{const fx=comFixaDe(r.id);return lk?`<span class="cf-val">${fx!=null?fmtE(fx):'—'}</span>`:`<div class="stock-eurwrap"><input class="stock-inp stock-num cm-fixa" data-comfixa-id="${r.id}" type="number" step="0.01" min="0" value="${fx!=null?fx:''}" placeholder="regra" aria-label="Comissão fixa de ${esc(r.mat||r.id_cliente||'')}" title="Escreve um valor para substituir a regra; apaga para voltar à regra"><span class="stock-eur2">€</span></div>`;})()}</td>
         <td style="text-align:right;font-size:11px;color:var(--text3)">${esc(c.regra)}</td>
         <td style="text-align:right;font-weight:800;color:${c.valor==null?'var(--amber)':'var(--green)'}">${c.valor==null?'por lançar':fmtE(c.valor)}</td>
       </tr>`;
@@ -11118,7 +11125,7 @@ function renderDashboard(){
       const falta=cs.filter(c=>c.valor==null).length;
       return`<div class="gpp-sub-h">${vendTag(p.id)} · motas <b>${fmtE(sub)}</b> · equipamento <b>${fmtE(eqSub)}</b> · total <b style="color:var(--green)">${fmtE(sub+eqSub)}</b>${falta?` · <span style="color:var(--amber)">${falta} por lançar</span>`:''}</div>
         ${meus.length?`<div class="gpp-card" style="margin:0 16px 8px;overflow-x:auto"><table class="gpp-ltable cm-tbl2">
-          <thead><tr><th>Matrícula</th><th>Cliente</th><th>Modelo</th><th>Tipo</th><th style="text-align:right">Margem libertada</th><th style="text-align:right">Regra</th><th style="text-align:right">Comissão</th></tr></thead>
+          <thead><tr><th>Matrícula</th><th>Cliente</th><th>Modelo</th><th>Tipo</th><th style="text-align:right">Margem libertada</th><th style="text-align:right">Comissão fixa</th><th style="text-align:right">Regra</th><th style="text-align:right">Comissão</th></tr></thead>
           <tbody>${meus.map(linha).join('')}</tbody>
         </table></div>`:'<div class="eq-sem-motas">Sem motas com retail neste período.</div>'}
         ${eqBloco(p,eqL)}`;
@@ -11483,6 +11490,7 @@ function bindEvents(){
     if(el.dataset&&el.dataset.eqEst){eqEstado(el.dataset.eqEst,el.value);return;}
     if(el.dataset&&el.dataset.pmK){savePremioMes(el.dataset.pmMes,el.dataset.pmK,el.value);return;}
     if(el.dataset&&el.dataset.mrgId){saveMargem(el.dataset.mrgId,el.value);return;}
+    if(el.dataset&&el.dataset.comfixaId){saveMargem(el.dataset.comfixaId,el.value,'comissao_fixa');return;}
     if(el.dataset&&el.dataset.entId){const v=el.value;saveEntrega(el.dataset.entId,{[el.dataset.entF]:(v===''?null:v)});return;}
     if(el.id==='neg-img-file'){const fs=[...(el.files||[])];el.value='';const ta=document.getElementById('neg-com');if(ta)S.negCom=ta.value;negImgJuntar(negImgAlvo(),fs);return;}
     if(el.id==='eot-img-file'){const fs=[...(el.files||[])];el.value='';const ta=document.getElementById('eotm-com');if(ta)S.eotCom=ta.value;eotImgJuntar(fs);return;}

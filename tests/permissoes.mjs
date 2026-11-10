@@ -66,6 +66,10 @@ const bloq=q=>async()=>{try{await db.query(q);return 'passou';}catch(e){return /
 
 const C=[ // [área, perfil, descrição, função, esperado]
   ['anónimo','anon','lê negócios',conta('baviera_control'),'recusado'],
+  ['vendedor','vend','fixa a própria comissão',()=>n(`with u as (update public.margens set comissao_fixa=999 where negocio_id=${N.retail} returning 1) select count(*) n from u`),0],
+  ['vendedor','vend','lê a comissão fixa do seu negócio',async()=>{await db.exec('reset role');await db.query(`update public.margens set comissao_fixa=150 where negocio_id=${N.retail}`);await db.exec('set local role authenticated');return n(`select count(*) n from public.margens where comissao_fixa=150`);},1],
+  ['chefe','chefe','fixa a comissão de um negócio',()=>n(`with u as (update public.margens set comissao_fixa=150 where negocio_id=${N.retail} returning 1) select count(*) n from u`),1],
+  ['chefe','chefe','comissão fixa negativa é recusada',async()=>{await db.exec('savepoint s');try{await db.query(`update public.margens set comissao_fixa=-1 where negocio_id=${N.retail}`);return 'aceitou';}catch(e){await db.exec('rollback to savepoint s');return 'recusado';}},'recusado'],
   ['eventos','evt','lê negócios',conta('baviera_control'),0],
   ['eventos','evt','lê só os eventos a que tem acesso',conta('eventos'),1],
   ['eventos','evt','lê as inscrições desses eventos (também dos vendedores)',conta('inscricoes'),2],
