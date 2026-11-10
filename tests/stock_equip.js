@@ -54,6 +54,12 @@ const SITE={'76999999999':{sku:'76999999999',name:'Casaco Site Teste',type:'vari
  R.estadoGrupo=await p.evaluate(()=>{const it=[...document.querySelectorAll('.seq-item')].find(x=>/Casaco Tour/.test(x.textContent));return it?it.querySelector('.seq-est').textContent.replace(/\s+/g,' ').trim():'';});
  R.titulo=await p.evaluate(()=>{const e=[...document.querySelectorAll('.seq-e')].find(x=>/última venda a/.test(x.title));return e?e.title:'';});
  await p.screenshot({path:path.join(__dirname,'stock_equip.png')});
+ // mapa novo (nov/2026): só a coluna «Polo» (sem «Ponto Venda») e «Desconto sobre o PVP»
+ R.mapaNovo=await p.evaluate(()=>{const cab=['Polo','Marca Peça','Família Peça ','Sub-Familia Peça','Qualidade de Stock no Polo','Antig - Últ. Saída','Últ. Saída Stock','Ref. Peça','Descrição Peça','Qtd Stock','Cst Stock','Procura Média Mensal','Desconto sobre o PVP'];
+   const L=seqParse([['Stock de Peças - Detalhe'],cab,['Centro->Aveiro - Av. Europa','BMW Motos','Mota','Botas','Morto','Sem Movimento de Saída','20230101','7600000001','Botas teste',1,100,0,0.5],
+     ['Norte->Porto - M. P. Azevedo','BMW Motos','Mota','Luvas','Vivo','Últ. Saída até 3 meses',null,'7600000002','Luvas teste',2,60,0,0.1]]);
+   let semNada='';try{seqParse([['Ref. Peça','Descrição Peça','Qtd Stock','Cst Stock'],['1','x',1,1]]);}catch(e){semNada=e.message;}
+   return {lojas:L.map(x=>x.ponto_venda),dsc:L.map(x=>x.desc_max),semNada};});
  R.erros=erros;console.log(JSON.stringify(R,null,1));
  const ok={
   'referência com espaços encontra o artigo':JSON.stringify(R.comEspacos)==='["Botas Pillon Air"]',
@@ -69,6 +75,7 @@ const SITE={'76999999999':{sku:'76999999999',name:'Casaco Site Teste',type:'vari
   'limpar filtros':R.limparBotao&&R.depoisLimpar.ant===''&&R.depoisLimpar.dmin===''&&R.depoisLimpar.n===3,
   'artigo com vários tamanhos mostra o estado do mais parado':/MORIBUNDO|Moribundo/.test(R.estadoGrupo)&&/1 a 2 anos/.test(R.estadoGrupo),
   'data exata da última venda no estado':/última venda a \d\d\/\d\d\/\d{4}/.test(R.titulo),
+  'mapa novo só com «Polo»: Aveiro fica «39 - Aveiro», outro polo usa o nome sem a região; lê «Desconto sobre o PVP»':JSON.stringify(R.mapaNovo.lojas)==='["39 - Aveiro","Porto - M. P. Azevedo"]'&&JSON.stringify(R.mapaNovo.dsc)==='[0.5,0.1]'&&/ponto venda ou polo/.test(R.mapaNovo.semNada),
   'sem erros JS':!erros.length};
  let f=0;for(const [k,v] of Object.entries(ok)){console.log((v?'✓ ':'✗ ')+k);if(!v)f++;}
  console.log(f?`FALHOU (${f})`:'Stock Equipamento correto');await b.close();srv.close();process.exit(f?1:0);})();

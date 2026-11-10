@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-10-a">
+<meta name="app-version" content="2026-11-10-b">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2535,7 +2535,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-10-a';
+const APP_VERSION='2026-11-10-b';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -5144,16 +5144,20 @@ function seqParse(rows){
   if(hi<0)throw new Error('Não encontrei o cabeçalho ("Ref. Peça" e "Descrição Peça"). É o mapa "Stock de Peças - Detalhe"?');
   const H=(rows[hi]||[]).map(eotNorm);const col=n=>H.indexOf(n);
   const C={polo:col('polo'),loja:col('ponto venda'),marca:col('marca peca'),fam:col('familia peca'),sub:col('sub-familia peca'),qual:col('qualidade de stock no polo'),
-    antig:col('antig - ult. saida'),ults:col('ult. saida stock'),pav:H.findIndex(h=>/^pvp$|^pvp c\/ ?iva$|preco caetano aveiro|preco aveiro/.test(h)),vsite:H.findIndex(h=>/venda site|preco site/.test(h)),ref:col('ref. peca'),desc:col('descricao peca'),qtd:col('qtd stock'),cst:col('cst stock'),proc:col('procura media mensal'),dsc:col('% desconto s/ pvp')};
-  const falta=['loja','ref','desc','qtd','cst'].filter(k=>C[k]<0);
+    antig:col('antig - ult. saida'),ults:col('ult. saida stock'),pav:H.findIndex(h=>/^pvp$|^pvp c\/ ?iva$|preco caetano aveiro|preco aveiro/.test(h)),vsite:H.findIndex(h=>/venda site|preco site/.test(h)),ref:col('ref. peca'),desc:col('descricao peca'),qtd:col('qtd stock'),cst:col('cst stock'),proc:col('procura media mensal'),dsc:H.findIndex(h=>h==='% desconto s/ pvp'||h==='desconto sobre o pvp'||/^%? ?desconto s(obre o|\/) ?pvp$/.test(h))};
+  // mapas novos (desde nov/2026) só trazem o Polo («Centro->Aveiro - Av. Europa»): a loja vem do mapa anterior ou do próprio polo
+  const falta=['ref','desc','qtd','cst'].filter(k=>C[k]<0);if(C.loja<0&&C.polo<0)falta.unshift('ponto venda ou polo');
   if(falta.length)throw new Error('Faltam colunas no ficheiro: '+falta.join(', '));
+  const lojaDoPolo={};(S.stockEq||[]).forEach(x=>{if(x.polo&&x.ponto_venda)lojaDoPolo[x.polo]=x.ponto_venda;});
+  const SEQ_POLO_LOJA={'Centro->Aveiro - Av. Europa':'39 - Aveiro','Sul->Lisboa - M. G. Costa':'46 - Lisboa - M. G. Costa','Sul->Lisboa - P. Londres':'82 - Praça de Londres','Algarve->Faro':'48 - Faro'};
+  const lojaDe=p=>{p=String(p||'').trim();if(!p)return null;return lojaDoPolo[p]||SEQ_POLO_LOJA[p]||p.replace(/^[^>]*->\s*/,'');};
   const g=(r,k)=>C[k]>=0?r[C[k]]:null;const linhas=[];
   for(let i=hi+1;i<rows.length;i++){
     const r=rows[i]||[];const ref=eotTxt(g(r,'ref'));const qtd=eotNum(g(r,'qtd'));
     if(!ref||!qtd||qtd<=0)continue;
     const cst=eotNum(g(r,'cst'));let dsc=eotNum(g(r,'dsc'));if(dsc!=null&&dsc>1)dsc=dsc/100;
     const desc=eotTxt(g(r,'desc'));
-    linhas.push({ponto_venda:eotTxt(g(r,'loja')),polo:eotTxt(g(r,'polo')),ref:String(ref).replace(/\.0+$/,''),descricao:desc,marca:eotTxt(g(r,'marca')),
+    linhas.push({ponto_venda:C.loja>=0?eotTxt(g(r,'loja')):lojaDe(g(r,'polo')),polo:eotTxt(g(r,'polo')),ref:String(ref).replace(/\.0+$/,''),descricao:desc,marca:eotTxt(g(r,'marca')),
       familia:eotTxt(g(r,'fam')),subfamilia:eotTxt(g(r,'sub')),categoria:seqCategoria(g(r,'sub'),desc,g(r,'marca')),qualidade:eotTxt(g(r,'qual')),
       antig_saida:eotTxt(g(r,'antig')),ult_saida:seqData8(g(r,'ults')),qtd,custo_total:cst,custo_unit:cst!=null?Math.round(cst/qtd*100)/100:null,
       procura:eotNum(g(r,'proc')),desc_max:dsc,_pav:eotNum(g(r,'pav')),_vsite:eotNum(g(r,'vsite'))});
