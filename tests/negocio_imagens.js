@@ -2,7 +2,7 @@
 // comentário, reduzida no browser; Comentar envia para o Storage privado (pasta do negócio) e grava o comentário com o
 // caminho; o histórico mostra a imagem carregada com a sessão (blob:, sem links públicos). Comentário só com imagem;
 // as imagens por enviar ficam no seu negócio; erros de permissão/SQL em falta dizem o que fazer; imagem em grande.
-const {chromium}=require('playwright');const http=require('http');const fs=require('fs');const path=require('path');
+const {chromium}=require('playwright');const {ligarAvisos}=require('./_avisos');const http=require('http');const fs=require('fs');const path=require('path');
 const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'));
 const PORTA=8777;
 const srv=http.createServer((q,s)=>{s.writeHead(200,{'content-type':'text/html; charset=utf-8'});s.end(fs.readFileSync(FILE));}).listen(PORTA);
@@ -33,7 +33,7 @@ const R=(id,o)=>Object.assign({id,vendedor_id:'v1',created_at:'2026-10-01T10:00:
     if(/autor_id=neq/.test(u))return json(est.recentes);
     const neg=(u.match(/negocio_id=eq\.(\d+)/)||[])[1];return json(est.hist.filter(h=>String(h.negocio_id)===String(neg)));}
    return json([]);});
-  const p=await ctx.newPage();p.on('pageerror',e=>erros.push(e.message));p.on('dialog',d=>{dialogos.push(d.message());d.accept();});
+  const p=await ctx.newPage();p.on('pageerror',e=>erros.push(e.message));await ligarAvisos(p,dialogos);
   await p.goto(`http://localhost:${PORTA}/`);await p.waitForTimeout(1500);
   return {ctx,p};};
  const {ctx,p}=await contexto({width:1400,height:900});

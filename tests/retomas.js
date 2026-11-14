@@ -4,9 +4,9 @@
 // - vendedor obrigatório (lista: vendedores e o chefe) em vez do cliente; registos antigos mostram o cliente que tinham;
 // - ao escrever a matrícula / modelo e ano, mostra os valores já dados (mesma mota, motas iguais);
 // - Enter regista; o estado e as notas mudam na linha; os valores não (não há campos para isso);
-// - «Novo valor» copia o registo para o formulário; apagar pede confirmação; filtro por estado;
+// - «Novo valor» copia o registo para o formulário; apagar tem «Anular»; filtro por estado;
 // - só o chefe (o vendedor nem pede os dados); exportação tem a folha; sem o SQL diz o que falta.
-const {chromium}=require('playwright');const http=require('http');const fs=require('fs');const path=require('path');
+const {chromium}=require('playwright');const {ligarAvisos}=require('./_avisos');const http=require('http');const fs=require('fs');const path=require('path');
 const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'));
 const PORTA=8781;
 const srv=http.createServer((q,s)=>{s.writeHead(200,{'content-type':'text/html; charset=utf-8'});s.end(fs.readFileSync(FILE));}).listen(PORTA);
@@ -36,7 +36,7 @@ const R=(id,o)=>Object.assign({id,criado_por:'c1',cliente:null,matricula:null,mo
  const erros=[];
  const abrir=async quem=>{const ctx=await b.newContext({viewport:{width:1400,height:1000}});
   await ctx.addInitScript(t=>localStorage.setItem('bc_session',JSON.stringify({refresh_token:'rt',access_token:t,exp:Date.now()+3600e3})),jwt(quem));
-  await ctx.route('**/*',rota(quem));const p=await ctx.newPage();p._dlg=[];p.on('dialog',d=>{p._dlg.push(d.message());d.accept();});p.on('pageerror',e=>erros.push(quem+': '+e.message));
+  await ctx.route('**/*',rota(quem));const p=await ctx.newPage();p._dlg=[];await ligarAvisos(p,p._dlg);p.on('pageerror',e=>erros.push(quem+': '+e.message));
   await p.goto(`http://localhost:${PORTA}/`);await p.waitForTimeout(1500);return {ctx,p};};
  const C1=await abrir('c1');const p=C1.p;
  const tx=s=>String(s||'').replace(/[\s  ]+/g,' ').trim();
@@ -75,7 +75,9 @@ const R=(id,o)=>Object.assign({id,criado_por:'c1',cliente:null,matricula:null,mo
  const novo=await p.evaluate(()=>({v:['vendedor_id','modelo','ano','kms','valor_retoma','preparacao','valor_venda','venda_minima'].map(k=>document.getElementById('ret-'+k).value),foco:document.activeElement&&document.activeElement.id}));const F=await ver();
  await p.click('[data-action="ret-limpar"]');await p.waitForTimeout(200);const limpo=await p.evaluate(()=>!S.retForm);
  // apagar
- const n0=p._dlg.length;await p.click('tr[data-ret-id="3"] [data-action="ret-apagar"]');await p.waitForTimeout(500);const G=await ver();const dlg=p._dlg.slice(n0).join(' | ');
+ const n0=p._dlg.length;await p.click('tr[data-ret-id="3"] [data-action="ret-apagar"]');await p.waitForTimeout(80);
+ const dlg=await p.evaluate(()=>{const t=document.getElementById('bm-toast');return(t?t.querySelector('.bm-toast-m').textContent:'')+' ['+(t&&t.querySelector('.bm-toast-b')?t.querySelector('.bm-toast-b').textContent:'')+']';});
+ const delLogo=est.deletes.length,pergApagar=p._dlg.length-n0;await p.waitForTimeout(700);const G=await ver();
  const exporta=await p.evaluate(()=>EXPORT_FOLHAS().some(f=>f.nome==='Retomas (valores dados)'&&f.path.startsWith('/retomas_valores')));
  // sem o SQL do vendedor: diz qual falta
  await p.click('tr[data-ret-id="1"] [data-action="ret-novo"]');await p.waitForTimeout(200);await p.selectOption('#ret-vendedor_id','c1');est.semColuna=true;await p.click('[data-action="ret-registar"]');await p.waitForTimeout(400);const I=await ver();est.semColuna=false;
@@ -102,7 +104,7 @@ const R=(id,o)=>Object.assign({id,criado_por:'c1',cliente:null,matricula:null,mo
   'estado e notas mudam na linha; os valores não têm campos':JSON.stringify(est.patches)==='[[1,{"estado":"aceite"}],[3,{"notas":"Achou pouco"}]]'&&D.inputsTabela.every(x=>x==='notas'||x==='estado')&&D.inputsTabela.length===8,
   'filtro por estado':E.linhas.length===2&&E.linhas.every(l=>['1','2'].includes(l.id))&&/Aceite \(2\)/.test(E.filtro),
   '«Novo valor» copia o registo para o formulário e mostra o valor anterior':JSON.stringify(novo.v)===JSON.stringify(['c1','F 850 GS','2019','30000','6500','400','8900','8400'])&&novo.foco==='ret-valor_retoma'&&F.match.some(m=>/motas iguais/.test(m)&&/Chefe GPP/.test(m)&&/6\s?500 €/.test(m))&&limpo,
-  'apagar pede confirmação e tira da lista':/Apagar o registo de R 1250 GS \(Vendedor Um\)/.test(dlg)&&JSON.stringify(est.deletes)==='[3]'&&!G.linhas.some(l=>l.id==='3'),
+  'apagar tira da lista com «Anular» (sem pergunta) e só apaga passado o tempo':/Registo de retoma apagado: R 1250 GS \[Anular\]/.test(dlg)&&pergApagar===0&&delLogo===0&&JSON.stringify(est.deletes)==='[3]'&&!G.linhas.some(l=>l.id==='3'),
   'exportação tem a folha das retomas':exporta,
   'sem o SQL do vendedor: diz qual SQL falta':/Falta correr o SQL "2026-11-04_retomas_vendedor"/.test(I.erro),
   'sem o SQL: diz que SQL falta':/Falta correr o SQL "2026-11-03_retomas_valores"/.test(H.erro),

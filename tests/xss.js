@@ -1,7 +1,7 @@
 // Teste dinâmico de XSS: Supabase simulado devolve, em cada campo de texto, um marcador "'><xN>.
 // Se algum elemento <xN> aparecer no DOM (página ou janelas de PDF), esse campo entrou sem proteção.
 // Uso: node xss.js <index.html> [modo A|B] [cliques]
-const {chromium}=require('playwright');
+const {chromium}=require('playwright');const {ligarAvisos}=require('./_avisos');
 const SCHEMA=require('./schema.js');
 const path=require('path');const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'));const MODO=process.argv[3]||'A';const CLIQUES=+(process.argv[4]||250);
 const now=new Date();const YM=now.getFullYear()+'/'+String(now.getMonth()+1).padStart(2,'0');const ISO=now.toISOString().slice(0,10);
@@ -60,7 +60,7 @@ const PERIGO=/logout|sair|delete|apagar|remover|eliminar|reset|limpar|fechar-ses
       return r.fulfill({status:200,contentType:'application/json',headers:{'content-range':'0-'+(rows.length-1)+'/'+rows.length},body:JSON.stringify(rows)});
     });
     const p=await ctx.newPage();p.on('pageerror',e=>erros.push(role+': '+e.message.slice(0,140)));
-    p.on('dialog',d=>d.dismiss().catch(()=>{}));p.on('console',m=>{if(/Content Security Policy|Refused/.test(m.text()))erros.push(role+' CSP: '+m.text().slice(0,160));});
+    p.on('dialog',d=>d.dismiss().catch(()=>{}));await ligarAvisos(p,null,{aceitar:false});p.on('console',m=>{if(/Content Security Policy|Refused/.test(m.text()))erros.push(role+' CSP: '+m.text().slice(0,160));});
     const scan=async(pg,onde)=>{let hits=[];try{hits=await pg.evaluate(()=>[...document.querySelectorAll('*')].map(e=>e.tagName).filter(t=>/^X\d+$/.test(t)));}catch(e){}
       for(const h of new Set(hits)){const nome=TAGS[+h.slice(1)];const k=nome;if(!achados.has(k))achados.set(k,new Set());achados.get(k).add(role+' @ '+onde);}};
     ctx.on('page',async pop=>{if(pop===p)return;try{await pop.waitForLoadState('domcontentloaded',{timeout:3000});}catch(e){}await scan(pop,'janela/PDF');await pop.close().catch(()=>{});});

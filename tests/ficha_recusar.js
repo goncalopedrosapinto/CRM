@@ -4,7 +4,7 @@
 // na ficha; quando muda a ficha, a recusa cai e volta ao chefe. Aprovar mesmo assim limpa a recusa.
 // Também na própria ficha (chefe) e no PDF. Sem o SQL novo: a lista continua a funcionar e o aviso diz o que falta.
 // Dados fictícios.
-const {chromium}=require('playwright');const http=require('http');const fs=require('fs');const path=require('path');
+const {chromium}=require('playwright');const {ligarAvisos}=require('./_avisos');const http=require('http');const fs=require('fs');const path=require('path');
 const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'));
 const PORTA=8779;
 const srv=http.createServer((q,s)=>{s.writeHead(200,{'content-type':'text/html; charset=utf-8'});s.end(fs.readFileSync(FILE));}).listen(PORTA);
@@ -45,11 +45,11 @@ const PERFIS={c1:{id:'c1',nome:'Chefe GPP',role:'admin',linha:'motorrad'},v1:{id
   return json([]);};
  const abrir=async quem=>{const ctx=await b.newContext({viewport:{width:1300,height:900}});
   await ctx.addInitScript(t=>localStorage.setItem('bc_session',JSON.stringify({refresh_token:'rt',access_token:t,exp:Date.now()+3600e3})),jwt(quem));
-  await ctx.route('**/*',rota(quem));const p=await ctx.newPage();p._dialogos=[];p.on('dialog',d=>{p._dialogos.push(d.message());d.accept();});
+  await ctx.route('**/*',rota(quem));const p=await ctx.newPage();p._dialogos=[];await ligarAvisos(p,p._dialogos,{erros:false});
   p.on('pageerror',e=>erros.push(quem+': '+e.message));await p.goto(`http://localhost:${PORTA}/`);await p.waitForTimeout(1800);return {ctx,p};};
  const erros=[];
  const toastTxt=p=>p.evaluate(()=>{const t=document.getElementById('bm-toast');return t?t.textContent:'';});
- const home=async p=>{await p.evaluate(()=>{S.screen='dashboard';S.gppSec='home';render();});await p.waitForTimeout(250);};
+ const home=async p=>{await p.evaluate(()=>{S.screen='dashboard';S.gppSec='home';S.homeTratar=true;render();});await p.waitForTimeout(250);};
  const caixa=p=>p.evaluate(()=>{const tx=e=>e?e.textContent.replace(/\s+/g,' ').trim():'';const box=document.querySelector('.fa-box');
    return {existe:!!box,soRec:!!document.querySelector('.fa-so-recs'),pend:[...document.querySelectorAll('.fa-box > .mr-row')].map(tx),
      botoes:[...document.querySelectorAll('.fa-box > .mr-row .mr-acts button')].map(tx),resumo:tx(document.querySelector('.fa-recs>summary')),
@@ -92,7 +92,7 @@ const PERFIS={c1:{id:'c1',nome:'Chefe GPP',role:'admin',linha:'motorrad'},v1:{id
  // muda a ficha: a recusa cai e volta ao chefe
  await p.evaluate(()=>fmSet('preco_venda','21500'));await p.waitForTimeout(1200);
  const bannerVend2=await p.$eval('.fm-aprov',x=>x.textContent.replace(/\s+/g,' ').trim()).catch(()=>'');
- await q.evaluate(()=>loadFichasAprovar().then(()=>{S.fmNeg=null;S.screen='dashboard';S.gppSec='home';render();}));await q.waitForTimeout(400);
+ await q.evaluate(()=>loadFichasAprovar().then(()=>{S.fmNeg=null;S.screen='dashboard';S.gppSec='home';S.homeTratar=true;render();}));await q.waitForTimeout(400);
  const F=await caixa(q);
 
  // ---------- chefe: não aprovar dentro da ficha; depois aprovar mesmo assim ----------
@@ -111,7 +111,7 @@ const PERFIS={c1:{id:'c1',nome:'Chefe GPP',role:'admin',linha:'motorrad'},v1:{id
 
  // ---------- sem o SQL novo ----------
  db.semSql=true;db.fichas[0]=Object.assign(db.fichas[0],{aprovada_em:null,aprovada_por:null,recusada_em:null,recusada_por:null,recusa_motivo:null});
- await q.evaluate(()=>loadFichasAprovar().then(()=>{S.screen='dashboard';S.gppSec='home';render();}));await q.waitForTimeout(400);
+ await q.evaluate(()=>loadFichasAprovar().then(()=>{S.screen='dashboard';S.gppSec='home';S.homeTratar=true;render();}));await q.waitForTimeout(400);
  const H=await caixa(q);
  await q.click('.fa-box [data-action="fa-recusar"]');await q.waitForTimeout(200);await q.fill('#fa-motivo','Teste');await q.click('[data-action="fa-recusar-ok"]');await q.waitForTimeout(500);
  const semSqlToast=await toastTxt(q);const semSqlPainel=(await caixa(q)).painel;

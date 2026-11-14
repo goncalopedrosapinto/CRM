@@ -26,7 +26,7 @@ const cheg=[{production_number:'8000006',data_193:ha(100),data_198:ha(60)}];
  const p=await ctx.newPage();const erros=[];p.on('pageerror',e=>erros.push(e.message));
  await p.goto(`http://localhost:${PORTA}/`);await p.waitForTimeout(2000);
  const R={};
- await p.evaluate(()=>{S.screen='dashboard';S.gppSec='home';render();});await p.waitForTimeout(300);
+ await p.evaluate(()=>{S.screen='dashboard';S.gppSec='home';S.homeTratar=true;render();});await p.waitForTimeout(300);
  const linhas=()=>p.$$eval('.us-box .mr-row',x=>x.map(e=>e.textContent.replace(/\s+/g,' ').trim()));
  R.home=await linhas();R.titulo=await p.evaluate(()=>(document.querySelector('.us-box .mr-h')||{}).textContent||'');
  R.pend=await p.evaluate(()=>{const b=[...document.querySelectorAll('.gpp-nav-item,.gpp-tab')].find(x=>/A tratar/.test(x.textContent));return b?b.textContent.replace(/\s+/g,' ').trim():'';});
@@ -36,17 +36,17 @@ const cheg=[{production_number:'8000006',data_193:ha(100),data_198:ha(60)}];
  R.marcas=await p.evaluate(()=>{const ths=[...document.querySelectorAll('.enc-t th')].map(t=>t.textContent);const iP=ths.indexOf('Produção');const o=[];document.querySelectorAll('.enc-t tbody tr:not(.enc-grp)').forEach(tr=>{if(tr.querySelector('.enc-us'))o.push(tr.children[iP].textContent);});return o.sort();});
  R.resumo=await p.evaluate(()=>((document.querySelector('.enc-stock')||{}).textContent||'').replace(/\s+/g,' '));
  // "Ver no stock"
- await p.evaluate(()=>{S.gppSec='home';render();});await p.waitForTimeout(200);
+ await p.evaluate(()=>{S.gppSec='home';S.homeTratar=true;render();});await p.waitForTimeout(200);
  await p.click('.us-box [data-action="us-ver"][data-pn="8000006"]');await p.waitForTimeout(400);
  R.ver=await p.evaluate(()=>({sec:S.gppSec,or:S.encOrigem,q:(document.getElementById('enc-q')||{}).value,linhas:document.querySelectorAll('.enc-t tbody tr:not(.enc-grp)').length}));
  // "Já pedi" esconde até ao próximo ficheiro
- await p.evaluate(()=>{S.gppSec='home';S.encF={q:'',ex:{}};render();});await p.waitForTimeout(200);
+ await p.evaluate(()=>{S.gppSec='home';S.homeTratar=true;S.encF={q:'',ex:{}};render();});await p.waitForTimeout(200);
  await p.click('.us-box [data-action="us-feito"][data-pn="8000001"]');await p.waitForTimeout(300);
  R.depoisFeito=await linhas();
  await p.evaluate(()=>{S.enc.forEach(x=>{x.importado_em=new Date().toISOString();});render();});await p.waitForTimeout(200);
  R.novoFicheiro=await linhas();
  R.vendedor=await p.evaluate(()=>{const r=S.me.role;S.me.role='vendedor';const n=encStParaUs().length;S.me.role=r;return n;});
- await p.evaluate(()=>{S.gppSec='home';render();});await p.waitForTimeout(200);await p.screenshot({path:path.join(__dirname,'stock_st_us.png')});
+ await p.evaluate(()=>{S.gppSec='home';S.homeTratar=true;render();});await p.waitForTimeout(200);await p.screenshot({path:path.join(__dirname,'stock_st_us.png')});
  R.erros=erros;console.log(JSON.stringify(R,null,1));
  const ok={
   'só ST de Aveiro no stand com 90+ dias (conta desde 193 quando se sabe), as mais antigas primeiro':R.home.length===2&&/Mota 8000001/.test(R.home[0])&&/120 dias/.test(R.home[0])&&/Mota 8000006/.test(R.home[1])&&/100 dias/.test(R.home[1])&&/Mudar de ST para US · 2/.test(R.titulo),

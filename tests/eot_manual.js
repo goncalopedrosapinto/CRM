@@ -6,7 +6,7 @@
 // - o vendedor vê-o na sua lista e não tem o botão; apagar só apaga criados à mão;
 // - importar um mapa sem ele não o dá como saído; quando vem no mapa junta-se e passa a ser do banco;
 // - sem o SQL novo diz o que falta e não perde o que se escreveu.
-const {chromium}=require('playwright');const http=require('http');const fs=require('fs');const path=require('path');
+const {chromium}=require('playwright');const {ligarAvisos}=require('./_avisos');const http=require('http');const fs=require('fs');const path=require('path');
 const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'));
 const PORTA=8780;
 const srv=http.createServer((q,s)=>{s.writeHead(200,{'content-type':'text/html; charset=utf-8'});s.end(fs.readFileSync(FILE));}).listen(PORTA);
@@ -42,7 +42,7 @@ const PERFIS={c1:{id:'c1',nome:'Chefe GPP',role:'admin',linha:'motorrad'},v1:{id
   return json([]);};
  const abrir=async(quem,vp)=>{const ctx=await b.newContext({viewport:vp||{width:1400,height:1000}});
   await ctx.addInitScript(t=>localStorage.setItem('bc_session',JSON.stringify({refresh_token:'rt',access_token:t,exp:Date.now()+3600e3})),jwt(quem));
-  await ctx.route('**/*',rota(quem));const p=await ctx.newPage();p._dlg=[];p.on('dialog',d=>{p._dlg.push(d.message());d.accept();});p.on('pageerror',e=>erros.push(quem+': '+e.message));
+  await ctx.route('**/*',rota(quem));const p=await ctx.newPage();p._dlg=[];await ligarAvisos(p,p._dlg);p.on('pageerror',e=>erros.push(quem+': '+e.message));
   await p.goto(`http://localhost:${PORTA}/`);await p.waitForTimeout(1600);return {ctx,p};};
  const erros=[];const tx=s=>String(s||'').replace(/[\s  ]+/g,' ').trim();
  const C1=await abrir('c1');const p=C1.p;

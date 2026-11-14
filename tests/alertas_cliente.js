@@ -3,7 +3,7 @@
 // hoje e, à segunda, o fim de semana; 29/02 a 28/02 nos anos comuns; o RGPD do negócio não entra). Sem o SQL, os campos novos
 // não aparecem e gravar o
 // negócio não manda as colunas novas.
-const {chromium}=require('playwright');const http=require('http');const fs=require('fs');const path=require('path');
+const {chromium}=require('playwright');const {ligarAvisos}=require('./_avisos');const http=require('http');const fs=require('fs');const path=require('path');
 const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'));
 const PORTA=8769;
 const srv=http.createServer((q,s)=>{s.writeHead(200,{'content-type':'text/html; charset=utf-8'});s.end(fs.readFileSync(FILE));}).listen(PORTA);
@@ -35,7 +35,7 @@ const recs=[
   if(t==='baviera_control')return json(recs);
   if(t==='profiles')return json([{id:'v1',nome:'Vendedor Um',role:'vendedor',linha:'motorrad'}]);
   return json([]);});
- const p=await ctx.newPage();const erros=[];p.on('pageerror',e=>erros.push(e.message));p.on('dialog',d=>d.accept());
+ const p=await ctx.newPage();const erros=[];p.on('pageerror',e=>erros.push(e.message));await ligarAvisos(p);
  await p.goto(`http://localhost:${PORTA}/`);await p.waitForTimeout(1500);
  const tratar=()=>p.evaluate(()=>[...document.querySelectorAll('.vh-row')].map(x=>({t:x.textContent.replace(/\s+/g,' ').trim(),ids:x.dataset.ids||'',al:x.dataset.alert||''})));
  await p.evaluate(()=>{S.screen='list';S.statusFilter='_hoje';S.alertFilter=null;render();});await p.waitForTimeout(300);

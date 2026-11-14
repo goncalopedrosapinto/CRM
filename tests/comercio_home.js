@@ -13,7 +13,7 @@ const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'))
    {id:2,vendedor_id:'v1',status:'Retail',type:'MU',id_cliente:'Motos <b>Lda</b>',model:'R 1200 GS',mat:'17-MQ-38',venda_direta:true,col_298:'2026-07-20'},
    {id:3,vendedor_id:'v1',status:'Retail',type:'MN',id_cliente:'Cliente B',model:'F 900 GS',col_298:'2026-07-05'},
    {id:4,vendedor_id:'v1',status:'Retail',type:'MU',id_cliente:'Outro Comércio',model:'K 1600',venda_direta:true,col_298:'2026-08-02'}];
-  S.screen='dashboard';S.gppSec='home';S.dashMes='2026/07';S.perTipo='mes';render();
+  S.screen='dashboard';S.gppSec='home';S.homeTratar=true;S.dashMes='2026/07';S.perTipo='mes';render();
   const nota=document.querySelector('.gpp-com-nota');const subs=[...document.querySelectorAll('.gpp-num-sub')].map(x=>x.textContent);
   const home={nota:nota?nota.textContent.replace(/\s+/g,' ').trim():'',clicavel:!!(nota&&nota.querySelector('li > [data-action="open-record-from-dash"][data-id="2"]')),subs,html:nota?nota.innerHTML:''};
   S.me={id:'j1',role:'secretario',nome:'João',areas:['previsao']};S.screen='previsao';S.prevMes='2026/07';render();

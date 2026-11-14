@@ -1,7 +1,7 @@
 // Várias fichas de margem no mesmo negócio: criar outra (outra mota), trocar entre elas sem misturar dados,
 // gravar cada uma na sua linha, marcar a vendida (as outras arquivadas), alerta enquanto não se escolhe,
 // voltar à mesma ficha depois de recarregar, apagar só a ficha aberta. E a aprovação quando o esforço passa a variável.
-const {chromium}=require('playwright');const http=require('http');const fs=require('fs');const path=require('path');
+const {chromium}=require('playwright');const {ligarAvisos}=require('./_avisos');const http=require('http');const fs=require('fs');const path=require('path');
 const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'));
 const PORTA=8768;
 const srv=http.createServer((q,s)=>{s.writeHead(200,{'content-type':'text/html; charset=utf-8'});s.end(fs.readFileSync(FILE));}).listen(PORTA);
@@ -29,7 +29,7 @@ const jwt=sub=>b64({alg:'ES256'})+'.'+b64({sub,exp:Math.floor(Date.now()/1000)+3
   if(t==='baviera_control')return json(recs);
   return json([]);};
  ctx._rotaFichas=rota;await ctx.route('**/*',rota);
- const p=await ctx.newPage();const erros=[];p.on('pageerror',e=>erros.push(e.message));p.on('dialog',d=>d.accept());
+ const p=await ctx.newPage();const erros=[];p.on('pageerror',e=>erros.push(e.message));await ligarAvisos(p);
  await p.goto(`http://localhost:${PORTA}/`);await p.waitForTimeout(1500);
  const est=()=>p.evaluate(()=>({ficha:S.fmFicha,modelo:S.fm&&S.fm.modelo,preco:S.fm&&S.fm.preco_venda,chips:[...document.querySelectorAll('.fm-fi')].map(x=>x.textContent.replace(/\s+/g,' ').trim())}));
  const escrever=async(k,v)=>{await p.evaluate(([k,v])=>fmSet(k,v),[k,v]);await p.waitForTimeout(900);};
@@ -62,9 +62,9 @@ const jwt=sub=>b64({alg:'ES256'})+'.'+b64({sub,exp:Math.floor(Date.now()/1000)+3
  const pc=await b.newContext({viewport:{width:1300,height:900}});
  await pc.addInitScript(t=>localStorage.setItem('bc_session',JSON.stringify({refresh_token:'rt',access_token:t,exp:Date.now()+3600e3})),jwt('c1'));
  await pc.route('**/*',async r=>{const u=decodeURIComponent(r.request().url());if(u.includes('/rest/v1/profiles'))return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify([{id:'c1',nome:'Chefe GPP',role:'admin',linha:'motorrad'},{id:'v1',nome:'Vendedor Um',role:'vendedor',linha:'motorrad'}])});return ctx._rotaFichas(r);});
- const q=await pc.newPage();q.on('pageerror',e=>erros.push('chefe: '+e.message));q.on('dialog',d=>d.accept());
+ const q=await pc.newPage();q.on('pageerror',e=>erros.push('chefe: '+e.message));await ligarAvisos(q);
  await q.goto(`http://localhost:${PORTA}/`);await q.waitForTimeout(1800);
- await q.evaluate(()=>{S.screen='dashboard';S.gppSec='home';render();});await q.waitForTimeout(300);
+ await q.evaluate(()=>{S.screen='dashboard';S.gppSec='home';S.homeTratar=true;render();});await q.waitForTimeout(300);
  const lista1=await q.$$eval('.fa-box .mr-row',x=>x.map(e=>e.textContent.replace(/\s+/g,' ').trim()));
  const badge=await q.evaluate(()=>fichasAprovarLista().length);
  await q.click('.fa-box [data-action="fa-aprovar"]');await q.waitForTimeout(700);
@@ -75,7 +75,7 @@ const jwt=sub=>b64({alg:'ES256'})+'.'+b64({sub,exp:Math.floor(Date.now()/1000)+3
  const pdf=await q.evaluate(()=>{let h='';const o=window.open;window.open=()=>({document:{open(){},write:x=>{h+=x;},close(){}},focus(){},print(){}});try{fmPDF();}catch(e){}window.open=o;return /APROVADO PELA CHEFIA/.test(h);});
  // o vendedor muda a ficha: a aprovação cai e volta à lista do chefe
  await escrever('preco_venda','20900');
- await q.evaluate(()=>loadFichasAprovar().then(()=>{S.fmNeg=null;S.screen='dashboard';S.gppSec='home';render();}));await q.waitForTimeout(500);
+ await q.evaluate(()=>loadFichasAprovar().then(()=>{S.fmNeg=null;S.screen='dashboard';S.gppSec='home';S.homeTratar=true;render();}));await q.waitForTimeout(500);
  const lista3=await q.$$('.fa-box .mr-row').then(x=>x.length);
  await pc.close();
  const R={a1,a2,a3,a4,servidor1,alerta1,aviso,a5,alerta2,a6,a7,restam,aprov,vendTxt,lista1,badge,lista2,bannerChefe,pdf,lista3,log:db.log,erros};

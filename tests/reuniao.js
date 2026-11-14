@@ -5,7 +5,7 @@
 // 4) Conduzir: um ponto de cada vez, relógio total e do ponto (fica vermelho quando passa), dinâmica sugerida como compromisso,
 //    resumo para a equipa sem margens, terminar e retomar (o estado fica guardado neste computador).
 // 5) Antes do SQL: aviso no ponto dos compromissos e sem formulário. 6) Telemóvel sem scroll lateral.
-const {chromium}=require('playwright');const http=require('http');const fs=require('fs');const path=require('path');
+const {chromium}=require('playwright');const {ligarAvisos}=require('./_avisos');const http=require('http');const fs=require('fs');const path=require('path');
 const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'));
 const PORTA=8776;
 const srv=http.createServer((q,s)=>{s.writeHead(200,{'content-type':'text/html; charset=utf-8'});s.end(fs.readFileSync(FILE));}).listen(PORTA);
@@ -110,11 +110,11 @@ const nb=s=>String(s||'').replace(/[  ]/g,' ').replace(/[ \t]+/g,' ').trim();
      margens:[{negocio_id:107,margem:850},{negocio_id:108,margem:-120},{negocio_id:109,margem:999}],entregas:[{negocio_id:110,data_entrega:'2026-10-23',pago:false,pedido_matricula:true,prep_pedida:false,docs:{}}],
      eot_contratos:db.eot,eot_historico:db.hist,eot_notif_lidas:db.lidas,encomendas_bmw:p0?db.enc:[],stock_equip:p0?db.seq:[],equipamento:db.equip,eventos:db.eventos,inscricoes:db.insc};
    return json(G[t]||[]);});
-  const p=await ctx.newPage();p.on('pageerror',e=>erros.push(e.message));p.on('dialog',d=>{dialogos.push(d.message());d.accept();});
+  const p=await ctx.newPage();p.on('pageerror',e=>erros.push(e.message));await ligarAvisos(p,dialogos,{erros:false});
   await p.goto(`http://localhost:${PORTA}/`);await p.waitForTimeout(1800);
   return {ctx,p};};
  const db=base();const {ctx,p}=await contexto({width:1440,height:1000},db);
- const entrar=async(pg)=>{await pg.evaluate(()=>{S.screen='dashboard';S.gppSec='home';render();});await pg.waitForTimeout(300);
+ const entrar=async(pg)=>{await pg.evaluate(()=>{S.screen='dashboard';S.gppSec='home';S.homeTratar=true;render();});await pg.waitForTimeout(300);
    await pg.evaluate(()=>document.querySelector('.gpp-nav-item[data-s="reuniao"]').click());await pg.waitForTimeout(900);};   // no telemóvel o menu está recolhido
  const bloco=(pg,k)=>pg.evaluate(k=>{const s=document.querySelector(`.reu-bloco[aria-labelledby="reu-h-${k}"]`);if(!s)return null;
    const tx=e=>e.innerText.replace(/\s+/g,' ').trim();
@@ -154,8 +154,10 @@ const nb=s=>String(s||'').replace(/[  ]/g,' ').replace(/[ \t]+/g,' ').trim();
  T.feito={patch:db.patches.filter(x=>x[0]==='reuniao_compromissos').slice(-1)[0],bloco:await bloco(p,'compromissos'),pressed:await p.evaluate(()=>document.querySelector('[data-action="reu-comp-feito"][data-id="1"]').getAttribute('aria-pressed'))};
  db.falhar='4';await p.click('.reu-bloco[aria-labelledby="reu-h-compromissos"] [data-action="reu-comp-feito"][data-id="4"]');
  T.feitoFalha={toast:await toastTxt(),feito:await p.evaluate(()=>S.reuComp.find(c=>c.id===4).feito),classe:await p.evaluate(()=>document.querySelector('[data-action="reu-comp-feito"][data-id="4"]').closest('.reu-c').classList.contains('feito'))};db.falhar=null;
- await p.click('.reu-bloco[aria-labelledby="reu-h-compromissos"] [data-action="reu-comp-apagar"][data-id="4"]');await p.waitForTimeout(400);
- T.apagar={dialogo:dialogos.slice(-1)[0]||'',del:db.deletes.slice(-1)[0],bloco:await bloco(p,'compromissos')};
+ const nDel0=db.deletes.length;await p.click('.reu-bloco[aria-labelledby="reu-h-compromissos"] [data-action="reu-comp-apagar"][data-id="4"]');await p.waitForTimeout(80);
+ const anular=await p.evaluate(()=>{const t=document.getElementById('bm-toast');return{txt:t?t.querySelector('.bm-toast-m').textContent:'',botao:t&&t.querySelector('.bm-toast-b')?t.querySelector('.bm-toast-b').textContent:'',naLista:!!document.querySelector('[data-action="reu-comp-apagar"][data-id="4"]')};});
+ const delLogo=db.deletes.length-nDel0;await p.waitForTimeout(700);
+ T.apagar={anular,delLogo,del:db.deletes.slice(-1)[0],bloco:await bloco(p,'compromissos')};
  const inpData='.reu-bloco[aria-labelledby="reu-h-compromissos"] input[data-reu-prazo="7"]';const nPD=()=>db.patches.filter(x=>x[0]==='reuniao_compromissos');
  await p.fill(inpData,'2026-10-28');await p.waitForTimeout(400);
  T.novaData={patch:nPD().slice(-1)[0],bloco:await bloco(p,'compromissos')};
@@ -261,7 +263,7 @@ const nb=s=>String(s||'').replace(/[  ]/g,' ').replace(/[ \t]+/g,' ').trim();
   'marcar feito: grava, conta e sai dos por cumprir':T.feito.patch&&T.feito.patch[1]==='1'&&T.feito.patch[2].feito===true&&!!T.feito.patch[2].feito_em&&F(T.feito.bloco)[0]==='2 de 6 compromissos cumpridos · 3 por cumprir, 2 repetidos.'&&T.feito.pressed==='true'&&
     !PG(T.feito.bloco).some(q=>/Ligar aos 3 clientes/.test(q))&&PG(T.feito.bloco).length===3,
   'servidor recusa o feito: volta atrás e avisa':/Não gravei/.test(T.feitoFalha.toast)&&T.feitoFalha.feito===false&&!T.feitoFalha.classe,
-  'apagar compromisso: pergunta antes e apaga':/Apagar o compromisso «Inscrever clientes no test-ride»/.test(T.apagar.dialogo)&&T.apagar.del&&T.apagar.del[1]==='4'&&T.apagar.bloco.comp.length===5,
+  'apagar compromisso: sai logo da lista com «Anular» e só é apagado passado o tempo':/Compromisso apagado: «Inscrever clientes no test-ride»/.test(T.apagar.anular.txt)&&T.apagar.anular.botao==='Anular'&&!T.apagar.anular.naLista&&T.apagar.delLogo===0&&T.apagar.del&&T.apagar.del[1]==='4'&&T.apagar.bloco.comp.length===5,
   'nova data num compromisso por cumprir: conta o adiamento e continua contado nesta reunião':T.novaData.patch&&T.novaData.patch[1]==='7'&&JSON.stringify(T.novaData.patch[2])==='{"prazo":"2026-10-28","adiamentos":1,"adiado_em":"2026-10-20"}'&&
     F(T.novaData.bloco)[0]==='2 de 5 compromissos cumpridos · 3 por cumprir, 2 repetidos.'&&T.novaData.bloco.comp.includes('Rui Ligar ao cliente Xi por cumprir · nova data dada hoje [atras]')&&!PG(T.novaData.bloco).some(q=>/cliente Xi/.test(q)),
   'corrigir a nova data na mesma reunião não conta outra vez; data antes da reunião recusada':JSON.stringify(T.novaData.corrigir[2])==='{"prazo":"2026-10-27"}'&&/A nova data tem de ser depois da reunião \(20\/10\)/.test(T.novaData.invalida.toast)&&T.novaData.invalida.patches===0&&T.novaData.invalida.valor==='2026-10-27',
@@ -282,6 +284,6 @@ const nb=s=>String(s||'').replace(/[  ]/g,' ').replace(/[ \t]+/g,' ').trim();
   'antes do SQL: aviso nos compromissos, sem formulário, o resto funciona':/falta correr o SQL «2026-10-25_reuniao_compromissos»/.test(T.semSql.comp.aviso)&&!T.semSql.form&&!T.semSql.comp.comp.length&&T.semSql.resultados==='Retail novas: 3 de 10 (30%) — faltam 7 em 11 dias.',
   'telemóvel: preparação e condução sem scroll lateral':T.tel.prep&&T.tel.stock&&T.tel.fecho,
   'acessibilidade (claro e escuro): axe sem violações e contraste medido certo, também no vermelho do relógio':[T.a11y.prepClaro,T.a11y.prepEscuro,T.a11yCond.claro,T.a11yCond.escuro].every(x=>!x.axe.length&&!x.contraste.length&&x.medidos>5),
-  'sem erros JS; só a confirmação de apagar':!erros.length&&dialogos.length===1};
+  'sem erros JS nem perguntas (apagar tem «Anular»)':!erros.length&&dialogos.length===0};
  let f=0;for(const [k,v] of Object.entries(ok)){console.log((v?'✓ ':'✗ ')+k);if(!v)f++;}
  console.log(f?`FALHOU (${f})`:'Reunião semanal correta');await b.close();srv.close();process.exit(f?1:0);})();

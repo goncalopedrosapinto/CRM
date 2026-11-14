@@ -3,7 +3,7 @@
 // (vendedor/chefe escreveu depois do visto, ou sem visto) · ↻ Reaberto (adenda com fim novo depois do visto/indicação) ·
 // Em curso (há indicação vossa mas falta o visto) · Novo (último mapa) · Por tratar. Separadores "Precisa de vocês /
 // Já tratados / Todos". Submeter uma indicação NÃO dá o visto. Sem o SQL do visto, volta à regra antiga com um aviso.
-const {chromium}=require('playwright');const http=require('http');const fs=require('fs');const path=require('path');
+const {chromium}=require('playwright');const {ligarAvisos}=require('./_avisos');const http=require('http');const fs=require('fs');const path=require('path');
 const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'));
 const PORTA=8774;
 const srv=http.createServer((q,s)=>{s.writeHead(200,{'content-type':'text/html; charset=utf-8'});s.end(fs.readFileSync(FILE));}).listen(PORTA);
@@ -41,7 +41,7 @@ const V=(c,h,t)=>({contrato:c,tipo:'comentario',autor_id:'v1',autor_nome:'Felipe
     let L=db.hist.slice();const c=q('contrato');if(c)L=L.filter(h=>h.contrato===c);L.sort((a,b2)=>b2.id-a.id);if(/select=id(&|$)/.test(u))L=L.slice(0,1).map(h=>({id:h.id}));return json(L);}
   if(t==='eot_notif_lidas')return json([]);
   return json([]);});
- const p=await ctx.newPage();const erros=[];p.on('pageerror',e=>erros.push(e.message));p.on('dialog',d=>{erros.push('dialog: '+d.message());d.accept();});
+ const p=await ctx.newPage();const erros=[];p.on('pageerror',e=>erros.push(e.message));await ligarAvisos(p,{push:m=>erros.push('dialog: '+m)});
  await p.goto(`http://localhost:${PORTA}/`);await p.waitForTimeout(1800);
  await p.evaluate(()=>{setState({screen:'financeiro'});});await p.waitForTimeout(400);
  const ver=()=>p.evaluate(()=>({tabs:[...document.querySelectorAll('.fin-tabs .vchip')].map(b=>b.textContent.replace(/\s+/g,' ').trim()+(b.classList.contains('on')?' *':'')),

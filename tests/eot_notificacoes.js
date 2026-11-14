@@ -3,7 +3,7 @@
 // responsável). «Lido» tira só a quem carrega; responder tira a todo o lado e passa a notificação para o outro.
 // O chefe vê as conversas penduradas. Novas indicações chegam sozinhas (a cada minuto) e, com a página em segundo
 // plano e autorização, aparecem como aviso do computador. Sem o SQL, as notificações funcionam e o «Lido» avisa.
-const {chromium}=require('playwright');const http=require('http');const fs=require('fs');const path=require('path');
+const {chromium}=require('playwright');const {ligarAvisos}=require('./_avisos');const http=require('http');const fs=require('fs');const path=require('path');
 const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'));
 const PORTA=8770;
 const srv=http.createServer((q,s)=>{s.writeHead(200,{'content-type':'text/html; charset=utf-8'});s.end(fs.readFileSync(FILE));}).listen(PORTA);
@@ -42,7 +42,7 @@ async function abrir(b,uid){
       if(m==='PATCH'){const body=JSON.parse(r.request().postData());const al=db.lidas.filter(l=>l.user_id===q('user_id')&&l.contrato===q('contrato'));al.forEach(l=>Object.assign(l,body));return json(al);}
       if(m==='POST'){const body=JSON.parse(r.request().postData());if(body.user_id!==uid)return json({message:'row-level security'},403);db.lidas.push(body);return json([body],201);}}
     return json([]);});
-  const p=await ctx.newPage();p._erros=[];p.on('pageerror',e=>p._erros.push(uid+': '+e.message));p.on('dialog',d=>d.accept());
+  const p=await ctx.newPage();p._erros=[];p.on('pageerror',e=>p._erros.push(uid+': '+e.message));await ligarAvisos(p);
   await p.goto(`http://localhost:${PORTA}/`);await p.waitForTimeout(1600);return p;}
 const lista=p=>p.evaluate(()=>notifLista().map(x=>x.contrato));
 (async()=>{const b=await chromium.launch(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{});

@@ -63,6 +63,7 @@ jobs:
       - run: npm run desempenho
       - run: npm run eventosext
       - run: npm run comfixa
+      - run: npm run usodiario
       - run: npm run alertas
       - run: npm run notificacoes
       - run: npm run financeiros

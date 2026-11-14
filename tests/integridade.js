@@ -1,6 +1,6 @@
 // Teste de sequências aleatórias: escrever valores à portuguesa em vários campos, a velocidades aleatórias,
 // a navegar com Tab ou rato, com o servidor lento e falhas de rede. Passa se o que ficou gravado = o que foi escrito.
-const {chromium}=require('playwright');
+const {chromium}=require('playwright');const {ligarAvisos}=require('./_avisos');
 const FILE=require('path').resolve(process.argv[2]||require('path').join(__dirname,'..','index.html')),RUNS=+(process.argv[3]||12),SCREENS=(process.argv[4]||'ficha,margens,stock').split(',');
 function rng(seed){let x=seed>>>0||1;return()=>{x^=x<<13;x>>>=0;x^=x>>17;x^=x<<5;x>>>=0;return x/4294967296;};}
 function gerar(r){const int=Math.floor(r()*40000)+1,dec=Math.floor(r()*100);const d2=String(dec).padStart(2,'0');
@@ -14,7 +14,7 @@ function gerar(r){const int=Math.floor(r()*40000)+1,dec=Math.floor(r()*100);cons
 (async()=>{const b=await chromium.launch(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{});let falhas=0,total=0;const detalhes=[];
 for(const scr of SCREENS)for(let run=0;run<RUNS;run++){if(process.env.ONLY&&+process.env.ONLY!==run)continue;
   const r=rng(1000*SCREENS.indexOf(scr)+run+7);total++;
-  const ctx=await b.newContext({viewport:{width:1440,height:900},locale:'pt-PT'});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.dismiss());
+  const ctx=await b.newContext({viewport:{width:1440,height:900},locale:'pt-PT'});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));await ligarAvisos(p,null,{aceitar:false});
   const srv={ver:'2026-10-01T10:00:00.000Z',ficha:null,margens:{},stock:{}};let abortar=scr==='ficha'&&r()<0.6?Math.floor(r()*6)+1:0,nEsc=0;const perdeResposta=r()<0.5; // metade das falhas: o servidor grava mas a resposta perde-se
   await p.route('**/*',async route=>{const q=route.request(),u=q.url();if(u.startsWith('file:'))return route.continue();
     const m=q.method();await new Promise(z=>setTimeout(z,50+Math.floor(r()*700)));

@@ -1,6 +1,6 @@
 // Comissões: comissão fixa por negócio. O chefe escreve um valor em € que substitui a regra (percentagem / mínimo / demo);
 // apagar volta à regra; não aceita negativos; o vendedor vê só o valor (sem a regra). Dados fictícios.
-const {chromium}=require('playwright');const http=require('http');const fs=require('fs');const path=require('path');
+const {chromium}=require('playwright');const {ligarAvisos}=require('./_avisos');const http=require('http');const fs=require('fs');const path=require('path');
 const RAIZ=path.resolve(__dirname,'..');const FILE=path.resolve(process.argv[2]||path.join(RAIZ,'index.html'));
 const PORTA=8786;
 const srv=http.createServer((q,s)=>{const u=decodeURIComponent(q.url.split('?')[0]);const f=u==='/'||u==='/index.html'?FILE:path.join(RAIZ,u.replace(/^\/+/,''));
@@ -27,7 +27,7 @@ const rota=quem=>async r=>{const u=decodeURIComponent(r.request().url());const m
 (async()=>{const b=await chromium.launch(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{});const erros=[];const alertas=[];
  const abrir=async(quem)=>{const ctx=await b.newContext({viewport:{width:1400,height:1000}});
   await ctx.addInitScript(t=>localStorage.setItem('bc_session',JSON.stringify({refresh_token:'rt',access_token:t,exp:Date.now()+3600e3})),jwt(quem));
-  await ctx.route('**/*',rota(quem));const p=await ctx.newPage();p.on('pageerror',e=>erros.push(quem+': '+e.message));p.on('dialog',d=>{alertas.push(d.message());d.dismiss().catch(()=>{});});
+  await ctx.route('**/*',rota(quem));const p=await ctx.newPage();p.on('pageerror',e=>erros.push(quem+': '+e.message));await ligarAvisos(p,alertas,{aceitar:false});
   await p.goto(`http://localhost:${PORTA}/`);await p.waitForTimeout(1500);return {ctx,p};};
  const linha=(p,mat)=>p.evaluate(mat=>{const tr=[...document.querySelectorAll('tr')].find(x=>x.textContent.includes(mat));return tr?[...tr.cells].map(c=>c.textContent.replace(/[\s  ]+/g,' ').trim()):null;},mat);
  const C=await abrir('c1');const p=C.p;

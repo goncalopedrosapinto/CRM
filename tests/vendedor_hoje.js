@@ -4,7 +4,7 @@
 //    2 semanas, 1 mês) e Perdido (motivo num toque; a mota do stock volta a Disponível). Se o servidor recusar, a linha volta.
 // 3) Ficha solta → "Guardar num negócio": criar negócio novo (Quente) ou juntar a um negócio em curso (funil ou Carteira),
 //    com o mesmo nome primeiro; a ficha passa a ser do negócio e o rascunho deste computador é limpo.
-const {chromium}=require('playwright');const http=require('http');const fs=require('fs');const path=require('path');
+const {chromium}=require('playwright');const {ligarAvisos}=require('./_avisos');const http=require('http');const fs=require('fs');const path=require('path');
 const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'));
 const PORTA=8775;
 const srv=http.createServer((q,s)=>{s.writeHead(200,{'content-type':'text/html; charset=utf-8'});s.end(fs.readFileSync(FILE));}).listen(PORTA);
@@ -43,7 +43,7 @@ const db={seq:900,patches:[],posts:[],rpc:[],falhar:null,fichas:[],
      const neg=(u.match(/negocio_id=eq\.([^&]+)/)||[])[1];return json(neg?db.fichas.filter(f=>String(f.negocio_id)===String(neg)):db.fichas);}
    if(m!=='GET')return json([]);
    return json([]);});
-  const p=await ctx.newPage();p.on('pageerror',e=>erros.push(e.message));p.on('dialog',d=>{erros.push('dialog: '+d.message());d.dismiss();});
+  const p=await ctx.newPage();p.on('pageerror',e=>erros.push(e.message));await ligarAvisos(p,{push:m=>erros.push('dialog: '+m)},{aceitar:false,erros:false});
   await p.goto(`http://localhost:${PORTA}/`);await p.waitForTimeout(1600);
   return {ctx,p};};
  const {ctx,p}=await contexto({width:1440,height:1000});
@@ -157,7 +157,7 @@ const db={seq:900,patches:[],posts:[],rpc:[],falhar:null,fichas:[],
  await c.p.click('[data-action="fm-guardar-novo"]');await c.p.waitForTimeout(400);
  const semVend={posts:db.posts.length-nC,toast:await c.p.evaluate(()=>((document.getElementById('bm-toast')||{}).textContent||''))};
  await c.p.selectOption('#fm-g-vend','v1');await c.p.click('[data-action="fm-guardar-novo"]');await c.p.waitForTimeout(800);
- await c.p.evaluate(()=>{S.screen='dashboard';S.gppSec='home';render();});await c.p.waitForTimeout(500);
+ await c.p.evaluate(()=>{S.screen='dashboard';S.gppSec='home';S.homeTratar=true;render();});await c.p.waitForTimeout(500);
  const deltas=await c.p.evaluate(()=>[...document.querySelectorAll('.gpp-table .gpp-delta')].map(x=>x.textContent.replace(/\s+/g,' ').trim()));
  const nota=await c.p.evaluate(()=>((document.querySelector('.gpp-delta-nota')||{}).textContent||'').trim());
  R2.chefe={semVend,deltas,nota,neg:(db.posts.slice(nC).find(x=>x[0]==='baviera_control')||[])[1],registoRapido:await c.p.evaluate(()=>{S.screen='list';S.statusFilter='_hoje';render();return !!document.getElementById('vh-novo-nome');})};
