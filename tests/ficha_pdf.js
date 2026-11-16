@@ -1,4 +1,4 @@
-// PDF da ficha de margem: resumo no topo, linha da taxa de esforço, ficha completa e assinaturas numa única folha A4,
+// PDF da ficha de margem: cartões no topo, taxa de esforço (barra e conta), detalhe em duas colunas e assinaturas numa única folha A4,
 // mesmo com todas as alíneas preenchidas, nomes longos e aviso de aprovação.
 const {chromium}=require('playwright');const path=require('path');
 const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'));
@@ -13,10 +13,10 @@ const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'))
       apoio:'50',pac:'200',bsi:'300',acess_marca:'150',acess_conc:'80',ecovalor:'5',iuc_s:'20',transporte:'150'};
     let cap='';const o=window.open;window.open=()=>({document:{open(){},write(h){cap+=h},close(){}},focus(){},print(){}});fmPDF();window.open=o;return cap;});
   const q=await b.newPage();await q.setContent(html);await q.waitForTimeout(200);
-  const tem=await q.evaluate(()=>({subvencao:/Subvenção Concessionário/.test(document.body.textContent),resumo:document.querySelectorAll('table.res td').length,esforco:/Esforço/.test(document.body.textContent),taxa:[...document.querySelectorAll('table.esf .ek')].map(e=>e.textContent).join('|'),assinatura:document.querySelectorAll('.ass .ln').length,zoom:document.body.style.zoom||'1'}));
+  const tem=await q.evaluate(()=>({subvencao:/Subvenção Concessionário/.test(document.body.textContent),resumo:document.querySelectorAll('.kp .k').length,colunas:document.querySelectorAll('.cols .col').length,blocos:[...document.querySelectorAll('.bt')].map(e=>e.firstChild.textContent).join('|'),largura:document.documentElement.scrollWidth<=document.documentElement.clientWidth,dentro:[...document.querySelectorAll('.kp,.esf,.cols,.ass,table.r')].every(e=>e.getBoundingClientRect().right<=document.body.getBoundingClientRect().right+0.5),esforco:/Esforço/.test(document.body.textContent),taxa:[...document.querySelectorAll('.esf .ek')].map(e=>e.textContent).join('|'),barra:document.querySelectorAll('.esf .bar .sg').length,marca:document.querySelectorAll('.esf .mk').length,assinatura:document.querySelectorAll('.ass .ln').length,zoom:document.body.style.zoom||'1'}));
   const pdf=await q.pdf({preferCSSPageSize:true,printBackground:true});
   const paginas=(pdf.toString('latin1').match(/\/Type\s*\/Page[^s]/g)||[]).length;
   console.log(JSON.stringify(Object.assign({paginas},tem)));
-  const ok=paginas===1&&tem.resumo===5&&tem.esforco&&tem.taxa==='tudo acima da margem fixa|Desconto ao cliente|Custos do concessionário|Margem fixa|Esforço|Apoios|Margem variável'&&tem.assinatura===3&&tem.subvencao;
+  const ok=paginas===1&&tem.resumo===5&&tem.esforco&&tem.taxa.startsWith('Desconto ao cliente|Custos do concessionário|Margem fixa|Esforço|Apoios|Margem variável')&&tem.barra>=2&&tem.marca===1&&tem.colunas===2&&tem.blocos==='Como na plataforma|Impostos|Custos do concessionário|Descontos e apoios|Venda'&&tem.dentro&&tem.assinatura===3&&tem.subvencao;
   console.log(ok?'PDF da ficha numa folha':'FALHOU');await b.close();process.exit(ok?0:1);
 })();

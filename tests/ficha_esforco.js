@@ -1,6 +1,6 @@
 // Ficha de margem: esforço = (desconto ao cliente % + custos do concessionário %) acima da MG. FIXA, tudo sobre Model and Options s/IVA.
 // Só a MG. FIXA não é esforço (regra do chefe, 16/11/2026): os apoios da BMW também são esforço e cobrem a sua parte (esfApoiosPct);
-// o resto sai da MG. VARIÁVEL (esfConcPct) e é essa parte que vai à chefia quando passa a variável.
+// o resto sai da MG. VARIÁVEL (esfConcPct). Vai à chefia todo o esforço acima da MG. VARIÁVEL, com ou sem apoios.
 // A parte da variável tem de bater certo com a margem: esfConc = MG. VARIÁVEL − margem/base (quando positivo).
 const {chromium}=require('playwright');const path=require('path');
 const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'));
@@ -79,12 +79,12 @@ const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'))
     const fm={natureza:'MN',iva:23,modo:'civa',fv:2,isv:'0',sgpu:'0',pvb:'10000',mg_fixa_pct:'6',mg_var_pct:'3,5',protocolo_pct:'5',apoio_demo_pct:'6',apoio_adic_pct:'10,5'};
     const lim=e=>e?e.textContent.replace(/[  ]/g,' ').replace(/\s+/g,' ').trim():'';const r3=n=>n==null?null:+(n*100).toFixed(3);
     const ver=x=>{S.fm=Object.assign({},fm,x);const c=fmCalc(),P=fmEsforcoPassos(c);S.screen='ficha';S.fmNeg=null;render();const el=document.querySelector('.fm-esf');
-      return {esf:r3(c.esforcoPct),ap:r3(c.esfApoiosPct),conc:r3(c.esfConcPct),aprov:c.aprovEsforco,p0:P&&P.precoSemEsf,p1:P&&P.precoLimite,
+      return {esf:r3(c.esforcoPct),ap:r3(c.esfApoiosPct),conc:r3(c.esfConcPct),aprov:c.aprovEsforco,p0:P&&P.precoSemEsf,p1:P&&P.precoLimite,p2:P&&P.precoCoberto,marca:!!document.querySelector('.fm-esf-mk'),
         n:lim(document.querySelector('.fm-esf-n')),neg:!!document.querySelector('.fm-esf-n.neg'),sub:lim(document.querySelector('.fm-esf-sub')),leg:[...document.querySelectorAll('.fm-esf-lg')].map(lim),
         seg:[...document.querySelectorAll('.fm-esf-sg')].map(e=>e.className.replace('fm-esf-sg ','')+':'+parseFloat(e.style.width).toFixed(1)),
         linhas:[...document.querySelectorAll('.fm-esf-li')].map(lim),grupos:[...document.querySelectorAll('.fm-esf-gt')].map(lim),fechado:!!(document.querySelector('.fm-esf-b')||{}).hidden,
         kpi:lim([...document.querySelectorAll('.fm-kpis .kpi-c')].pop()),aviso:lim(document.querySelector('.fm-aprov')),txt:lim(el)};};
-    const R={semPreco:ver({}),noLimite:ver({preco_venda:'7250'}),abaixoFixa:ver({preco_venda:'9500'}),meio:ver({preco_venda:'8000'}),esf15:ver({preco_venda:'7100'}),chefia:ver({preco_venda:'6800'}),
+    const R={semPreco:ver({}),noLimite:ver({preco_venda:'7250'}),abaixoFixa:ver({preco_venda:'9500'}),dentro:ver({preco_venda:'9200'}),meio:ver({preco_venda:'8000'}),esf15:ver({preco_venda:'7100'}),chefia:ver({preco_venda:'6800'}),
       compart:ver({preco_venda:'7250',compart_conc:'81.30'}),semApoios:ver({protocolo_pct:'',apoio_demo_pct:'',apoio_adic_pct:'',preco_venda:'9050'}),semFixa:ver({mg_fixa_pct:'',preco_venda:'7250'})};
     // retrátil: abre com o botão, fica aberto ao voltar a desenhar e ao recarregar (guardado no browser); o foco não sai do botão
     ver({preco_venda:'7100',compart_conc:'81.30'});const bt=document.querySelector('[data-action="fm-esf-toggle"]');const a0=bt.getAttribute('aria-expanded');bt.focus();bt.click();
@@ -100,23 +100,25 @@ const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'))
   await p.evaluate(()=>{document.documentElement.removeAttribute('data-theme');});
   if(process.env.DBG)console.log(JSON.stringify(T,null,1));
   const L=T.noLimite;
-  casos.push({n:'regra nova: fixa 6 % + apoios 21,5 % = 27,5 % de desconto → esforço 21,5 %, todo coberto pelos apoios, sem ir à chefia',esf:L.esf,esperado:21.5,
-    ok:L.esf===21.5&&L.ap===21.5&&L.conc===0&&!L.aprov&&L.n==='21,5 %'&&!L.neg&&/dentro dos apoios e da margem variável/.test(L.sub)&&L.aviso===''&&
-      JSON.stringify(L.leg)===JSON.stringify(['Margem fixa 6,0 %','Apoios 21,5 %','Margem variável 0,0 % de 3,5 %'])&&L.seg.length===2&&/^fx:19\.[34]$/.test(L.seg[0])&&/^ap:69\.[34]$/.test(L.seg[1])&&/apoios 21,5 % · variável 0,0 % de 3,5 %/.test(L.kpi)});
+  casos.push({n:'fixa 6 % + apoios 21,5 % = 27,5 % de desconto → esforço 21,5 %, coberto pelos apoios, mas acima da variável: vai à chefia',esf:L.esf,esperado:21.5,
+    ok:L.esf===21.5&&L.ap===21.5&&L.conc===0&&L.aprov&&L.n==='21,5 %'&&L.neg&&/acima da margem variável de 3,5 % — precisa de aprovação da chefia/.test(L.sub)&&/esforço de 21,5 %, acima da margem variável de 3,5 %/.test(L.aviso)&&L.marca&&
+      JSON.stringify(L.leg)===JSON.stringify(['Margem fixa 6,0 %','Apoios 21,5 %','Margem variável 0,0 % de 3,5 %','Chefia acima de 3,5 % de esforço'])&&L.seg.length===2&&/^fx:19\.[34]$/.test(L.seg[0])&&/^ap:69\.[34]$/.test(L.seg[1])&&/chefia acima de 3,5 % · apoios 21,5 %/.test(L.kpi)});
   casos.push({n:'explicação separa Desconto ao cliente, Custos do concessionário, Margem fixa e Apoios; começa fechada',esf:L.esf,esperado:21.5,
     ok:L.fechado&&JSON.stringify(L.grupos)===JSON.stringify(['Como se chega ao esforço','Quem paga o esforço','Preços-limite'])&&/^Desconto ao cliente.*SA3\.27,5 %$/.test(L.linhas[0])&&/^Custos do concessionário.*\+ 0,0 %$/.test(L.linhas[1])&&
-      /^Margem fixa.*− 6,0 %$/.test(L.linhas[2])&&/^Esforço.*21,5 %$/.test(L.linhas[3])&&/^Apoios.*Protocolo 5,0 % · Apoio demo 6,0 % · Apoio adicional 10,5 %.*pagos pela BMW\.21,5 %$/.test(L.linhas[4])&&/^Margem variável.*Acima de 3,5 % vai à chefia\.0,0 %de 3,5 %$/.test(L.linhas[5])});
-  casos.push({n:'preços-limite: sem esforço '+L.p0+' € (só a fixa); sem ir à chefia '+L.p1+' € (fixa + apoios + variável)',esf:L.p0,esperado:9400,ok:L.p0===9400&&L.p1===6900&&/^Sem esforço.*9 ?400 €$/.test(L.linhas[6])&&/^Sem ir à chefia pelo esforço.*31,0 %.*6 ?900 €$/.test(L.linhas[7])});
-  casos.push({n:'desconto de 5 % (abaixo da fixa): sem esforço, diz quanto da fixa foi usada',esf:T.abaixoFixa.esf,esperado:0,ok:T.abaixoFixa.esf===0&&T.abaixoFixa.conc===0&&/sem esforço: usou 5,0 % dos 6,0 % da margem fixa/.test(T.abaixoFixa.sub)&&T.abaixoFixa.leg[0]==='Margem fixa 5,0 % de 6,0 %'});
-  casos.push({n:'desconto de 20 %: esforço 14 %, os apoios cobrem 14 % dos 21,5 %',esf:T.meio.esf,esperado:14,ok:T.meio.esf===14&&T.meio.ap===14&&T.meio.conc===0&&T.meio.leg[1]==='Apoios 14,0 % de 21,5 %'});
-  casos.push({n:'desconto de 29 %: esforço 23 %, 1,5 % sai da variável, não vai à chefia',esf:T.esf15.esf,esperado:23,ok:T.esf15.esf===23&&T.esf15.conc===1.5&&!T.esf15.aprov&&!T.esf15.neg&&T.esf15.leg[2]==='Margem variável 1,5 % de 3,5 %'&&T.esf15.aviso===''});
-  casos.push({n:'desconto de 32 %: esforço 26 %, 4,5 % fora dos apoios passa a variável → chefia, a vermelho',esf:T.chefia.esf,esperado:26,
-    ok:T.chefia.esf===26&&T.chefia.conc===4.5&&T.chefia.aprov&&T.chefia.neg&&/passa a margem variável em 1,0 % — precisa de aprovação da chefia/.test(T.chefia.sub)&&T.chefia.leg[3]==='Acima da variável 1,0 %'&&
-      /esforço de 26,0 % \(4,5 % fora dos apoios\), acima da margem variável de 3,5 %/.test(T.chefia.aviso)});
-  casos.push({n:'comparticipação de 1 % da mota conta: esforço 22,5 %, 1 % sai da variável; sem esforço só até '+T.compart.p0+' €',esf:T.compart.esf,esperado:22.5,
-    ok:T.compart.esf===22.5&&T.compart.conc===1&&T.compart.p0===9500&&T.compart.p1===7000&&/^Custos do concessionário.*Comparticipação 1,0 %\..*\+ 1,0 %$/.test(T.compart.linhas[1])});
-  casos.push({n:'sem apoios: o aviso da chefia fica como era; sem preço mostra só os preços-limite; sem MG. FIXA não aparece; cabe no telemóvel',esf:T.semApoios.esf,esperado:3.5,
-    ok:T.semApoios.esf===3.5&&T.semApoios.ap===0&&T.semApoios.leg.length===2&&T.semPreco.n==='—'&&T.semPreco.seg.length===0&&T.semPreco.linhas.length===2&&/escreve o valor proposto/.test(T.semPreco.sub)&&T.semFixa.txt===''&&telLarg});
+      /^Margem fixa.*− 6,0 %$/.test(L.linhas[2])&&/^Esforço.*Acima de 3,5 % vai à chefia\.21,5 %$/.test(L.linhas[3])&&/^Apoios.*Protocolo 5,0 % · Apoio demo 6,0 % · Apoio adicional 10,5 %.*pagos pela BMW\.21,5 %$/.test(L.linhas[4])&&/^Margem variável.*sai daqui\.0,0 %de 3,5 %$/.test(L.linhas[5])});
+  casos.push({n:'preços-limite: sem esforço '+L.p0+' € (fixa); sem ir à chefia '+L.p1+' € (fixa + variável); coberto até '+L.p2+' € (com os apoios)',esf:L.p0,esperado:9400,
+    ok:L.p0===9400&&L.p1===9050&&L.p2===6900&&/^Sem esforço.*9 ?400 €$/.test(L.linhas[6])&&/^Sem ir à chefia pelo esforço.*9,5 %.*9 ?050 €$/.test(L.linhas[7])&&/^Coberto por apoios e margem variável.*31,0 %.*6 ?900 €$/.test(L.linhas[8])});
+  casos.push({n:'desconto de 5 % (abaixo da fixa): sem esforço, diz quanto da fixa foi usada',esf:T.abaixoFixa.esf,esperado:0,ok:T.abaixoFixa.esf===0&&T.abaixoFixa.conc===0&&!T.abaixoFixa.aprov&&/sem esforço: usou 5,0 % dos 6,0 % da margem fixa/.test(T.abaixoFixa.sub)&&T.abaixoFixa.leg[0]==='Margem fixa 5,0 % de 6,0 %'});
+  casos.push({n:'desconto de 8 %: esforço 2 %, dentro da variável, não vai à chefia mesmo com apoios',esf:T.dentro.esf,esperado:2,ok:T.dentro.esf===2&&T.dentro.ap===2&&!T.dentro.aprov&&!T.dentro.neg&&/dentro da margem variável de 3,5 %/.test(T.dentro.sub)&&T.dentro.aviso===''&&T.dentro.leg[1]==='Apoios 2,0 % de 21,5 %'});
+  casos.push({n:'desconto de 20 %: esforço 14 %, os apoios cobrem 14 % dos 21,5 %, vai à chefia',esf:T.meio.esf,esperado:14,ok:T.meio.esf===14&&T.meio.ap===14&&T.meio.conc===0&&T.meio.aprov&&T.meio.leg[1]==='Apoios 14,0 % de 21,5 %'});
+  casos.push({n:'desconto de 29 %: esforço 23 %, 1,5 % sai da variável, vai à chefia',esf:T.esf15.esf,esperado:23,ok:T.esf15.esf===23&&T.esf15.conc===1.5&&T.esf15.aprov&&T.esf15.neg&&T.esf15.leg[2]==='Margem variável 1,5 % de 3,5 %'});
+  casos.push({n:'desconto de 32 %: esforço 26 %; 1 % já nem apoios nem variável cobrem',esf:T.chefia.esf,esperado:26,
+    ok:T.chefia.esf===26&&T.chefia.conc===4.5&&T.chefia.aprov&&T.chefia.neg&&T.chefia.leg[3]==='Fora dos apoios e da variável 1,0 %'&&/^Fora dos apoios e da variável.*1,0 %$/.test(T.chefia.linhas[6])&&
+      /esforço de 26,0 %, acima da margem variável de 3,5 %/.test(T.chefia.aviso)});
+  casos.push({n:'comparticipação de 1 % da mota conta: esforço 22,5 %; sem esforço só até '+T.compart.p0+' €, chefia abaixo de '+T.compart.p1+' €',esf:T.compart.esf,esperado:22.5,
+    ok:T.compart.esf===22.5&&T.compart.conc===1&&T.compart.p0===9500&&T.compart.p1===9150&&T.compart.p2===7000&&/^Custos do concessionário.*Comparticipação 1,0 %\..*\+ 1,0 %$/.test(T.compart.linhas[1])});
+  casos.push({n:'sem apoios: 3,5 % exatos não vão à chefia; sem preço mostra só os preços-limite; sem MG. FIXA não aparece; cabe no telemóvel',esf:T.semApoios.esf,esperado:3.5,
+    ok:T.semApoios.esf===3.5&&T.semApoios.ap===0&&!T.semApoios.aprov&&T.semApoios.leg.length===3&&T.semApoios.p2===null&&T.semPreco.n==='—'&&T.semPreco.seg.length===0&&T.semPreco.linhas.length===3&&/escreve o valor proposto/.test(T.semPreco.sub)&&T.semFixa.txt===''&&telLarg});
   casos.push({n:'explicação retrátil: abre com o botão, mantém-se ao redesenhar e fica guardada; o foco não sai do botão',esf:0,esperado:0,
     ok:T.retratil.a0==='false'&&T.retratil.a1==='true'&&T.retratil.vis1&&T.retratil.foco&&T.retratil.aposRender&&T.retratil.guardado==='1'});
   casos.forEach(c=>console.log((c.ok?'✓ ':'✗ ')+c.n+': esforço '+c.esf+' % (esperado '+c.esperado+' %)'));

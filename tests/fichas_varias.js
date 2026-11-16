@@ -72,7 +72,7 @@ const jwt=sub=>b64({alg:'ES256'})+'.'+b64({sub,exp:Math.floor(Date.now()/1000)+3
  await q.click('.fa-box [data-action="fa-abrir"]').catch(()=>{});
  await q.evaluate(()=>fmAbrirNegocio('5','12'));await q.waitForTimeout(700);
  const bannerChefe=await q.$eval('.fm-aprov',x=>x.textContent).catch(()=>'');
- const pdf=await q.evaluate(()=>{let h='';const o=window.open;window.open=()=>({document:{open(){},write:x=>{h+=x;},close(){}},focus(){},print(){}});try{fmPDF();}catch(e){}window.open=o;return /APROVADO PELA CHEFIA/.test(h);});
+ const pdf=await q.evaluate(()=>{let h='';const o=window.open;window.open=()=>({document:{open(){},write:x=>{h+=x;},close(){}},focus(){},print(){}});try{fmPDF();}catch(e){}window.open=o;return /Aprovado pela chefia/.test(h);});
  // o vendedor muda a ficha: a aprovação cai e volta à lista do chefe
  await escrever('preco_venda','20900');
  await q.evaluate(()=>loadFichasAprovar().then(()=>{S.fmNeg=null;S.screen='dashboard';S.gppSec='home';S.homeTratar=true;render();}));await q.waitForTimeout(500);
