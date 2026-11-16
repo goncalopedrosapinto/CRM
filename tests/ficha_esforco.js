@@ -69,6 +69,30 @@ const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'))
   casos.push({n:'subvenção = '+(subv.pct*100).toFixed(2)+' % do preço de custo, s/IVA, no ecrã e no PDF ('+(subv.L&&subv.L.pct)+' · PDF '+subv.pdfLinha+')',esf:+(subv.pct*100).toFixed(2),esperado:+(subv.esperado*100).toFixed(2),
     ok:Math.abs(subv.pct-subv.esperado)<1e-9&&subv.custoInclui&&!!subv.L&&subv.L.inp&&subv.L.pct.includes(pctTxt)&&/escreve-se sem IVA/.test(subv.L.nota)&&!/a única/.test(subv.L.nota)&&
       subv.emSiva==='100'&&subv.deVolta==='100'&&subv.pdfLinha.includes(pctTxt.replace('.',','))&&subv.ajuda});
+  // Taxa de esforço explicada (pedido do chefe, 16/11/2026): MG. FIXA 6 % + apoios BMW 5 % + 6 % + 10,5 % = 27,5 % de desconto sem esforço.
+  // Acima disso é esforço; a comparticipação conta pelo peso que tem na mota. O bloco mostra as contas e os dois preços-limite.
+  const tx=await p.evaluate(()=>{const fm={natureza:'MN',iva:23,modo:'civa',fv:2,isv:'0',sgpu:'0',pvb:'10000',mg_fixa_pct:'6',mg_var_pct:'3,5',protocolo_pct:'5',apoio_demo_pct:'6',apoio_adic_pct:'10,5'};
+    const ver=x=>{S.fm=Object.assign({},fm,x);const c=fmCalc(),P=fmEsforcoPassos(c);S.screen='ficha';S.fmNeg=null;render();const el=document.querySelector('.fm-esf');
+      return {esf:c.esforcoPct==null?null:+(c.esforcoPct*100).toFixed(3),sem:P?+(P.semEsfPct*100).toFixed(3):null,p0:P&&P.precoSemEsf,p1:P&&P.precoLimite,aprov:c.aprovEsforco,
+        txt:el?el.textContent.replace(/[  ]/g,' ').replace(/\s+/g,' ').trim():'',linhas:[...document.querySelectorAll('.fm-esf-t tr')].map(t=>t.textContent.replace(/[  ]/g,' ').replace(/\s+/g,' ').trim()),neg:!!document.querySelector('.fm-esf-t td.neg'),
+        larg:document.documentElement.scrollWidth<=document.documentElement.clientWidth};};
+    return {semPreco:ver({}),noLimite:ver({preco_venda:'7250'}),abaixo:ver({preco_venda:'8000'}),esf15:ver({preco_venda:'7100'}),chefia:ver({preco_venda:'6800'}),
+      compart:ver({preco_venda:'7250',compart_conc:'81.30'}),semFixa:ver({mg_fixa_pct:'',preco_venda:'7250'})};});
+  await p.setViewportSize({width:1100,height:900});await p.evaluate(()=>{S.fm=Object.assign({},S.fm,{mg_fixa_pct:'6',preco_venda:'7100',compart_conc:'81.30'});render();const e=document.querySelector('.fm-esf');if(e)e.scrollIntoView({block:'center'});});
+  await p.screenshot({path:path.join(__dirname,'ficha_esforco.png')});
+  await p.setViewportSize({width:390,height:844});await p.evaluate(()=>{S.sidebarOpen=false;render();const e=document.querySelector('.fm-esf');if(e)e.scrollIntoView({block:'start'});});
+  const telLarg=await p.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth);await p.screenshot({path:path.join(__dirname,'ficha_esforco_telemovel.png')});
+  const T=tx;if(process.env.DBG)console.log(JSON.stringify([T.noLimite,T.semPreco,T.semFixa,telLarg],null,1));
+  casos.push({n:'taxa de esforço: 6 % fixa + apoios 5 + 6 + 10,5 = 27,5 % sem esforço (preço '+T.noLimite.p0+' €; chefia abaixo de '+T.noLimite.p1+' €)',esf:T.noLimite.esf,esperado:0,
+    ok:T.noLimite.esf===0&&T.noLimite.sem===27.5&&T.noLimite.p0===7250&&T.noLimite.p1===6900&&/usou 6,0 % dos 6,0 % da MG\. FIXA/.test(T.noLimite.txt)&&
+      /Apoios da BMW.*Protocolo 5,0 % · Apoio demo 6,0 % · Apoio adicional 10,5 %.*− 21,5 %/.test(T.noLimite.linhas[1]||'')&&/Desconto ao cliente.*27,5 %/.test(T.noLimite.linhas[0]||'')&&/sem esforço: 7 ?250 €/.test(T.noLimite.txt)&&/pelo esforço: 6 ?900 €/.test(T.noLimite.txt)});
+  casos.push({n:'taxa de esforço: desconto abaixo do teto mostra quanto da MG. FIXA foi usada',esf:T.abaixo.esf,esperado:0,ok:T.abaixo.esf===0&&!T.abaixo.aprov&&/sem esforço: usou 0,0 % dos 6,0 %/.test(T.abaixo.txt)&&!T.abaixo.neg});
+  casos.push({n:'taxa de esforço: 29 % de desconto = 1,5 % de esforço, dentro da variável',esf:T.esf15.esf,esperado:1.5,ok:T.esf15.esf===1.5&&!T.esf15.aprov&&/Esforço.*dentro da MG\. VARIÁVEL de 3,5 %.*1,5 %/.test(T.esf15.linhas.slice(-1)[0]||'')&&!T.esf15.neg});
+  casos.push({n:'taxa de esforço: 32 % de desconto passa a variável e vai à chefia (a vermelho)',esf:T.chefia.esf,esperado:4.5,ok:T.chefia.esf===4.5&&T.chefia.aprov&&T.chefia.neg&&/precisa de aprovação da chefia/.test(T.chefia.txt)});
+  casos.push({n:'taxa de esforço: comparticipação de 1 % da mota baixa o teto para 26,5 % (preço '+T.compart.p0+' €)',esf:T.compart.esf,esperado:1,
+    ok:T.compart.esf===1&&T.compart.sem===26.5&&T.compart.p0===7350&&/Custos do concessionário.*Comparticipação 1,0 %.*\+ 1,0 %/.test(T.compart.linhas[2]||'')&&/Sai da margem do concessionário.*7,0 %/.test(T.compart.linhas[3]||'')});
+  casos.push({n:'taxa de esforço: sem preço mostra só a regra e os preços-limite; sem MG. FIXA não aparece; cabe no telemóvel',esf:0,esperado:0,
+    ok:T.semPreco.linhas.length===0&&/acima da MG\. FIXA \(6,0 %\)/.test(T.semPreco.txt)&&/sem esforço: 7 ?250 €/.test(T.semPreco.txt)&&T.semFixa.txt===''&&telLarg});
   casos.forEach(c=>console.log((c.ok?'✓ ':'✗ ')+c.n+': esforço '+c.esf+' % (esperado '+c.esperado+' %)'));
   const ok=casos.every(c=>c.ok);console.log(ok?'Esforço correto':'FALHOU');await b.close();process.exit(ok?0:1);
 })();
