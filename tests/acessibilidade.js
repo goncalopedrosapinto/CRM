@@ -81,6 +81,7 @@ const ECRAS={
       ['Ficha: não aprovar (motivo)','()=>{S.faRecusar=null;fmAbrirNegocio("1","31").then(()=>{S.faRecusar=31;render();});}'],
       ['Evento: ficha de inscrição e acesso externo','()=>{S.screen="dashboard";S.gppSec="evento";S.eventoSel=1;render();inscFichaAbrir(1);}'],
       ['Ficha não aprovada (chefe)','()=>{S.faRecusar=null;fmSairDoNegocio();fmAbrirNegocio("2","32");}'],
+      ['Ficha: taxa de esforço com a explicação aberta','()=>{try{localStorage.setItem("bm_fm_esf","1");}catch(e){}render();const e=document.querySelector(".fm-esf");if(e)e.scrollIntoView({block:"center"});}'],
       ['Home: «A tratar» aberto','()=>{fmSairDoNegocio();S.screen="dashboard";S.gppSec="home";S.homeTratar=true;render();}'],
       ['Negócio: editar (Essencial + grupos)','()=>{S.homeTratar=false;setState({selected:S.records[0],form:recordToForm(S.records[0]||{}),screen:"edit",error:"",openGroups:{}});}'],
       ['Negócio novo (registo rápido)','()=>{S.fmRascunho=null;S.formCompleto=false;setState({encNovoVend:null,selected:null,form:emptyForm(),screen:"edit",error:"",openGroups:{}});}'],
