@@ -43,3 +43,6 @@ tests/ficha_esforco.png
 tests/ficha_esforco_telemovel.png
 tests/ficha_esforco_fechado.png
 tests/ficha_esforco_escuro.png
+tests/polimento_pc.png
+tests/polimento_borda_inicio.png
+tests/polimento_borda_fim.png
