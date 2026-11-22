@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-22-b">
+<meta name="app-version" content="2026-11-22-c">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -810,6 +810,9 @@ html,body{overflow-x:hidden;max-width:100vw}
 .fm-pac{margin-top:6px;padding:8px 10px;border-radius:10px;background:var(--blue-bg);font-size:12.5px;color:var(--text);line-height:1.4}
 .fm-pac .btn{margin-left:4px;padding:3px 10px}.fm-pac-ok{color:var(--green);font-weight:600;white-space:nowrap}
 .fm-pac.fora{background:var(--amber-bg)}
+.fm-pac-tr{display:flex;gap:8px;align-items:flex-start;margin-top:6px;font-size:12.5px;color:var(--text);cursor:pointer;font-weight:400}
+.fm-pac-tr input[type=checkbox]{-webkit-appearance:none;appearance:none;flex:none;width:16px;height:16px;margin:1px 0 0;border:1.5px solid var(--text3);border-radius:4px;background:var(--surface)}
+.fm-pac-tr input[type=checkbox]:checked{background:var(--blue) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' stroke='white' stroke-width='2.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/12px no-repeat;border-color:var(--blue)}
 .fm-pac-r{margin-top:4px}.fm-pac-r summary{cursor:pointer;font-weight:600;color:var(--blue)}.fm-pac-r ul{margin:4px 0 0;padding-left:18px}.fm-pac-r li+li{margin-top:2px}
 @media(max-width:700px){.pac{margin:0 12px 20px}.pac-f3{grid-template-columns:1fr}}
 .fm-prop{margin:0 16px 14px;padding:14px 16px 16px;background:var(--surface);border:1.5px solid var(--blue);border-radius:18px}
@@ -2684,7 +2687,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-22-b';
+const APP_VERSION='2026-11-22-c';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -3182,7 +3185,12 @@ function fmCalc(){
   // O valor escrito em "Confirmar com a plataforma" só serve para confirmar (mostra a diferença) e nunca entra nas contas.
   // O esforço mede-se a partir do PVP já com todos os apoios (pvpDesc).
   const pacC=fmIn('pac')*k;
-  const pvpPlat=pvpTab-pacC;
+  // Troca do BMSI (decisão do chefe, 22/11/2026): quando o cliente troca a oferta do BMSI por desconto, equipamento ou
+  // acessórios, a proposta já não tem a linha negativa do PAC, mas a BMW paga o mesmo PAC. O PAC continua a ser apoio da
+  // BMW (baixa o custo), não sai do PVP da plataforma, e o desconto ao cliente inclui a parte trocada (como no SA3).
+  // Essa parte é paga pela BMW: não conta como esforço, tal como a oferta normal do BMSI.
+  const pacTroca=!!(S.fm&&S.fm.pac_troca)&&pacC>0.004;
+  const pvpPlat=pvpTab-(pacTroca?0:pacC);
   const difPlat=plat?(plat-pvpPlat):null;
   const pvpRef=pvpPlat;
   const descCli=venda?(pvpRef-venda)/k:null;
@@ -3200,7 +3208,8 @@ function fmCalc(){
   const descEsfPct=(venda&&base)?((pvpDesc-venda)/k)/base:null;
   // apoios da BMW que entram no desconto ao cliente (o PAC fica de fora: o PVP da plataforma já vem sem ele)
   const apoiosEsfPct=base?Math.max(0,(descPreco-fmIn('pac'))/base):0;
-  const esforcoPct=(descCliPct!=null&&margFixaPct!=null)?Math.max(0,descCliPct+internosPct-margFixaPct):null;
+  const pacTrocaPct=pacTroca&&base?fmIn('pac')/base:0;
+  const esforcoPct=(descCliPct!=null&&margFixaPct!=null)?Math.max(0,descCliPct-pacTrocaPct+internosPct-margFixaPct):null;
   const esfApoiosPct=esforcoPct==null?null:Math.min(esforcoPct,apoiosEsfPct);   // parte do esforço coberta pelos apoios
   const esfConcPct=esforcoPct==null?null:Math.max(0,esforcoPct-apoiosEsfPct);    // parte que sai da MG. VARIÁVEL
   // aprovação da chefia: margem (s/IVA) abaixo de 0,50% do valor proposto
@@ -3211,7 +3220,7 @@ function fmCalc(){
   const aprovacao=aprovMargem||aprovEsforco;
   return {aprovMargem,aprovEsforco,compartCustoPct,subvCustoPct,sivaPct,descEsfPct,internosPct,margFixaPct,esforcoPct,apoiosEsfPct,esfApoiosPct,esfConcPct,margVarPct,margPct,folga,aprovacao,modo:fmModo(),iva,k,isv,sgpu,base,baseD:base-descPreco,dl,desc,descMarg,descPreco,pvpRef,descCli,descCliPct,descPct:base?desc/base:0,diversos,ptot,ptotD,taxasTab:taxas(ptot),taxasDesc:taxas(ptotD),
     pvp:pvpTab,pvpTab,pvpDesc,internos,intL:FM_INT.map(([key,l])=>({k:key,l,valor:fmIn(key)})),custo,custoSC,compart,descCusto,venda,vendaS,margem,margemPct,com,regraCom,regraCurta,
-    pvpPlat,pacC,descValor:venda-pvpRef,descPercent:pvpRef?(venda-pvpRef)/pvpRef:0,plat,difPlat};
+    pvpPlat,pacC,pacTroca,pacTrocaPct,descValor:venda-pvpRef,descPercent:pvpRef?(venda-pvpRef)/pvpRef:0,plat,difPlat};
 }
 // muda o modo e converte o que já está escrito, para nada mudar na conta
 function fmSetModo(m){
@@ -3523,11 +3532,11 @@ function fmEsforcoPassos(c){
   const b=c.base,nome=x=>FM_ESF_NOME[x.k]||x.l;
   const apoios=(c.dl||[]).filter(x=>!x.marg&&x.k!=='pac'&&Math.abs(x.valor)>0.004).map(x=>({l:nome(x),pct:x.valor/b}));
   const custos=(c.intL||[]).filter(x=>Math.abs(x.valor)>0.004).map(x=>({l:nome(x),pct:x.valor/b}));
-  const semEsfPct=c.margFixaPct-c.internosPct;                      // desconto (sobre o PVP da plataforma) até onde não há esforço
+  const semEsfPct=c.margFixaPct-c.internosPct+(c.pacTrocaPct||0);   // desconto (sobre o PVP da plataforma) até onde não há esforço
   const limPct=c.margVarPct!=null?semEsfPct+c.margVarPct:null;      // … até onde não vai à chefia pelo esforço
   const cobPct=c.margVarPct!=null&&c.apoiosEsfPct>1e-9?limPct+c.apoiosEsfPct:null;   // … até onde apoios + variável ainda cobrem
   const preco=x=>Math.ceil(c.pvpRef-x*b*c.k-1e-6);
-  const dado=c.venda?(c.descCliPct+c.internosPct):null;             // desconto ao cliente + custos do concessionário
+  const dado=c.venda?(c.descCliPct-(c.pacTrocaPct||0)+c.internosPct):null;   // desconto ao cliente (sem a parte do BMSI trocado) + custos
   const fixaUsada=dado==null?null:Math.min(Math.max(dado,0),c.margFixaPct);
   const varUsada=c.esfConcPct==null?null:(c.margVarPct!=null?Math.min(c.esfConcPct,c.margVarPct):c.esfConcPct);
   const acima=c.esfConcPct==null||c.margVarPct==null?0:Math.max(0,c.esfConcPct-c.margVarPct);   // nem apoios nem variável cobrem
@@ -3558,11 +3567,12 @@ function fmEsforcoHTML(c,pc,fE0){
   // explicação (retrátil): como se chega ao esforço, quem o paga e os preços-limite
   const contas=tem?`<div class="fm-esf-gt">Como se chega ao esforço</div><div class="fm-esf-g" role="list">`
       +li('Desconto ao cliente','O que o cliente paga a menos do que o PVP da plataforma. É o número do SA3.',pc(c.descCliPct))
+      +(c.pacTroca?li('BMSI trocado','O cliente trocou a oferta do BMSI por esta parte do desconto: paga pela BMW (PAC), não conta como esforço.','− '+pc(c.pacTrocaPct)):'')
       +li('Custos do concessionário',(P.custos.length?det(P.custos)+'. ':'')+'Preparação, comparticipação, subvenção e ofertas: sobem o custo da mota, por isso contam como desconto.',(c.internosPct>=0?'+ ':'− ')+pc(Math.abs(c.internosPct)))
       +li('Margem fixa','A margem do modelo. Enquanto o desconto não a passa, não há esforço.','− '+pc(c.margFixaPct))
       +li('Esforço','Tudo o que passa a margem fixa.'+(c.margVarPct!=null?` Acima de ${pc(c.margVarPct)} vai à chefia.`:''),fmtPcLim(c.esforcoPct,c.margVarPct),'tot'+(c.aprovEsforco?' neg':''))+'</div>'
     +`<div class="fm-esf-gt">Quem paga o esforço</div><div class="fm-esf-g" role="list">`
-      +li('Apoios',(P.apoios.length?det(P.apoios)+'. ':'Sem apoios nesta ficha. ')+'São esforço, mas pagos pela BMW.'+(c.pacC>0.004?' O PAC não entra: o PVP da plataforma já vem sem ele.':''),pc(c.esfApoiosPct)+(c.esfApoiosPct<c.apoiosEsfPct-1e-9?`<small>de ${pc(c.apoiosEsfPct)}</small>`:''))
+      +li('Apoios',(P.apoios.length?det(P.apoios)+'. ':'Sem apoios nesta ficha. ')+'São esforço, mas pagos pela BMW.'+(c.pacC>0.004&&!c.pacTroca?' O PAC não entra: o PVP da plataforma já vem sem ele.':''),pc(c.esfApoiosPct)+(c.esfApoiosPct<c.apoiosEsfPct-1e-9?`<small>de ${pc(c.apoiosEsfPct)}</small>`:''))
       +li('Margem variável','O que os apoios não cobrem sai daqui.',pc(P.varUsada)+(c.margVarPct!=null?`<small>de ${pc(c.margVarPct)}</small>`:''))
       +(P.acima>1e-9?li('Fora dos apoios e da variável','Já não há margem que o cubra: sai do resultado do concessionário.',fmtPcLim(P.acima),'neg'):'')+'</div>':'';
   const precos=`<div class="fm-esf-gt">Preços-limite</div><div class="fm-esf-g" role="list">`
@@ -3599,7 +3609,7 @@ function fmPDF(){
   let plat=lin('Modelo (já inclui ISV)','',fE(fmN('pvb')),'','',fmN('pvb'))+lin('Equipamento opcional','',fE(fmN('opc')),'','',fmN('opc'))+lin('Model and Options','',fE((c.base+c.isv)*k),'t');
   FM_PLAT2.forEach(([kk,l])=>plat+=linV(l,fmN(kk)));
   FM_DIV.forEach(([kk,l])=>plat+=linV('Diversos: '+l,fmN(kk)));
-  plat+=lin(c.pacC>0.004?'PVP com impostos, antes do PAC':'PVP com impostos (o da plataforma)','',fE(c.pvpTab),'t');
+  plat+=lin(c.pacC>0.004&&!c.pacTroca?'PVP com impostos, antes do PAC':'PVP com impostos (o da plataforma)','',fE(c.pvpTab),'t');
   if(c.plat)plat+=lin('PVP confirmado na plataforma',Math.abs(c.difPlat)<=0.05?'✓ bate':'dif. '+fE(c.difPlat),fE(c.plat));
   const imp=lin('ISV','',fE(c.isv),'','',c.isv)+lin('SGPU','',fE(c.sgpu),'','',c.sgpu)+lin('IVA',p1(c.iva),'');
   let cus='';FM_INT.forEach(([kk,l])=>cus+=FM_SIVA.includes(kk)?lin(l,c.sivaPct[kk]!=null?p2(c.sivaPct[kk])+' do custo':'',fE(fmN(kk)),'','s',fmN(kk)):linV(l,fmN(kk)));
@@ -3616,7 +3626,7 @@ function fmPDF(){
   const tem=!!c.venda&&c.esforcoPct!=null;
   const esfSub=c.margFixaPct==null?'falta MG. FIXA':(c.margVarPct==null?'falta MG. VARIÁVEL':(c.aprovEsforco?'passa os '+p1(c.margVarPct)+': vai à chefia':'chefia acima de '+p1(c.margVarPct)));
   const resumo='<div class="kp">'
-    +cel('','PVP',c.pvpPlat?fmtU(fE0(c.pvpPlat)):'—',c.pacC>0.004?'já sem o PAC; '+esc(fE0(c.pvpTab))+' antes':'o da plataforma')
+    +cel('','PVP',c.pvpPlat?fmtU(fE0(c.pvpPlat)):'—',c.pacTroca?'BMSI trocado: o PAC não sai do PVP':(c.pacC>0.004?'já sem o PAC; '+esc(fE0(c.pvpTab))+' antes':'o da plataforma'))
     +cel('hero','Valor proposto',c.venda?fmtU(fE0(c.venda)):'—',c.descCliPct!=null&&c.venda?(c.descCliPct>=0?'desconto ':'acima do PVP ')+p1(Math.abs(c.descCliPct)):'')
     +cel(c.venda&&c.margem<0?'neg':'','Margem',c.venda?fmtU(fE0(c.margem)):'—',c.venda?fmtPcLim(c.margemPct,0.005)+(c.aprovMargem?'; abaixo de '+p1(0.005):''):'')
     +cel('','Comissão',c.com==null?'—':fmtU(fE0(c.com)),esc(c.regraCurta||''))
@@ -3629,7 +3639,7 @@ function fmPDF(){
   const esfBloco=(tem&&P)?'<div class="esf"><div class="esf-h"><span class="esf-t">Taxa de esforço</span><span class="esf-d">tudo o que passa a margem fixa'+(c.margVarPct!=null?'; acima de '+p1(c.margVarPct)+' vai à chefia':'')+'</span></div>'
     +'<div class="barw"><div class="bar">'+P.seg.filter(x=>x[2]>1e-9).map(x=>'<span class="sg '+x[0]+'" style="width:'+(x[2]/P.tot*100).toFixed(2)+'%"></span>').join('')+'</div>'
     +(mk!=null?'<span class="mk" style="left:'+mk.toFixed(2)+'%"><span class="mkl">chefia</span></span>':'')+'</div>'
-    +'<div class="eq">'+e('Desconto ao cliente',p1(c.descCliPct))+op('+')+e('Custos do concessionário',p1(c.internosPct))+op('−')+e('Margem fixa',p1(c.margFixaPct),'','fx')+op('=')
+    +'<div class="eq">'+e('Desconto ao cliente',p1(c.descCliPct))+(c.pacTroca?op('−')+e('BMSI trocado',p1(c.pacTrocaPct)):'')+op('+')+e('Custos do concessionário',p1(c.internosPct))+op('−')+e('Margem fixa',p1(c.margFixaPct),'','fx')+op('=')
     +e('Esforço',fmtPcLim(c.esforcoPct,c.margVarPct),'tot'+(c.aprovEsforco?' neg':''))
     +'<div class="sep"></div>'+(c.apoiosEsfPct>1e-9?e('Apoios',p1(c.esfApoiosPct),'','ap'):'')+e('Margem variável',p1(P.varUsada)+(c.margVarPct!=null?' de '+p1(c.margVarPct):''),'','vr')+(P.acima>1e-9?e('Sem cobertura',fmtPcLim(P.acima),'neg','ac'):'')+'</div></div>':'';
   const aprov=(()=>{const fa=(S.fmFichas||[]).find(f=>S.fmFicha!=null&&String(f.id)===String(S.fmFicha));
@@ -3906,13 +3916,15 @@ function fmPropPreparar(R,fm){fm=fm||{};const r=R.resumo,av=[],k2=n=>Math.round(
     isv:n(r.isv),sgpu:n(r.sgpu),iva:r.iva||fm.iva||23,pvp_plat:n(r.total-desc),preco_venda:n(r.pagar),modelo:R.modelo.nome,proposta:R.proposta,cliente:R.cliente.nome};
   if(!fm.natureza)novo.natureza='MN';
   const pt=pacDoModelo(R.modelo.nome);
-  if(pt&&pt.linha){const v=Number(pt.linha.v);if(div.pac<0.005)av.push('A proposta não traz a oferta do BMSI; no '+S.pac.nome+' o '+pt.base+' tem '+fmtEur(v,2)+'. Se o cliente trocou o BMSI por outra oferta, escreve o PAC à mão.');
+  let troca=null;
+  if(pt&&pt.linha){const v=Number(pt.linha.v);if(div.pac<0.005){troca={v,on:pt.flex};av.push('A proposta não traz a oferta do BMSI; no '+S.pac.nome+' o '+pt.base+' tem '+fmtEur(v,2)+(pt.flex?'. Se o cliente trocou o BMSI por outra oferta, deixa marcada a opção da troca.':', e esta gama só tem o BMSI: confirma.'));}
     else if(Math.abs(div.pac-v)>0.5)av.push('O PAC da proposta ('+fmtEur(div.pac,2)+') não é o da tabela do '+S.pac.nome+' para o '+pt.base+' ('+fmtEur(v,2)+').');}
   else if(pt&&pt.sem&&div.pac>0.005)av.push('A proposta traz PAC, mas o '+pt.base+' está sem PAC no '+S.pac.nome+'.');
   const hoje=new Date().toISOString().slice(0,10);
   if(R.validade&&R.validade<hoje)av.push('Proposta fora de validade desde '+R.validade.split('-').reverse().join('/')+': os preços e as campanhas podem ter mudado.');
   // texto e valor proposto: só substituem o que já está escrito se o vendedor quiser
   const opc=['modelo','cliente','proposta','preco_venda'].filter(k=>novo[k]).map(k=>({k,on:!String(fm[k]||'').trim()||String(fm[k])===String(novo[k])}));
+  if(troca)opc.push({k:'pac_troca',on:troca.on,v:troca.v});
   return {R,novo,av,opc,pacL,falta:['mg_fixa_pct','mg_var_pct'].filter(k=>!(Number(String(fm[k]||'').replace(',','.'))>0))};}
 async function fmLerProposta(f){if(!f)return;
   if(!/\.pdf$/i.test(f.name||'')&&f.type!=='application/pdf'){avisoErro('Escolhe o PDF da proposta (A SUA PROPOSTA) que a plataforma BMW gera.');return;}
@@ -3925,7 +3937,7 @@ async function fmLerProposta(f){if(!f)return;
   }catch(e){S.fmPropA=false;render();avisoErro('Não consegui ler o PDF: '+erroTexto(e));}}
 function fmPropAplicar(){const X=S.fmProp;if(!X)return;const fm=S.fm||{},v={};
   FM_PROP_PLAT.forEach(k=>{v[k]=X.novo[k];});if(X.novo.natureza)v.natureza=X.novo.natureza;
-  X.opc.forEach(o=>{if(o.on)v[o.k]=X.novo[o.k];});
+  v.pac_troca='';X.opc.forEach(o=>{if(o.k==='pac_troca'){if(o.on){v.pac=String(o.v);v.pac_troca='1';}}else if(o.on)v[o.k]=X.novo[o.k];});
   const R=X.R;v.proposta_bmw={n:R.proposta,data:R.data,validade:R.validade,codigo:R.modelo.cod,modelo:R.modelo.nome,cor:R.cor,opcionais:R.opcionais,servico:R.servico,acessorios:R.acessorios,pac:X.pacL,lida_em:new Date().toISOString()};
   const mud=Object.keys(v).filter(k=>k!=='proposta_bmw'&&String(fm[k]==null?'':fm[k])!==String(v[k]==null?'':v[k]));
   S.fmDoPdf={keys:Object.keys(v).filter(k=>k!=='proposta_bmw'&&v[k]!==''&&v[k]!=null),n:R.proposta};S.fmProp=null;
@@ -3946,7 +3958,7 @@ function fmPropHTML(){const X=S.fmProp;if(S.fmPropA)return'<section class="fm-pr
     +linha('EcoValor','ecovalor')+(X.novo.iuc_s||fm.iuc_s?linha('IUC','iuc_s'):'')+linha('Transporte','transporte')+linha('PAC','pac',X.pacL.join(', '))
     +linha('ISV (sem IVA)','isv')+linha('SGPU (sem IVA)','sgpu')+linha('IVA','iva')+linha('PVP da plataforma','pvp_plat','preço total da proposta antes do desconto');
   const nomes={modelo:'Modelo',cliente:'Cliente',proposta:'Nº proposta',preco_venda:'Valor proposto'};
-  const opc=X.opc.map(o=>{const a=String(fm[o.k]||''),b=String(X.novo[o.k]);const vb=o.k==='preco_venda'?fmtEur(Number(b),2):b,va=o.k==='preco_venda'&&a?fmtEur(Number(a),2):a;
+  const opc=X.opc.map(o=>{if(o.k==='pac_troca')return'<label class="fm-prop-op"><input type="checkbox" data-prop-op="pac_troca"'+(o.on?' checked':'')+'><span><b>BMSI trocado</b>: o cliente trocou o BMSI por outra oferta; o PAC de '+esc(fmtEur(o.v,2))+' fica como apoio da BMW</span></label>';const a=String(fm[o.k]||''),b=String(X.novo[o.k]);const vb=o.k==='preco_venda'?fmtEur(Number(b),2):b,va=o.k==='preco_venda'&&a?fmtEur(Number(a),2):a;
     return'<label class="fm-prop-op"><input type="checkbox" data-prop-op="'+o.k+'"'+(o.on?' checked':'')+'><span><b>'+nomes[o.k]+'</b>: '+esc(vb)+(a&&a!==b?' <small>(na ficha: '+esc(va)+')</small>':'')+'</span></label>';}).join('');
   const val=R.validade?R.validade.split('-').reverse().join('/'):'';
   return'<section class="fm-prop" id="fm-prop" aria-labelledby="fm-prop-h"><div class="fm-prop-h"><h2 id="fm-prop-h" tabindex="-1">Proposta '+esc(R.proposta||'')+(R.modelo.nome?': '+esc(R.modelo.nome):'')+'</h2>'
@@ -4015,7 +4027,7 @@ function renderFichaMargem(){
     ${fmPropHTML()}
     ${fichasBarra}
     <div class="kpi-strip fm-kpis" aria-label="Resumo da ficha">
-      <div class="kpi-c"><span class="kpi-k">PVP</span><span class="kpi-v">${c.pvpPlat?fmtU(fE0(c.pvpPlat)):'—'}</span>${c.pacC>0.004?`<span class="kpi-s">já sem o PAC; ${fE0(c.pvpTab)} antes</span>`:''}</div>
+      <div class="kpi-c"><span class="kpi-k">PVP</span><span class="kpi-v">${c.pvpPlat?fmtU(fE0(c.pvpPlat)):'—'}</span>${c.pacC>0.004&&!c.pacTroca?`<span class="kpi-s">já sem o PAC; ${fE0(c.pvpTab)} antes</span>`:''}</div>
       <div class="kpi-c"><span class="kpi-k">Valor proposto</span><span class="kpi-v">${c.venda?fmtU(fE0(c.venda)):'—'}</span>${c.descCliPct!=null&&c.venda?`<span class="kpi-s">${c.descCliPct>=0?'desconto':'acima do PVP'} ${p1(Math.abs(c.descCliPct))}</span>`:''}</div>
       <div class="kpi-c"><span class="kpi-k">Margem</span><span class="kpi-v ${c.venda&&c.margem<0?'neg':''}">${c.venda?fmtU(fE0(c.margem)):'—'}</span>${c.venda?`<span class="kpi-s">${fmtPcLim(c.margemPct,0.005)}${c.aprovacao?' · <b class="neg">precisa aprovação</b>':''}</span>`:''}</div>
       <div class="kpi-c"><span class="kpi-k">Comissão</span><span class="kpi-v pos">${c.com==null?'—':fmtU(fE0(c.com))}</span>${c.regraCurta?`<span class="kpi-s">${esc(c.regraCurta)}</span>`:''}</div>
@@ -4042,19 +4054,19 @@ function renderFichaMargem(){
         ${FM_PLAT2.map(([key,l])=>lIn(key,l,'')).join('')}
         ${tr('fm-grp','Diversos'+tag('c'),'',`<span class="fm-mut">${fE(c.diversos*k)}</span>`)}
         ${FM_DIV.map(([key,l])=>tr('fm-sub','<span class="fm-ind">'+esc(l)+'</span>'+tag('c'),'',inE(key))).join('')}
-        ${tr('fm-t','PVP (c/ impostos)'+tag('c')+onde(c.pacC>0.004?'modelo + opcionais + impostos + diversos, antes do PAC':'= o PVP que a plataforma mostra (sem apoios nem margens)'),'',`<b>${fE(c.pvpTab)}</b>`)}
-        ${c.pacC>0.004?tr('fm-t fm-plat','PVP na plataforma'+tag('c')+onde('a plataforma põe o PAC nos Diversos e mostra este PVP · daqui conta o desconto ao cliente'),'',`<b>${fE(c.pvpPlat)}</b>`):''}
+        ${tr('fm-t','PVP (c/ impostos)'+tag('c')+onde(c.pacC>0.004&&!c.pacTroca?'modelo + opcionais + impostos + diversos, antes do PAC':'= o PVP que a plataforma mostra (sem apoios nem margens)'),'',`<b>${fE(c.pvpTab)}</b>`)}
+        ${c.pacC>0.004&&!c.pacTroca?tr('fm-t fm-plat','PVP na plataforma'+tag('c')+onde('a plataforma põe o PAC nos Diversos e mostra este PVP · daqui conta o desconto ao cliente'),'',`<b>${fE(c.pvpPlat)}</b>`):''}
         ${sep('Descontos e apoios',`(% sobre Model and Options sem IVA = ${fE(c.base)})`)}
-        ${c.dl.map(x=>tr(x.marg?'fm-marg':'',esc(x.l)+tag('c')+(x.marg?onde('margem do concessionário · não mexe no PVP'):'')+(x.k==='pac'?pacSugHTML(c):''),x.pct?inP(x.k+'_pct'):'',x.pct?`<span class="fm-neg">${fE(-x.valor*k)}</span>`:inE(x.k))).join('')}
+        ${c.dl.map(x=>tr(x.marg?'fm-marg':'',esc(x.l)+tag('c')+(x.marg?onde('margem do concessionário · não mexe no PVP'):'')+(x.k==='pac'?pacSugHTML(c)+(fmN('pac')>0||(S.fm||{}).pac_troca?`<label class="fm-pac-tr"><input type="checkbox" data-fm-chk="pac_troca"${(S.fm||{}).pac_troca?' checked':''}><span>O cliente trocou o BMSI por outra oferta (desconto, equipamento ou acessórios): o PAC fica como apoio da BMW e não sai do PVP</span></label>`:''):''),x.pct?inP(x.k+'_pct'):'',x.pct?`<span class="fm-neg">${fE(-x.valor*k)}</span>`:inE(x.k))).join('')}
         ${tr('fm-t','DESC. TOTAL'+tag('c'),`<span class="fm-hint">${pc(c.descPct)}</span>`,`<b class="fm-neg">−${fE(c.desc*k)}</b>`)}
         ${tr('fm-dest','PVP com apoios'+tag('c')+onde('PVP menos os apoios da marca (PAC, protocolo, apoios…) · daqui conta o esforço'),'',`<b>${fE(c.pvpDesc)}</b>`)}
-        ${tr('fm-ver','<span class="fm-ver-l">Confirmar com a plataforma</span>'+tag('c')+(verif?`<div style="margin-top:3px">${verif}</div>`:onde('escreve o PVP que a plataforma mostra'+(c.pacC>0.004?' (já sem o PAC)':''))),'',inE('pvp_plat','PVP da BMW'))}
+        ${tr('fm-ver','<span class="fm-ver-l">Confirmar com a plataforma</span>'+tag('c')+(verif?`<div style="margin-top:3px">${verif}</div>`:onde('escreve o PVP que a plataforma mostra'+(c.pacC>0.004&&!c.pacTroca?' (já sem o PAC)':''))),'',inE('pvp_plat','PVP da BMW'))}
         ${sep('Custos internos','— não aparecem na plataforma')}
         ${FM_INT.map(([key,l])=>FM_SIVA.includes(key)?tr('',esc(l)+tag('s')+onde('escreve-se sem IVA'),c.sivaPct[key]!=null?`<span class="fm-cpc" title="${esc(l)} com IVA a dividir pelo preço de custo">${(c.sivaPct[key]*100).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})} %<small>do preço de custo</small></span>`:'',inE(key)):lIn(key,l,'')).join('')}
         ${tr('fm-t','PREÇO CUSTO'+tag('c'),'',`<b>${fE(c.custo)}</b>`)}
         ${sep('Venda','')}
         ${tr('fm-dest','Valor proposto de venda'+tag('c')+custoTxt,'',inE('preco_venda','preço acordado'))}
-        ${c.descCli!=null?tr('fm-dest','Desconto ao cliente'+tag('s')+onde(c.pacC>0.004?'o que a plataforma BMW mostra: sobre o PVP já sem o PAC':'o valor que a plataforma BMW mostra'),`<b>${(c.descCliPct*100).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})} %</b>`,`<b>${c.descCli>0?'−':''}${fE(Math.abs(c.descCli))}</b>`):''}
+        ${c.descCli!=null?tr('fm-dest','Desconto ao cliente'+tag('s')+onde(c.pacC>0.004&&!c.pacTroca?'o que a plataforma BMW mostra: sobre o PVP já sem o PAC':'o valor que a plataforma BMW mostra'),`<b>${(c.descCliPct*100).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})} %</b>`,`<b>${c.descCli>0?'−':''}${fE(Math.abs(c.descCli))}</b>`):''}
         ${tr('','Valor proposto'+tag('s'),'',fE(c.vendaS))}
         ${tr('fm-dest','Margem'+tag('s'),`<b>${pc(c.margemPct)}</b>`,`<b class="${c.margem<0?'fm-neg':''}">${fE(c.margem)}</b>`)}
         ${tr('fm-dest','Comissão'+onde(c.regraCom),'',`<b>${c.com==null?'—':fE(c.com)}</b>`)}
@@ -12008,6 +12020,7 @@ function bindEvents(){
   app.onchange=function(e){
     const el=e.target;
     if(el.id==='fm-prop-inp'){const f=el.files&&el.files[0];fmLerProposta(f);return;}
+    if(el.dataset&&el.dataset.fmChk){fmSet(el.dataset.fmChk,el.checked?'1':'');return;}
     if(el.dataset&&el.dataset.pacFlex&&S.pacEd){const g=el.dataset.pacFlex,F=new Set(S.pacEd.flex||[]);if(el.checked)F.add(g);else F.delete(g);S.pacEd.flex=[...F].sort();return;}
     if(el.dataset&&el.dataset.propOp&&S.fmProp){const o=S.fmProp.opc.find(x=>x.k===el.dataset.propOp);if(o)o.on=el.checked;return;}
     if(el.dataset&&el.dataset.ac&&el.type==='checkbox'){acordoInput(el);return;}

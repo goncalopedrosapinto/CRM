@@ -61,7 +61,8 @@ async function contexto(b,uid,perfis){const ctx=await b.newContext({viewport:{wi
   const prop=await q.evaluate(()=>{const base=["RESUMO GERAL.","BMW M 1000 XR (0E91, 01.11.2026)","Modelo 27.549,04","Serviço & Garantia 1.590,00","Diversos - Outras Despesas 924,40","Preço total (impostos incl.) 30.064,40","ISV (1,18 %) 245,14","SGPU 0,78","IVA (23,00 %) 5.000,00","Valor a pagar 30.064,40"];
     const sem=fmPropPreparar(bmwPropostaLer([["Concessionário Motorrad","Cliente Ficticio"],base,["DIVERSOS - OUTRAS DESPESAS.","ECO EcoValor 1,90","TRA Transporte 922,50"]]),{});
     const dif=fmPropPreparar(bmwPropostaLer([["Concessionário Motorrad","Cliente Ficticio"],base.map(x=>x.replace('Diversos - Outras Despesas 924,40','Diversos - Outras Despesas -75,60').replace(/30\.064,40/g,'29.064,40')),["DIVERSOS - OUTRAS DESPESAS.","Oferta BMSI -1.000,00","ECO EcoValor 1,90","TRA Transporte 922,50"]]),{});
-    return {sem:sem.av,dif:dif.av};});
+    S.fm={natureza:'MN',iva:23,modo:'civa',fv:2};S.fmProp=sem;S.fmProp.ficheiro='p.pdf';fmPropAplicar();const fmT=Object.assign({},S.fm);
+    return {sem:sem.av,dif:dif.av,opc:sem.opc.filter(o=>o.k==='pac_troca'),fmT:{pac:fmT.pac,troca:fmT.pac_troca,plat:+fmCalc().pvpPlat.toFixed(2),tab:+fmCalc().pvpTab.toFixed(2)}};});
   const R={nav,ini:{nome:ini.nome,txt:ini.txt,q4:ini.q4},sug,semValor,grav,gsa,usado,f9,f450,k16,fora,prop,erros:C.erros.concat(V.erros)};console.log(JSON.stringify(R,null,1));
   const v=grav.valor||{};const mod=(v.modelos||[]).map(r=>r.m+'='+r.v);
   const ok={
@@ -76,6 +77,7 @@ async function contexto(b,uid,perfis){const ctx=await b.newContext({viewport:{wi
    'modelo sem valor na tabela: diz para confirmar':k16&&/não tem valor para K 1600 GTL/.test(k16.txt),
    'PAC fora de prazo: avisa':fora&&fora.fora&&/acabou a 01\/01\/2020/.test(fora.txt),
    'proposta: sem oferta do BMSI ou com PAC diferente da tabela, avisa':prop.sem.some(a=>/não traz a oferta do BMSI; no PAC Q4 2026 o M 1000 XR tem 1 080,00 €/.test(a.replace(/[ ]/g,' ')))&&prop.dif.some(a=>/O PAC da proposta \(1 000,00 €\) não é o da tabela/.test(a.replace(/[ ]/g,' '))),
+   'proposta sem o BMSI numa gama com troca: propõe manter o PAC como apoio e preenche-o':prop.opc.length===1&&prop.opc[0].on===true&&prop.opc[0].v===1080&&prop.fmT.pac==='1080'&&prop.fmT.troca==='1'&&prop.fmT.plat===prop.fmT.tab,
    'sem erros JS':!R.erros.length};
   let f=0;for(const [k,x] of Object.entries(ok)){console.log((x?'✓ ':'✗ ')+k);if(!x)f++;}
   console.log(f?`FALHOU (${f})`:'PAC do trimestre correto');await b.close();srv.close();process.exit(f?1:0);})();

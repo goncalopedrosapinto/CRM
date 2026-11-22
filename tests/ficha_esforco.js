@@ -121,6 +121,19 @@ const FILE=path.resolve(process.argv[2]||path.join(__dirname,'..','index.html'))
     ok:T.semApoios.esf===3.5&&T.semApoios.ap===0&&!T.semApoios.aprov&&T.semApoios.leg.length===3&&T.semApoios.p2===null&&T.semPreco.n==='—'&&T.semPreco.seg.length===0&&T.semPreco.linhas.length===3&&/escreve o valor proposto/.test(T.semPreco.sub)&&T.semFixa.txt===''&&telLarg});
   casos.push({n:'explicação retrátil: abre com o botão, mantém-se ao redesenhar e fica guardada; o foco não sai do botão',esf:0,esperado:0,
     ok:T.retratil.a0==='false'&&T.retratil.a1==='true'&&T.retratil.vis1&&T.retratil.foco&&T.retratil.aposRender&&T.retratil.guardado==='1'});
+  // Troca do BMSI (decisão do chefe, 22/11/2026): sem a linha do PAC na proposta, o PAC fica como apoio da BMW e não sai do PVP;
+  // o desconto ao cliente inclui a parte trocada (como no SA3), mas essa parte não é esforço. A margem é a mesma da oferta normal do BMSI.
+  const troca=await p.evaluate(()=>{const fm={natureza:'MN',iva:23,modo:'civa',fv:2,isv:'0',sgpu:'0',pvb:'10000',mg_fixa_pct:'6',mg_var_pct:'3.5',pac:'500'};
+    S.fm=Object.assign({},fm,{preco_venda:'8000'});const n=fmCalc();
+    S.fm=Object.assign({},fm,{pac_troca:'1',preco_venda:'8000'});const t=fmCalc();S.screen='ficha';S.fmNeg=null;render();
+    const lim=e=>e?e.textContent.replace(/[  ]/g,' ').replace(/\s+/g,' ').trim():'';
+    const lab=document.querySelector('[data-fm-chk="pac_troca"]');
+    let cap='';const o=window.open;window.open=()=>({document:{open(){},write(h){cap+=h},close(){}},focus(){},print(){}});fmPDF();window.open=o;
+    return {n:{plat:+n.pvpPlat.toFixed(2),desc:+(n.descCliPct*100).toFixed(3),esf:+(n.esforcoPct*100).toFixed(3),marg:+n.margem.toFixed(2)},
+      t:{plat:+t.pvpPlat.toFixed(2),tab:+t.pvpTab.toFixed(2),desc:+(t.descCliPct*100).toFixed(3),esf:+(t.esforcoPct*100).toFixed(3),marg:+t.margem.toFixed(2),troca:t.pacTroca,tp:+(t.pacTrocaPct*100).toFixed(3)},
+      chk:!!(lab&&lab.checked),linhas:[...document.querySelectorAll('.fm-esf-li')].map(lim),pdf:/BMSI trocado/.test(cap)&&/BMSI trocado: o PAC não sai do PVP/.test(cap)};});
+  casos.push({n:'BMSI trocado: PAC fica como apoio, não sai do PVP; desconto ao cliente com a troca; esforço e margem iguais à oferta normal',esf:troca.t.esf,esperado:troca.n.esf,
+    ok:troca.t.troca&&troca.t.plat===troca.t.tab&&troca.n.plat===+(troca.t.tab-500).toFixed(2)&&troca.t.desc>troca.n.desc&&Math.abs(troca.t.desc-troca.n.desc-troca.t.tp)<0.001&&troca.t.esf===troca.n.esf&&troca.t.marg===troca.n.marg&&troca.chk&&troca.linhas.some(l=>/^BMSI trocado.*paga pela BMW \(PAC\), não conta como esforço/.test(l))&&troca.pdf});
   casos.forEach(c=>console.log((c.ok?'✓ ':'✗ ')+c.n+': esforço '+c.esf+' % (esperado '+c.esperado+' %)'));
   const ok=casos.every(c=>c.ok);console.log(ok?'Esforço correto':'FALHOU');await b.close();process.exit(ok?0:1);
 })();
