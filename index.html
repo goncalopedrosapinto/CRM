@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-18-a">
+<meta name="app-version" content="2026-11-22-a">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -790,6 +790,26 @@ html,body{overflow-x:hidden;max-width:100vw}
 .fm-esf-sub{font-size:12px;color:var(--text2)}
 .fm-esf-n{font-size:30px;line-height:1;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--text);white-space:nowrap}
 .fm-esf-n.neg{color:var(--red)}
+.fm-prop{margin:0 16px 14px;padding:14px 16px 16px;background:var(--surface);border:1.5px solid var(--blue);border-radius:18px}
+.fm-prop-h h2{font-size:16px;font-weight:700;letter-spacing:-.01em;margin:0;color:var(--text)}.fm-prop-h h2:focus,.fm-prop-h h2:focus-visible{outline:none!important}
+.fm-prop-h p{font-size:13px;color:var(--text2);margin:3px 0 0}
+.fm-prop-av{margin:10px 0 0;padding:10px 12px 10px 28px;background:var(--amber-bg);border-radius:12px;font-size:13px;color:var(--text)}.fm-prop-av li+li{margin-top:3px}
+.fm-prop-tw{overflow-x:auto;margin-top:10px}
+.fm-prop-t{width:100%;border-collapse:collapse;font-size:13px}
+.fm-prop-t th,.fm-prop-t td{padding:6px 8px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.fm-prop-t th[scope=row],.fm-prop-t thead th:first-child{text-align:left;white-space:normal;font-weight:500;color:var(--text)}
+.fm-prop-t th[scope=row] small{display:block;font-size:12px;font-weight:400;color:var(--text2)}
+.fm-prop-t thead th{font-size:12px;font-weight:600;color:var(--text2)}
+.fm-prop-t tr.muda td:last-child{font-weight:700;color:var(--blue)}
+.fm-prop-ops{display:flex;flex-direction:column;gap:6px;margin-top:12px;font-size:13px}
+.fm-prop-op{display:flex;gap:9px;align-items:flex-start;cursor:pointer}.fm-prop-op small{color:var(--text2)}
+.fm-prop-op input[type=checkbox]{-webkit-appearance:none;appearance:none;flex:none;width:18px;height:18px;margin:0;border:1.5px solid var(--text3);border-radius:5px;background:var(--surface);cursor:pointer}
+.fm-prop-op input[type=checkbox]:checked{background:var(--blue) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' stroke='white' stroke-width='2.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/13px no-repeat;border-color:var(--blue)}
+.fm-prop-op input[type=checkbox]:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.fm-prop-falta{font-size:13px;color:var(--text);margin:12px 0 0;font-weight:600}
+.fm-prop-b{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.stock-inp.fm-pdf{background:var(--blue-bg);box-shadow:inset 0 0 0 1px var(--blue)}
+@media(max-width:700px){.fm-prop{margin:0 12px 12px;padding:12px}.hdr-btn[data-action="fm-ler-proposta"] span{display:none}}
 /* régua de leitura: a linha da ficha por baixo do rato (só com rato; no toque não há hover) */
 @media(hover:hover) and (pointer:fine){.fm-tbl tbody tr:not(.fm-h):not(.fm-sep):not(.fm-dest):hover>td{background:var(--surface2)}}
 /* o título da secção fica preso por baixo da faixa de números enquanto se rola a ficha (PC e tablet deitado) */
@@ -2642,7 +2662,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-18-a';
+const APP_VERSION='2026-11-22-a';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -3716,7 +3736,134 @@ async function fmAssociar(id){
   try{await fmLigarFicha(id);setTimeout(()=>toast(`Ficha junta ao negócio de ${r.id_cliente||'cliente'} (${r.status})`),450);}
   catch(e){toast('Não juntei a ficha: '+erroTexto(e),'erro');}
 }
-function fmSet(k,v){S.fm=Object.assign({},S.fm||{},{[k]:v});
+// ---- Ler a proposta BMW (PDF que a plataforma gera, «A SUA PROPOSTA.») para preencher a ficha ----
+// O PDF é lido no próprio browser (PDF.js alojado no site, vendor/pdfjs, licença Apache 2.0): não sai do computador.
+let _pdfjsP=null;
+function pdfjsCarregar(){if(window.pdfjsLib)return Promise.resolve(window.pdfjsLib);if(_pdfjsP)return _pdfjsP;
+  _pdfjsP=new Promise((ok,ko)=>{const s=document.createElement('script');s.src='vendor/pdfjs/pdf.min.js';
+    s.onload=()=>{const L=window.pdfjsLib;if(!L){_pdfjsP=null;ko(new Error('O leitor de PDF não carregou.'));return;}L.GlobalWorkerOptions.workerSrc='vendor/pdfjs/pdf.worker.min.js';ok(L);};
+    s.onerror=()=>{_pdfjsP=null;ko(new Error('Não consegui carregar o leitor de PDF. Verifica a internet e tenta outra vez.'));};document.head.appendChild(s);});
+  return _pdfjsP;}
+// páginas → linhas de texto (os pedaços com a mesma altura juntam-se numa linha, da esquerda para a direita)
+async function pdfLinhas(doc){const P=[];for(let n=1;n<=doc.numPages;n++){const pg=await doc.getPage(n);const tc=await pg.getTextContent();
+  const it=tc.items.filter(i=>i.str&&i.str.trim()).map(i=>({x:i.transform[4],y:i.transform[5],s:i.str}));
+  it.sort((a,b)=>b.y-a.y||a.x-b.x);const L=[];for(const i of it){let l=L.find(l=>Math.abs(l.y-i.y)<=2.5);if(!l){l={y:i.y,p:[]};L.push(l);}l.p.push(i);}
+  L.forEach(l=>l.p.sort((a,b)=>a.x-b.x));L.sort((a,b)=>b.y-a.y);
+  P.push(L.map(l=>l.p.map(p=>p.s.trim()).join(' ').replace(/\s+/g,' ').replace(/\s+([.,)])/g,'$1').replace(/\(\s+/g,'(').trim()));}
+  return P;}
+const BMW_NUM=/(-?\d{1,3}(?:\.\d{3})*,\d{2})$/;
+function bmwNum(t){const m=String(t).match(BMW_NUM);return m?Math.round(Number(m[1].replace(/\./g,'').replace(',','.'))*100)/100:null;}
+function bmwData(t){const m=String(t||'').match(/(\d{2})\.(\d{2})\.(\d{4})/);return m?m[3]+'-'+m[2]+'-'+m[1]:'';}
+// linhas da proposta → dados (só lê; não mexe na ficha)
+function bmwPropostaLer(P){
+  const T=P.flat(),R={proposta:'',data:'',validade:'',vendedor:'',cliente:{nome:'',tlm:'',nif:''},modelo:{cod:'',nome:''},cor:'',opcionais:[],servico:[],acessorios:[],diversos:[],resumo:{},desc:[],desconhecidas:[]};
+  const sem=t=>/^(Concessionário Motorrad|Preço \(IVA incl\.\) EUR|Página \d+ de \d+)$/.test(t)||/^NºProposta \d+$/.test(t)||/^Data de impressão /.test(t);
+  const cab=t=>/^[A-ZÀ-Ý0-9][A-ZÀ-Ý0-9 &\-]+\.$/.test(t)||/^A SUA PROPOSTA\./.test(t);
+  // cabeçalho e cliente (página 1)
+  for(const t of T){let m;
+    if(!R.proposta&&(m=t.match(/NºProposta (\d+)/)))R.proposta=m[1];
+    if(!R.data&&(m=t.match(/Data de impressão (\d{2}\.\d{2}\.\d{4})/)))R.data=bmwData(m[1]);
+    if(!R.validade&&(m=t.match(/Data de validade (\d{2}\.\d{2}\.\d{4})/)))R.validade=bmwData(m[1]);
+    if(!R.cliente.nif&&(m=t.match(/^Nº Contribuinte (\d{9})/)))R.cliente.nif=m[1];
+    if(!R.cliente.tlm&&(m=t.match(/^Nº Tlm\.[^0-9+]*([+\d][\d ]{7,})/)))R.cliente.tlm=m[1].replace(/\s+/g,'');}
+  const p1=P[0]||[],i0=p1.indexOf('Concessionário Motorrad');if(i0>=0&&p1[i0+1]&&!/^Nº |^A SUA PROPOSTA/.test(p1[i0+1]))R.cliente.nome=p1[i0+1];
+  const iv=T.indexOf('Vendedor(a)');if(iv>=0&&T[iv+1])R.vendedor=T[iv+1];
+  // secções
+  let sec='';
+  for(const t of T){
+    if(cab(t)){sec=t.replace(/\.$/,'').replace(/\s+Data de impressão.*$/,'').replace(/\.$/,'').trim().toUpperCase();continue;}
+    if(sem(t)||/^Total -?[\d.]+,\d{2}$/.test(t))continue;
+    const v=bmwNum(t),l=v==null?t:t.replace(BMW_NUM,'').trim();
+    if(sec==='RESUMO GERAL'){let m;
+      if(v==null){if((m=t.match(/^BMW (.+?) \((\w{3,5}),/))){R.modelo.nome=m[1];R.modelo.cod=m[2];}continue;}
+      if(/^Modelo$/i.test(l))R.resumo.modelo=v;
+      else if(/^Equipamento opcional/i.test(l))R.resumo.opc=v;
+      else if(/^Desconto/i.test(l))R.desc.push({l,v});
+      else if(/^Servi[cç]o & Garantia/i.test(l))R.resumo.bsi=v;
+      else if(/^Acess[oó]rios/i.test(l)){if(/concession/i.test(l))R.resumo.acess_conc=(R.resumo.acess_conc||0)+v;else R.resumo.acess_marca=(R.resumo.acess_marca||0)+v;}
+      else if(/^Diversos/i.test(l))R.resumo.diversos=v;
+      else if(/^Pre[cç]o total/i.test(l))R.resumo.total=v;
+      else if(/^ISV/i.test(l))R.resumo.isv=v;
+      else if(/^SGPU/i.test(l))R.resumo.sgpu=v;
+      else if((m=l.match(/^IVA \((\d+(?:,\d+)?) ?%\)/)))R.resumo.iva=Number(m[1].replace(',','.'));
+      else if(/^Valor a pagar/i.test(l))R.resumo.pagar=v;
+      else R.desconhecidas.push({l,v});
+      continue;}
+    if(v==null)continue;
+    const m=l.match(/^([A-Z0-9]{2,6}) (.+)$/),cod=m?m[1]:'',nome=m?m[2]:l;
+    if(sec==='MODELO'){if(!R.modelo.cod){R.modelo.cod=cod;R.modelo.nome=nome.replace(/^BMW /,'');}}
+    else if(sec==='YOUR DESIGN'||sec==='O SEU DESIGN')R.cor=R.cor?R.cor+'; '+nome:nome;
+    else if(/^PACKS|EQUIPAMENTO/.test(sec))R.opcionais.push({c:cod,n:nome,v});
+    else if(/^SERVI[CÇ]O/.test(sec))R.servico.push({c:cod,n:nome,v});
+    else if(/^ACESS/.test(sec))R.acessorios.push({c:cod,n:nome,v});
+    else if(/^DIVERSOS/.test(sec))R.diversos.push({c:cod,n:nome,v});}
+  R.modelo.nome=R.modelo.nome.replace(/^BMW /,'');
+  return R;}
+// dados lidos → o que vai para a ficha, com avisos (o vendedor confirma antes)
+const FM_PROP_PLAT=['pvb','opc','bsi','acess_marca','acess_conc','ecovalor','iuc_s','transporte','pac','isv','sgpu','iva','pvp_plat'];
+function fmPropPreparar(R,fm){fm=fm||{};const r=R.resumo,av=[],k2=n=>Math.round(n*100)/100;
+  if(r.modelo==null||r.total==null||r.pagar==null)return {erro:'Não parece uma proposta da plataforma BMW (faltam o modelo, o preço total ou o valor a pagar).'};
+  const div={ecovalor:0,iuc_s:0,transporte:0,pac:0},pacL=[];
+  for(const d of R.diversos){if(d.c==='ECO'||/eco ?valor/i.test(d.n))div.ecovalor+=d.v;else if(d.c==='TRA'||/transporte/i.test(d.n))div.transporte+=d.v;
+    else if(/^IUC$/i.test(d.c)||/IUC|imposto único/i.test(d.n))div.iuc_s+=d.v;else if(d.v<0){div.pac+=-d.v;pacL.push(d.n);}else R.desconhecidas.push({l:'Diversos: '+d.n,v:d.v});}
+  if(r.diversos!=null&&Math.abs(k2(div.ecovalor+div.transporte+div.iuc_s-div.pac)-r.diversos)>0.02&&!R.desconhecidas.some(x=>/^Diversos/.test(x.l)))av.push('Os diversos não somam o total da proposta: confirma EcoValor, IUC, transporte e PAC.');
+  const desc=k2(R.desc.reduce((a,x)=>a+x.v,0));
+  const soma=k2((r.modelo||0)+(r.opc||0)+desc+(r.bsi||0)+(r.acess_marca||0)+(r.acess_conc||0)+(r.diversos||0));
+  // o SGPU não vem em nenhuma linha: só entra no total, com IVA
+  if(Math.abs(soma+k2((r.sgpu||0)*(1+(r.iva||23)/100))-r.total)>0.05)av.push('As linhas lidas não somam o preço total da proposta ('+fmtEur(r.total,2)+'): há uma linha que não reconheci.');
+  R.desconhecidas.forEach(x=>av.push('Não sei onde pôr «'+x.l+'» ('+fmtEur(x.v,2)+'): escreve-o à mão.'));
+  const n=x=>x?String(k2(x)):'';
+  const novo={pvb:n(r.modelo),opc:n(r.opc),bsi:n(r.bsi),acess_marca:n(r.acess_marca),acess_conc:n(r.acess_conc),ecovalor:n(div.ecovalor),iuc_s:n(div.iuc_s),transporte:n(div.transporte),pac:n(div.pac),
+    isv:n(r.isv),sgpu:n(r.sgpu),iva:r.iva||fm.iva||23,pvp_plat:n(r.total-desc),preco_venda:n(r.pagar),modelo:R.modelo.nome,proposta:R.proposta,cliente:R.cliente.nome};
+  if(!fm.natureza)novo.natureza='MN';
+  const hoje=new Date().toISOString().slice(0,10);
+  if(R.validade&&R.validade<hoje)av.push('Proposta fora de validade desde '+R.validade.split('-').reverse().join('/')+': os preços e as campanhas podem ter mudado.');
+  // texto e valor proposto: só substituem o que já está escrito se o vendedor quiser
+  const opc=['modelo','cliente','proposta','preco_venda'].filter(k=>novo[k]).map(k=>({k,on:!String(fm[k]||'').trim()||String(fm[k])===String(novo[k])}));
+  return {R,novo,av,opc,pacL,falta:['mg_fixa_pct','mg_var_pct'].filter(k=>!(Number(String(fm[k]||'').replace(',','.'))>0))};}
+async function fmLerProposta(f){if(!f)return;
+  if(!/\.pdf$/i.test(f.name||'')&&f.type!=='application/pdf'){avisoErro('Escolhe o PDF da proposta (A SUA PROPOSTA) que a plataforma BMW gera.');return;}
+  S.fmPropA=true;render();
+  try{const L=await pdfjsCarregar();const doc=await L.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise;
+    const P=await pdfLinhas(doc);const R=bmwPropostaLer(P);const X=fmPropPreparar(R,S.fm||{});
+    S.fmPropA=false;if(X.erro){render();avisoErro(X.erro);return;}
+    X.ficheiro=f.name||'proposta.pdf';S.fmProp=X;render();
+    setTimeout(()=>{const e=document.getElementById('fm-prop');if(e){try{e.scrollIntoView({block:'start'});}catch(_){}const h=e.querySelector('h2');if(h)h.focus();}},30);
+  }catch(e){S.fmPropA=false;render();avisoErro('Não consegui ler o PDF: '+erroTexto(e));}}
+function fmPropAplicar(){const X=S.fmProp;if(!X)return;const fm=S.fm||{},v={};
+  FM_PROP_PLAT.forEach(k=>{v[k]=X.novo[k];});if(X.novo.natureza)v.natureza=X.novo.natureza;
+  X.opc.forEach(o=>{if(o.on)v[o.k]=X.novo[o.k];});
+  const R=X.R;v.proposta_bmw={n:R.proposta,data:R.data,validade:R.validade,codigo:R.modelo.cod,modelo:R.modelo.nome,cor:R.cor,opcionais:R.opcionais,servico:R.servico,acessorios:R.acessorios,pac:X.pacL,lida_em:new Date().toISOString()};
+  const mud=Object.keys(v).filter(k=>k!=='proposta_bmw'&&String(fm[k]==null?'':fm[k])!==String(v[k]==null?'':v[k]));
+  S.fmDoPdf={keys:Object.keys(v).filter(k=>k!=='proposta_bmw'&&v[k]!==''&&v[k]!=null),n:R.proposta};S.fmProp=null;
+  fmSetVarios(v);
+  const c=fmCalc();const bate=c.difPlat!=null&&Math.abs(c.difPlat)<=0.05;
+  toast('Ficha preenchida com a proposta '+(R.proposta||'')+' ('+mud.length+' campos)'+(bate?'; o PVP bate com a plataforma':'')+(X.falta.length?'. Falta a margem fixa e a variável.':'.'),bate?'':'erro');}
+function fmSetVarios(o){S.fm=Object.assign({},S.fm||{},o);
+  if(S.fmNeg==='novo')S.fmRascunho=S.fm;
+  else if(S.fmNeg)fmGuardarNegocio();
+  else{try{localStorage.setItem('bc_fm',JSON.stringify(S.fm));}catch(e){}}
+  render();}
+function fmPropHTML(){const X=S.fmProp;if(S.fmPropA)return'<section class="fm-prop" aria-live="polite"><div class="fm-prop-h"><h2 tabindex="-1">A ler a proposta…</h2></div></section>';if(!X)return'';
+  const R=X.R,fm=S.fm||{},fE=n=>n===''||n==null?'—':fmtEur(Number(n),2);
+  const linha=(l,k,ex)=>{const a=fm[k]==null?'':String(fm[k]),b=X.novo[k]==null?'':String(X.novo[k]);const igual=Math.abs((Number(a)||0)-(Number(b)||0))<0.005;
+    return'<tr'+(igual?'':' class="muda"')+'><th scope="row">'+esc(l)+(ex?'<small>'+esc(ex)+'</small>':'')+'</th><td>'+esc(k==='iva'?(a?a+' %':'—'):fE(a))+'</td><td>'+esc(k==='iva'?b+' %':fE(b))+'</td></tr>';};
+  const linhas=linha('Modelo (com IVA, inclui ISV)','pvb',R.modelo.nome+(R.modelo.cod?' ('+R.modelo.cod+')':''))+linha('Equipamento opcional','opc',R.opcionais.map(o=>o.n).join(', '))+linha('Serviço & Garantia','bsi',R.servico.map(o=>o.n).join(', '))
+    +(X.novo.acess_marca||fm.acess_marca?linha('Acessórios Originais Marca','acess_marca'):'')+(X.novo.acess_conc||fm.acess_conc?linha('Acessórios Concessionário','acess_conc'):'')
+    +linha('EcoValor','ecovalor')+(X.novo.iuc_s||fm.iuc_s?linha('IUC','iuc_s'):'')+linha('Transporte','transporte')+linha('PAC','pac',X.pacL.join(', '))
+    +linha('ISV (sem IVA)','isv')+linha('SGPU (sem IVA)','sgpu')+linha('IVA','iva')+linha('PVP da plataforma','pvp_plat','preço total da proposta antes do desconto');
+  const nomes={modelo:'Modelo',cliente:'Cliente',proposta:'Nº proposta',preco_venda:'Valor proposto'};
+  const opc=X.opc.map(o=>{const a=String(fm[o.k]||''),b=String(X.novo[o.k]);const vb=o.k==='preco_venda'?fmtEur(Number(b),2):b,va=o.k==='preco_venda'&&a?fmtEur(Number(a),2):a;
+    return'<label class="fm-prop-op"><input type="checkbox" data-prop-op="'+o.k+'"'+(o.on?' checked':'')+'><span><b>'+nomes[o.k]+'</b>: '+esc(vb)+(a&&a!==b?' <small>(na ficha: '+esc(va)+')</small>':'')+'</span></label>';}).join('');
+  const val=R.validade?R.validade.split('-').reverse().join('/'):'';
+  return'<section class="fm-prop" id="fm-prop" aria-labelledby="fm-prop-h"><div class="fm-prop-h"><h2 id="fm-prop-h" tabindex="-1">Proposta '+esc(R.proposta||'')+(R.modelo.nome?': '+esc(R.modelo.nome):'')+'</h2>'
+    +'<p>'+esc(X.ficheiro)+(R.data?', de '+esc(R.data.split('-').reverse().join('/')):'')+(val?', válida até '+esc(val):'')+(R.cor?'. Cor: '+esc(R.cor):'')+'. Confirma antes de preencher: os valores da plataforma substituem os da ficha.</p></div>'
+    +(X.av.length?'<ul class="fm-prop-av" role="list">'+X.av.map(a=>'<li>'+esc(a)+'</li>').join('')+'</ul>':'')
+    +'<div class="fm-prop-tw" tabindex="0" role="region" aria-label="Valores da proposta"><table class="fm-prop-t"><thead><tr><th scope="col">Campo</th><th scope="col">Na ficha</th><th scope="col">Na proposta</th></tr></thead><tbody>'+linhas+'</tbody></table></div>'
+    +(opc?'<div class="fm-prop-ops">'+opc+'</div>':'')
+    +(X.falta.length?'<p class="fm-prop-falta">A proposta não traz a margem fixa nem a variável: escreve-as tu.</p>':'')
+    +'<div class="fm-prop-b"><button type="button" class="btn btn-dark btn-sm" data-action="fm-prop-cancelar">Cancelar</button><button type="button" class="btn btn-orange btn-sm" data-action="fm-prop-aplicar">Preencher a ficha</button></div></section>';}
+function fmSet(k,v){S.fm=Object.assign({},S.fm||{},{[k]:v});if(S.fmDoPdf&&S.fmDoPdf.keys)S.fmDoPdf.keys=S.fmDoPdf.keys.filter(x=>x!==k);
   if(S.fmNeg==='novo')S.fmRascunho=S.fm;
   else if(S.fmNeg)fmGuardarNegocio();
   else{try{localStorage.setItem('bc_fm',JSON.stringify(S.fm));}catch(e){}}
@@ -3737,8 +3884,9 @@ function renderFichaMargem(){
   const c=fmCalc(),fm=S.fm||{},k=c.k;
   const fE=n=>fmtEur(n,2),fE0=n=>fmtEur(n,0),pc=n=>fmtPc(n,2),p1=n=>fmtPc(n,1);
   const val=key=>{const v=fm[key];if(v==null||v==='')return'';return (typeof v==='number'&&!Number.isInteger(v))?String(Math.round(v*100)/100):esc(v);};
-  const inE=(key,ph)=>`<div class="stock-eurwrap"><input class="stock-inp stock-num" data-fm="${key}" type="number" step="0.01" value="${val(key)}" placeholder="${ph||'0'}"><span class="stock-eur2">€</span></div>`;
-  const inP=key=>`<span class="stock-eurwrap"><input class="stock-inp stock-num fm-pct" data-fm="${key}" type="number" step="0.01" value="${val(key)}" placeholder="0"><span class="stock-eur2">%</span></span>`;
+  const dp=key=>S.fmDoPdf&&S.fmDoPdf.keys&&S.fmDoPdf.keys.includes(key)?` fm-pdf" title="Lido da proposta ${esc(S.fmDoPdf.n||'')}`:'';
+  const inE=(key,ph)=>`<div class="stock-eurwrap"><input class="stock-inp stock-num${dp(key)}" data-fm="${key}" type="number" step="0.01" value="${val(key)}" placeholder="${ph||'0'}"><span class="stock-eur2">€</span></div>`;
+  const inP=key=>`<span class="stock-eurwrap"><input class="stock-inp stock-num fm-pct${dp(key)}" data-fm="${key}" type="number" step="0.01" value="${val(key)}" placeholder="0"><span class="stock-eur2">%</span></span>`;
   const tag=t=>t?`<span class="fm-iva ${t==='c'?'civa':''}">${t==='c'?'c/IVA':'s/IVA'}</span>`:'';
   const onde=t=>t?`<div class="fm-onde">${esc(t)}</div>`:'';
   const tr=(cls,a,b,cc)=>`<tr class="${cls||''}"><td class="fm-l">${a}</td><td class="fm-c">${b||''}</td><td class="fm-v">${cc||''}</td></tr>`;
@@ -3758,7 +3906,7 @@ function renderFichaMargem(){
   <div class="hdr"><button class="hdr-back" data-action="fm-voltar">←</button><div class="hdr-accent"></div>
     <div class="hdr-title">Ficha de Margem${S.fmNeg?` <span class="fm-lig">${S.fmNeg==='novo'?'novo registo':'negócio'}</span>`:' <span class="fm-lig solta">solta</span>'}</div>
     ${fmPodeGuardar()?`<button class="hdr-btn hdr-pri${S.fmGuardar?' on':''}" data-action="fm-guardar-abrir" aria-expanded="${!!S.fmGuardar}" title="Guardar esta ficha num negócio novo ou num negócio em curso">${ico('plus','ic-sm')}<span class="hp-l">Guardar num negócio</span><span class="hp-s">Guardar</span></button>`:''}
-    <button class="hdr-btn" data-action="fm-pdf" title="Exportar PDF">${ico('download','ic-sm')}<span>PDF</span></button><button class="hdr-btn" data-action="fm-limpar">Limpar</button></div>
+    <button class="hdr-btn" data-action="fm-ler-proposta" title="Preencher a ficha com o PDF da proposta da plataforma BMW">${ico('inbox','ic-sm')}<span>Ler proposta</span></button><input type="file" id="fm-prop-inp" accept="application/pdf,.pdf" hidden><button class="hdr-btn" data-action="fm-pdf" title="Exportar PDF">${ico('download','ic-sm')}<span>PDF</span></button><button class="hdr-btn" data-action="fm-limpar">Limpar</button></div>
   <div class="content"><div style="padding:12px 0">
     ${fmGuardarHTML()}
     <div class="fm-id">
@@ -3771,6 +3919,7 @@ function renderFichaMargem(){
     </div>
     ${S.fmConflito?`<div class="fm-conflito" role="alert"><b>⚠ Esta ficha foi alterada por outra pessoa</b> (${esc(new Date(S.fmConflito.upd).toLocaleString('pt-PT'))}) enquanto a tinhas aberta. As tuas últimas alterações <b>ainda não foram gravadas</b>.<div class="fm-conflito-acoes"><button class="btn btn-dark btn-sm" data-action="fm-conflito-carregar">Ver a versão gravada (perco as minhas)</button><button class="btn btn-orange btn-sm" data-action="fm-conflito-manter">Gravar a minha por cima</button></div></div>`:''}
     ${S.fmNeg?`<div class="fm-negbar">${S.fmNeg==='novo'?'📝 Rascunho do registo novo — fica ligada ao negócio quando carregares em <b>Guardar</b>.':`🔗 Ligada a este negócio · <span id="fm-estado" role="status">${S.fmEstado?esc(S.fmEstado):(S.fmGravado?'guardada':'ainda sem alterações')}</span> — guarda-se sozinha a cada alteração. <button class="fm-volta-neg" data-action="fm-voltar">← Voltar ao negócio</button>`}${S.fmErro?` <span style="color:var(--red)">${esc(S.fmErro)}</span>`:''}</div>`:''}
+    ${fmPropHTML()}
     ${fichasBarra}
     <div class="kpi-strip fm-kpis" aria-label="Resumo da ficha">
       <div class="kpi-c"><span class="kpi-k">PVP</span><span class="kpi-v">${c.pvpPlat?fmtU(fE0(c.pvpPlat)):'—'}</span>${c.pacC>0.004?`<span class="kpi-s">já sem o PAC; ${fE0(c.pvpTab)} antes</span>`:''}</div>
@@ -11761,6 +11910,8 @@ function bindEvents(){
   };
   app.onchange=function(e){
     const el=e.target;
+    if(el.id==='fm-prop-inp'){const f=el.files&&el.files[0];fmLerProposta(f);return;}
+    if(el.dataset&&el.dataset.propOp&&S.fmProp){const o=S.fmProp.opc.find(x=>x.k===el.dataset.propOp);if(o)o.on=el.checked;return;}
     if(el.dataset&&el.dataset.ac&&el.type==='checkbox'){acordoInput(el);return;}
     if(el.dataset&&el.dataset.retEstado){retMudar(el.dataset.retEstado,{estado:el.value});return;}
     if(el.dataset&&el.dataset.retNotas){const x=(S.retomas||[]).find(y=>String(y.id)===String(el.dataset.retNotas));const nv=eotTxt(el.value);if(x&&(x.notas||null)!==nv)retMudar(el.dataset.retNotas,{notas:nv});return;}
@@ -11949,6 +12100,9 @@ function bindEvents(){
       case'tri-email':{triEmailCopiar(el);setState({triEmailPrev:!S.triEmailPrev});break;}
       case'go-ficha':if(S.fmNeg)fmSairDoNegocio();setState({screen:'ficha'});break;
       case'fm-pdf':fmPDF();break;
+      case'fm-ler-proposta':{const i=document.getElementById('fm-prop-inp');if(i){i.value='';i.click();}break;}
+      case'fm-prop-cancelar':S.fmProp=null;render();break;
+      case'fm-prop-aplicar':fmPropAplicar();break;
       case'fm-limpar':fmLimpar();break;
       case'fm-voltar':fmVoltar();break;
       case'fm-negocio':fmAbrirNegocio(el.dataset.id);break;
