@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-22-c">
+<meta name="app-version" content="2026-11-22-d">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2687,7 +2687,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-22-c';
+const APP_VERSION='2026-11-22-d';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -3188,7 +3188,8 @@ function fmCalc(){
   // Troca do BMSI (decisão do chefe, 22/11/2026): quando o cliente troca a oferta do BMSI por desconto, equipamento ou
   // acessórios, a proposta já não tem a linha negativa do PAC, mas a BMW paga o mesmo PAC. O PAC continua a ser apoio da
   // BMW (baixa o custo), não sai do PVP da plataforma, e o desconto ao cliente inclui a parte trocada (como no SA3).
-  // Essa parte é paga pela BMW: não conta como esforço, tal como a oferta normal do BMSI.
+  // O esforço fica com a regra de sempre (decisão do chefe, 22/11/2026): a parte trocada é desconto ao cliente e conta;
+  // o PAC entra nos apoios que a pagam.
   const pacTroca=!!(S.fm&&S.fm.pac_troca)&&pacC>0.004;
   const pvpPlat=pvpTab-(pacTroca?0:pacC);
   const difPlat=plat?(plat-pvpPlat):null;
@@ -3207,9 +3208,9 @@ function fmCalc(){
   // desconto medido já depois dos apoios BMW (o que sai mesmo do concessionário)
   const descEsfPct=(venda&&base)?((pvpDesc-venda)/k)/base:null;
   // apoios da BMW que entram no desconto ao cliente (o PAC fica de fora: o PVP da plataforma já vem sem ele)
-  const apoiosEsfPct=base?Math.max(0,(descPreco-fmIn('pac'))/base):0;
+  const apoiosEsfPct=base?Math.max(0,(descPreco-(pacTroca?0:fmIn('pac')))/base):0;
   const pacTrocaPct=pacTroca&&base?fmIn('pac')/base:0;
-  const esforcoPct=(descCliPct!=null&&margFixaPct!=null)?Math.max(0,descCliPct-pacTrocaPct+internosPct-margFixaPct):null;
+  const esforcoPct=(descCliPct!=null&&margFixaPct!=null)?Math.max(0,descCliPct+internosPct-margFixaPct):null;
   const esfApoiosPct=esforcoPct==null?null:Math.min(esforcoPct,apoiosEsfPct);   // parte do esforço coberta pelos apoios
   const esfConcPct=esforcoPct==null?null:Math.max(0,esforcoPct-apoiosEsfPct);    // parte que sai da MG. VARIÁVEL
   // aprovação da chefia: margem (s/IVA) abaixo de 0,50% do valor proposto
@@ -3530,13 +3531,13 @@ const FM_ESF_NOME={mg_fixa:'Margem fixa',mg_var:'Margem variável',pac:'PAC',pro
 function fmEsforcoPassos(c){
   if(!c||!c.base||c.margFixaPct==null)return null;
   const b=c.base,nome=x=>FM_ESF_NOME[x.k]||x.l;
-  const apoios=(c.dl||[]).filter(x=>!x.marg&&x.k!=='pac'&&Math.abs(x.valor)>0.004).map(x=>({l:nome(x),pct:x.valor/b}));
+  const apoios=(c.dl||[]).filter(x=>!x.marg&&(x.k!=='pac'||c.pacTroca)&&Math.abs(x.valor)>0.004).map(x=>({l:x.k==='pac'?'PAC (BMSI trocado)':nome(x),pct:x.valor/b}));
   const custos=(c.intL||[]).filter(x=>Math.abs(x.valor)>0.004).map(x=>({l:nome(x),pct:x.valor/b}));
-  const semEsfPct=c.margFixaPct-c.internosPct+(c.pacTrocaPct||0);   // desconto (sobre o PVP da plataforma) até onde não há esforço
+  const semEsfPct=c.margFixaPct-c.internosPct;                      // desconto (sobre o PVP da plataforma) até onde não há esforço
   const limPct=c.margVarPct!=null?semEsfPct+c.margVarPct:null;      // … até onde não vai à chefia pelo esforço
   const cobPct=c.margVarPct!=null&&c.apoiosEsfPct>1e-9?limPct+c.apoiosEsfPct:null;   // … até onde apoios + variável ainda cobrem
   const preco=x=>Math.ceil(c.pvpRef-x*b*c.k-1e-6);
-  const dado=c.venda?(c.descCliPct-(c.pacTrocaPct||0)+c.internosPct):null;   // desconto ao cliente (sem a parte do BMSI trocado) + custos
+  const dado=c.venda?(c.descCliPct+c.internosPct):null;             // desconto ao cliente + custos do concessionário
   const fixaUsada=dado==null?null:Math.min(Math.max(dado,0),c.margFixaPct);
   const varUsada=c.esfConcPct==null?null:(c.margVarPct!=null?Math.min(c.esfConcPct,c.margVarPct):c.esfConcPct);
   const acima=c.esfConcPct==null||c.margVarPct==null?0:Math.max(0,c.esfConcPct-c.margVarPct);   // nem apoios nem variável cobrem
@@ -3567,7 +3568,6 @@ function fmEsforcoHTML(c,pc,fE0){
   // explicação (retrátil): como se chega ao esforço, quem o paga e os preços-limite
   const contas=tem?`<div class="fm-esf-gt">Como se chega ao esforço</div><div class="fm-esf-g" role="list">`
       +li('Desconto ao cliente','O que o cliente paga a menos do que o PVP da plataforma. É o número do SA3.',pc(c.descCliPct))
-      +(c.pacTroca?li('BMSI trocado','O cliente trocou a oferta do BMSI por esta parte do desconto: paga pela BMW (PAC), não conta como esforço.','− '+pc(c.pacTrocaPct)):'')
       +li('Custos do concessionário',(P.custos.length?det(P.custos)+'. ':'')+'Preparação, comparticipação, subvenção e ofertas: sobem o custo da mota, por isso contam como desconto.',(c.internosPct>=0?'+ ':'− ')+pc(Math.abs(c.internosPct)))
       +li('Margem fixa','A margem do modelo. Enquanto o desconto não a passa, não há esforço.','− '+pc(c.margFixaPct))
       +li('Esforço','Tudo o que passa a margem fixa.'+(c.margVarPct!=null?` Acima de ${pc(c.margVarPct)} vai à chefia.`:''),fmtPcLim(c.esforcoPct,c.margVarPct),'tot'+(c.aprovEsforco?' neg':''))+'</div>'
@@ -3639,7 +3639,7 @@ function fmPDF(){
   const esfBloco=(tem&&P)?'<div class="esf"><div class="esf-h"><span class="esf-t">Taxa de esforço</span><span class="esf-d">tudo o que passa a margem fixa'+(c.margVarPct!=null?'; acima de '+p1(c.margVarPct)+' vai à chefia':'')+'</span></div>'
     +'<div class="barw"><div class="bar">'+P.seg.filter(x=>x[2]>1e-9).map(x=>'<span class="sg '+x[0]+'" style="width:'+(x[2]/P.tot*100).toFixed(2)+'%"></span>').join('')+'</div>'
     +(mk!=null?'<span class="mk" style="left:'+mk.toFixed(2)+'%"><span class="mkl">chefia</span></span>':'')+'</div>'
-    +'<div class="eq">'+e('Desconto ao cliente',p1(c.descCliPct))+(c.pacTroca?op('−')+e('BMSI trocado',p1(c.pacTrocaPct)):'')+op('+')+e('Custos do concessionário',p1(c.internosPct))+op('−')+e('Margem fixa',p1(c.margFixaPct),'','fx')+op('=')
+    +'<div class="eq">'+e('Desconto ao cliente',p1(c.descCliPct))+op('+')+e('Custos do concessionário',p1(c.internosPct))+op('−')+e('Margem fixa',p1(c.margFixaPct),'','fx')+op('=')
     +e('Esforço',fmtPcLim(c.esforcoPct,c.margVarPct),'tot'+(c.aprovEsforco?' neg':''))
     +'<div class="sep"></div>'+(c.apoiosEsfPct>1e-9?e('Apoios',p1(c.esfApoiosPct),'','ap'):'')+e('Margem variável',p1(P.varUsada)+(c.margVarPct!=null?' de '+p1(c.margVarPct):''),'','vr')+(P.acima>1e-9?e('Sem cobertura',fmtPcLim(P.acima),'neg','ac'):'')+'</div></div>':'';
   const aprov=(()=>{const fa=(S.fmFichas||[]).find(f=>S.fmFicha!=null&&String(f.id)===String(S.fmFicha));
