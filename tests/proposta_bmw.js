@@ -82,7 +82,7 @@ const Bp={cliente:'Outro Cliente',n:'9002',data:'02.01.2020',val:'01.02.2020',mo
    'cancelar não mexe na ficha':!cancel.painel&&cancel.pvb===FB.pvb,
    'um PDF que não é proposta é recusado':!naoE.painel&&/Não parece uma proposta/.test(naoE.toast||''),
    'telemóvel sem scroll lateral':tel,
-   'lido no browser: nenhum pedido para fora (além da letra da app)':fora.filter(u=>!/^https:\/\/fonts\.(googleapis|gstatic)\.com\//.test(u)).length===0,
+   'lido no browser: o PDF não vai para fora (só a letra da app e a base de dados da app)':fora.filter(u=>!/^https:\/\/fonts\.(googleapis|gstatic)\.com\//.test(u)&&!/^https:\/\/fyieckrmdrorjoevmrhm\.supabase\.co\/rest\/v1\//.test(u)).length===0,
    'sem erros JS':!erros.length};
   let n=0;for(const [k,v] of Object.entries(ok)){console.log((v?'✓ ':'✗ ')+k);if(!v)n++;}
   console.log(n?`FALHOU (${n})`:'Proposta BMW correta');await b.close();srv.close();process.exit(n?1:0);})();

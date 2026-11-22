@@ -50,6 +50,7 @@ jobs:
       - run: npm run recusar
       - run: npm run duplicar
       - run: npm run proposta
+      - run: npm run pac
       - run: npm run sessao
       - run: npm run encomendas
       - run: npm run comercio

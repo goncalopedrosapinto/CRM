@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-22-a">
+<meta name="app-version" content="2026-11-22-b">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -790,6 +790,28 @@ html,body{overflow-x:hidden;max-width:100vw}
 .fm-esf-sub{font-size:12px;color:var(--text2)}
 .fm-esf-n{font-size:30px;line-height:1;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--text);white-space:nowrap}
 .fm-esf-n.neg{color:var(--red)}
+.pac{max-width:980px;margin:0 16px 24px}
+.pac-top h2{font-size:20px;font-weight:700;letter-spacing:-.015em;margin:4px 0 2px;color:var(--text)}.pac-top p{font-size:13px;color:var(--text2);margin:0 0 12px}
+.pac-card{margin:0 0 14px;padding:14px 16px}
+.pac-f3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}
+.pac-flex{border:0;margin:12px 0;padding:0;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.pac-flex legend{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;padding:0}
+.pac-g{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border);border-radius:999px;font-size:13px;font-weight:600;cursor:pointer}
+.pac-g input[type=checkbox]{-webkit-appearance:none;appearance:none;width:16px;height:16px;margin:0;border:1.5px solid var(--text3);border-radius:4px;background:var(--surface)}
+.pac-g input[type=checkbox]:checked{background:var(--blue) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' stroke='white' stroke-width='2.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/12px no-repeat;border-color:var(--blue)}
+.pac-fd{display:inline-flex;align-items:center;gap:8px;margin-left:8px}.pac-fd label{margin:0}
+.pac-th{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.pac-th h3{font-size:15px;font-weight:700;margin:0;color:var(--text)}.pac-th h3 span{font-size:12px;font-weight:400;color:var(--text2);margin-left:6px}
+.pac-acoes{display:flex;gap:8px;flex-wrap:wrap}
+.pac-tw{overflow-x:auto}.pac-t td{padding:6px 8px;vertical-align:middle}.pac-t td.r,.pac-t th.r{text-align:right}.pac-t .norma-inp{width:100%;min-width:120px}.pac-t .stock-eurwrap{width:130px;margin-left:auto}.pac-t .stock-inp{width:100%}
+.pac-vazio{font-size:13px;color:var(--text2);margin:6px 0 0}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.pac-b{display:flex;justify-content:flex-end;gap:8px}
+.fm-pac{margin-top:6px;padding:8px 10px;border-radius:10px;background:var(--blue-bg);font-size:12.5px;color:var(--text);line-height:1.4}
+.fm-pac .btn{margin-left:4px;padding:3px 10px}.fm-pac-ok{color:var(--green);font-weight:600;white-space:nowrap}
+.fm-pac.fora{background:var(--amber-bg)}
+.fm-pac-r{margin-top:4px}.fm-pac-r summary{cursor:pointer;font-weight:600;color:var(--blue)}.fm-pac-r ul{margin:4px 0 0;padding-left:18px}.fm-pac-r li+li{margin-top:2px}
+@media(max-width:700px){.pac{margin:0 12px 20px}.pac-f3{grid-template-columns:1fr}}
 .fm-prop{margin:0 16px 14px;padding:14px 16px 16px;background:var(--surface);border:1.5px solid var(--blue);border-radius:18px}
 .fm-prop-h h2{font-size:16px;font-weight:700;letter-spacing:-.01em;margin:0;color:var(--text)}.fm-prop-h h2:focus,.fm-prop-h h2:focus-visible{outline:none!important}
 .fm-prop-h p{font-size:13px;color:var(--text2);margin:3px 0 0}
@@ -2574,7 +2596,7 @@ const ICO={
   factory:'<path d="M2 20V9l6 4V9l6 4V4h6v16z"/><path d="M2 20h20M7 16h2M12 16h2M17 16h2"/>'
 };
 function ico(n,cls){const p=ICO[n];if(!p)return'';return`<svg class="ic${cls?' '+cls:''}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${p}</svg>`;}
-const EMO_IC={'👥':'user','🔔':'bell','🏭':'factory','🏠':'home','📋':'inbox','✅':'check','🔻':'filter','📦':'package','🔁':'repeat','☰':'more','🎯':'target','🏍️':'bike','🏍':'bike','🧥':'shirt','⭐':'star','🎟️':'ticket','🎟':'ticket','📅':'calendar','🧮':'calc','💰':'coins','💶':'coins','⬇️':'download','⬇':'download','🚚':'truck','✕':'xcircle','❌':'xcircle','🔑':'key','🚪':'logout','🤝':'store','📉':'trend','🏁':'flag','❤️':'heart','🏆':'trophy','⚠️':'alert','📐':'chart','🧾':'receipt','🔒':'lock'};
+const EMO_IC={'👥':'user','🔔':'bell','🏭':'factory','🏠':'home','📋':'inbox','✅':'check','🔻':'filter','📦':'package','🔁':'repeat','☰':'more','🎯':'target','🏍️':'bike','🏍':'bike','🧥':'shirt','⭐':'star','🎟️':'ticket','🎟':'ticket','📅':'calendar','🧮':'calc','💰':'coins','💶':'coins','⬇️':'download','⬇':'download','🚚':'truck','✕':'xcircle','❌':'xcircle','🔑':'key','🚪':'logout','🤝':'store','📉':'trend','🏁':'flag','❤️':'heart','🏆':'trophy','⚠️':'alert','📐':'chart','🧾':'receipt','🔒':'lock','🏷️':'euro','🏷':'euro'};
 // Enter no registo rápido regista; Esc fecha os painéis em linha (Hoje e ficha)
 document.addEventListener('keydown',e=>{if(typeof S==='undefined')return;const t=e.target;
   if(e.key==='Enter'&&t&&t.dataset&&t.dataset.vhnovo){e.preventDefault();vhNovoRegistar();return;}
@@ -2662,7 +2684,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-22-a';
+const APP_VERSION='2026-11-22-b';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -3736,6 +3758,73 @@ async function fmAssociar(id){
   try{await fmLigarFicha(id);setTimeout(()=>toast(`Ficha junta ao negócio de ${r.id_cliente||'cliente'} (${r.status})`),450);}
   catch(e){toast('Não juntei a ficha: '+erroTexto(e),'erro');}
 }
+// ---- PAC do trimestre: o chefe grava a tabela (configuracoes, chave pac_trimestre: só o chefe escreve, todos leem
+// menos o perfil Eventos) e a ficha de margem sugere o PAC pelo modelo ----
+function pacTri(d){d=d||new Date();const y=d.getFullYear(),q=Math.floor(d.getMonth()/3)+1,iso=x=>x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
+  return{y,q,ini:iso(new Date(y,(q-1)*3,1)),fim:iso(new Date(y,q*3,0))};}
+// trimestre novo em branco: as regras e os valores vêm da circular e ficam só na base de dados (o repositório é público)
+function pacPadrao(d){const t=pacTri(d);return{nome:'PAC Q'+t.q+' '+t.y,inicio:t.ini,fim:t.fim,flex:[],flex_desde:'',sem:[],notas:'',modelos:[]};}
+// «R 1300 GSA - Auto» → «R 1300 GSA»; «F900 GSA STAND» → «F 900 GSA»
+function pacBase(s){const t=String(s||'').toUpperCase().replace(/^\s*BMW\s+/,'').replace(/[-_/]/g,' ').trim();const m=t.match(/^([A-Z])\s*(\d{2,4})\s*([A-Z]{1,5})?/);return m?m[1]+' '+m[2]+(m[3]?' '+m[3]:''):'';}
+function pacDoModelo(nome,P){P=P||S.pac;const b=pacBase(nome);if(!P||!b)return null;const gama=b[0];
+  return{base:b,gama,sem:(P.sem||[]).some(x=>pacBase(x)===b),linha:(P.modelos||[]).find(r=>pacBase(r.m)===b&&Number(r.v)>0)||null,flex:(P.flex||[]).includes(gama)};}
+async function loadPac(){try{const r=await supabaseApi('GET','/configuracoes?chave=eq.pac_trimestre&select=valor,atualizado_em');S.pac=(r&&r[0]&&r[0].valor)||null;S.pacEm=r&&r[0]&&r[0].atualizado_em||null;}catch(e){S.pac=null;}S._pacCarr=true;}
+function pacGarantir(){if(!S._pacCarr&&!S._pacA&&S.me&&!isEventosExt()){S._pacA=true;loadPac().then(()=>{S._pacA=false;render();});}}
+// sugestões a partir das fichas do trimestre (o valor mais usado por modelo; o BMSI 3/30 das propostas lidas conta primeiro)
+async function pacSugerir(){const P=S.pacEd;if(!P)return;
+  let L=[];try{L=await apiTodos('/fichas_margem?select=dados,criado_em&criado_em=gte.'+encodeURIComponent(P.inicio||pacTri().ini));}catch(e){avisoErro('Não consegui ler as fichas: '+erroTexto(e));return;}
+  const cont={},nf={};const soma=(b,v,peso)=>{if(!b||!(v>0))return;const k=String(Math.round(v*100)/100);cont[b]=cont[b]||{};cont[b][k]=(cont[b][k]||0)+peso;nf[b]=nf[b]||{};nf[b][k]=(nf[b][k]||0)+1;};
+  for(const f of L){const d=f.dados||{},pb=d.proposta_bmw||{};const b=pacBase(pb.modelo||d.modelo);
+    const bmsi=(pb.servico||[]).find(x=>/3\/30/.test(x.n||''));if(bmsi)soma(b,Number(bmsi.v),3);
+    soma(b,Number(String(d.pac||'').replace(',','.')),1);}
+  let n=0;for(const b of Object.keys(cont).sort()){if((P.modelos||[]).some(r=>pacBase(r.m)===b))continue;
+    const v=Object.entries(cont[b]).sort((a,z)=>z[1]-a[1])[0][0],c=nf[b][v];P.modelos.push({m:b,v:Number(v),nota:'por confirmar (visto em '+c+(c===1?' ficha':' fichas')+')'});n++;}
+  P.modelos.sort((a,z)=>pacBase(a.m).localeCompare(pacBase(z.m)));render();
+  toast(n?n+' modelos sugeridos a partir das fichas do trimestre: confirma os valores antes de gravar.':'Não encontrei PAC novos nas fichas do trimestre.');}
+async function pacGravar(){const P=S.pacEd;if(!P)return;
+  const modelos=(P.modelos||[]).map(r=>({m:String(r.m||'').trim(),v:Number(String(r.v==null?'':r.v).replace(',','.'))||0,nota:String(r.nota||'').trim()})).filter(r=>r.m);
+  const mal=modelos.filter(r=>!pacBase(r.m)||!(r.v>0));if(mal.length){avisoErro('Confirma o modelo e o valor de: '+mal.map(r=>r.m||'(sem nome)').join(', ')+'.');return;}
+  if(!P.inicio||!P.fim||P.fim<P.inicio){avisoErro('Confirma as datas do PAC.');return;}
+  const valor={nome:String(P.nome||'').trim()||'PAC',inicio:P.inicio,fim:P.fim,flex:P.flex||[],flex_desde:P.flex_desde||'',sem:(P.sem||[]).map(x=>String(x).trim()).filter(Boolean),notas:String(P.notas||'').trim(),modelos};
+  try{await sbUpsert('configuracoes',[{chave:'pac_trimestre',valor,atualizado_em:new Date().toISOString(),atualizado_por:S.me&&S.me.id}],'chave');
+    S.pac=valor;S.pacEm=new Date().toISOString();S.pacEd=null;render();toast('PAC gravado: as fichas passam a sugerir estes valores.');}
+  catch(e){avisoErro('Não gravei o PAC: '+erroTexto(e));}}
+function pacView(){pacGarantir();if(!S._pacCarr)return'<div class="gpp-card" style="padding:16px">A carregar o PAC…</div>';
+  if(!S.pacEd)S.pacEd=JSON.parse(JSON.stringify(S.pac||pacPadrao()));const P=S.pacEd,novo=!S.pac;
+  const d=x=>x?x.split('-').reverse().join('/'):'—';const hoje=new Date().toISOString().slice(0,10);const acabou=S.pac&&S.pac.fim<hoje;
+  const linhas=(P.modelos||[]).map((r,i)=>`<tr><td><input class="norma-inp" data-pac-row="${i}" data-pac-k="m" value="${esc(r.m||'')}" aria-label="Modelo" placeholder="ex.: R 1300 GS"></td>
+      <td class="r"><div class="stock-eurwrap"><input class="stock-inp stock-num" type="number" step="0.01" data-pac-row="${i}" data-pac-k="v" value="${esc(r.v==null?'':r.v)}" aria-label="Valor do PAC de ${esc(r.m||'')}"><span class="stock-eur2">€</span></div></td>
+      <td><input class="norma-inp" data-pac-row="${i}" data-pac-k="nota" value="${esc(r.nota||'')}" aria-label="Nota de ${esc(r.m||'')}" placeholder="opcional"></td>
+      <td><button type="button" class="btn btn-ghost btn-sm" data-action="pac-tirar" data-i="${i}" aria-label="Tirar ${esc(r.m||'esta linha')}">${ico('x','ic-sm')}</button></td></tr>`).join('');
+  const gamas=['C','F','G','K','M','R','S'].map(g=>`<label class="pac-g"><input type="checkbox" data-pac-flex="${g}"${(P.flex||[]).includes(g)?' checked':''}><span>${g}</span></label>`).join('');
+  return`<div class="pac">
+    <div class="pac-top"><div><h2>PAC do trimestre</h2><p>${novo?'Ainda não gravado: confirma e grava. Até lá as fichas não sugerem nada.':`Gravado${S.pacEm?' a '+esc(new Date(S.pacEm).toLocaleDateString('pt-PT')):''}. As fichas sugerem o PAC pelo modelo.`}${acabou?` <b class="neg">Este PAC acabou a ${esc(d(S.pac.fim))}: atualiza para o trimestre novo.</b>`:''}</p></div></div>
+    <div class="gpp-card pac-card">
+      <div class="pac-f3">
+        <div class="vd-f"><label for="pac-nome">Nome</label><input class="norma-inp" id="pac-nome" data-pac="nome" value="${esc(P.nome||'')}"></div>
+        <div class="vd-f"><label for="pac-ini">Acordos desde</label><input class="norma-inp" id="pac-ini" type="date" data-pac="inicio" value="${esc(P.inicio||'')}"></div>
+        <div class="vd-f"><label for="pac-fim">Entrega até</label><input class="norma-inp" id="pac-fim" type="date" data-pac="fim" value="${esc(P.fim||'')}"></div></div>
+      <fieldset class="pac-flex"><legend>Gamas em que o BMSI pode ser trocado por outra oferta de igual valor</legend>${gamas}
+        <div class="vd-f pac-fd"><label for="pac-fd">a partir de</label><input class="norma-inp" id="pac-fd" type="date" data-pac="flex_desde" value="${esc(P.flex_desde||'')}"></div></fieldset>
+      <div class="vd-f"><label for="pac-sem">Modelos sem PAC (separados por vírgulas)</label><input class="norma-inp" id="pac-sem" data-pac="sem" value="${esc((P.sem||[]).join(', '))}"></div>
+      <div class="vd-f"><label for="pac-notas">Regras do trimestre (os vendedores veem na ficha)</label><textarea class="norma-inp" id="pac-notas" rows="6" data-pac="notas">${esc(P.notas||'')}</textarea></div>
+    </div>
+    <div class="gpp-card pac-card"><div class="pac-th"><h3>Valor do PAC por modelo <span>em PVP, com IVA (o valor do BMSI 3/30)</span></h3>
+      <div class="pac-acoes"><button type="button" class="btn btn-outline btn-sm" data-action="pac-sugerir">Sugerir a partir das fichas</button><button type="button" class="btn btn-outline btn-sm" data-action="pac-juntar">${ico('plus','ic-sm')}<span>Juntar modelo</span></button></div></div>
+      ${linhas?`<div class="pac-tw" tabindex="0" role="region" aria-label="PAC por modelo"><table class="gpp-ltable pac-t" data-no-tools="1"><thead><tr><th scope="col">Modelo</th><th scope="col" class="r">PAC</th><th scope="col">Nota</th><th scope="col"><span class="sr-only">Tirar</span></th></tr></thead><tbody>${linhas}</tbody></table></div>`:'<p class="pac-vazio">Sem modelos. Junta-os à mão ou sugere a partir das fichas do trimestre.</p>'}
+    </div>
+    <div class="pac-b">${!novo?'<button type="button" class="btn btn-dark btn-sm" data-action="pac-descartar">Descartar alterações</button>':''}<button type="button" class="btn btn-orange btn-sm" data-action="pac-gravar">Gravar PAC</button></div>
+  </div>`;}
+// sugestão na linha do PAC da ficha
+function pacSugHTML(c){pacGarantir();const P=S.pac;const fm=S.fm||{};const nome=(fm.proposta_bmw&&fm.proposta_bmw.modelo)||fm.modelo||'';if(!P||!nome)return'';
+  const r=pacDoModelo(nome,P);if(!r)return'';const hoje=new Date().toISOString().slice(0,10),fora=P.fim&&P.fim<hoje;const atual=fmN('pac');
+  let t='',b='';
+  if(r.sem){t=esc(r.base)+': sem PAC no '+esc(P.nome)+'.';if(atual>0)t+=' <b>A ficha tem PAC: confirma.</b>';}
+  else if(r.linha){const v=Number(r.linha.v);t=esc(P.nome)+' para '+esc(r.base)+': <b>'+esc(fmtEur(v,2))+'</b>'+(r.flex?' (BMSI 3/30, ou outra oferta de igual valor nesta gama: ver as regras)':' (oferta do BMSI 3/30)')+(r.linha.nota&&!/^por confirmar/.test(r.linha.nota)?'. '+esc(r.linha.nota):'')+'.';
+    b=Math.abs(atual-v)>0.5?`<button type="button" class="btn btn-outline btn-sm" data-action="fm-pac-usar" data-v="${v}">Usar ${esc(fmtEur(v,0))}</button>`:'<span class="fm-pac-ok">✓ igual à tabela</span>';}
+  else if((P.modelos||[]).length)t='O '+esc(P.nome)+' não tem valor para '+esc(r.base)+': confirma com o chefe.';
+  if(!t)return'';
+  return`<div class="fm-pac${fora?' fora':''}">${fora?'<b>O '+esc(P.nome)+' acabou a '+esc(P.fim.split('-').reverse().join('/'))+'.</b> ':''}${t} ${b}${P.notas?`<details class="fm-pac-r"><summary>Regras do ${esc(P.nome)}</summary><ul>${P.notas.split('\n').filter(x=>x.trim()).map(x=>'<li>'+esc(x)+'</li>').join('')}</ul></details>`:''}</div>`;}
 // ---- Ler a proposta BMW (PDF que a plataforma gera, «A SUA PROPOSTA.») para preencher a ficha ----
 // O PDF é lido no próprio browser (PDF.js alojado no site, vendor/pdfjs, licença Apache 2.0): não sai do computador.
 let _pdfjsP=null;
@@ -3816,6 +3905,10 @@ function fmPropPreparar(R,fm){fm=fm||{};const r=R.resumo,av=[],k2=n=>Math.round(
   const novo={pvb:n(r.modelo),opc:n(r.opc),bsi:n(r.bsi),acess_marca:n(r.acess_marca),acess_conc:n(r.acess_conc),ecovalor:n(div.ecovalor),iuc_s:n(div.iuc_s),transporte:n(div.transporte),pac:n(div.pac),
     isv:n(r.isv),sgpu:n(r.sgpu),iva:r.iva||fm.iva||23,pvp_plat:n(r.total-desc),preco_venda:n(r.pagar),modelo:R.modelo.nome,proposta:R.proposta,cliente:R.cliente.nome};
   if(!fm.natureza)novo.natureza='MN';
+  const pt=pacDoModelo(R.modelo.nome);
+  if(pt&&pt.linha){const v=Number(pt.linha.v);if(div.pac<0.005)av.push('A proposta não traz a oferta do BMSI; no '+S.pac.nome+' o '+pt.base+' tem '+fmtEur(v,2)+'. Se o cliente trocou o BMSI por outra oferta, escreve o PAC à mão.');
+    else if(Math.abs(div.pac-v)>0.5)av.push('O PAC da proposta ('+fmtEur(div.pac,2)+') não é o da tabela do '+S.pac.nome+' para o '+pt.base+' ('+fmtEur(v,2)+').');}
+  else if(pt&&pt.sem&&div.pac>0.005)av.push('A proposta traz PAC, mas o '+pt.base+' está sem PAC no '+S.pac.nome+'.');
   const hoje=new Date().toISOString().slice(0,10);
   if(R.validade&&R.validade<hoje)av.push('Proposta fora de validade desde '+R.validade.split('-').reverse().join('/')+': os preços e as campanhas podem ter mudado.');
   // texto e valor proposto: só substituem o que já está escrito se o vendedor quiser
@@ -3952,7 +4045,7 @@ function renderFichaMargem(){
         ${tr('fm-t','PVP (c/ impostos)'+tag('c')+onde(c.pacC>0.004?'modelo + opcionais + impostos + diversos, antes do PAC':'= o PVP que a plataforma mostra (sem apoios nem margens)'),'',`<b>${fE(c.pvpTab)}</b>`)}
         ${c.pacC>0.004?tr('fm-t fm-plat','PVP na plataforma'+tag('c')+onde('a plataforma põe o PAC nos Diversos e mostra este PVP · daqui conta o desconto ao cliente'),'',`<b>${fE(c.pvpPlat)}</b>`):''}
         ${sep('Descontos e apoios',`(% sobre Model and Options sem IVA = ${fE(c.base)})`)}
-        ${c.dl.map(x=>tr(x.marg?'fm-marg':'',esc(x.l)+tag('c')+(x.marg?onde('margem do concessionário · não mexe no PVP'):''),x.pct?inP(x.k+'_pct'):'',x.pct?`<span class="fm-neg">−${fE(x.valor*k)}</span>`:inE(x.k))).join('')}
+        ${c.dl.map(x=>tr(x.marg?'fm-marg':'',esc(x.l)+tag('c')+(x.marg?onde('margem do concessionário · não mexe no PVP'):'')+(x.k==='pac'?pacSugHTML(c):''),x.pct?inP(x.k+'_pct'):'',x.pct?`<span class="fm-neg">${fE(-x.valor*k)}</span>`:inE(x.k))).join('')}
         ${tr('fm-t','DESC. TOTAL'+tag('c'),`<span class="fm-hint">${pc(c.descPct)}</span>`,`<b class="fm-neg">−${fE(c.desc*k)}</b>`)}
         ${tr('fm-dest','PVP com apoios'+tag('c')+onde('PVP menos os apoios da marca (PAC, protocolo, apoios…) · daqui conta o esforço'),'',`<b>${fE(c.pvpDesc)}</b>`)}
         ${tr('fm-ver','<span class="fm-ver-l">Confirmar com a plataforma</span>'+tag('c')+(verif?`<div style="margin-top:3px">${verif}</div>`:onde('escreve o PVP que a plataforma mostra'+(c.pacC>0.004?' (já sem o PAC)':''))),'',inE('pvp_plat','PVP da BMW'))}
@@ -10340,6 +10433,7 @@ function renderDashboard(){
     ['stockeq','🧥','Stock Equipamento'],
     ['encomendas','🏭','Stock BMW Novas'],
     ['ficha','🧮','Ficha de Margem'],
+    ['pac','🏷️','PAC do trimestre'],
     ['trimestre','📐','Controlo trimestral'],
     ['exportar','⬇️','Exportar'],
   ];
@@ -10347,7 +10441,7 @@ function renderDashboard(){
     ['Diário',['home','atratar','reuniao']],
     ['Negócio',['funil','eots','vendas']],
     ['Recursos',['encomendas','usadas','stockeq','demos','evento']],
-    ['Ferramentas',['ficha','comissoesg']],
+    ['Ferramentas',['ficha','pac','comissoesg']],
     ['Menos usadas',['leads','escala','exportar']]
   ];
   const NAV_MENOS='Menos usadas';const menosIds=(NAV_GRUPOS.find(g=>g[0]===NAV_MENOS)||[,[]])[1];
@@ -11776,6 +11870,7 @@ function renderDashboard(){
   else if(sec==='saude')body=saudeEquipa();
   else if(sec==='trimestre')body=trimestreView();
   else if(sec==='ficha')body=renderFichaMargem();
+  else if(sec==='pac')body=pacView();
   else if(sec==='entregas')body=entregasView();
   else if(sec==='leads')body=leadsView();
   else if(sec==='eots')body=eotView();
@@ -11852,6 +11947,8 @@ function render0(){
 function bindEvents(){
   const app=document.getElementById('app');
   app.oninput=function(e){
+    {const el=e.target;if(el&&el.dataset&&S.pacEd){if(el.dataset.pac){const k=el.dataset.pac;S.pacEd[k]=k==='sem'?el.value.split(',').map(x=>x.trim()).filter(Boolean):el.value;return;}
+      if(el.dataset.pacRow!=null&&el.dataset.pacK){const r=S.pacEd.modelos[Number(el.dataset.pacRow)];if(r)r[el.dataset.pacK]=el.value;return;}}}
     const el=e.target;
     if(el.id==='reu-c-texto'){S.reuC=Object.assign({texto:'',vend:'',prazo:''},S.reuC||{},{texto:el.value});return;}
     if(el.id==='fa-motivo'){S.faMotivo=el.value;return;}
@@ -11911,6 +12008,7 @@ function bindEvents(){
   app.onchange=function(e){
     const el=e.target;
     if(el.id==='fm-prop-inp'){const f=el.files&&el.files[0];fmLerProposta(f);return;}
+    if(el.dataset&&el.dataset.pacFlex&&S.pacEd){const g=el.dataset.pacFlex,F=new Set(S.pacEd.flex||[]);if(el.checked)F.add(g);else F.delete(g);S.pacEd.flex=[...F].sort();return;}
     if(el.dataset&&el.dataset.propOp&&S.fmProp){const o=S.fmProp.opc.find(x=>x.k===el.dataset.propOp);if(o)o.on=el.checked;return;}
     if(el.dataset&&el.dataset.ac&&el.type==='checkbox'){acordoInput(el);return;}
     if(el.dataset&&el.dataset.retEstado){retMudar(el.dataset.retEstado,{estado:el.value});return;}
@@ -12103,6 +12201,12 @@ function bindEvents(){
       case'fm-ler-proposta':{const i=document.getElementById('fm-prop-inp');if(i){i.value='';i.click();}break;}
       case'fm-prop-cancelar':S.fmProp=null;render();break;
       case'fm-prop-aplicar':fmPropAplicar();break;
+      case'fm-pac-usar':fmSet('pac',String(Number(el.dataset.v)));toast('PAC da tabela do trimestre na ficha.');break;
+      case'pac-juntar':if(S.pacEd){S.pacEd.modelos=S.pacEd.modelos||[];S.pacEd.modelos.push({m:'',v:'',nota:''});render();setTimeout(()=>{const L=document.querySelectorAll('[data-pac-k="m"]');const u=L[L.length-1];if(u)u.focus();},20);}break;
+      case'pac-tirar':if(S.pacEd){S.pacEd.modelos.splice(Number(el.dataset.i),1);render();}break;
+      case'pac-sugerir':pacSugerir();break;
+      case'pac-gravar':pacGravar();break;
+      case'pac-descartar':S.pacEd=null;render();break;
       case'fm-limpar':fmLimpar();break;
       case'fm-voltar':fmVoltar();break;
       case'fm-negocio':fmAbrirNegocio(el.dataset.id);break;
