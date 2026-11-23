@@ -60,6 +60,7 @@ jobs:
       - run: npm run adenda
       - run: npm run importacao
       - run: npm run eotmanual
+      - run: npm run eothistorico
       - run: npm run retomas
       - run: npm run acordo
       - run: npm run folha

@@ -122,7 +122,7 @@ const PERFIS={c1:{id:'c1',nome:'Chefe GPP',role:'admin',linha:'motorrad'},v1:{id
   'lista: marca só no criado à mão; contagem e filtro dizem quantos':lista.tag&&lista.outrasTag===1&&/^No mapa ?2 ?\+ 1 criado à mão$/.test(lista.kpi)&&lista.filtro==='No mapa e à mão',
   'contrato do mapa não tem Apagar':apagarMapa===false,
   'vendedor vê o contrato com a marca e não tem o botão':vend.tag&&/Cliente À Mão/.test(vend.card)&&!vend.botao,
-  'apagar um criado à mão: confirma e só apaga criados à mão':/Apagar o contrato 777001/.test(apagado.dlg)&&/contrato=eq\.777001&origem=eq\.manual/.test(apagado.del)&&!apagado.existe&&!apagado.aberto,
+  'apagar um criado à mão: confirma e só apaga criados à mão':/Apagar o contrato 777001/.test(apagado.dlg)&&/contrato=eq\.777001&origem=in\.\(manual,historico\)/.test(apagado.del)&&!apagado.existe&&!apagado.aberto,
   'mapa sem o criado à mão: não o dá como saído':JSON.stringify(impA.saem)==='["100002"]'&&impA.adot===0&&/os criados à mão ficam/.test(impA.txt),
   'vem no mapa: junta-se (não é novo), passa a ser do banco e mantém o trabalho da equipa':JSON.stringify(impB.adot)==='["555123"]'&&!impB.novos.includes('555123')&&impB.saem.length===0&&/1 criado à mão vem agora no mapa/.test(impB.txt)&&
     up.no_mapa===true&&depois.origem==='mapa'&&depois.resp==='v2'&&depois.notas==='Veio de outro concessionário'&&depois.residual===4400&&!depois.tag&&!/criado à mão/.test(depois.kpi),
