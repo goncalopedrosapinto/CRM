@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-23-b">
+<meta name="app-version" content="2026-11-23-c">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -931,6 +931,20 @@ html,body{overflow-x:hidden;max-width:100vw}
 .pm-eur{text-align:right;font-weight:800;white-space:nowrap}
 .pm-eur.ok{color:var(--green)}.pm-eur.neg{color:var(--red)}.pm-eur.zero{color:var(--text3)}
 .pm-total{font-size:20px;font-weight:800;color:var(--green)}.pm-total.neg{color:var(--red)}
+.pe-tbl{min-width:900px}.pe-pen{border-top:1px solid var(--border);min-width:760px}
+.pe-inp{display:inline-flex;align-items:center;gap:3px;white-space:nowrap;margin:1px 2px}.pe-inp input{width:78px;text-align:right}.pe-sug input::placeholder{color:var(--text3);font-style:italic}
+.pe-sn{width:74px;padding:4px 6px}.pe-x{text-align:center;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pe-teur{font-size:10px;opacity:.75}.pe-sub{font-size:11px;font-weight:500;color:var(--text3)}.pm-eur .pe-sub{display:block}
+.pe-tri td{background:var(--bg2,var(--surface2))}.pe-lado{display:flex;flex-wrap:wrap;gap:12px;margin:0 16px 12px;align-items:flex-start}.pe-lado>.pm-ajuda{flex:1 1 220px;max-width:340px}.pe-tabs{margin:0 16px 14px;padding:0}
+.pe-ref{font-size:12px;color:var(--text2)}.pe-card{margin:0 16px 14px;padding:14px 16px}.pe-h{font-weight:800;font-size:14px;margin-bottom:8px}
+.pe-nota{font-size:12.5px;color:var(--text2);margin:0 0 10px;line-height:1.5}
+.pe-ano-t td,.pe-ano-t th{padding:5px 8px;font-variant-numeric:tabular-nums}.pe-ano-t tr.on td{background:var(--orange-bg)}.pe-ano-t tr.pe-vazio td{color:var(--text3)}.pe-ano-t .neg{color:var(--red)}
+.pe-mes{background:none;border:0;padding:0;font:inherit;font-weight:700;color:inherit;cursor:pointer}.pe-mes:hover{text-decoration:underline}
+.pe-res{display:grid;gap:4px;margin-top:10px;font-size:13px}.pe-res>div{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--border);padding:4px 0}.pe-res b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.pe-res-t{font-size:14px}.pe-regras summary{cursor:pointer;margin:0}.pe-regras[open] summary{margin-bottom:10px}
+.pe-reg-t{border-collapse:collapse;font-size:12.5px;width:100%}.pe-reg-t td{padding:4px 8px;border-bottom:1px solid var(--border)}.pe-reg-t td:first-child{color:var(--text2)}
+.pe-cfg{display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:12px;font-size:12.5px;color:var(--text2)}.pe-cfg label{display:flex;align-items:center;gap:6px}
+.pm-ajuda .neg,.pe-fecho .neg{color:var(--red)}
 .pm-ajuda{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;min-width:190px}
 .pm-ajuda-h{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--text2);margin-bottom:6px}
 .pm-ajuda-t{width:100%;border-collapse:collapse;font-size:12px}
@@ -2694,7 +2708,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-23-b';
+const APP_VERSION='2026-11-23-c';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -7208,32 +7222,196 @@ function comissaoUsada(base,venda){
   if(bruto<min)return {valor:min,regra:Math.round(pct*100)+'% = '+bruto.toFixed(2)+' € — mínimo'};
   return {valor:bruto,regra:Math.round(pct*100)+'% da margem'};
 }
-// ---- Plano de prémios do chefe de vendas (mensal) ----
-// tiers: [rotulo, minimo, valor]. 'gap' = faixa sem prémio nem penalização.
-const PREMIO_PLANO=[
-  {k:'retail',  g:'Volume', lb:"Retail's Motorrad",              un:'%',  auto:true,
-   tiers:[['<95%',null,-20],['95–99%',95,0],['100%',100,60],['110%',110,90],['125%',125,110],['>135%',135,125]]},
-  {k:'fatvu',   g:'Volume', lb:'Faturação VU',                   un:'%',
-   tiers:[['<95%',null,-20],['95–99%',95,0],['100%',100,60],['110%',110,90],['125%',125,110],['>135%',135,125]]},
-  {k:'rent',    g:'Volume', lb:'Rentabilidade',                  un:'%',
-   tiers:[['<95%',null,-20],['95–99%',95,0],['100%',100,60],['110%',110,90],['125%',125,110],['>135%',135,125]]},
-  {k:'fs',      g:'Volume', lb:'Penetração BMW FS',              un:'%',
-   tiers:[['<95%',null,-20],['95–99%',95,0],['100%',100,60],['110%',110,90],['125%',125,110],['>135%',135,125]]},
-  {k:'voc',     g:'Qualidade', lb:'Satisfação VOC',              un:'pts',
-   tiers:[['<86',null,-50],['86–89',86,0],['90',90,30],['94',94,40],['95',95,40],['>98',98,45]]},
-  {k:'consent', g:'Qualidade', lb:'Consentimentos Motorrad',     un:'%',
-   tiers:[['<75%',null,-10],['75–79%',75,0],['80%',80,15],['85%',85,20],['90%',90,25],['>95%',95,30]]},
-  {k:'dados',   g:'Qualidade', lb:'Consistência de Dados (VN+VU)',un:'%',
-   tiers:[['<50%',null,-10],['50–59%',50,0],['60%',60,10],['70%',70,15],['80%',80,20],['>90%',90,25]]},
-];
-function premioTier(c,v){
-  if(v==null||v==='')return -1;
-  const x=Number(v);if(!isFinite(x))return -1;
-  let idx=0;
-  c.tiers.forEach((t,i)=>{if(t[1]!=null&&x>=t[1])idx=i;});
-  return idx;
+// ---- Comissões do chefe de vendas: Esquema Base (mensal, em % de um valor de referência) ----
+// O cálculo segue o Simulador do Excel. Os valores do esquema (referência, escalões, limiares, vencimento)
+// vivem só na base de dados (premios_mes, linha "esquema", que só o chefe lê): o código é público e não os tem.
+const PE_ESQ='esquema';
+function peEsq(){const e=(S.premiosMes||{})[PE_ESQ];return e&&e.ref?e:null;}
+const peN=v=>{if(v===''||v==null)return null;const x=Number(v);return isFinite(x)?x:null;};
+const peR=(x,c)=>Math.round(x*Math.pow(10,c))/Math.pow(10,c);
+// degraus: abaixo do 1.º paga 0; só sobe ao atingir o seguinte. Devolve [nível -1..2, valor]
+function peDegrau(x,lim,val){if(x==null)return[-1,0];for(let i=2;i>=0;i--){if(x>=lim[i])return[i,val[i]];}return[-1,0];}
+function peRealiz(o,r){o=peN(o);r=peN(r);return o==null||o===0||r==null?null:peR(r/o,4);}
+// margem: escalões orç. −passo / orç. / orç. +passo (valores em %, como se escrevem)
+function peMargem(E,orc,real,val){orc=peN(orc);real=peN(real);if(orc==null||real==null)return{desvio:null,nivel:-1,p:0};
+  const d=peR((real-orc)/100,5),s=E.marg.passo;const[nivel,p]=peDegrau(d,[-s,0,s],val);return{desvio:d,nivel,p};}
+const PE_SIM=v=>v==='Sim';
+function pePc(v){return fmtPc(v,Math.round(Math.abs(v)*1000)%10?1:0);}   // 1 decimal só se existir (0,5 % sim; 110 % sem ",0")
+// o que se escreve em cada mês (chave em premios_mes.dados → nome), na ordem do Simulador
+const PE_CAMPOS=[['fvn_o','Faturas VN orçamento'],['fvn_r','Faturas VN real'],['fvo_o','Faturas VO orçamento'],['fvo_r','Faturas VO real'],
+  ['mvn_o','Margem VN % orçamentada'],['mvn_r','Margem VN % real'],['mvn_to','Margem VN % orç. trimestre'],['mvn_tr','Margem VN % real trimestre'],
+  ['mvo_o','Margem VO % orçamentada'],['mvo_r','Margem VO % real'],['mvo_to','Margem VO % orç. trimestre'],['mvo_tr','Margem VO % real trimestre'],
+  ['rvn_o','Receita financeira VN orçamento €'],['rvn_r','Receita financeira VN real €'],['rvo_o','Receita financeira VO orçamento €'],['rvo_r','Receita financeira VO real €'],
+  ['bm_norma','Stock Norma e Standards ≥ 90%'],['bm_obj','Objetivo de vendas % atingida'],['bm_demo','Programa de demonstração'],['bm_enc','Gestão de encomendas'],
+  ['media','Média de vendas por vendedor'],['ccgo','CCGO cartões por vendedor'],['stk365','Stock ≥ 365 dias'],['stk180','Stock ≥ 180 dias'],['consent','Consentimentos %'],
+  ['voc','VOC'],['voc_nac','VOC média nacional'],['leads','Conversão de leads %'],['ret','Taxa de retenção %'],
+  ['fe_ccgo','Fecho: CCGO do ano'],['fe_stk365','Fecho: stock ≥ 365 d'],['fe_stk180','Fecho: stock ≥ 180 d'],['fe_consent','Fecho: consentimentos %'],['fe_voc','Fecho: VOC do ano'],['fe_voc_nac','Fecho: VOC média nacional'],['fe_leads','Fecho: leads %'],['fe_ret','Fecho: retenção %']];
+// um mês: d = dados do mês; ano = {mês: dados} para o acerto trimestral da margem
+function peCalcMes(E,ym,ano){
+  const d=ano[ym]||{};const L=[];const add=(o)=>{L.push(o);return o.p;};
+  let tot=0;
+  // 1. Quantidade (faturas)
+  [['fvn','Faturas VN','vn'],['fvo','Faturas VO','vo']].forEach(([k,lb,c])=>{const x=peRealiz(d[k+'_o'],d[k+'_r']);const[nivel,p]=peDegrau(x,E.qtd.lim,E.qtd[c]);
+    tot+=add({g:'qtd',k,lb,orc:peN(d[k+'_o']),real:peN(d[k+'_r']),x,nivel,p,lim:E.qtd.lim,val:E.qtd[c]});});
+  // 2. Margem comercial, com acerto trimestral em Mar/Jun/Set/Dez (só acrescenta, nunca retira)
+  const mi=+ym.slice(5,7),y=ym.slice(0,4);
+  [['mvn','Margem comercial VN','vn'],['mvo','Margem comercial VO','vo']].forEach(([k,lb,c])=>{
+    const m=peMargem(E,d[k+'_o'],d[k+'_r'],E.marg[c]);
+    tot+=add({g:'marg',k,lb,orc:peN(d[k+'_o']),real:peN(d[k+'_r']),x:m.desvio,nivel:m.nivel,p:m.p,val:E.marg[c]});
+    if(mi%3===0){const t=peMargem(E,d[k+'_to'],d[k+'_tr'],E.marg[c]);let ac=0;
+      if(t.desvio!=null)for(let j=mi-2;j<=mi;j++){const dj=ano[y+'/'+String(j).padStart(2,'0')]||{};ac+=Math.max(0,t.p-peMargem(E,dj[k+'_o'],dj[k+'_r'],E.marg[c]).p);}
+      ac=peR(ac,6);tot+=add({g:'marg',k:k+'_t',lb:lb+' · acerto do trimestre',tri:true,orc:peN(d[k+'_to']),real:peN(d[k+'_tr']),x:t.desvio,nivel:t.nivel,p:ac,val:E.marg[c]});}
+  });
+  // 3. Finance (receita financeira)
+  [['rvn','Receita financeira VN','vn'],['rvo','Receita financeira VO','vo']].forEach(([k,lb,c])=>{const x=peRealiz(d[k+'_o'],d[k+'_r']);const[nivel,p]=peDegrau(x,E.fin.lim,E.fin[c]);
+    tot+=add({g:'fin',k,lb,orc:peN(d[k+'_o']),real:peN(d[k+'_r']),x,nivel,p,lim:E.fin.lim,val:E.fin[c]});});
+  // 4. Bónus marcas (só no mês em que é pago; sem Stock Norma + Standards ≥ 90% não paga nada)
+  const norma=PE_SIM(d.bm_norma);const obj=peN(d.bm_obj)==null?null:peR(peN(d.bm_obj)/100,6);
+  {const[nivel,p]=norma?peDegrau(obj,E.bm.lim,E.bm.obj):[-1,0];tot+=add({g:'bm',k:'bm_obj',lb:'Objetivo de vendas',x:obj,nivel,p,lim:E.bm.lim,val:E.bm.obj});}
+  {const ok=norma&&PE_SIM(d.bm_demo);tot+=add({g:'bm',k:'bm_demo',lb:'Programa de demonstração',sn:d.bm_demo||'',nivel:ok?1:0,p:ok?E.bm.demo[1]:E.bm.demo[0],val:E.bm.demo});}
+  {const ok=norma&&PE_SIM(d.bm_enc);const alto=ok&&obj!=null&&obj>=E.bm.lim[2];
+    tot+=add({g:'bm',k:'bm_enc',lb:'Gestão de encomendas',sn:d.bm_enc||'',nivel:ok?(alto?2:1):0,p:ok?(alto?E.bm.enc[2]:E.bm.enc[1]):E.bm.enc[0],val:E.bm.enc});}
+  // 5. Média de vendas por vendedor (média das médias dos últimos 3 meses)
+  {const x=peN(d.media);const[nivel,p]=peDegrau(x,E.media.lim,E.media.val);tot+=add({g:'media',k:'media',lb:'Média de vendas por vendedor',x,nivel,p,lim:E.media.lim,val:E.media.val});}
+  tot=peR(tot,6);
+  // 6. Penalizações / bonificações (vazio = neutro)
+  const P=E.pen,A=[];let aj=0;const aju=(k,lb,x,v,zona)=>{A.push({k,lb,x,p:v,zona});aj+=v;};
+  {const x=peN(d.ccgo);const v=x==null?0:(x<P.ccgo.abaixo?P.ccgo.neg:(x>=P.ccgo.apartir?P.ccgo.pos:0));aju('ccgo','CCGO · cartões por vendedor',x,v,x==null?null:(v<0?-1:(v>0?1:0)));}
+  {const a=peN(d.stk365),b=peN(d.stk180);const v=a!=null&&a>=1?P.stock.neg:(a!=null&&b!=null&&b===0?P.stock.pos:0);aju('stock','Stock VN + KM0',a,v,a==null?null:(v<0?-1:(v>0?1:0)));}
+  {const x=peN(d.consent)==null?null:peR(peN(d.consent)/100,6);const v=x==null?0:(x<P.consent.abaixo?P.consent.neg:(x>P.consent.acima?P.consent.pos:0));aju('consent','Consentimentos',x,v,x==null?null:(v<0?-1:(v>0?1:0)));}
+  {const x=peN(d.voc),m=peN(d.voc_nac);const v=x==null||m==null?0:(x<m?P.voc.neg:P.voc.pos);aju('voc','VOC Marca',x,v,x==null||m==null?null:(v<0?-1:1));}
+  {const x=peN(d.leads)==null?null:peR(peN(d.leads)/100,6);const v=x==null?0:(x<P.leads.abaixo?P.leads.neg:(x>=P.leads.apartir?P.leads.pos:0));aju('leads','Conversão de leads',x,v,x==null?null:(v<0?-1:(v>0?1:0)));}
+  {const x=peN(d.ret)==null?null:peR(peN(d.ret)/100,6);const v=x==null?0:(x<P.ret.lim?P.ret.neg:P.ret.pos);aju('ret','Taxa de retenção',x,v,x==null?null:(v<0?-1:1));}
+  aj=peR(aj,6);
+  const base=peR(tot*E.ref,2),ajE=peR(aj*E.ref,2),com=peR(base+ajE,2);
+  const preench=peN(d.fvn_r)!=null;
+  return {L,A,tot,aj,base,ajE,com,preench,total:preench?peR((peN(E.base)||0)+com,2):null};
 }
-function premioValor(c,v){const i=premioTier(c,v);return i<0?null:c.tiers[i][2];}
+// fecho do ano: penalizações devolvidas se o ano não acabou na zona de penalização; bonificação extra por mês penalizado se acabou na de bonificação
+function peFecho(E,ano,y){
+  const meses=[...Array(12)].map((_,i)=>peCalcMes(E,y+'/'+String(i+1).padStart(2,'0'),ano));
+  const f=ano[y+'/12']||{};const P=E.pen;const pc=k=>peN(f[k])==null?null:peR(peN(f[k])/100,6);
+  const lin=(k,lb,res,devolve,bonifica,pos,txt)=>{const pens=meses.map(m=>(m.A.find(a=>a.k===k)||{}).p||0).filter(v=>v<0);const n=pens.length;
+    const F=devolve?peR(-pens.reduce((a,v)=>a+v,0),6):0,G=bonifica?peR(n*pos,6):0;
+    const pq=res==null?'Por preencher':(n===0?'Sem meses penalizados: nada a recuperar':(bonifica?`Ano em zona de bonificação: devolvida a penalização de ${n} mês(es) e paga a bonificação desses meses`:(devolve?`Ano em zona neutra: devolvida só a penalização de ${n} mês(es), sem bonificação`:'Ano em zona de penalização: nada a recuperar')));
+    return {k,lb,res,txt,n,F,G,eur:peR((F+G)*E.ref,2),pq};};
+  const L=[];
+  {const x=peN(f.fe_ccgo);L.push(lin('ccgo','CCGO · cartões por vendedor (média do ano)',x,x!=null&&x>=P.ccgo.abaixo,x!=null&&x>=P.ccgo.apartir,P.ccgo.pos));}
+  {const a=peN(f.fe_stk365),b=peN(f.fe_stk180);L.push(lin('stock','Stock VN + KM0 em dezembro',a,a!=null&&a===0,a!=null&&a===0&&b!=null&&b===0,P.stock.pos));}
+  {const x=pc('fe_consent');L.push(lin('consent','Consentimentos · taxa do ano',x,x!=null&&x>=P.consent.abaixo,x!=null&&x>P.consent.acima,P.consent.pos));}
+  {const x=peN(f.fe_voc),m=peN(f.fe_voc_nac);const ok=x!=null&&m!=null&&x>=m;L.push(lin('voc','VOC Marca · resultado do ano',x!=null&&m!=null?x:null,ok,ok,P.voc.pos));}
+  {const x=pc('fe_leads');L.push(lin('leads','Conversão de leads · taxa do ano',x,x!=null&&x>=P.leads.abaixo,x!=null&&x>=P.leads.apartir,P.leads.pos));}
+  {const x=pc('fe_ret');L.push(lin('ret','Taxa de retenção · taxa do ano',x,x!=null&&x>=P.ret.lim,x!=null&&x>=P.ret.lim,P.ret.pos));}
+  return {L,meses,total:peR(L.reduce((a,l)=>a+l.eur,0),2)};
+}
+function peAno(E,y){const ano=S.premiosMes||{};const F=peFecho(E,ano,y);const M=F.meses;
+  const cheios=M.filter(m=>m.preench);const acum=peR(M.reduce((a,m)=>a+m.com,0),2);
+  const media=cheios.length?cheios.reduce((a,m)=>a+m.com,0)/cheios.length:0;   // sem arredondar: a projeção multiplica por 12
+  const proj=media*12+F.total;const base=peN(E.base)||0;
+  const subF=base+(E.subFerias?Math.max(0,media):0),subN=base+(E.subNatal?Math.max(0,media):0);
+  return {M,F,acum,media,nCheios:cheios.length,proj,subF,subN,totalAno:base*12+proj+subF+subN};}
+// ---- Regras do esquema: lidas do Excel do Esquema Base (o mesmo do simulador) e gravadas só na base de dados ----
+function peLerExcel(wb){
+  const nome=wb.SheetNames.find(n=>eotNorm(n)==='esquema base')||wb.SheetNames.find(n=>/esquema/i.test(n));
+  const ws=nome&&wb.Sheets[nome];if(!ws)throw new Error('Não encontrei a folha «Esquema Base» no ficheiro.');
+  const v=a=>{const c=ws[a];return c?c.v:null;},txt=a=>String(v(a)==null?'':v(a));
+  const num=a=>{const x=v(a);const n=typeof x==='number'?x:Number(String(x==null?'':x).replace(',','.'));
+    if(x==null||x===''||!isFinite(n))throw new Error(`A célula ${a} da folha «Esquema Base» devia ter um número e tem «${x==null?'':x}».`);return n;};
+  const chk=[['B7','faturas vn'],['B8','faturas vo'],['B14','margem comercial vn'],['B21','receita financeira vn'],['B28','objetivo vendas'],['B32','demonstra'],['B36','encomendas'],['B41','media vendas'],
+    ['B51','ccgo'],['B55','stock'],['B58','consentimentos'],['B62','voc'],['B65','leads'],['B68','retencao']];
+  const mal=chk.find(([a,t])=>!eotNorm(txt(a)).includes(t));
+  if(mal)throw new Error(`O ficheiro não tem o formato do Esquema Base: esperava «${mal[1]}» na célula ${mal[0]} e está «${txt(mal[0])}».`);
+  const tri=r=>['C','D','E'].map(c=>num(c+r));
+  // limiares que no Esquema Base estão escritos em texto: vêm dos parâmetros do Simulador, se existir, ou do próprio texto
+  const simN=wb.SheetNames.find(n=>eotNorm(n)==='simulador');const sim=simN&&wb.Sheets[simN];
+  const sv=a=>sim&&sim[a]&&sim[a].v!=null&&sim[a].v!==''?sim[a].v:null;
+  const doTxt=(a,div)=>{const m=txt(a).replace(/(\d),(\d)/g,'$1.$2').match(/[<>]=?\s*(\d+(?:\.\d+)?)/);return m?Number(m[1])/(div||1):null;};
+  const lim=(simA,txtA,div)=>{const s=sv(simA);const n=s==null?doTxt(txtA,div):Number(s);if(n==null||!isFinite(n))throw new Error(`Não consegui ler o limiar de ${txtA} («${txt(txtA)}»).`);return n;};
+  const passoTxt=(()=>{const m=txt('C12').replace(/(\d),(\d)/g,'$1.$2').match(/(\d+(?:\.\d+)?)\s*pp/i);return m?Number(m[1])/100:null;})();
+  const E={
+    ref:sv('C3')!=null?Number(sv('C3')):num('C2'),
+    base:sv('C4')!=null?Number(sv('C4')):null,
+    subFerias:sv('C92')==null?true:sv('C92')==='Sim',subNatal:sv('C93')==null?false:sv('C93')==='Sim',
+    valido:txt('A70')||null,
+    qtd:{lim:tri(5),vn:tri(7),vo:tri(8)},
+    marg:{passo:sv('C100')!=null?Number(sv('C100')):(passoTxt==null?0.005:passoTxt),vn:tri(14),vo:tri(15)},
+    fin:{lim:tri(19),vn:tri(21),vo:tri(22)},
+    bm:{lim:tri(26),obj:tri(28),demo:[num('C32'),num('D32')],enc:tri(36)},
+    media:{lim:tri(39),val:tri(41)},
+    pen:{ccgo:{abaixo:lim('C101','C51'),apartir:lim('C102','C52'),neg:num('G51'),pos:num('G52')},
+      stock:{neg:num('C55'),pos:num('D55')},
+      consent:{abaixo:lim('C103','C57',100),acima:lim('C104','D57',100),neg:num('C58'),pos:num('D58')},
+      voc:{neg:num('C62'),pos:num('D62')},
+      leads:{abaixo:lim('C105','C64',100),apartir:lim('C106','D64',100),neg:num('C65'),pos:num('D65')},
+      ret:{lim:lim('C107','C67',100),neg:num('C68'),pos:num('D68')}}};
+  if(!(E.ref>0))throw new Error('O valor de referência (C2) tem de ser maior do que zero.');
+  return E;
+}
+async function peImportar(f){
+  if(!f||!isAdmin())return;
+  setState({peBusy:true,peErr:'',pePrev:null});
+  try{const X=await eotCarregarXLSX();const wb=X.read(new Uint8Array(await f.arrayBuffer()),{type:'array'});
+    const E=peLerExcel(wb);setState({peBusy:false,pePrev:Object.assign(E,{ficheiro:f.name})});}
+  catch(e){setState({peBusy:false,peErr:(e&&e.message)||String(e)});}
+}
+async function peGravarMes(mes,dados){
+  const tinha=(S.premiosMes||{})[mes]!==undefined;S.premiosMes=Object.assign({},S.premiosMes||{},{[mes]:dados});render();
+  const body={dados,updated_at:new Date().toISOString()};
+  if(tinha){const r=await supabaseApi('PATCH',`/premios_mes?mes=eq.${encodeURIComponent(mes)}`,body);if(Array.isArray(r)&&r.length===0)await supabaseApi('POST','/premios_mes',Object.assign({mes},body));}
+  else{try{await supabaseApi('POST','/premios_mes',Object.assign({mes},body));}catch(e){await supabaseApi('PATCH',`/premios_mes?mes=eq.${encodeURIComponent(mes)}`,body);}}
+}
+async function peConfirmar(){
+  const P=S.pePrev;if(!P||!isAdmin())return;
+  const atual=peEsq();const E=Object.assign({},P,{importado_em:new Date().toISOString()});
+  if(atual&&peN(atual.base)!=null&&E.base==null)E.base=atual.base;   // um Excel sem o Simulador não apaga o vencimento já escrito
+  try{await peGravarMes(PE_ESQ,E);setState({pePrev:null,peErr:''});toast('Regras do esquema gravadas');}
+  catch(e){await loadPremiosMes();setState({peErr:'Não gravei as regras: '+erroTexto(e)});}
+}
+async function peCfg(k,v){const E=peEsq();if(!E||!isAdmin())return;const n=Object.assign({},E);
+  if(k==='base')n.base=v===''?null:peN(v);else if(k==='subFerias'||k==='subNatal')n[k]=v==='Sim';else return;
+  try{await peGravarMes(PE_ESQ,n);}catch(e){avisoErro('Não gravei: '+erroTexto(e));await loadPremiosMes();render();}}
+async function peUsarCrm(mes,vals){const atual=Object.assign({},premioDados(mes));let n=0;
+  Object.entries(vals).forEach(([k,v])=>{if((atual[k]==null||atual[k]==='')&&v!=null){atual[k]=v;n++;}});
+  if(!n)return;try{await peGravarMes(mes,atual);}catch(e){avisoErro('Erro ao gravar: '+erroTexto(e));await loadPremiosMes();render();}}
+function peRegrasHTML(E){
+  const P=S.pePrev;const pcs=v=>(v>0?'+':'')+pePc(v),pc0=pePc;
+  const resumo=R=>{const t=(lb,lim,val,fl)=>`<tr><td>${lb}</td>${val.map((x,i)=>`<td>${lim?`<span class="pe-sub">${fl?fl(lim[i]):pc0(lim[i])}</span> `:''}${pcs(x)}</td>`).join('')}</tr>`;
+    return`<table class="pe-reg-t"><tbody>
+      <tr><td>Valor de referência</td><td colspan="3"><b>${fmtU(fmtEur(R.ref,2))}</b> por mês</td></tr>
+      ${t('Faturas VN',R.qtd.lim,R.qtd.vn)}${t('Faturas VO',R.qtd.lim,R.qtd.vo)}
+      ${t('Margem VN (orç. −/=/+ '+fmtN(R.marg.passo*100,1)+' pp)',null,R.marg.vn)}${t('Margem VO',null,R.marg.vo)}
+      ${t('Receita financeira VN',R.fin.lim,R.fin.vn)}${t('Receita financeira VO',R.fin.lim,R.fin.vo)}
+      ${t('Objetivo de vendas (bónus)',R.bm.lim,R.bm.obj)}
+      <tr><td>Programa de demonstração</td><td>Não ${pcs(R.bm.demo[0])}</td><td>Sim ${pcs(R.bm.demo[1])}</td><td></td></tr>
+      <tr><td>Gestão de encomendas</td><td>Não ${pcs(R.bm.enc[0])}</td><td>Sim ${pcs(R.bm.enc[1])}</td><td>Sim e obj. ≥ ${pc0(R.bm.lim[2])} ${pcs(R.bm.enc[2])}</td></tr>
+      ${t('Média de vendas por vendedor',R.media.lim,R.media.val,x=>fmtN(x,1))}
+      <tr><td>CCGO</td><td>&lt; ${fmtN(R.pen.ccgo.abaixo,1)} ${pcs(R.pen.ccgo.neg)}</td><td>≥ ${fmtN(R.pen.ccgo.apartir,1)} ${pcs(R.pen.ccgo.pos)}</td><td></td></tr>
+      <tr><td>Stock VN + KM0</td><td>≥ 365 d ${pcs(R.pen.stock.neg)}</td><td>0 ≥ 180 d ${pcs(R.pen.stock.pos)}</td><td></td></tr>
+      <tr><td>Consentimentos</td><td>&lt; ${pc0(R.pen.consent.abaixo)} ${pcs(R.pen.consent.neg)}</td><td>&gt; ${pc0(R.pen.consent.acima)} ${pcs(R.pen.consent.pos)}</td><td></td></tr>
+      <tr><td>VOC Marca</td><td>&lt; média ${pcs(R.pen.voc.neg)}</td><td>≥ média ${pcs(R.pen.voc.pos)}</td><td></td></tr>
+      <tr><td>Conversão de leads</td><td>&lt; ${pc0(R.pen.leads.abaixo)} ${pcs(R.pen.leads.neg)}</td><td>≥ ${pc0(R.pen.leads.apartir)} ${pcs(R.pen.leads.pos)}</td><td></td></tr>
+      <tr><td>Taxa de retenção</td><td>&lt; ${pc0(R.pen.ret.lim)} ${pcs(R.pen.ret.neg)}</td><td>≥ ${pc0(R.pen.ret.lim)} ${pcs(R.pen.ret.pos)}</td><td></td></tr>
+    </tbody></table>`;};
+  const botao=`<label class="btn btn-${E?'outline':'orange'} btn-sm" style="cursor:pointer;margin:0">${S.peBusy?'A ler…':(E?'Atualizar com novo Excel':'📥 Importar Excel do Esquema Base')}<input type="file" id="pe-xls" accept=".xlsx,.xls" style="display:none"></label>`;
+  const prev=P?`<div class="gpp-card eot-prev pe-prev"><div class="vd-form-t">📄 ${esc(P.ficheiro||'Excel')} · regras lidas</div>
+      ${P.valido?`<div class="pe-sub" style="margin-bottom:8px">${esc(P.valido)}</div>`:''}
+      ${resumo(P)}
+      ${P.base==null?'<div class="pe-sub" style="margin-top:6px">Sem a folha «Simulador»: o vencimento base fica como está (podes escrevê-lo depois).</div>':''}
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn btn-orange btn-sm" data-action="pe-confirmar">Gravar estas regras</button><button class="btn btn-dark btn-sm" data-action="pe-cancelar">Cancelar</button></div></div>`:'';
+  if(!E)return`${S.peErr?`<div class="error" style="margin:0 16px 12px">${esc(S.peErr)}</div>`:''}${prev||`<div class="gpp-card pe-card pe-vazio-c"><div class="pe-h">Ainda não há regras do esquema</div>
+      <p class="pe-nota">Importa o Excel do <b>Esquema Base</b> (o mesmo do teu simulador). Os valores ficam só na base de dados, visíveis só para ti. Quando o esquema for renovado, importas o novo.</p>${botao}</div>`}`;
+  return`<details class="gpp-card pe-card pe-regras" ${P||S.peErr?'open':''}><summary class="pe-h">Regras do esquema${E.valido?` <span class="pe-sub">· ${esc(E.valido)}</span>`:''}</summary>
+    ${S.peErr?`<div class="error" style="margin:8px 0">${esc(S.peErr)}</div>`:''}
+    ${prev}
+    ${resumo(E)}
+    <div class="pe-cfg">
+      <label>Vencimento base <span class="pe-inp"><input class="stock-inp stock-num" type="number" step="any" data-pe-cfg="base" value="${E.base==null?'':esc(String(E.base))}" placeholder="—"><span class="pm-un">€</span></span></label>
+      <label>Subsídio de férias inclui comissões <select class="stock-inp pe-sn" data-pe-cfg="subFerias">${['Sim','Não'].map(o=>`<option ${(E.subFerias?'Sim':'Não')===o?'selected':''}>${o}</option>`).join('')}</select></label>
+      <label>Subsídio de Natal inclui comissões <select class="stock-inp pe-sn" data-pe-cfg="subNatal">${['Sim','Não'].map(o=>`<option ${(E.subNatal?'Sim':'Não')===o?'selected':''}>${o}</option>`).join('')}</select></label>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px">${botao}<span class="pe-sub">${E.importado_em?'Importadas de '+esc(E.ficheiro||'Excel')+' a '+esc(eotDataPT(String(E.importado_em).slice(0,10))):''}</span></div>
+  </details>`;
+}
 async function loadPremiosMes(){
   try{const d=await supabaseApi('GET','/premios_mes?select=*');const m={};(d||[]).forEach(x=>{m[String(x.mes)]=x.dados||{};});S.premiosMes=m;S.premiosMesErr='';}
   catch(e){S.premiosMes={};S.premiosMesErr=(e&&e.message)||'erro';}
@@ -7241,7 +7419,7 @@ async function loadPremiosMes(){
 function premioDados(mes){return (S.premiosMes||{})[String(mes)]||{};}
 async function savePremioMes(mes,chave,valor){
   mes=String(mes);const atual=Object.assign({},premioDados(mes));
-  if(valor===''||valor==null)delete atual[chave];else atual[chave]=Number(valor);
+  if(valor===''||valor==null)delete atual[chave];else atual[chave]=(valor==='Sim'||valor==='Não')?valor:Number(valor);
   const tinha=(S.premiosMes||{})[mes]!==undefined;
   S.premiosMes=Object.assign({},S.premiosMes||{},{[mes]:atual});render();
   const body={dados:atual,updated_at:new Date().toISOString()};
@@ -10441,13 +10619,13 @@ function EXPORT_FOLHAS(){
     {nome:'Comissões (manual, histórico)',path:'/comissoes?select=*&order=id.asc',cols:[
       {c:'id',l:'ID'},{c:'vendedor_id',l:'Vendedor',f:nome},{c:'mes',l:'Mês'},{c:'descricao',l:'Descrição'},{c:'valor',l:'Valor'},{c:'created_at',l:'Criado',f:dt},
     ]},
-    {nome:'Prémios (mensal)',path:'/premios_mes?select=*&order=mes.asc',cols:[
+    {nome:'Prémios (mensal)',path:'/premios_mes?select=*&mes=neq.esquema&order=mes.asc',cols:[
       {c:'mes',l:'Mês'},
-      ...PREMIO_PLANO.map(c=>({c:'dados',l:c.lb+' ('+c.un+')',f:v=>(v&&v[c.k]!=null)?v[c.k]:''})),
-      ...PREMIO_PLANO.map(c=>({c:'dados',l:'€ '+c.lb,f:v=>{const x=(v&&v[c.k]!=null)?premioValor(c,v[c.k]):null;return x==null?'':x;}})),
-      {c:'dados',l:'TOTAL €',f:v=>PREMIO_PLANO.reduce((a,c)=>a+((v&&v[c.k]!=null)?(premioValor(c,v[c.k])||0):0),0)},
+      ...PE_CAMPOS.map(([k,l])=>({c:'dados',l,f:v=>(v&&v[k]!=null)?v[k]:''})),
+      {c:'mes',l:'Comissão do mês €',f:m=>{const E=peEsq();return E&&/^\d{4}\/\d{2}$/.test(String(m))?peCalcMes(E,String(m),S.premiosMes||{}).com:'';}},
       {c:'updated_at',l:'Atualizado',f:dt},
     ]},
+    {nome:'Esquema de comissões (regras)',path:'/premios_mes?select=*&mes=eq.esquema',cols:[{c:'dados',l:'Regras (JSON)',f:v=>JSON.stringify(v||{})},{c:'updated_at',l:'Atualizado',f:dt}]},
     {nome:'Equipa',path:'/profiles?select=*&order=nome.asc',cols:[
       {c:'id',l:'ID'},{c:'nome',l:'Nome'},{c:'role',l:'Função'},{c:'linha',l:'Linha'},{c:'created_at',l:'Criado',f:dt},
     ]},
@@ -11000,55 +11178,119 @@ function renderDashboard(){
       <div class="gpp-pend-desc" style="margin:0 16px 16px"><b>Preparação = garantia + legalização + oficina + comissão</b> (as três primeiras editas na Calculadora de Depreciação; a <b>comissão é calculada</b>: 25% da margem, mínimo 35 €). Custo = entrada − depreciação + preparação. <b>Margem líquida = venda (PVP) − custo</b> — a comissão já lá está dentro, por isso não é descontada outra vez. Podes editar a entrada, a depreciação e o PVP aqui. Não inclui IVA nem encargos de financiamento. Vendas a comerciante (🤝): entrada do registo da venda, sem garantia nem comissão.</div>`;
   }
   function premiosView(){
-    const fmtE=n=>Number(n||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
-    const dados=premioDados(mesSel);
-    // auto: Retail Motorrad = retail de novas ÷ objetivo de equipa
-    const objN=(objEquipaGet(mesSel,'novas')||{}).objetivo||0;
-    const feitas=recs.filter(r=>r.status==='Retail'&&isNovas(r)&&retailYM(r)===mesSel).length;
-    const autoPct=objN>0?Math.round(1000*feitas/objN)/10:null;
-    const valDe=c=>{const v=dados[c.k];if(v!=null&&v!=='')return Number(v);return (c.auto&&autoPct!=null)?autoPct:null;};
-    const usaAuto=c=>c.auto&&(dados[c.k]==null||dados[c.k]==='')&&autoPct!=null;
-    let total=0,nPreench=0;
-    const linha=c=>{
-      const v=valDe(c);const i=premioTier(c,v);const eur=i<0?null:c.tiers[i][2];
-      if(eur!=null){total+=eur;nPreench++;}
-      const cels=c.tiers.map((t,k)=>`<td class="pm-t ${k===i?'on':''} ${t[2]<0?'neg':(t[2]===0?'zero':'')}"><div class="pm-tlim">${esc(t[0])}</div><div class="pm-tval">${t[2]>0?'+':''}${t[2]}€</div></td>`).join('');
-      return`<tr>
-        <td class="pm-cr">${esc(c.lb)}${usaAuto(c)?'<span class="pm-auto" title="Calculado: retail de novas ÷ objetivo de equipa">auto</span>':''}</td>
-        <td class="pm-in"><input class="stock-inp stock-num" data-pm-k="${c.k}" data-pm-mes="${esc(mesSel)}" type="number" step="0.1" value="${dados[c.k]!=null?dados[c.k]:''}" placeholder="${usaAuto(c)?autoPct:'—'}"><span class="pm-un">${c.un}</span></td>
-        ${cels}
-        <td class="pm-eur ${eur==null?'':(eur<0?'neg':(eur===0?'zero':'ok'))}">${eur==null?'—':(eur>0?'+':'')+fmtE(eur)}</td>
-      </tr>`;
-    };
-    const grupos=[...new Set(PREMIO_PLANO.map(c=>c.g))];
-    const corpo=grupos.map(g=>`<tr class="pm-g"><td colspan="9">${esc(g)}</td></tr>`+PREMIO_PLANO.filter(c=>c.g===g).map(linha).join('')).join('');
-    const falta=PREMIO_PLANO.length-nPreench;
-    // ajuda de volume (objetivo em unidades)
-    const escadas=objN>0?`<div class="pm-ajuda">
-      <div class="pm-ajuda-h">Retail Novas · ${esc(ymCurto(mesSel))}</div>
-      <table class="pm-ajuda-t"><tbody>
-        <tr><td>Objetivo</td><td><b>${objN}</b></td></tr>
-        ${[[110,'110%'],[125,'125%'],[135,'135%']].map(([p,l])=>`<tr><td>${l}</td><td><b>${Math.ceil(objN*p/100)}</b></td></tr>`).join('')}
-        <tr class="pm-real"><td>Realizado</td><td><b>${feitas}</b></td></tr>
-        <tr class="pm-real"><td>%</td><td><b>${autoPct!=null?autoPct+'%':'—'}</b></td></tr>
-        ${[[100,'objetivo'],[110,'110%'],[125,'125%'],[135,'135%']].map(([p,l])=>{const f=Math.max(0,Math.ceil(objN*p/100)-feitas);return`<tr class="pm-delta ${f===0?'ok':''}"><td>Faltam p/ ${l}</td><td><b>${f}</b></td></tr>`;}).join('')}
-      </tbody></table></div>`:'<div class="pm-ajuda"><div class="pm-ajuda-h">Retail Novas</div><div class="pm-sem">Sem objetivo lançado para este mês.</div></div>';
+    const E=peEsq();const d=premioDados(mesSel);const y=mesSel.slice(0,4),mi=+mesSel.slice(5,7);
+    const eur=v=>fmtU(fmtEur(v,2)),pc=(v,dec)=>v==null?'—':fmtPc(v,dec==null?1:dec),pcs=v=>(v>0?'+':'')+pePc(v);
+    // sugestões do CRM (o que escreveres por cima prevalece)
+    const objN=(objEquipaGet(mesSel,'novas')||{}).objetivo||null;
+    const fvnR=recs.filter(r=>r.status==='Retail'&&isNovas(r)&&retailYM(r)===mesSel).length;
+    const fvoR=recs.filter(r=>r.status==='Retail'&&isUsadas(r)&&retailYM(r)===mesSel).length;
+    const sug={fvn_o:objN,fvn_r:fvnR,fvo_r:fvoR};S._peSug={mes:mesSel,vals:sug};   // aparecem a cinzento; só contam depois de «Usar estes números» ou de os escreveres
+    const ano=S.premiosMes||{};
+    const faltaSug=Object.keys(sug).some(k=>sug[k]!=null&&(d[k]==null||d[k]===''));
+    const regras=peRegrasHTML(E);
+    if(!E)return`${mesBar}
+      <div class="gpp-tot-head"><span>Os meus prémios · ${esc(ymCurto(mesSel))}</span></div>
+      ${S.premiosMesErr?`<div class="mg-aviso">⚠️ Não consigo ler os prémios (${esc(S.premiosMesErr)}).</div>`:''}
+      ${regras}`;
+    const C=peCalcMes(E,mesSel,ano);const A=peAno(E,y);
+    const inp=(k,un,o)=>{const s=sug[k]!=null&&(d[k]==null||d[k]==='');const ph=s?String(sug[k]):'—';
+      return`<span class="pe-inp${s?' pe-sug':''}"><input class="stock-inp stock-num" type="number" step="any" inputmode="decimal" data-pm-k="${k}" data-pm-mes="${esc(mesSel)}" value="${d[k]!=null?esc(String(d[k])):''}" placeholder="${esc(ph)}" aria-label="${esc((o&&o.lb)||k)}"${s?` title="Sugestão do CRM: ${esc(ph)} (escreve por cima se for outro)"`:''}><span class="pm-un">${un}</span></span>`;};
+    const sn=(k,lb)=>`<select class="stock-inp pe-sn" data-pm-k="${k}" data-pm-mes="${esc(mesSel)}" aria-label="${esc(lb)}"><option value="">—</option>${['Sim','Não'].map(o=>`<option ${d[k]===o?'selected':''}>${o}</option>`).join('')}</select>`;
+    const cel=(on,lim,val,neg)=>`<td class="pm-t ${on?'on':''} ${neg?'neg':(val===0?'zero':'')}"><div class="pm-tlim">${lim}</div><div class="pm-tval">${pcs(val)}</div><div class="pe-teur">${eur(val*E.ref)}</div></td>`;
+    const premio=p=>`<td class="pm-eur ${p<0?'neg':(p===0?'zero':'ok')}">${eur(p*E.ref)}<div class="pe-sub">${pcs(p)} da ref.</div></td>`;
+    const lin=(l,orcCel,realCel,xTxt,cels)=>`<tr${l.tri?' class="pe-tri"':''}><td class="pm-cr">${esc(l.lb)}</td><td class="pm-in">${orcCel}</td><td class="pm-in">${realCel}</td><td class="pe-x">${xTxt}</td>${cels}${premio(l.p)}</tr>`;
+    const g=k=>C.L.filter(l=>l.g===k);
+    const limPc=lim=>lim.map(pePc);
+    const passo=fmtN(E.marg.passo*100,1).replace(/,0$/,'')+' pp';
+    const rows=[];
+    rows.push(`<tr class="pm-g"><td colspan="9">Quantidade · faturas</td></tr>`);
+    g('qtd').forEach(l=>{const L=limPc(l.lim);rows.push(lin(l,inp(l.k+'_o','un.',{lb:l.lb+' orçamento'}),inp(l.k+'_r','un.',{lb:l.lb+' real'}),pc(l.x),l.val.map((v,i)=>cel(l.nivel===i,L[i],v)).join('')));});
+    rows.push(`<tr class="pm-g"><td colspan="9">% Margem comercial${mi%3===0?' · com acerto do trimestre':''}</td></tr>`);
+    g('marg').forEach(l=>{const L=['orç. −'+passo,'orç.','orç. +'+passo];const k=l.tri?l.k.replace('_t',''):l.k;
+      rows.push(lin(l,inp(k+(l.tri?'_to':'_o'),'%',{lb:l.lb+' orçamentada'}),inp(k+(l.tri?'_tr':'_r'),'%',{lb:l.lb+' real'}),l.x==null?'—':(l.x>0?'+':'')+fmtN(l.x*100,2)+' pp',l.val.map((v,i)=>cel(l.nivel===i,L[i],v)).join('')));});
+    rows.push(`<tr class="pm-g"><td colspan="9">Finance · receita financeira</td></tr>`);
+    g('fin').forEach(l=>{const L=limPc(l.lim);rows.push(lin(l,inp(l.k+'_o','€',{lb:l.lb+' orçamento'}),inp(l.k+'_r','€',{lb:l.lb+' real'}),pc(l.x),l.val.map((v,i)=>cel(l.nivel===i,L[i],v)).join('')));});
+    rows.push(`<tr class="pm-g"><td colspan="9">Bónus marcas · só no mês em que é pago</td></tr>`);
+    rows.push(`<tr><td class="pm-cr">Stock Norma e Standards ≥ 90 %<div class="pe-sub">sem isto, as três linhas abaixo pagam 0</div></td><td class="pm-in" colspan="2">${sn('bm_norma','Stock Norma e Standards cumpridos')}</td><td colspan="6"></td></tr>`);
+    g('bm').forEach(l=>{
+      if(l.k==='bm_obj'){const L=limPc(l.lim);rows.push(lin(l,'<span class="pe-sub">% atingida</span>',inp('bm_obj','%',{lb:'Objetivo de vendas, % atingida'}),pc(l.x),l.val.map((v,i)=>cel(l.nivel===i,L[i],v)).join('')));}
+      else if(l.k==='bm_demo')rows.push(lin(l,'',sn('bm_demo',l.lb),'',cel(l.nivel===0,'Não',l.val[0])+cel(l.nivel===1,'Sim',l.val[1])+'<td></td>'));
+      else rows.push(lin(l,'',sn('bm_enc',l.lb),'',cel(l.nivel===0,'Não',l.val[0])+cel(l.nivel===1,'Sim',l.val[1])+cel(l.nivel===2,'Sim e obj. ≥ '+fmtPc(E.bm.lim[2],0),l.val[2])));});
+    rows.push(`<tr class="pm-g"><td colspan="9">Média de vendas por vendedor · média das médias dos últimos 3 meses</td></tr>`);
+    g('media').forEach(l=>rows.push(lin(l,'',inp('media','un.',{lb:l.lb}),l.x==null?'—':fmtN(l.x,1),l.val.map((v,i)=>cel(l.nivel===i,fmtN(l.lim[i],1),v)).join(''))));
+    // penalizações / bonificações
+    const P=E.pen,pz=(a,k)=>(C.A.find(x=>x.k===k)||{});
+    const pen=(k,lb,res,labs,vals)=>{const a=pz(C.A,k);return`<tr><td class="pm-cr">${esc(lb)}</td><td class="pm-in">${res}</td>${labs.map((t,i)=>{const z=i-1;const v=vals[i];return v==null?'<td></td>':`<td class="pm-t ${a.zona===z?'on':''} ${v<0?'neg':(v===0?'zero':'')}"><div class="pm-tlim">${t}</div><div class="pm-tval">${v===0?'0':pcs(v)}</div></td>`;}).join('')}${premio(a.p||0)}</tr>`;};
+    const fp=pePc;
+    const penRows=[
+      pen('ccgo','CCGO · cartões por vendedor do showroom',inp('ccgo','nº',{lb:'CCGO cartões por vendedor'}),['< '+fmtN(P.ccgo.abaixo,1).replace(/,0$/,''),'entre','≥ '+fmtN(P.ccgo.apartir,1).replace(/,0$/,'')],[P.ccgo.neg,0,P.ccgo.pos]),
+      pen('stock','Stock VN + KM0 (contrato)',`${inp('stk365','≥ 365 d',{lb:'Unidades com 365 dias ou mais'})}${inp('stk180','≥ 180 d',{lb:'Unidades com 180 dias ou mais (inclui as de 365)'})}`,['1 ou mais ≥ 365 d','entre','0 com ≥ 180 d'],[P.stock.neg,0,P.stock.pos]),
+      pen('consent','Consentimentos · taxa de penetração',inp('consent','%',{lb:'Consentimentos, taxa'}),['< '+fp(P.consent.abaixo),'entre','> '+fp(P.consent.acima)],[P.consent.neg,0,P.consent.pos]),
+      pen('voc','VOC Marca',`${inp('voc','teu',{lb:'VOC, o teu resultado'})}${inp('voc_nac','nac.',{lb:'VOC, média nacional'})}`,['< média nacional','','≥ média nacional'],[P.voc.neg,null,P.voc.pos]),
+      pen('leads','Conversão de leads',inp('leads','%',{lb:'Conversão de leads'}),['< '+fp(P.leads.abaixo),'entre','≥ '+fp(P.leads.apartir)],[P.leads.neg,0,P.leads.pos]),
+      pen('ret','Taxa de retenção',inp('ret','%',{lb:'Taxa de retenção'}),['< '+fp(P.ret.lim),'','≥ '+fp(P.ret.lim)],[P.ret.neg,null,P.ret.pos])];
+    // fecho do ano (em dezembro)
+    const F=A.F;const fe=mi===12?`<div class="gpp-card pe-card"><div class="pe-h">Fecho do ano ${esc(y)} · recuperação de penalizações</div>
+      <div class="pe-nota">Escreve o resultado acumulado do ano. Se não acabar na zona de penalização, as penalizações desse indicador voltam; se acabar na de bonificação, cada mês penalizado recebe também a bonificação. Nunca retira bonificações pagas.</div>
+      <div style="overflow-x:auto"><table class="gpp-ltable pm-tbl pe-fe" data-no-tools="1"><thead><tr><th>Indicador</th><th>Resultado do ano</th><th style="text-align:center">Meses penalizados</th><th>Porquê</th><th style="text-align:right">A receber</th></tr></thead><tbody>
+      ${F.L.map(l=>{const ins={ccgo:inp('fe_ccgo','nº',{lb:'CCGO média do ano'}),stock:inp('fe_stk365','≥ 365 d',{lb:'Stock ≥ 365 dias em dezembro'})+inp('fe_stk180','≥ 180 d',{lb:'Stock ≥ 180 dias em dezembro'}),consent:inp('fe_consent','%',{lb:'Consentimentos do ano'}),
+        voc:inp('fe_voc','teu',{lb:'VOC do ano'})+inp('fe_voc_nac','nac.',{lb:'VOC média nacional do ano'}),leads:inp('fe_leads','%',{lb:'Conversão de leads do ano'}),ret:inp('fe_ret','%',{lb:'Retenção do ano'})}[l.k];
+        return`<tr><td class="pm-cr">${esc(l.lb)}</td><td class="pm-in">${ins}</td><td style="text-align:center">${l.n}</td><td class="pe-sub">${esc(l.pq)}</td><td class="pm-eur ${l.eur>0?'ok':'zero'}">${eur(l.eur)}</td></tr>`;}).join('')}
+      </tbody><tfoot><tr><td colspan="4" style="text-align:right;font-weight:700">A receber a mais no fecho do ano</td><td class="pm-eur ${F.total>0?'ok':'zero'}">${eur(F.total)}</td></tr></tfoot></table></div></div>`:'';
+    // ano
+    const MN=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];let ac=0;
+    const anoHTML=`<div class="gpp-card pe-card pe-ano"><div class="pe-h">Ano ${esc(y)}</div>
+      <div style="overflow-x:auto"><table class="gpp-ltable pe-ano-t" data-no-tools="1"><thead><tr><th>Mês</th><th style="text-align:right">Prémios</th><th style="text-align:right">Ajustes</th><th style="text-align:right">Comissão</th><th style="text-align:right">Acumulado</th></tr></thead><tbody>
+      ${A.M.map((m,i)=>{ac+=m.com;const ym=y+'/'+String(i+1).padStart(2,'0');const tem=m.preench||m.base||m.ajE;
+        return`<tr class="${ym===mesSel?'on':''} ${tem?'':'pe-vazio'}"><td><button class="pe-mes" data-action="per-mes" data-m="${ym}">${MN[i]}</button>${m.preench?'':(tem?'<span class="pe-sub"> · sem faturas VN</span>':'')}</td><td style="text-align:right">${tem?eur(m.base):'—'}</td><td style="text-align:right" class="${m.ajE<0?'neg':''}">${tem?eur(m.ajE):'—'}</td><td style="text-align:right"><b class="${m.com<0?'neg':''}">${tem?eur(m.com):'—'}</b></td><td style="text-align:right">${tem?eur(ac):'—'}</td></tr>`;}).join('')}
+      </tbody></table></div>
+      <div class="pe-res">
+        <div><span>Comissão acumulada</span><b>${eur(A.acum)}</b></div>
+        <div><span>Média mensal (${A.nCheios} ${A.nCheios===1?'mês':'meses'} com faturas VN)</span><b>${eur(A.media)}</b></div>
+        <div><span>Recuperação no fecho do ano</span><b>${eur(A.F.total)}</b></div>
+        <div><span>Projeção anual de comissões (média × 12 + recuperação)</span><b>${eur(A.proj)}</b></div>
+        ${peN(E.base)!=null?`<div><span>Subsídio de férias (${E.subFerias?'com':'sem'} média de comissões)</span><b>${eur(A.subF)}</b></div>
+        <div><span>Subsídio de Natal (${E.subNatal?'com':'sem'} média de comissões)</span><b>${eur(A.subN)}</b></div>
+        <div class="pe-res-t"><span>Projeção anual total (vencimento × 12 + comissões + subsídios)</span><b>${eur(A.totalAno)}</b></div>`:''}
+      </div></div>`;
+    const totCls=C.com<0?'neg':'';
     return`${mesBar}
       <div class="gpp-tot-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
         <span>Os meus prémios · ${esc(ymCurto(mesSel))}</span>
-        <span style="display:flex;align-items:center;gap:10px"><button class="btn btn-dark btn-sm" data-action="pm-csv">⬇ CSV</button><span class="pm-total ${total<0?'neg':''}">${total>0?'+':''}${fmtE(total)}</span></span>
+        <span style="display:flex;align-items:center;gap:10px"><span class="pe-ref">Referência ${eur(E.ref)}/mês</span><button class="btn btn-dark btn-sm" data-action="pm-csv">⬇ CSV</button><span class="pm-total ${totCls}">${eur(C.com)}</span></span>
       </div>
-      ${S.premiosMesErr?`<div class="mg-aviso">⚠️ Não consigo ler os prémios (${esc(S.premiosMesErr)}). Falta correr o SQL da tabela <b>premios_mes</b>.</div>`:''}
-      ${falta?`<div class="mg-aviso">⚠️ <b>${falta}</b> critério${falta!==1?'s':''} por preencher — não contam no total.</div>`:''}
-      <div class="pm-wrap">
-        <div class="gpp-card" style="overflow-x:auto;flex:1;min-width:0"><table class="gpp-ltable pm-tbl" data-no-tools="1">
-          <thead><tr><th>Critério</th><th style="text-align:center">Realizado</th>${['Penalização','Neutro','Objetivo','Escalão 2','Escalão 3','Máximo'].map(l=>`<th style="text-align:center;font-size:11px;color:var(--text3)">${l}</th>`).join('')}<th style="text-align:right">Prémio</th></tr></thead>
-          <tbody>${corpo}</tbody>
-          <tfoot><tr><td colspan="8" style="text-align:right;font-weight:700">Total do mês</td><td class="pm-eur ${total<0?'neg':'ok'}">${total>0?'+':''}${fmtE(total)}</td></tr></tfoot>
+      ${S.premiosMesErr?`<div class="mg-aviso">⚠️ Não consigo ler os prémios (${esc(S.premiosMesErr)}).</div>`:''}
+      ${!C.preench?`<div class="mg-aviso">Falta o real das <b>faturas VN</b> deste mês: até lá o mês não conta para a média nem para o total com vencimento.</div>`:''}
+      <div class="pe-lado">
+          <div class="pm-ajuda pe-fecho"><div class="pm-ajuda-h">${esc(ymCurto(mesSel))}</div><table class="pm-ajuda-t"><tbody>
+            <tr><td>Prémios</td><td><b>${eur(C.base)}</b></td></tr>
+            <tr><td>Ajustes</td><td><b class="${C.ajE<0?'neg':''}">${eur(C.ajE)}</b></td></tr>
+            <tr class="pm-real"><td>Comissão do mês</td><td><b class="${totCls}">${eur(C.com)}</b></td></tr>
+            ${peN(E.base)!=null?`<tr><td>Vencimento base</td><td><b>${eur(E.base)}</b></td></tr><tr class="pm-real"><td>Total do mês</td><td><b>${C.total==null?'—':eur(C.total)}</b></td></tr>`:''}
+          </tbody></table></div>
+          ${faltaSug?`<div class="pm-ajuda pe-crm-c"><div class="pm-ajuda-h">Do CRM · ${esc(ymCurto(mesSel))}</div><table class="pm-ajuda-t"><tbody>
+            ${objN!=null?`<tr><td>Orçamento VN (objetivo)</td><td><b>${objN}</b></td></tr>`:''}<tr><td>Retail de novas</td><td><b>${fvnR}</b></td></tr><tr><td>Retail de usadas</td><td><b>${fvoR}</b></td></tr></tbody></table>
+            <button class="btn btn-outline btn-sm" data-action="pe-crm" style="margin-top:8px;width:100%">Usar estes números</button><div class="pe-sub" style="margin-top:4px">Só preenche o que está vazio.</div></div>`:''}
+          ${objN?`<div class="pm-ajuda"><div class="pm-ajuda-h">Faturas VN · do CRM</div><table class="pm-ajuda-t"><tbody>
+            <tr><td>Orçamento</td><td><b>${objN}</b></td></tr>
+            ${E.qtd.lim.map(p=>`<tr><td>${fmtPc(p,0)}</td><td><b>${Math.ceil(objN*p-1e-9)}</b></td></tr>`).join('')}
+            <tr class="pm-real"><td>Retail de novas</td><td><b>${fvnR}</b></td></tr>
+            ${E.qtd.lim.map(p=>{const f=Math.max(0,Math.ceil(objN*p-1e-9)-fvnR);return`<tr class="pm-delta ${f===0?'ok':''}"><td>Faltam p/ ${fmtPc(p,0)}</td><td><b>${f}</b></td></tr>`;}).join('')}
+          </tbody></table></div>`:''}
+        </div>
+      <div class="gpp-card pe-tabs" style="overflow-x:auto"><table class="gpp-ltable pm-tbl pe-tbl" data-no-tools="1" data-tk="premios">
+          <thead><tr><th>Rubrica</th><th style="text-align:center">Orçamento</th><th style="text-align:center">Real</th><th style="text-align:center">Realização</th>${['1.º escalão','2.º escalão','3.º escalão'].map(l=>`<th style="text-align:center;font-size:11px;color:var(--text3)">${l}</th>`).join('')}<th style="text-align:right">Prémio</th></tr></thead>
+          <tbody>${rows.join('')}</tbody>
+          <tfoot><tr><td colspan="7" style="text-align:right;font-weight:700">Prémios · ${pcs(C.tot)} da referência</td><td class="pm-eur ${C.base<0?'neg':(C.base===0?'zero':'ok')}">${eur(C.base)}</td></tr></tfoot>
+        </table>
+        <table class="gpp-ltable pm-tbl pe-tbl pe-pen" data-no-tools="1"><thead><tr><th>Penalizações e bonificações <span class="pe-sub">(vazio = neutro)</span></th><th style="text-align:center">Resultado</th><th style="text-align:center;font-size:11px;color:var(--text3)">Penaliza</th><th style="text-align:center;font-size:11px;color:var(--text3)">Neutro</th><th style="text-align:center;font-size:11px;color:var(--text3)">Bonifica</th><th style="text-align:right">Ajuste</th></tr></thead>
+          <tbody>${penRows.join('')}</tbody>
+          <tfoot><tr><td colspan="5" style="text-align:right;font-weight:700">Ajustes · ${pcs(C.aj)} da referência</td><td class="pm-eur ${C.ajE<0?'neg':(C.ajE===0?'zero':'ok')}">${eur(C.ajE)}</td></tr></tfoot>
         </table></div>
-        ${escadas}
-      </div>
-      <div class="gpp-pend-desc" style="margin:0 16px 16px">Escreve o <b>realizado</b> de cada critério; a coluna atingida acende e soma. O <b>Retail's Motorrad</b> vem sozinho do CRM (retail de novas ÷ objetivo) — escreve por cima se quiseres outro valor. Cada critério tem os seus <b>próprios limiares</b> (por isso aparecem dentro de cada célula, não no cabeçalho): o Volume é em %, o VOC em pontos. "Neutro" é o nível a <b>0 €</b> entre a penalização e o objetivo.</div>`;
+      ${fe}
+      ${anoHTML}
+      ${regras}
+      <div class="gpp-pend-desc" style="margin:0 16px 16px">Escreve o <b>orçamento</b> e o <b>real</b> de cada rubrica; o escalão atingido acende e soma em % do valor de referência. Os escalões são degraus: abaixo do 1.º paga 0 e só sobe ao atingir o seguinte. VN e VO contam em separado. Os números a cinzento nas faturas vêm do CRM (retail do mês e objetivo de novas) e só contam quando carregas em «Usar estes números» ou os escreves: o oficial é o da marca. A margem é medida no mês e acertada no fim do trimestre (março, junho, setembro, dezembro): cada mês que pagou abaixo do escalão do trimestre recebe a diferença. O Bónus Marcas preenche-se só no mês em que é pago. A comissão do mês pode ficar negativa.</div>`;
   }
   function leadFormHTML(){
     const f=S.leadForm||{};
@@ -12239,6 +12481,7 @@ function bindEvents(){
     if(el.dataset&&el.dataset.eqCamp){eqCampanha(el.dataset.eqCamp,el.value);return;}
     if(el.dataset&&el.dataset.eqEst){eqEstado(el.dataset.eqEst,el.value);return;}
     if(el.dataset&&el.dataset.pmK){savePremioMes(el.dataset.pmMes,el.dataset.pmK,el.value);return;}
+    if(el.dataset&&el.dataset.peCfg){peCfg(el.dataset.peCfg,el.value);return;}
     if(el.dataset&&el.dataset.mrgId){saveMargem(el.dataset.mrgId,el.value);return;}
     if(el.dataset&&el.dataset.comfixaId){saveMargem(el.dataset.comfixaId,el.value,'comissao_fixa');return;}
     if(el.dataset&&el.dataset.entId){const v=el.value;saveEntrega(el.dataset.entId,{[el.dataset.entF]:(v===''?null:v)});return;}
@@ -12252,6 +12495,7 @@ function bindEvents(){
     if(el.dataset&&el.dataset.seqF){const F=Object.assign({},S.seqF||{});F[el.dataset.seqF]=el.value;setState({seqF:F,seqLim:80,seqVender:null});return;}
     if(el.dataset&&el.dataset.seqV){S.seqVenda=Object.assign({},S.seqVenda||{},{[el.dataset.seqV]:el.value});seqCalcAtualizar();return;}
     if(el.id==='eot-file'){const f=el.files&&el.files[0];el.value='';eotFicheiro(f);return;}
+    if(el.id==='pe-xls'){const f=el.files&&el.files[0];el.value='';peImportar(f);return;}
     if(el.id==='eot-hist-file'){const f=el.files&&el.files[0];el.value='';eotAcrFicheiro(f);return;}
     if(el.dataset&&el.dataset.eotAcrProv!=null&&S.eotAcr){const c=el.dataset.eotAcrProv;S.eotAcr=Object.assign({},S.eotAcr,{prov:S.eotAcr.prov.map(x=>String(x.l.contrato)===c?Object.assign({},x,{incluir:el.checked}):x)});render();return;}
     if(el.id==='eot-lote'){eotAtribuirLote(el.value);return;}
@@ -12570,6 +12814,9 @@ function bindEvents(){
       case'leads-tab':setState({leadsTab:el.dataset.t});if(el.dataset.t==='eot')loadEot().then(()=>render());break;
       case'eot-confirmar':eotConfirmar();break;
       case'eot-acr-confirmar':eotAcrConfirmar();break;
+      case'pe-confirmar':peConfirmar();break;
+      case'pe-cancelar':setState({pePrev:null,peErr:''});break;
+      case'pe-crm':if(S._peSug)peUsarCrm(S._peSug.mes,S._peSug.vals);break;
       case'eot-rot-desfazer':if(S.eotRotFeitos)eotRotacaoDesfazer(S.eotRotFeitos);break;
       case'eot-acr-cancelar':setState({eotAcr:null,eotErrImp:''});break;
       case'eot-novo':eotNovoAbrir();break;
