@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-23-a">
+<meta name="app-version" content="2026-11-23-b">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2694,7 +2694,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-23-a';
+const APP_VERSION='2026-11-23-b';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -4442,7 +4442,7 @@ function renderFinanceiro(){
       ${L.length?`<div class="gpp-card" style="overflow-x:auto"><table class="gpp-ltable fin-tbl">
         <thead><tr>${VA?'<th class="fin-visto-th">Tratado</th>':''}<th>Cliente</th><th>Mota</th><th>Fim</th><th style="text-align:right">Residual</th><th>Fase</th><th>Indicações</th><th>Responsável</th><th></th></tr></thead>
         <tbody>${linhas}</tbody></table></div>`:(T==='precisa'&&nTodos?vazioHTML('check','Nada à vossa espera',VA?'Todas as EOTs desta lista têm o vosso visto ou estão fechadas. Vê em “Já tratados”.':'Todas as EOTs desta lista já têm indicação vossa ou estão fechadas. Vê em “Já tratados”.'):vazioHTML('inboxEmpty',todos.length?'Nada com estes filtros':'Ainda não há EOTs carregadas',todos.length?'Muda os filtros acima.':'O mapa é carregado pelo chefe de vendas.'))}
-      <div class="sec-nota">Contratos BMW Motorrad de Aveiro (inclui BMW Bank com concessionário responsável Aveiro), ordenados pela data de fim. Atualizado quando o chefe de vendas carrega o mapa. Com «Acrescentar contratos (Excel)» juntam-se os que faltam (por exemplo, o histórico desde 2023): os que já existem não são tocados e entram sem responsável. Os que terminam daqui a mais de 12 meses e ainda não têm responsável ficam em carteira e aparecem na lista quando faltar um ano.</div>
+      <div class="sec-nota">Contratos BMW Motorrad de Aveiro (inclui BMW Bank com concessionário responsável Aveiro), ordenados pela data de fim. Atualizado quando o chefe de vendas carrega o mapa. Com «Acrescentar contratos (Excel)» juntam-se os que faltam (por exemplo, o histórico desde 2023): os que já existem não são tocados e entram sem responsável. Os que terminam daqui a mais de 12 meses e ainda não têm responsável ficam em carteira e aparecem na lista quando faltar um ano; nessa altura são repartidos pelos vendedores.</div>
     </div></div></div></div>`;
 }
 function renderSemAcesso(){
@@ -6865,7 +6865,7 @@ function vSidebarHTML(A){
       ${vend?vNavItem({act:'go-ficha',ic:'🧮',lb:'Ficha de margem',on:A==='ficha'&&!S.fmNeg}):''}
       ${vend?vNavItem({act:'go-vstock',ic:'🏍️',lb:'Stock',on:stockOn}):''}
       <div class="vnav-sec">Clientes</div>
-      ${vNavItem({act:'go-veot',ic:'🔁',lb:'EOTs',on:A==='veot'||A==='vnotif',n:eotMeus().filter(x=>x.no_mapa!==false&&!EOT_FECHO.includes(x.fase)).length||'',badge:vEotEspera()||'',am:true})}
+      ${vNavItem({act:'go-veot',ic:'🔁',lb:'EOTs',on:A==='veot'||A==='vnotif',n:eotMeus().filter(x=>x.no_mapa!==false&&!EOT_FECHO.includes(x.fase)&&!(eotDias(x)>EOT_JANELA)).length||'',badge:vEotEspera()||'',am:true})}
       ${vNavItem({act:'sidebar-filter',status:'Retail',ic:'✅',lb:'Vendidos e perdidos',on:arqOn})}
       ${vend?(eventosAtivos()||[]).map(evA=>vNavItem({act:'go-evento',id:evA.id,on:A==='evento'&&S.eventoSel===evA.id,ic:'🎟️',lb:esc(evA.nome),n:(S.inscricoes||[]).filter(i=>i.evento_id===evA.id).length})).join(''):''}
       ${vend?`<div class="vnav-sec">O meu mês</div>
@@ -7281,7 +7281,8 @@ const EOT_GANHO=['Renovado','Retomado','Adenda'];
 function eotGanho(x){return !!x&&(EOT_GANHO.includes(x.fase)||!!x.adenda_em);}
 const EOT_TEMP=['Quente','Morno','Frio'];
 const EOT_CAMPOS_BANCO=['tipo','cliente','contacto_nome','telefone','telemovel','data_fim','prazo','prestacao','kms','matricula','modelo','seguro','manutencao','residual','despesas','total','concessionario','conc_resp','vendedor_origem'];
-async function loadEot(){try{const d=await supabaseApi('GET','/eot_contratos?select=*&order=data_fim.asc');S.eot=d||[];S.eotErr='';}catch(e){S.eot=[];S.eotErr=(e&&e.message)||'erro';}}
+async function loadEot(){try{const d=await supabaseApi('GET','/eot_contratos?select=*&order=data_fim.asc');S.eot=d||[];S.eotErr='';}catch(e){S.eot=[];S.eotErr=(e&&e.message)||'erro';}
+  if(isAdmin()&&!S._eotRot)setTimeout(eotRotacaoAuto,60);}
 function eotNorm(s){return String(s==null?'':s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/\s+/g,' ').trim();}
 function eotTxt(v){if(v==null)return null;const s=String(v).trim();return s===''?null:s;}
 function eotNum(v){if(v==null||v==='')return null;if(typeof v==='number')return isFinite(v)?v:null;let s=String(v).replace(/[€\s ]/g,'');if(/,\d{1,2}$/.test(s))s=s.replace(/\./g,'').replace(',','.');const n=parseFloat(s);return isFinite(n)?n:null;}
@@ -7550,7 +7551,7 @@ function eotAcrHTML(){
       ${A.prov.length?`<div class="no">⚠ <b>${A.prov.length}</b> prováve${A.prov.length!==1?'is':'l'} duplicado${A.prov.length!==1?'s':''} (a mesma mota ou o mesmo cliente e modelo noutro contrato): só entra${A.prov.length!==1?'m':''} se marcares${nP?` · ${nP} marcado${nP!==1?'s':''}`:''}</div>`:''}
       ${A.erros.length?`<div class="no">✕ <b>${A.erros.length}</b> com erro: não entra${A.erros.length!==1?'m':''} (corrige no Excel e carrega outra vez; os outros já não se repetem)</div>`:''}
       ${(A.repetidos||[]).length?`<div>≡ <b>${A.repetidos.length}</b> repetido${A.repetidos.length!==1?'s':''} dentro do ficheiro: entra uma vez</div>`:''}
-      <div class="ok">🛡 Entram sem responsável: é o chefe de vendas que atribui. Nada é apagado.</div>
+      <div class="ok">🛡 Entram sem responsável. Quando faltar um ano para o fim, são repartidos sozinhos pelos vendedores, em rotação (o chefe pode mudar). Nada é apagado.</div>
       <div class="mut">Ignorados: ${A.exMarca} de outras marcas · ${A.exConc} Motorrad de outros concessionários. A morada e o código postal não são guardados.</div>
     </div>
     ${A.prov.length?`<details class="eot-prev-det" open><summary>Prováveis duplicados (${A.prov.length}): marca os que devem entrar</summary><ul class="eot-acr-prov">${A.prov.map(x=>`<li><label><input type="checkbox" data-eot-acr-prov="${esc(x.l.contrato)}" ${x.incluir?'checked':''}> ${desc(x.l)}<span class="eot-acr-mot">${esc(x.motivo)}</span></label></li>`).join('')}</ul></details>`:''}
@@ -7564,8 +7565,52 @@ function eotAcrHTML(){
   </div>`;
 }
 function eotAcrBotao(){return eotPodeAcrescentar()?`<label class="btn btn-outline btn-sm" style="cursor:pointer;margin:0" title="Excel com contratos (por exemplo, o histórico desde 2023): só entram os que ainda não existem">${S.eotBusy&&S.eotLendo==='acr'&&!S.eotAcr?'A ler…':'＋ Acrescentar contratos (Excel)'}<input type="file" id="eot-hist-file" accept=".xls,.xlsx" style="display:none"></label>`:'';}
+// ---- Rotação automática: contratos do histórico que entram nos 12 meses sem responsável são repartidos pelos vendedores ----
+// equilibra o nº de contratos em aberto e, em empate, o valor residual. Corre quando o chefe abre a app; o chefe pode desfazer.
+function eotRotNao(){try{return new Set(JSON.parse(localStorage.getItem('bm_eot_rot_nao')||'[]'));}catch(e){return new Set();}}
+function eotRotNaoJuntar(ids){const s=eotRotNao();ids.forEach(c=>s.add(String(c)));try{localStorage.setItem('bm_eot_rot_nao',JSON.stringify([...s].slice(-2000)));}catch(e){}}
+function eotRotacaoPendentes(){const nao=eotRotNao();return (S.eot||[]).filter(x=>eotHistorico(x)&&!x.responsavel_id&&x.no_mapa!==false&&!EOT_FECHO.includes(x.fase)&&!nao.has(String(x.contrato))&&(()=>{const d=eotDias(x);return d!=null&&d>=0&&d<=EOT_JANELA;})());}
+function eotRotacaoPlano(){
+  const vend=(S.team||[]).filter(p=>p.role==='vendedor');const P=eotRotacaoPendentes().sort((a,b)=>String(a.data_fim||'').localeCompare(String(b.data_fim||'')));
+  if(!vend.length||!P.length)return[];
+  const carga=new Map(vend.map(v=>[v.id,{n:0,r:0}]));
+  (S.eot||[]).forEach(x=>{const c=carga.get(x.responsavel_id);if(c&&x.no_mapa!==false&&!EOT_FECHO.includes(x.fase)){c.n++;c.r+=Number(x.residual)||0;}});
+  return P.map(x=>{const v=vend.slice().sort((a,b)=>{const A=carga.get(a.id),B=carga.get(b.id);return A.n-B.n||A.r-B.r||String(a.nome||'').localeCompare(String(b.nome||''));})[0];
+    const c=carga.get(v.id);c.n++;c.r+=Number(x.residual)||0;return {c:String(x.contrato),v:v.id};});
+}
+async function eotRotacaoAuto(){
+  if(!isAdmin()||S._eotRot||S.eotErr||!eotRotacaoPendentes().length)return;
+  if(!(S.team||[]).length){try{await loadTeam();}catch(e){return;}}   // a equipa pode ainda não ter chegado
+  const plano=eotRotacaoPlano();if(!plano.length)return;
+  S._eotRot=true;const feitos=[];
+  try{
+    const porV=new Map();plano.forEach(p=>{if(!porV.has(p.v))porV.set(p.v,[]);porV.get(p.v).push(p.c);});
+    for(const [v,cs] of porV){for(let i=0;i<cs.length;i+=100){
+      const ids=cs.slice(i,i+100).map(c=>'"'+c.replace(/"/g,'')+'"').join(',');
+      // só os que continuam sem responsável (se alguém atribuiu entretanto, fica o que essa pessoa escolheu)
+      const r=await supabaseApi('PATCH','/eot_contratos?contrato=in.('+encodeURIComponent(ids)+')&responsavel_id=is.null',{responsavel_id:v,updated_at:new Date().toISOString()});
+      (Array.isArray(r)?r:[]).forEach(x=>feitos.push({c:String(x.contrato),v}));}}
+    if(!feitos.length)return;
+    await loadEot();
+    const cont=new Map();feitos.forEach(f=>cont.set(f.v,(cont.get(f.v)||0)+1));
+    const txt=`${feitos.length} contrato${feitos.length!==1?'s':''} do histórico entr${feitos.length!==1?'aram':'ou'} nos últimos 12 meses e f${feitos.length!==1?'oram atribuídos':'oi atribuído'} em rotação: ${[...cont].map(([v,n])=>n+' a '+vendName(v)).join(' · ')}.`;
+    S.eotMsg=txt;S.eotRotFeitos=feitos;render();
+    clearTimeout(_tgT);   // o aviso genérico «Gravado» não tapa este
+    toast(txt,'',{lb:'Desfazer',fn:()=>eotRotacaoDesfazer(feitos)});
+  }catch(e){avisoErro('Não consegui atribuir os contratos do histórico em rotação: '+erroTexto(e));}
+  finally{S._eotRot=false;}
+}
+async function eotRotacaoDesfazer(feitos){
+  S.eotRotFeitos=null;eotRotNaoJuntar(feitos.map(f=>f.c));   // não volta a atribuir estes sozinho: ficam para o chefe
+  try{
+    const porV=new Map();feitos.forEach(f=>{if(!porV.has(f.v))porV.set(f.v,[]);porV.get(f.v).push(f.c);});
+    for(const [v,cs] of porV){const ids=cs.map(c=>'"'+c.replace(/"/g,'')+'"').join(',');
+      await supabaseApi('PATCH','/eot_contratos?contrato=in.('+encodeURIComponent(ids)+')&responsavel_id=eq.'+encodeURIComponent(v),{responsavel_id:null,updated_at:new Date().toISOString()});}
+    await loadEot();S.eotMsg=`Rotação desfeita: ${feitos.length} contrato${feitos.length!==1?'s':''} volta${feitos.length!==1?'m':''} a «por atribuir» e não ${feitos.length!==1?'são':'é'} atribuído${feitos.length!==1?'s':''} sozinho${feitos.length!==1?'s':''} outra vez.`;render();
+  }catch(e){avisoErro('Não consegui desfazer: '+erroTexto(e));}
+}
 async function eotGuardar(contrato,patch){
-  contrato=String(contrato);
+  contrato=String(contrato);if(patch&&'responsavel_id' in patch&&!patch.responsavel_id)eotRotNaoJuntar([contrato]);
   const body=Object.assign({},patch,{updated_at:new Date().toISOString()});
   const i=(S.eot||[]).findIndex(x=>String(x.contrato)===contrato);
   if(i>=0){S.eot=S.eot.slice();S.eot[i]=Object.assign({},S.eot[i],body);}
@@ -8015,7 +8060,7 @@ function eotView(){
     ${S.eotErr?EOT_SQL_AVISO:''}
     ${S.eotErrImp?`<div class="error" style="margin:0 16px 12px">${esc(S.eotErrImp)}</div>`:''}
     <div class="nt-pad0">${notifBannerHTML()}</div>
-    ${S.eotMsg?`<div class="lead-ok" style="margin:0 16px 12px">✓ ${esc(S.eotMsg)}</div>`:''}
+    ${S.eotMsg?`<div class="lead-ok" style="margin:0 16px 12px">✓ ${esc(S.eotMsg)}${S.eotRotFeitos&&/em rotação/.test(S.eotMsg)?` <button class="btn btn-outline btn-sm" data-action="eot-rot-desfazer" style="margin-left:8px">Desfazer</button>`:''}</div>`:''}
     ${eotNovoHTML()}
     ${prev}
     ${eotAcrHTML()}
@@ -8041,7 +8086,7 @@ function eotView(){
     `<div class="gpp-card" style="margin:0 16px 20px;overflow-x:auto"><table class="gpp-ltable eot-tbl">
       <thead><tr><th>Cliente</th><th>Mota</th><th>Fim</th><th style="text-align:right">Residual</th><th>Responsável</th><th>Fase</th><th>Próx. contacto</th><th></th></tr></thead>
       <tbody>${arr.map(linha).join('')||'<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:18px">Nada com estes filtros.</td></tr>'}</tbody></table></div>`}
-    <div class="gpp-pend-desc" style="margin:0 16px 16px">Só entram contratos <b>BMW Motorrad</b> com concessionário de <b>Aveiro</b> (ou BMW Bank com concessionário responsável de Aveiro). Cada novo carregamento atualiza <b>apenas os dados do banco</b> — responsável, fase, temperatura, próxima ação e notas ficam como estão. Contratos que deixam de vir no ficheiro passam a "Saíram do mapa" (nunca são apagados). Um contrato que não vem no mapa pode ser criado à mão, ou acrescentado pelo financeiro a partir do histórico (Excel): fica ativo até lhe dares uma fase final e a importação não o tira. Os que terminam daqui a mais de 12 meses e ainda não têm responsável ficam "em carteira" e entram na lista sozinhos quando faltar um ano. O vendedor só vê os contratos que lhe atribuíres, e as notas são partilhadas com ele.</div>`;
+    <div class="gpp-pend-desc" style="margin:0 16px 16px">Só entram contratos <b>BMW Motorrad</b> com concessionário de <b>Aveiro</b> (ou BMW Bank com concessionário responsável de Aveiro). Cada novo carregamento atualiza <b>apenas os dados do banco</b> — responsável, fase, temperatura, próxima ação e notas ficam como estão. Contratos que deixam de vir no ficheiro passam a "Saíram do mapa" (nunca são apagados). Um contrato que não vem no mapa pode ser criado à mão, ou acrescentado pelo financeiro a partir do histórico (Excel): fica ativo até lhe dares uma fase final e a importação não o tira. Os que terminam daqui a mais de 12 meses e ainda não têm responsável ficam "em carteira" e entram na lista sozinhos quando faltar um ano; os do histórico são então repartidos pelos vendedores em rotação (equilibra quantidade e valor residual; podes desfazer ou mudar). O vendedor só vê os contratos que lhe atribuíres, e as notas são partilhadas com ele.</div>`;
 }
 
 // ---- Vista do vendedor ----
@@ -8049,7 +8094,9 @@ function eotMeus(){return (S.eot||[]).filter(x=>isAdmin()?(!S.viewVendedor||x.re
 function renderMinhasEot(){
   const meus=eotMeus().slice().sort((a,b)=>String(a.data_fim||'9').localeCompare(String(b.data_fim||'9')));
   const filt=S.vEotF||'abertos';
-  const lista=meus.filter(x=>filt==='todos'?true:(filt==='acao'?eotPrecisaAcao(x):(x.no_mapa!==false&&!EOT_FECHO.includes(x.fase))));
+  const longe=x=>{const d=eotDias(x);return x.no_mapa!==false&&!EOT_FECHO.includes(x.fase)&&d!=null&&d>EOT_JANELA;};   // fim a mais de 12 meses
+  const nLonge=meus.filter(longe).length;
+  const lista=meus.filter(x=>filt==='todos'?true:(filt==='acao'?eotPrecisaAcao(x):(filt==='longe'?longe(x):(x.no_mapa!==false&&!EOT_FECHO.includes(x.fase)&&!longe(x)))));
   const nAcao=meus.filter(eotPrecisaAcao).length;
   const card=x=>`<div class="ve-card eot-card eot-click ${eotPrecisaAcao(x)?'eot-card-acao':''}" data-action="eot-abrir" data-c="${esc(x.contrato)}" tabindex="0" role="button">
       <div class="ve-top">
@@ -8069,7 +8116,7 @@ function renderMinhasEot(){
   <div class="content"><div style="padding:12px 0">
     ${S.eotErr?EOT_SQL_AVISO:''}
     <div class="nt-pad0">${notifBannerHTML()}</div>
-    <div class="ve-meses">${chip('abertos','Em aberto')}${chip('acao','⚠️ Precisam de ação'+(nAcao?' ('+nAcao+')':''))}${chip('todos','Todos')}</div>
+    <div class="ve-meses">${chip('abertos','Em aberto')}${chip('acao','⚠️ Precisam de ação'+(nAcao?' ('+nAcao+')':''))}${nLonge||filt==='longe'?chip('longe','Fim depois de 12 meses ('+nLonge+')'):''}${chip('todos','Todos')}</div>
     <div class="ve-resumo"><b>${meus.length}</b> contrato${meus.length!==1?'s':''} atribuído${meus.length!==1?'s':''} a ti${nAcao?` · <b style="color:var(--red)">${nAcao}</b> precisam de ação`:''}</div>
     ${lista.length?`<div class="ve-list">${lista.map(card).join('')}</div>`:'<div class="gpp-empty">Nada nesta lista.</div>'}
     <div class="gpp-pend-desc" style="margin:0 16px 10px">Contratos BMW Bank que estão a terminar e que o chefe te atribuiu. O <b>residual</b> é o que o cliente tem de pagar ou refinanciar no fim — é a tua porta de entrada para propor retoma ou uma mota nova. Contactar com <b>6 meses</b> de antecedência; "precisa de ação" acende quando falta contactar a ≤ 180 dias ou quando a data da próxima ação chega.</div>
@@ -12523,6 +12570,7 @@ function bindEvents(){
       case'leads-tab':setState({leadsTab:el.dataset.t});if(el.dataset.t==='eot')loadEot().then(()=>render());break;
       case'eot-confirmar':eotConfirmar();break;
       case'eot-acr-confirmar':eotAcrConfirmar();break;
+      case'eot-rot-desfazer':if(S.eotRotFeitos)eotRotacaoDesfazer(S.eotRotFeitos);break;
       case'eot-acr-cancelar':setState({eotAcr:null,eotErrImp:''});break;
       case'eot-novo':eotNovoAbrir();break;
       case'eot-novo-fechar':S.eotNovo=null;render();break;

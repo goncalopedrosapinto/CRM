@@ -132,7 +132,15 @@ const PERFIS={c1:{id:'c1',nome:'Chefe GPP',role:'admin',linha:'motorrad'},f1:{id
  await F1.ctx.close();
 
  // ===== chefe =====
- const C1=await abrir('c1');const q=C1.p;
+ const patch0=est.patches.length;
+ const C1=await abrir('c1');const q=C1.p;await q.waitForTimeout(600);
+ // rotação: os do histórico que já estão nos 12 meses e sem responsável são repartidos sozinhos
+ const rot={patches:est.patches.slice(patch0),resp:Object.fromEntries(['200001','200007','200010','200002','200003','300001','100002'].map(c=>[c,(est.eot.find(x=>x.contrato===c)||{}).responsavel_id||null])),
+   toast:await txt(q,'#bm-toast'),botao:await txt(q,'#bm-toast .bm-toast-b'),msg:await q.evaluate(()=>S.eotMsg||'')};
+await q.evaluate(()=>document.querySelector('#bm-toast .bm-toast-b').click());await q.waitForTimeout(700);
+ await q.evaluate(()=>loadEot());await q.waitForTimeout(500);
+ const desfeito={resp:['200001','200007','200010'].map(c=>(est.eot.find(x=>x.contrato===c)||{}).responsavel_id||null),msg:await q.evaluate(()=>S.eotMsg||''),
+   patches:est.patches.length-patch0-rot.patches.length,guardado:await q.evaluate(()=>localStorage.getItem('bm_eot_rot_nao')||'')};
  const eots=async()=>{await q.evaluate(()=>{S.eotAberto=null;S.screen='dashboard';S.gppSec='eots';S.eotF={};render();});await q.waitForTimeout(250);};
  await eots();
  const chefe=await q.evaluate(()=>{const t=e=>e?e.textContent.replace(/[\s  ]+/g,' ').trim():'';const cards=[...document.querySelectorAll('.lc-cards .mg-card')].map(t);
@@ -163,17 +171,27 @@ const PERFIS={c1:{id:'c1',nome:'Chefe GPP',role:'admin',linha:'motorrad'},f1:{id
  await q.click('[data-action="eot-cancelar"]');await q.waitForTimeout(150);
  await q.screenshot({path:path.join(__dirname,'eot_historico_chefe.png')});
  await C1.ctx.close();
- // vendedor: não acrescenta
+ // vendedor: não acrescenta; tem o botão para os que terminam depois de 12 meses
+ Object.assign(est.eot.find(x=>x.contrato==='200002'),{responsavel_id:'v1'});
  const V1=await abrir('v1',{width:390,height:844});
  await V1.p.evaluate(()=>setState({screen:'veot'}));await V1.p.waitForTimeout(300);
  const vend=await V1.p.evaluate(()=>({acr:!!document.querySelector('#eot-hist-file'),pode:eotPodeAcrescentar()}));
+ const cartoes=()=>V1.p.evaluate(()=>[...document.querySelectorAll('.ve-list [data-c]')].map(x=>x.dataset.c));
+ const vAbertos=await cartoes();const chipLonge=await txt(V1.p,'[data-action="v-eot-f"][data-f="longe"]');
+ await V1.p.click('[data-action="v-eot-f"][data-f="longe"]');await V1.p.waitForTimeout(200);
+ const vendLonge={abertos:vAbertos,chip:chipLonge,longe:await cartoes()};
  await V1.ctx.close();
 
- const R0={botoes,prev,botao2,msg,ins:nIns,chaves:[...chaves],insHdr:est.insHdr,L200001:L['200001'],L200003:L['200003'],lista,todosTab,cart,comSaidos,fichaF,formF,postF,semSql,
+ const R0={rot,desfeito,vendLonge,botoes,prev,botao2,msg,ins:nIns,chaves:[...chaves],insHdr:est.insHdr,L200001:L['200001'],L200003:L['200003'],lista,todosTab,cart,comSaidos,fichaF,formF,postF,semSql,
    chefe,badge,chefeCart,chefeSaiu,fichaC,mapaA,mapaB,mapaHist:mapaHist.slice(0,400),vend,patches:est.patches,deletes:est.deletes,dialogos:p._dlg,erros};
  console.log(JSON.stringify(R0,null,1));
  const a=L['200001']||{};const um=est.eot.find(x=>x.contrato==='100001')||{};
  const ok={
+  'rotação: os do histórico nos 12 meses são repartidos sozinhos (só os sem responsável)':rot.resp['200001']&&rot.resp['200007']&&rot.resp['200010']&&!rot.resp['200002']&&!rot.resp['200003']&&!rot.resp['300001']&&!rot.resp['100002']
+    &&new Set([rot.resp['200001'],rot.resp['200007'],rot.resp['200010']]).size===2&&rot.patches.length&&rot.patches.every(u=>/responsavel_id=is\.null/.test(u)),
+  'rotação: avisa quantos e a quem, com Desfazer':/3 contratos do histórico entraram nos últimos 12 meses e foram atribuídos em rotação/.test(rot.toast)&&/Vendedor Dois/.test(rot.toast)&&rot.botao==='Desfazer'&&/em rotação/.test(rot.msg),
+  'desfazer: voltam a «por atribuir» e não são atribuídos sozinhos outra vez':desfeito.resp.every(x=>x===null)&&desfeito.patches>0&&/Rotação desfeita/.test(desfeito.msg)&&/200001/.test(desfeito.guardado),
+  'vendedor: botão «Fim depois de 12 meses» com os seus contratos longe; fora de «Em aberto»':!vendLonge.abertos.includes('200002')&&/Fim depois de 12 meses \(1\)/.test(vendLonge.chip)&&JSON.stringify(vendLonge.longe)==='["200002"]',
   'financeiro: botões «Contrato à mão» e «Acrescentar contratos (Excel)»; não carrega o mapa do banco':botoes.acr&&botoes.man&&!botoes.mapa,
   'pré-visualização: novos, já existentes (mesmo nº escrito de outra forma) e erros':JSON.stringify(prev.novos)==='["200001","200002","200003","200008","200010"]'&&JSON.stringify(prev.dups)==='["0100002","100001"]'
     &&prev.erros.length===2&&prev.erros.some(e=>/^200004:data de fim inválida \(29\/02\/2029\)/.test(e))&&prev.erros.some(e=>/^:sem nº de contrato/.test(e)),
@@ -182,7 +200,7 @@ const PERFIS={c1:{id:'c1',nome:'Chefe GPP',role:'admin',linha:'motorrad'},f1:{id
     &&JSON.stringify(prev.caixas)==='["200007:false","200009:false"]',
   'resumo diz o que entra (12 meses, carteira, terminados) e o botão conta':/＋ 5 entram: 2 terminam nos próximos 12 meses · 2 em carteira .* 1 já terminaram/.test(prev.card)&&/⊘ 2 já existem/.test(prev.card)&&/Acrescentar 5 contratos/.test(prev.botao),
   'marcar um provável soma ao botão':/Acrescentar 6 contratos/.test(botao2),
-  'grava com «ignorar duplicados» (nunca altera nem apaga o que existe)':est.insHdr.every(h=>/on_conflict=contrato/.test(h.url)&&/resolution=ignore-duplicates/.test(h.prefer))&&est.patches.length===0&&est.deletes.length===0
+  'grava com «ignorar duplicados» (nunca altera nem apaga o que existe)':est.insHdr.every(h=>/on_conflict=contrato/.test(h.url)&&/resolution=ignore-duplicates/.test(h.prefer))&&patch0===0&&est.deletes.length===0
     &&um.cliente==='Cliente Um'&&um.responsavel_id==='v1'&&!est.ins.some(x=>['100001','0100002','200004','200005','200006','200009'].includes(x.contrato)),
   'todas as linhas com as mesmas colunas; sem responsável, sem morada nem código postal':chaves.size===1&&![...chaves][0].split(',').some(k=>/responsavel|morada|postal|linha/.test(k))&&nIns===6,
   'origem histórico, fase inicial, ativo; o que já terminou fica fora da lista ativa':a.origem==='historico'&&a.fase==='Por contactar'&&a.no_mapa===true&&(L['200003']||{}).no_mapa===false,
