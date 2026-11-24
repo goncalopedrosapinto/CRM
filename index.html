@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-23-c">
+<meta name="app-version" content="2026-11-24-a">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -656,6 +656,8 @@ html,body{overflow-x:hidden;max-width:100vw}
 .fq-chip.on{border-color:var(--orange);box-shadow:0 0 0 2px var(--orange-bg)}
 .fq-board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 16px 14px;align-items:start}
 .fq-col{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.fq-def{padding:6px 12px;font-size:11.5px;color:var(--text2);background:var(--surface2);border-bottom:1px solid var(--border)}
+.vh-n-def{grid-column:1/-1;font-size:12px;color:var(--text2);margin-top:-2px}.vh-p-def{display:block;font-weight:500;font-size:11.5px;color:var(--text3)}
 .fq-h{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;color:#fff;font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.4px}
 .fq-n{background:rgba(0,0,0,.2);border-radius:10px;padding:1px 8px;font-size:12px}
 .fq-atr{font-size:11px;font-weight:700;color:#92600a;background:var(--amber-bg);padding:5px 12px}
@@ -2708,7 +2710,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-23-c';
+const APP_VERSION='2026-11-24-a';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -2796,6 +2798,9 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)cicloAutom
 function novaVersaoHTML(){return _novaVersao?`<div class="nv-bar" role="status">${ico('refresh','ic-sm')}<span>Há uma versão nova da plataforma. O que tens em aberto fica guardado.</span><button class="btn btn-orange btn-sm" data-action="nv-atualizar">Atualizar agora</button></div>`:'';}
 const STATUSES=['Retail','Carteira','Quente','Morno','Frio','Perdido'];
 const SDOT={Retail:'var(--green)',Carteira:'var(--blue)',Quente:'var(--red)',Morno:'var(--amber)',Frio:'var(--slate)',Matricula:'var(--purple)',Perdido:'#6b7280'};
+// o que cada fase quer dizer (definido pelo chefe): os vendedores veem-no onde escolhem a fase
+const FUNIL_DEF={Quente:'Compra até ao fim deste mês',Morno:'Compra nos próximos 2 meses',Frio:'Interessado, sem data de compra prevista',
+  Perdido:'Só quando o cliente diz que não compra (ou que adia: motivo «Adiado» com data para voltar a contactar)'};
 const MOTIVOS_PERDA=['Preço','Concorrência','Prazo de entrega','Financiamento','Retoma','Desistência','Adiado','Outro'];
 const TYPES=['MN','MD','MU'],ORIGINS=['','Cliente','Recom.','Stand','Evento','Lead'],PROFILES=['','Particular','Empresa','Protocolo','Estado'],GAR_PERIODOS=['1 ano','2 anos','3 anos','4 anos','5 anos'],FINS=['','PP','Fext','Fint'],SINAL_FORMAS=['','Numerário','Cheque','Transferência','MB'];
 // colunas que só existem depois de correr o SQL respetivo: sem elas, o campo não aparece e não vai na gravação
@@ -6755,13 +6760,14 @@ function vhNovoHTML(){
   const N=Object.assign({nome:'',tel:'',modelo:'',fase:'Morno'},S.vhNovo||{});
   const aberto=S.vhNovoAberto||(typeof window!=='undefined'&&window.innerWidth>700)||N.nome||N.tel||N.modelo;
   if(!aberto)return`<button type="button" class="vh-novo-abrir" data-action="vh-novo-abrir">${ico('plus','ic-sm')}<span>Registar contacto</span></button>`;
-  const chip=f=>`<button type="button" class="qf-chip vh-n-chip qf-st-${f}${N.fase===f?' on':''}" data-action="vh-novo-fase" data-f="${f}" aria-pressed="${N.fase===f}">${f}</button>`;
+  const chip=f=>`<button type="button" class="qf-chip vh-n-chip qf-st-${f}${N.fase===f?' on':''}" data-action="vh-novo-fase" data-f="${f}" aria-pressed="${N.fase===f}" title="${esc(FUNIL_DEF[f])}">${f}</button>`;
   return`<div class="vh-sec"><span>Registar contacto</span><span class="vh-sec-sub">fica no funil, com o lembrete de contacto marcado</span></div>
     <div class="vh-box vh-novo">
       <input class="field-input" id="vh-novo-nome" data-vhnovo="nome" value="${esc(N.nome)}" placeholder="Nome do cliente" aria-label="Nome do cliente" autocomplete="off">
       <input class="field-input" id="vh-novo-tel" data-vhnovo="tel" value="${esc(N.tel)}" placeholder="Telemóvel" aria-label="Telemóvel" inputmode="tel" autocomplete="off">
       <input class="field-input" id="vh-novo-mod" data-vhnovo="modelo" value="${esc(N.modelo)}" placeholder="Modelo (ex: R 1300 GS)" aria-label="Modelo" autocomplete="off">
       <div class="vh-n-chips" role="group" aria-label="Fase">${['Quente','Morno','Frio'].map(chip).join('')}</div>
+      <div class="vh-n-def">${esc(N.fase)}: ${esc(FUNIL_DEF[N.fase]||'')}</div>
       <button type="button" class="btn btn-orange vh-n-ok" data-action="vh-novo-registar">Registar</button>
     </div>
     ${S.vhNovoErr?`<div class="vh-n-err" role="alert">${esc(S.vhNovoErr)}</div>`:''}`;
@@ -6797,7 +6803,7 @@ function vhPainelHTML(r){
   const a=S.vhAcao;if(!a||String(a.id)!==String(r.id))return'';const cli=esc(r.id_cliente||'');
   const fechar=`<button type="button" class="vh-pfechar" data-action="vh-acao-fechar">Cancelar</button>`;
   if(a.t==='adiar')return`<div class="vh-painel" role="group" aria-label="Adiar o contacto com ${cli}"><span class="vh-p-t">Voltar a lembrar daqui a</span>${VH_ADIAR.map(([d,l])=>`<button type="button" class="vh-pchip" data-action="vh-adiar" data-id="${r.id}" data-dias="${d}">${l}</button>`).join('')}${fechar}</div>`;
-  return`<div class="vh-painel" role="group" aria-label="Motivo da perda de ${cli}"><span class="vh-p-t">Porque se perdeu?</span>${MOTIVOS_PERDA.map(m=>`<button type="button" class="vh-pchip" data-action="vh-perdido" data-id="${r.id}" data-m="${esc(m)}">${esc(m)}</button>`).join('')}${fechar}</div>`;
+  return`<div class="vh-painel" role="group" aria-label="Motivo da perda de ${cli}"><span class="vh-p-t">Porque se perdeu? <span class="vh-p-def">${esc(FUNIL_DEF.Perdido)}</span></span>${MOTIVOS_PERDA.map(m=>`<button type="button" class="vh-pchip" data-action="vh-perdido" data-id="${r.id}" data-m="${esc(m)}">${esc(m)}</button>`).join('')}${fechar}</div>`;
 }
 // grava logo no ecrã (a linha sai da lista) e repõe se o servidor recusar
 async function vhGravar(id,patch,msg){
@@ -9812,7 +9818,7 @@ function comsRecentesHTML(titulo){const L=comsNovos();if(!L.length)return'';
   <div class="vh-box">${L.slice(0,8).map(c=>`<div class="vh-row" data-action="${isAdmin()?'open-record-from-dash':'open-detail'}" data-id="${c.negocio_id}" data-com="${c.id}" role="button" tabindex="0"><span class="atag atag-mn">${esc(String(c.autor_nome||'?').split(' ')[0])}</span><span class="vh-txt"><b>${esc(cli(c.negocio_id))}</b> — ${String(c.texto||'').trim()?esc(String(c.texto).slice(0,110)):'<i>enviou uma imagem</i>'}</span><span class="vh-chev">${ico('chevr','ic-sm')}</span></div>`).join('')}</div>`;}
 // ===== Criação rápida de negócio =====
 function qfCampo(k){const fd=ALL_FIELDS.find(f=>f.k===k);return fd&&campoVisivel(fd)?`<label class="qf-f"><span>${esc(fd.l)}</span>${campoControlo(fd)}</label>`:'';}
-function qfChip(k,v,lb){return`<button class="qf-chip ${String(S.form[k]||'')===v?'on':''} ${k==='status'?'qf-st-'+v:''}" data-action="qf-set" data-k="${k}" data-v="${v}">${lb||v}</button>`;}
+function qfChip(k,v,lb){return`<button class="qf-chip ${String(S.form[k]||'')===v?'on':''} ${k==='status'?'qf-st-'+v:''}" data-action="qf-set" data-k="${k}" data-v="${v}"${k==='status'&&FUNIL_DEF[v]?` title="${esc(FUNIL_DEF[v])}"`:''}>${lb||v}</button>`;}
 // Essencial: o que está sempre à vista ao editar um negócio; o resto fica nos grupos (fechados)
 const NEG_ESSENCIAL=['status','motivo_perda','recontactar_em','alert_date','id_cliente','contacto','nif','email','type','model','version','origin','lead_webapp','pvp','fin','retoma','retoma_modelo','retoma_mat','retoma_ano','retoma_kms','retoma_cor','retoma_data_matricula','retoma_valor','retoma_valor_comercio','sinal','sinal_forma'];
 function campoVisivel(fd){if(NEG_OPCIONAIS.includes(fd.k)&&!negTemColuna(fd.k))return false;const F=S.form||{};
@@ -9837,7 +9843,7 @@ function renderEditRapido(){
     ${encNovoBannerHTML()}
     <div class="qf-sec">Em que fase está? <i>*</i></div>
     <div class="qf-chips">${['Quente','Morno','Frio','Carteira','Retail'].map(v=>qfChip('status',v)).join('')}</div>
-    <div class="qf-hint">${fun?'Funil — fica a lembrar-te de contactar na data abaixo.':(st==='Carteira'?'Vendida, ainda por entregar.':(st==='Retail'?'Já entregue (298 feito).':'Quente / Morno / Frio = funil · Carteira = vendida por entregar · Retail = entregue'))}</div>
+    <div class="qf-hint">${fun?`<b>${esc(st)}</b>: ${esc(FUNIL_DEF[st])}. Fica a lembrar-te de contactar na data abaixo.`:(st==='Carteira'?'Vendida, ainda por entregar.':(st==='Retail'?'Já entregue (298 feito).':'Quente / Morno / Frio = funil · Carteira = vendida por entregar · Retail = entregue'))}</div>
     <div class="qf-sec">Tipo de mota</div>
     <div class="qf-chips">${qfChip('type','MN','Nova · MN')}${qfChip('type','MD','Demo · MD')}${qfChip('type','MU','Usada · MU')}</div>
     <div class="qf-g">
@@ -11536,6 +11542,7 @@ function renderDashboard(){
       const lista=filtra(grupos[estado]).slice().sort((x,y)=>(funilAtrasado(y)?1:0)-(funilAtrasado(x)?1:0));
       const nAtr=lista.filter(funilAtrasado).length;
       return`<div class="fq-col"><div class="fq-h" style="background:${cores[estado]}"><span>${estado}</span><span class="fq-n">${lista.length}</span></div>
+        <div class="fq-def">${esc(FUNIL_DEF[estado]||'')}</div>
         ${nAtr?`<div class="fq-atr">🟡 ${nAtr} a contactar</div>`:''}
         <div class="fq-lista">${lista.length?lista.map(r=>`<div class="fq-item ${funilAtrasado(r)?'atr':''}" data-action="open-record-from-dash" data-id="${r.id}">
           <div class="fq-l1">${vendTag(r.vendedor_id,false)}<b>${esc(r.id_cliente||'—')}</b></div>
