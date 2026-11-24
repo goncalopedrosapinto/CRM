@@ -228,7 +228,7 @@ const dias=n=>new Date(Date.now()-n*864e5).toISOString();
   'encomenda de cliente BMW sem negócio':/Cliente BMW/.test(R.neg.neg1['9000005'].txt),
   'escolha lista Quente e Morno, mesmo modelo primeiro':R.neg.modal.length===2&&/Cliente Q/.test(R.neg.modal[0])&&/mesmo modelo/.test(R.neg.modal[0])&&/vai ser trocada/.test(R.neg.modal[1]),
   'reservar grava a Encomenda no negócio':R.neg.patch&&R.neg.patch.id==='101'&&R.neg.patch.body.enc==='9000004'&&R.neg.modalFechou&&/Em negociação/.test(R.neg.neg2['9000004'].txt)&&R.neg.neg2['9000004'].liv,
-  'alertas: reserva parada e carteira fora do mapa':R.neg.alertas.includes('enc_parada')&&R.neg.alertas.includes('enc_fora_mapa'),
+  'alertas: reserva parada; carteira fora do mapa já não é alerta':R.neg.alertas.includes('enc_parada')&&!R.neg.alertas.includes('enc_fora_mapa'),
   'campo Encomenda sugere só motas livres (e a do próprio negócio)':R.neg.opcoes.includes('9000004')&&!R.neg.opcoes.includes('9000003')&&!R.neg.opcoes.includes('9000002')&&!R.neg.opcoes.includes('9000005'),
   'campo Encomenda avisa mota com colega':/Já está com Gonçalo Mendes/.test(R.neg.dicaOcupada),
   'campo Encomenda avisa número fora do mapa':/não está no mapa BMW/.test(R.neg.dicaFora),

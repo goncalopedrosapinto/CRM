@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-24-b">
+<meta name="app-version" content="2026-11-24-c">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2713,7 +2713,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-24-b';
+const APP_VERSION='2026-11-24-c';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -5255,10 +5255,7 @@ function calcAlerts(records){
   const porEnc={};records.filter(r=>['Quente','Morno','Carteira'].includes(r.status)&&encTxt(r)).forEach(r=>{(porEnc[encTxt(r)]=porEnc[encTxt(r)]||[]).push(r);});
   const encRep=Object.values(porEnc).filter(L=>L.length>1).flat();
   if(encRep.length)alerts.push({id:'enc_repetida',icon:'⛔',label:`${encRep.length} negócios com a mesma encomenda`,count:encRep.length,ids:encRep.map(r=>r.id)});
-  // carteira com um nº de encomenda que não existe no mapa BMW carregado (engano no número?)
-  if((S.enc||[]).length){const noMapa=new Set(S.enc.map(x=>String(x.production_number)));
-    const fora=records.filter(r=>r.status==='Carteira'&&r.type!=='MU'&&encTxt(r)&&!noMapa.has(encTxt(r)));
-    if(fora.length)alerts.push({id:'enc_fora_mapa',icon:'❓',label:`${fora.length} carteira${fora.length>1?'s':''} com encomenda que não está no mapa BMW`,count:fora.length,ids:fora.map(r=>r.id)});}
+  // (a carteira com encomenda fora do mapa BMW deixou de ser alerta: o aviso aparece só ao escrever o nº no negócio)
   // DECLARAÇÃO DE CIRCULAÇÃO: mota nova matriculada há 90 dias ou mais
   const decl=records.filter(declCircPendente);
   if(decl.length){const nPor=decl.filter(r=>r.decl_circ==='Por atualizar').length,nVer=decl.length-nPor;
