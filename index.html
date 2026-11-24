@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-24-a">
+<meta name="app-version" content="2026-11-24-b">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,7 +16,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --orange:#C2410C;--orange2:#9A3412;--orange-bg:#FFF4ED;--orange-light:#FFE4D6;
+  --adiado:#0e7490;--orange:#C2410C;--orange2:#9A3412;--orange-bg:#FFF4ED;--orange-light:#FFE4D6;
   --bg:#F4F6F9;--surface:#FFFFFF;--surface2:#F1F5F9;
   --bg2:#FFFFFF;--bg3:#E2E8F0;
   --text:#0F172A;--text2:#475569;--text3:#5B6B80;--text4:#CBD5E1;
@@ -32,7 +32,7 @@
   --safe-t:env(safe-area-inset-top,0px);--safe-b:env(safe-area-inset-bottom,0px);
 }
 :root[data-theme="dark"]{
-  --orange:#FB8A4E;--orange2:#FDBA8C;--orange-bg:#2A1A12;--orange-light:#3B2216;
+  --adiado:#2dd4bf;--orange:#FB8A4E;--orange2:#FDBA8C;--orange-bg:#2A1A12;--orange-light:#3B2216;
   --bg:#0B1220;--surface:#111A2E;--surface2:#17223A;
   --bg2:#111A2E;--bg3:#1F2B45;
   --text:#E2E8F0;--text2:#A3B1C6;--text3:#8A9AB2;--text4:#3A4A66;
@@ -654,7 +654,7 @@ html,body{overflow-x:hidden;max-width:100vw}
 .fq-chips{display:flex;gap:6px;flex-wrap:wrap;margin:0 16px 10px}
 .fq-chip{border:1px solid var(--border2);background:var(--surface);border-radius:16px;padding:5px 12px;font-size:12px;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:4px}
 .fq-chip.on{border-color:var(--orange);box-shadow:0 0 0 2px var(--orange-bg)}
-.fq-board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 16px 14px;align-items:start}
+.fq-board{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 16px 14px;align-items:start}
 .fq-col{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
 .fq-def{padding:6px 12px;font-size:11.5px;color:var(--text2);background:var(--surface2);border-bottom:1px solid var(--border)}
 .vh-n-def{grid-column:1/-1;font-size:12px;color:var(--text2);margin-top:-2px}.vh-p-def{display:block;font-weight:500;font-size:11.5px;color:var(--text3)}
@@ -2254,6 +2254,9 @@ a{color:var(--blue)}
 .qf-chip.on.qf-st-Quente{background:var(--red);border-color:var(--red);color:#fff}
 .qf-chip.on.qf-st-Morno{background:var(--amber);border-color:var(--amber);color:#fff}
 .qf-chip.on.qf-st-Frio{background:var(--slate);border-color:var(--slate);color:#fff}
+.qf-chip.on.qf-st-Adiado{background:var(--adiado);border-color:var(--adiado);color:#fff}
+:root[data-theme="dark"] .qf-chip.on.qf-st-Adiado{color:#0b1220}
+.vh-p-adi{flex-basis:100%;margin-top:6px}.vh-pchip-adi{border-color:var(--adiado);color:var(--adiado)}
 .qf-chip.on.qf-st-Carteira{background:var(--blue);border-color:var(--blue);color:#fff}
 .qf-chip.on.qf-st-Retail{background:var(--green);border-color:var(--green);color:#fff}
 .qf-hint{font-size:12.5px;color:var(--text3);margin-top:6px}
@@ -2710,7 +2713,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-24-a';
+const APP_VERSION='2026-11-24-b';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -2796,17 +2799,20 @@ async function cicloAutomatico(forcar){
 setInterval(()=>cicloAutomatico(false),5*60*1000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)cicloAutomatico(false);else if(_novaVersao&&!aEscrever())recarregarComRascunho();});
 function novaVersaoHTML(){return _novaVersao?`<div class="nv-bar" role="status">${ico('refresh','ic-sm')}<span>Há uma versão nova da plataforma. O que tens em aberto fica guardado.</span><button class="btn btn-orange btn-sm" data-action="nv-atualizar">Atualizar agora</button></div>`:'';}
-const STATUSES=['Retail','Carteira','Quente','Morno','Frio','Perdido'];
-const SDOT={Retail:'var(--green)',Carteira:'var(--blue)',Quente:'var(--red)',Morno:'var(--amber)',Frio:'var(--slate)',Matricula:'var(--purple)',Perdido:'#6b7280'};
+const STATUSES=['Retail','Carteira','Quente','Morno','Frio','Adiado','Perdido'];
+const SDOT={Retail:'var(--green)',Carteira:'var(--blue)',Quente:'var(--red)',Morno:'var(--amber)',Frio:'var(--slate)',Adiado:'var(--adiado)',Matricula:'var(--purple)',Perdido:'#6b7280'};
 // o que cada fase quer dizer (definido pelo chefe): os vendedores veem-no onde escolhem a fase
 const FUNIL_DEF={Quente:'Compra até ao fim deste mês',Morno:'Compra nos próximos 2 meses',Frio:'Interessado, sem data de compra prevista',
-  Perdido:'Só quando o cliente diz que não compra (ou que adia: motivo «Adiado» com data para voltar a contactar)'};
-const MOTIVOS_PERDA=['Preço','Concorrência','Prazo de entrega','Financiamento','Retoma','Desistência','Adiado','Outro'];
+  Adiado:'O cliente disse que adia a compra: com data para voltar a contactar (não é perda)',Perdido:'Só quando o cliente diz que não compra'};
+// adiado: o cliente disse que compra mais tarde. Não conta no funil nem como perda; volta a aparecer na data marcada
+const ADIADO_MESES=[[1,'1 mês'],[3,'3 meses'],[6,'6 meses']];
+function maisMeses(n){const d=new Date();d.setMonth(d.getMonth()+n);return d.toISOString().slice(0,10);}
+const MOTIVOS_PERDA=['Preço','Concorrência','Prazo de entrega','Financiamento','Retoma','Desistência','Outro'];   // «Adiado» passou a ser um estado
 const TYPES=['MN','MD','MU'],ORIGINS=['','Cliente','Recom.','Stand','Evento','Lead'],PROFILES=['','Particular','Empresa','Protocolo','Estado'],GAR_PERIODOS=['1 ano','2 anos','3 anos','4 anos','5 anos'],FINS=['','PP','Fext','Fint'],SINAL_FORMAS=['','Numerário','Cheque','Transferência','MB'];
 // colunas que só existem depois de correr o SQL respetivo: sem elas, o campo não aparece e não vai na gravação
 const NEG_OPCIONAIS=['data_nascimento','decl_circ','sinal','sinal_forma','retoma_ano','retoma_kms','retoma_cor','retoma_data_matricula','retoma_valor','retoma_valor_comercio'];
 const FIELD_GROUPS=[
-  {g:'INFO',fields:[{k:'status',l:'Status',t:'select',o:STATUSES},{k:'motivo_perda',l:'Motivo da Perda',t:'select',o:MOTIVOS_PERDA,show:'perdido'},{k:'recontactar_em',l:'Re-contactar a partir de (6 meses depois de perdido)',t:'date',show:'perdido'},{k:'alert_date',l:'Alertar no dia (sugerido — podes mudar)',t:'date',show:'funil'}]},
+  {g:'INFO',fields:[{k:'status',l:'Status',t:'select',o:STATUSES},{k:'motivo_perda',l:'Motivo da Perda',t:'select',o:MOTIVOS_PERDA,show:'perdido'},{k:'recontactar_em',l:'Voltar a contactar em (adiado: obrigatório · perdido: 6 meses por omissão)',t:'date',show:'recont'},{k:'alert_date',l:'Alertar no dia (sugerido — podes mudar)',t:'date',show:'funil'}]},
   {g:'Identificação',fields:[{k:'id_cliente',l:'Cliente',t:'text'},{k:'local',l:'Código Postal',t:'text'},{k:'nif',l:'NIF',t:'text'},{k:'morada',l:'Morada',t:'text'},{k:'cc',l:'CC',t:'text'},{k:'data_nascimento',l:'Data de nascimento (aniversário)',t:'date'},{k:'email',l:'Email',t:'text'},{k:'contacto',l:'Contacto',t:'text'}]},
   {g:'Negócio',fields:[{k:'neg',l:'Data Negócio',t:'date'},{k:'mes1',l:'Mês Referência',t:'month'},{k:'type',l:'Tipo',t:'select',o:TYPES},{k:'pvp',l:'PVP (€)',t:'number'},{k:'origin',l:'Origem',t:'select',o:ORIGINS},{k:'lead_webapp',l:'Nº Lead (WebApp)',t:'text',show:'lead'},{k:'campanha',l:'Campanha / lote (ex: P6 08/26)',t:'text',show:'lead'},{k:'profile',l:'Perfil',t:'select',o:PROFILES},{k:'retoma',l:'Retoma?',t:'select',o:['Não','Sim']},{k:'retoma_modelo',l:'Modelo da Retoma',t:'text',show:'retoma'},{k:'retoma_mat',l:'Matrícula da Retoma',t:'text',show:'retoma'},{k:'retoma_ano',l:'Ano da Retoma',t:'text',show:'retoma'},{k:'retoma_kms',l:'Km da Retoma',t:'text',show:'retoma'},{k:'retoma_cor',l:'Cor da Retoma',t:'text',show:'retoma'},{k:'retoma_data_matricula',l:'Data de Matrícula da Retoma',t:'date',show:'retoma'},{k:'retoma_valor',l:'Valor dado ao cliente pela retoma (€)',t:'text',show:'retoma'},{k:'retoma_valor_comercio',l:'Valor dado pelo comércio pela retoma (€)',t:'text',show:'retoma'},{k:'biz',l:'Bizagi',t:'text'},{k:'fin',l:'Financiamento',t:'select',o:FINS},{k:'sinal',l:'Sinal (€)',t:'text'},{k:'sinal_forma',l:'Forma do sinal',t:'select',o:SINAL_FORMAS}]},
   {g:'Viatura',fields:[{k:'stock_id',l:'Mota do Stock (modelo · matrícula)',t:'stockpick',show:'stockpick'},{k:'model',l:'Modelo',t:'text'},{k:'version',l:'Versão',t:'text'},{k:'stock',l:'Em Stock?',t:'select',o:['Não','Sim']},{k:'enc',l:'Encomenda',t:'text'},{k:'chas',l:'Chassis',t:'text'},{k:'mat',l:'Matrícula',t:'text'},{k:'gar',l:'Garantia?',t:'select',o:['Não','Sim']},{k:'gar_periodo',l:'Período de Garantia',t:'select',o:GAR_PERIODOS,show:'garantia'}]},
@@ -5088,6 +5094,10 @@ async function saveRecord(){
     if(!S.form.status){setState({error:'Escolhe em que fase está o negócio (Quente, Morno, Frio, Carteira ou Retail).',loading:false});return;}
     if(!String(S.form.id_cliente||'').trim()){setState({error:'Escreve o nome do cliente.',loading:false});return;}
   }
+  if(S.form.status==='Adiado'&&!(S.form.recontactar_em&&String(S.form.recontactar_em).slice(0,10)>new Date().toISOString().slice(0,10))){
+    setState({error:'Adiado precisa da data em que o cliente disse para voltar a contactar (uma data futura).',loading:false,openGroups:Object.assign({},S.openGroups,{INFO:true})});
+    return;
+  }
   // Validação: não deixa marcar Perdido sem dizer porquê
   if(S.form.status==='Perdido'&&!S.form.motivo_perda){
     setState({error:'Indica o motivo da perda antes de guardar. Sem motivo, não é possível perceber onde estamos a perder negócio.',loading:false,openGroups:Object.assign({},S.openGroups,{INFO:true})});
@@ -5104,7 +5114,7 @@ async function syncStockComNegocio(stockId,status){
     let estado=null,assumir=false;
     if(FUNIL.includes(status)){estado='A negociar';assumir=true;}
     else if(status==='Carteira'||status==='Retail'){estado='Vendida';}
-    else if(status==='Perdido'){estado='Disponível';}
+    else if(status==='Perdido'||status==='Adiado'){estado='Disponível';}
     if(!estado)return;
     await supabaseApi('POST','/rpc/stock_mudar_estado',{p_id:Number(stockId),p_estado:estado,p_assumir:assumir});
     S.stockLoaded=false; // forcar recarga na proxima visita ao stock
@@ -5131,7 +5141,7 @@ function filtered(){
   else if(S.statusFilter==='Retail:usadas'){if(r.status!=='Retail'||r.type!=='MU')return false}
   else if(S.statusFilter==='Carteira:novas'){if(r.status!=='Carteira'||!(r.type==='MN'||r.type==='MD'))return false}
   else if(S.statusFilter==='Carteira:usadas'){if(r.status!=='Carteira'||r.type!=='MU')return false}
-  else if(S.statusFilter==='Perdido:recont'){if(!recontDue(r))return false}
+  else if(S.statusFilter==='Perdido:recont'){if(!recontDue(r)||r.status!=='Perdido')return false}
   else if(S.statusFilter!=='all'&&r.status!==S.statusFilter)return false;
   if(S.monthFilter.length>0&&!S.monthFilter.includes(getMonth(r)))return false;if(S.bevFilter!=='all'&&!r.bev)return false;if(S.xevFilter!=='all'&&!r.xev)return false;if(S.search)return negProcura(r,S.search,['obs','biz']);return true})}
 function availableMonths(){let recs=recsInContext();if(S.statusFilter==='Funil')recs=recs.filter(r=>FUNIL.includes(r.status));else if(S.statusFilter==='Fechados')recs=recs.filter(r=>r.status==='Retail'||r.status==='Carteira');else if(S.statusFilter.includes(':')){const[st,tp]=S.statusFilter.split(':');recs=recs.filter(r=>r.status===st&&(tp==='novas'?(r.type==='MN'||r.type==='MD'):r.type==='MU'))}else if(S.statusFilter!=='all')recs=recs.filter(r=>r.status===S.statusFilter);const m=[...new Set(recs.map(r=>getMonth(r)).filter(Boolean))];m.sort((a,b)=>b.localeCompare(a));return m}
@@ -6601,10 +6611,10 @@ function renderEncVend(){
   <div class="content">${encView()}</div></div></div>`;
 }
 
-function vGrupoDe(sf){sf=String(sf||'');if(['Funil','Quente','Morno','Frio'].includes(sf))return'Funil';if(sf.startsWith('Carteira'))return'Carteira';if(sf.startsWith('Retail'))return'Retail';if(sf.startsWith('Perdido'))return'Perdido';return sf;}
+function vGrupoDe(sf){sf=String(sf||'');if(['Funil','Quente','Morno','Frio','Adiado'].includes(sf))return'Funil';if(sf.startsWith('Carteira'))return'Carteira';if(sf.startsWith('Retail'))return'Retail';if(sf.startsWith('Perdido'))return'Perdido';return sf;}
 function vNavItem(o){return`<div class="vnav-item ${o.on?'on':''}" data-action="${o.act}"${o.status?` data-status="${o.status}"`:''}${o.id!=null?` data-id="${o.id}"`:''}><span class="vnav-ic">${icE(o.ic)}</span><span class="vnav-lb">${o.lb}</span>${o.badge?`<span class="vnav-badge${o.am?' am':''}">${o.badge}</span>`:(o.n!=null&&o.n!==''?`<span class="vnav-n">${o.n}</span>`:'')}</div>`;}
 // ---- Perdidos: re-contactar 6 meses depois de passar a Perdido ----
-function recontData(r){if(!r||r.status!=='Perdido')return null;if(r.recontactar_em)return String(r.recontactar_em).slice(0,10);
+function recontData(r){if(!r||(r.status!=='Perdido'&&r.status!=='Adiado'))return null;if(r.recontactar_em)return String(r.recontactar_em).slice(0,10);
   const b=r.status_updated_at||r.updated_at||r.created_at;if(!b)return null;const d=new Date(b);if(isNaN(d))return null;d.setMonth(d.getMonth()+6);return d.toISOString().slice(0,10);}
 function recontDue(r){const d=recontData(r);return !!d&&d<=new Date().toISOString().slice(0,10);}
 function recontLista(){return recsInContext().filter(recontDue);}
@@ -6803,7 +6813,8 @@ function vhPainelHTML(r){
   const a=S.vhAcao;if(!a||String(a.id)!==String(r.id))return'';const cli=esc(r.id_cliente||'');
   const fechar=`<button type="button" class="vh-pfechar" data-action="vh-acao-fechar">Cancelar</button>`;
   if(a.t==='adiar')return`<div class="vh-painel" role="group" aria-label="Adiar o contacto com ${cli}"><span class="vh-p-t">Voltar a lembrar daqui a</span>${VH_ADIAR.map(([d,l])=>`<button type="button" class="vh-pchip" data-action="vh-adiar" data-id="${r.id}" data-dias="${d}">${l}</button>`).join('')}${fechar}</div>`;
-  return`<div class="vh-painel" role="group" aria-label="Motivo da perda de ${cli}"><span class="vh-p-t">Porque se perdeu? <span class="vh-p-def">${esc(FUNIL_DEF.Perdido)}</span></span>${MOTIVOS_PERDA.map(m=>`<button type="button" class="vh-pchip" data-action="vh-perdido" data-id="${r.id}" data-m="${esc(m)}">${esc(m)}</button>`).join('')}${fechar}</div>`;
+  return`<div class="vh-painel" role="group" aria-label="Motivo da perda de ${cli}"><span class="vh-p-t">Porque se perdeu? <span class="vh-p-def">${esc(FUNIL_DEF.Perdido)}</span></span>${MOTIVOS_PERDA.map(m=>`<button type="button" class="vh-pchip" data-action="vh-perdido" data-id="${r.id}" data-m="${esc(m)}">${esc(m)}</button>`).join('')}
+    <span class="vh-p-t vh-p-adi">Não é perda, o cliente adiou? Voltar a contactar daqui a</span>${ADIADO_MESES.map(([n,l])=>`<button type="button" class="vh-pchip vh-pchip-adi" data-action="vh-adiado" data-id="${r.id}" data-meses="${n}">${l}</button>`).join('')}${fechar}</div>`;
 }
 // grava logo no ecrã (a linha sai da lista) e repõe se o servidor recusar
 async function vhGravar(id,patch,msg){
@@ -6822,6 +6833,10 @@ async function vhGravar(id,patch,msg){
 async function vhContactei(id){const r=(S.records||[]).find(x=>String(x.id)===String(id));if(!r)return;
   const d=vhDataMais(DIAS_ALERTA[r.status]||7);await vhGravar(id,{alert_date:d},`Contacto registado · próximo a ${vhDataPT(d)}`);}
 async function vhAdiar(id,dias){const d=vhDataMais(Number(dias)||7);await vhGravar(id,{alert_date:d},`Adiado · volta a lembrar a ${vhDataPT(d)}`);}
+async function vhAdiado(id,meses){const r=(S.records||[]).find(x=>String(x.id)===String(id));meses=Number(meses);if(!r||!ADIADO_MESES.some(a=>a[0]===meses))return;
+  const d=maisMeses(meses);
+  const ok=await vhGravar(id,{status:'Adiado',motivo_perda:null,recontactar_em:d,status_updated_at:new Date().toISOString()},`${r.id_cliente||'Negócio'} passou a Adiado · volta a aparecer a ${fmtDate(d)} (se o cliente disse outra data, muda-a no negócio)`);
+  if(ok&&r.stock_id)await syncStockComNegocio(r.stock_id,'Adiado');}
 async function vhPerdido(id,motivo){const r=(S.records||[]).find(x=>String(x.id)===String(id));if(!r||!MOTIVOS_PERDA.includes(motivo))return;
   const ok=await vhGravar(id,{status:'Perdido',motivo_perda:motivo,status_updated_at:new Date().toISOString()},`${r.id_cliente||'Negócio'} passou a Perdido (${motivo}) · re-contactar daqui a 6 meses`);
   if(ok&&r.stock_id)await syncStockComNegocio(r.stock_id,'Perdido');}
@@ -6983,14 +6998,14 @@ function renderList(){
   const f=f0.filter(inMes);
   const c=statusCounts();
   const af=(S.monthFilter.length>0?1:0)+(S.bevFilter!=='all'?1:0)+(S.xevFilter!=='all'?1:0);
-  const titulos={'Perdido:recont':'Perdidos · A re-contactar',_hoje:'Hoje',all:'Todos',Funil:'Funil',Quente:'Funil · Quente',Morno:'Funil · Morno',Frio:'Funil · Frio',Carteira:'Carteira','Carteira:novas':'Carteira · Novas','Carteira:usadas':'Carteira · Usadas',Retail:'Retail','Retail:novas':'Retail · Novas','Retail:usadas':'Retail · Usadas',Perdido:'Perdidos',Fechados:'Negócios fechados'};
+  const titulos={'Perdido:recont':'Perdidos · A re-contactar',_hoje:'Hoje',all:'Todos',Funil:'Funil',Quente:'Funil · Quente',Morno:'Funil · Morno',Frio:'Funil · Frio',Adiado:'Adiados',Carteira:'Carteira','Carteira:novas':'Carteira · Novas','Carteira:usadas':'Carteira · Usadas',Retail:'Retail','Retail:novas':'Retail · Novas','Retail:usadas':'Retail · Usadas',Perdido:'Perdidos',Fechados:'Negócios fechados'};
   const alertaAtual=S.alertFilter?(calcAlerts(recsInContext()).find(a=>a.id===S.alertFilter)||{}).label:null;
   const curLabel=S.alertFilter?('⚠️ '+(alertaAtual||'Alerta')):((titulos[sf]||sf)+(mesMode&&mesSel&&mesSel!=='all'?' · '+mesLbl(mesSel):''));
   const P=vPendentes();
   const nFun=(c['Quente']||0)+(c['Morno']||0)+(c['Frio']||0);
   const vend=!isAdmin();
-  const chipsDef=grp==='Funil'?[['Funil','Todos',nFun],['Quente','Quente',c['Quente']||0],['Morno','Morno',c['Morno']||0],['Frio','Frio',c['Frio']||0]]
-    :grp==='Perdido'?[['Perdido','Todos',c['Perdido']||0],['Perdido:recont','A re-contactar',recontLista().length]]
+  const chipsDef=grp==='Funil'?[['Funil','Todos',nFun],['Quente','Quente',c['Quente']||0],['Morno','Morno',c['Morno']||0],['Frio','Frio',c['Frio']||0],['Adiado','Adiado',c['Adiado']||0]]
+    :grp==='Perdido'?[['Perdido','Todos',c['Perdido']||0],['Perdido:recont','A re-contactar',recontLista().filter(r=>r.status==='Perdido').length]]
     :(grp==='Carteira'||grp==='Retail')?(()=>{const nG=fn=>recsInContext().filter(r=>r.status===grp&&inMes(r)&&fn(r)).length;
       return[[grp,'Todas',nG(()=>true)],[grp+':novas','Novas (MN+MD)',nG(r=>r.type!=='MU')],[grp+':usadas','Usadas (MU)',nG(r=>r.type==='MU')]];})():null;
   const chips=chipsDef&&!S.alertFilter?`<div class="vchips">${chipsDef.map(([k,l,n])=>`<button class="vchip ${sf===k?'on':''}" data-action="sidebar-filter" data-status="${k}">${l} <span>${n}</span></button>`).join('')}</div>`:'';
@@ -7088,7 +7103,7 @@ function renderCard(r){
       <div class="vcard-mod">${r.type?`<span class="tag tag-sm">${esc(r.type)}</span>`:''}<span>${esc([r.model,r.version].filter(Boolean).join(' ')||'sem modelo')}</span>${r.mat?`<b class="vcard-mat">${esc(r.mat)}</b>`:''}${r.bev?'<span class="tag tag-bev">BEV</span>':(r.xev?'<span class="tag tag-xev">xEV</span>':'')}${r.gar?`<span class="tag tag-gar">${esc(r.gar)}</span>`:''}</div>
       <div class="vcard-meta">${meta.map(esc).join(' · ')}${atras?` <span class="vcard-al">⚠️ contactar${r.alert_date?' · '+esc(String(fmtDate(r.alert_date)).slice(0,5)):''}</span>`:''}</div>
       ${r.obs?`<div class="vcard-obs">${esc(r.obs)}</div>`:''}
-      ${r.status==='Perdido'&&recontData(r)?(recontDue(r)?`<div class="vcard-recont due">${ico('repeat','ic-sm')}<span>Re-contactar · desde ${esc(fmtDate(recontData(r)))}</span>${r.vendedor_id===(S.me&&S.me.id)||isAdmin()?`<button class="rc-b on" data-action="recont-reabrir" data-id="${r.id}">Reabrir no funil</button><button class="rc-b" data-action="recont-adiar" data-id="${r.id}" title="Volta a lembrar daqui a 6 meses">Adiar 6 meses</button>`:''}</div>`:`<div class="vcard-recont">${ico('repeat','ic-sm')}<span>Re-contactar a partir de ${esc(fmtDate(recontData(r)))}</span></div>`):''}
+      ${(r.status==='Perdido'||r.status==='Adiado')&&recontData(r)?(recontDue(r)?`<div class="vcard-recont due">${ico('repeat','ic-sm')}<span>Re-contactar · desde ${esc(fmtDate(recontData(r)))}</span>${r.vendedor_id===(S.me&&S.me.id)||isAdmin()?`<button class="rc-b on" data-action="recont-reabrir" data-id="${r.id}">Reabrir no funil</button><button class="rc-b" data-action="recont-adiar" data-id="${r.id}" title="Volta a lembrar daqui a 6 meses">Adiar 6 meses</button>`:''}</div>`:`<div class="vcard-recont">${ico('repeat','ic-sm')}<span>Re-contactar a partir de ${esc(fmtDate(recontData(r)))}</span></div>`):''}
       ${r.bev&&!r.cme?`<div class="card-acts"><button class="card-act card-act-cme" data-action="confirm-cme" data-id="${r.id}" title="Confirmar CME">🟠 <span>CME</span></button></div>`:''}
     </div>
   </div>`}
@@ -9822,7 +9837,7 @@ function qfChip(k,v,lb){return`<button class="qf-chip ${String(S.form[k]||'')===
 // Essencial: o que está sempre à vista ao editar um negócio; o resto fica nos grupos (fechados)
 const NEG_ESSENCIAL=['status','motivo_perda','recontactar_em','alert_date','id_cliente','contacto','nif','email','type','model','version','origin','lead_webapp','pvp','fin','retoma','retoma_modelo','retoma_mat','retoma_ano','retoma_kms','retoma_cor','retoma_data_matricula','retoma_valor','retoma_valor_comercio','sinal','sinal_forma'];
 function campoVisivel(fd){if(NEG_OPCIONAIS.includes(fd.k)&&!negTemColuna(fd.k))return false;const F=S.form||{};
-  return !fd.show||(fd.show==='funil'&&FUNIL.includes(F.status))||(fd.show==='retoma'&&F.retoma==='Sim')||(fd.show==='perdido'&&F.status==='Perdido')||(fd.show==='garantia'&&F.gar==='Sim')||(fd.show==='stockpick'&&(F.type==='MD'||F.type==='MU'))||(fd.show==='lead'&&F.origin==='Lead')||(fd.show==='declcirc'&&F.type==='MN'&&!!F.dmat);}
+  return !fd.show||(fd.show==='funil'&&FUNIL.includes(F.status))||(fd.show==='retoma'&&F.retoma==='Sim')||(fd.show==='perdido'&&F.status==='Perdido')||(fd.show==='recont'&&(F.status==='Perdido'||F.status==='Adiado'))||(fd.show==='garantia'&&F.gar==='Sim')||(fd.show==='stockpick'&&(F.type==='MD'||F.type==='MU'))||(fd.show==='lead'&&F.origin==='Lead')||(fd.show==='declcirc'&&F.type==='MN'&&!!F.dmat);}
 function campoControlo(fd){
   return fd.t==='vendedores'?renderVendedorSelect(fd.k):
     (fd.k==='obs_gestor'&&!isAdmin())?`<div class="obs-chefe-ro">${S.form.obs_gestor?esc(S.form.obs_gestor):'<span style="color:var(--text3)">— sem nota —</span>'}</div>`:
@@ -9842,8 +9857,8 @@ function renderEditRapido(){
     ${S.error?`<div class="error" style="margin:0 0 12px">${esc(S.error)}</div>`:''}
     ${encNovoBannerHTML()}
     <div class="qf-sec">Em que fase está? <i>*</i></div>
-    <div class="qf-chips">${['Quente','Morno','Frio','Carteira','Retail'].map(v=>qfChip('status',v)).join('')}</div>
-    <div class="qf-hint">${fun?`<b>${esc(st)}</b>: ${esc(FUNIL_DEF[st])}. Fica a lembrar-te de contactar na data abaixo.`:(st==='Carteira'?'Vendida, ainda por entregar.':(st==='Retail'?'Já entregue (298 feito).':'Quente / Morno / Frio = funil · Carteira = vendida por entregar · Retail = entregue'))}</div>
+    <div class="qf-chips">${['Quente','Morno','Frio','Adiado','Carteira','Retail'].map(v=>qfChip('status',v)).join('')}</div>
+    <div class="qf-hint">${st==='Adiado'?`<b>Adiado</b>: ${esc(FUNIL_DEF.Adiado)}. Volta a aparecer-te na data abaixo.`:fun?`<b>${esc(st)}</b>: ${esc(FUNIL_DEF[st])}. Fica a lembrar-te de contactar na data abaixo.`:(st==='Carteira'?'Vendida, ainda por entregar.':(st==='Retail'?'Já entregue (298 feito).':'Quente / Morno / Frio = funil · Carteira = vendida por entregar · Retail = entregue'))}</div>
     <div class="qf-sec">Tipo de mota</div>
     <div class="qf-chips">${qfChip('type','MN','Nova · MN')}${qfChip('type','MD','Demo · MD')}${qfChip('type','MU','Usada · MU')}</div>
     <div class="qf-g">
@@ -9854,6 +9869,7 @@ function renderEditRapido(){
       <label class="qf-f"><span>Origem</span><select class="field-input" data-field="origin"><option value="">—</option>${ORIGINS.filter(Boolean).map(o=>`<option ${F.origin===o?'selected':''}>${esc(o)}</option>`).join('')}</select></label>
       ${F.origin==='Lead'?inp('lead_webapp','Nº Lead (WebApp)',''):''}
       ${fun?inp('alert_date','Contactar no dia','', 'date'):''}
+      ${st==='Adiado'?inp('recontactar_em','Voltar a contactar em <i>*</i>','','date'):''}
       ${cart?inp('mes1','Mês de entrega','', 'month'):''}${cart&&!isAdmin()?'<div class="mr-nota qf-w2">O chefe valida o mês de entrega antes de entrar na previsão.</div>':''}
       ${inp('pvp','PVP (€)','Ex: 21500','number')}
       ${qfCampo('fin')}
@@ -11473,16 +11489,17 @@ function renderDashboard(){
   }
   function funilView(){
     const FUN=['Quente','Morno','Frio'];
-    const grupos={Quente:[],Morno:[],Frio:[]};
-    recs.filter(r=>FUNIL.includes(r.status)).forEach(r=>grupos[r.status].push(r));
-    const cores={Quente:'var(--red)',Morno:'var(--amber)',Frio:'var(--slate)'};
+    const grupos={Quente:[],Morno:[],Frio:[],Adiado:[]};
+    recs.filter(r=>FUNIL.includes(r.status)||r.status==='Adiado').forEach(r=>grupos[r.status].push(r));
+    const cores={Quente:'var(--red)',Morno:'var(--amber)',Frio:'var(--slate)',Adiado:'var(--adiado)'};
     const nFunil=grupos.Quente.length+grupos.Morno.length+grupos.Frio.length;
     const nCart=recs.filter(r=>r.status==='Carteira').length;
     const nRet=recs.filter(r=>r.status==='Retail').length;
     const nPerd=recs.filter(r=>r.status==='Perdido').length;
 
     // ---------- A · FOTO (distribuição atual) ----------
-    const segs=[['Em funil',nFunil,'var(--slate)'],['Carteira',nCart,'var(--blue)'],['Retail',nRet,'var(--green)'],['Perdido',nPerd,'var(--red)']];
+    const nAdi=grupos.Adiado.length;
+    const segs=[['Em funil',nFunil,'var(--slate)'],['Adiado',nAdi,'var(--adiado)'],['Carteira',nCart,'var(--blue)'],['Retail',nRet,'var(--green)'],['Perdido',nPerd,'var(--red)']];
     const totSeg=segs.reduce((a,s)=>a+s[1],0)||1;
     const barra=`<div class="fun-bar">${segs.map(([l,n,c])=>n?`<div class="fun-seg" style="width:${n/totSeg*100}%;background:${c}" title="${l}: ${n}"></div>`:'').join('')}</div>
       <div class="fun-leg">${segs.map(([l,n,c])=>`<span class="fun-legi"><i style="background:${c}"></i>${l} <b>${n}</b></span>`).join('')}</div>`;
@@ -11552,7 +11569,7 @@ function renderDashboard(){
     };
     return`<div class="gpp-tot-head">Funil · <b>${nFunil}</b> negócios em aberto</div>
       ${chipsV}
-      <div class="fq-board">${col('Frio')}${col('Morno')}${col('Quente')}</div>
+      <div class="fq-board">${col('Adiado')}${col('Frio')}${col('Morno')}${col('Quente')}</div>
       <div class="gpp-sub-h" style="border-left:3px solid var(--text3)">Análise</div>
       ${foto}${hist}`;
   }
@@ -12718,6 +12735,7 @@ function bindEvents(){
       case'vh-acao-fechar':S.vhAcao=null;render();break;
       case'vh-adiar':vhAdiar(el.dataset.id,el.dataset.dias);break;
       case'vh-perdido':vhPerdido(el.dataset.id,el.dataset.m);break;
+      case'vh-adiado':vhAdiado(el.dataset.id,el.dataset.meses);break;
       case'fm-guardar-abrir':S.fmGuardar=!S.fmGuardar;render();break;
       case'fm-guardar-fechar':S.fmGuardar=false;render();break;
       case'fm-guardar-novo':fmGuardarNovo();break;

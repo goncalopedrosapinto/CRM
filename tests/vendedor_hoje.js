@@ -74,7 +74,7 @@ const db={seq:900,patches:[],posts:[],rpc:[],falhar:null,fichas:[],
  await p.click('.vh-painel [data-action="vh-adiar"][data-dias="14"]');R2.adiarToast=await toastTxt();
  R2.adiar={patch:db.patches.slice(-1)[0],lista:await lista()};
  await p.click('.vh-crow:has-text("Carla Nunes") [data-action="vh-acao"][data-t="perdido"]');await p.waitForTimeout(250);
- R2.painelPerdido=await p.evaluate(()=>[...document.querySelectorAll('.vh-painel .vh-pchip')].map(x=>x.textContent));
+ R2.painelPerdido=await p.evaluate(()=>[...document.querySelectorAll('.vh-painel [data-action="vh-perdido"]')].map(x=>x.textContent));
  await p.click('.vh-painel [data-action="vh-perdido"][data-m="Preço"]');R2.perdidoToast=await toastTxt();await p.waitForTimeout(300);
  R2.perdido={patch:db.patches.slice(-1)[0],rpc:db.rpc.slice(-1)[0],lista:await lista(),
    perdidos:await p.evaluate(()=>String(statusCounts()['Perdido']||0))};
@@ -171,7 +171,7 @@ const db={seq:900,patches:[],posts:[],rpc:[],falhar:null,fichas:[],
   'registo rápido: limpa os campos, mantém a fase e conta no funil':JSON.stringify(R2.registo.campos)==='["","",""]'&&R2.registo.fase==='Quente'&&R2.registo.funil==='6'&&/Nuno Ferreira registado em Quente/.test(R2.registoToast),
   'Contactei: próximo contacto pela fase (Morno = 7 dias) e sai da lista':R2.contactei.patch[0]==='7'&&R2.contactei.patch[1].alert_date===loc(7)&&Object.keys(R2.contactei.patch[1]).length===1&&!R2.contactei.lista.includes('Tiago Fernandes')&&/próximo a/.test(R2.contacteiToast),
   'Adiar: 1 semana / 2 semanas / 1 mês':JSON.stringify(R2.painelAdiar)==='["1 semana","2 semanas","1 mês"]'&&R2.adiar.patch[0]==='8'&&R2.adiar.patch[1].alert_date===loc(14)&&!R2.adiar.lista.includes('Sofia Lopes'),
-  'Perdido: motivo num toque, mota volta ao stock':R2.painelPerdido.length===8&&R2.perdido.patch[0]==='6'&&R2.perdido.patch[1].status==='Perdido'&&R2.perdido.patch[1].motivo_perda==='Preço'&&!!R2.perdido.patch[1].status_updated_at&&
+  'Perdido: motivo num toque, mota volta ao stock':R2.painelPerdido.length===7&&R2.perdido.patch[0]==='6'&&R2.perdido.patch[1].status==='Perdido'&&R2.perdido.patch[1].motivo_perda==='Preço'&&!!R2.perdido.patch[1].status_updated_at&&
     R2.perdido.rpc&&R2.perdido.rpc.p_id===77&&R2.perdido.rpc.p_estado==='Disponível'&&!R2.perdido.lista.includes('Carla Nunes')&&R2.perdido.perdidos==='2'&&/re-contactar daqui a 6 meses/.test(R2.perdidoToast),
   'servidor recusa: a linha volta e aparece o erro':R2.falha.lista.includes('Pedro Almeida')&&R2.falha.alerta===loc(-4)&&/Não gravei/.test(R2.falha.toast),
   'teclado: Enter abre, Esc fecha, o mesmo botão alterna':R2.teclado.abertoTecl&&R2.teclado.fechadoEsc&&R2.teclado.toggle,
