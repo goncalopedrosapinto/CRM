@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-24-c">
+<meta name="app-version" content="2026-11-25-a">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2713,7 +2713,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-24-c';
+const APP_VERSION='2026-11-25-a';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -2996,7 +2996,7 @@ function secDetalhe(r,cols){
 const SEC_TIPOS=[['MN','Motas novas'],['MD','Demonstração'],['MU','Usadas']];
 function secTipoDe(r){const t=String(r.type||'').toUpperCase();return SEC_TIPOS.some(x=>x[0]===t)?t:'—';}
 function secAgrupar(L){const g=SEC_TIPOS.map(([k,l])=>({k,l,arr:L.filter(r=>secTipoDe(r)===k)}));const resto=L.filter(r=>secTipoDe(r)==='—');if(resto.length)g.push({k:'—',l:'Sem tipo',arr:resto});return g;}
-function secFiltrarQ(L){const q=String(S.secQ||'').toLowerCase().trim();if(!q)return L;return L.filter(r=>['id_cliente','model','version','mat','enc','biz','chas','nif'].some(k=>String(r[k]||'').toLowerCase().includes(q))||String(vendName(r.vendedor_id)||'').toLowerCase().includes(q));}
+function secFiltrarQ(L){const q=String(S.secQ||'').toLowerCase().trim();if(!q)return L;return L.filter(r=>['id_cliente','model','version','mat','enc','biz','chas','nif'].some(k=>qTem(r[k],q))||qTem(vendName(r.vendedor_id),q));}
 function secListas(sel){
   const recs=S.records||[];
   return{
@@ -4962,7 +4962,7 @@ function renderEventosExt(){
   let body;
   if(!ev)body='<div class="ev-empty" style="margin-top:24px">Ainda não tens acesso a nenhum evento. Pede ao chefe de vendas para te dar acesso.</div>';
   else{const todas=(S.inscricoes||[]).filter(i=>i.evento_id===ev.id);const ativas=todas.filter(i=>i.estado!=='Cancelado');
-    const q=(S.inscBusca||'').toLowerCase();const lista=q?todas.filter(i=>[i.cliente,i.telefone,i.nif,i.pendura_nome].join(' ').toLowerCase().includes(q)):todas;
+    const q=(S.inscBusca||'').toLowerCase();const lista=q?todas.filter(i=>qTem([i.cliente,i.telefone,i.nif,i.pendura_nome].join(' '),q)):todas;
     body=`${picker}<div class="ev-head-card"><div class="ev-head-top"><div><div class="ev-head-nome">${esc(ev.nome)}</div><div class="ev-head-meta">${ev.data?fmtDate(ev.data):''}${ev.local?` · ${esc(ev.local)}`:''}</div></div>
         <div class="ev-head-num"><div class="ev-head-num-b">${ativas.length}</div><div class="ev-head-num-l">inscritos · ${ativas.length+ativas.filter(i=>i.pendura).length} pessoas</div></div></div></div>
       <div class="evx-bar">${S.inscFicha?'':`<button class="btn btn-orange" data-action="insc-ficha-nova" data-ev="${ev.id}">＋ Inscrever cliente</button>`}<button class="btn btn-dark" data-action="insc-xlsx" data-ev="${ev.id}">⬇ Excel</button></div>
@@ -6372,7 +6372,7 @@ function encFiltrar(todos,F,grupos){
   const ex=F.ex||{};
   let arr=todos.filter(x=>(grupos||ENC_FILTROS).every(([g])=>!(ex[g]||[]).length||!(ex[g]).includes(encValor(x,g))));
   const termos=eotNorm(F.q).split(' ').filter(Boolean);
-  if(termos.length)arr=arr.filter(x=>{const t=eotNorm(ENC_COLS.map(([c,,,tp])=>tp==='d'?encDataPT(x[c]):tp==='w'?(x[c]||'')+' '+encSemana(x[c]):tp==='v'?encVendTxt(x[c]):tp==='z'?encZona(x[c]):x[c]).join(' ')+' '+encOrigemLb(encOrigemDe(x))+' '+encNegEstado(x)+' '+((S._encResM||encResMapa()).get(String(x.production_number))||[]).map(r=>vendName(r.vendedor_id)||'').join(' '));return termos.every(q=>t.includes(q));});
+  if(termos.length)arr=arr.filter(x=>{const t=eotNorm(ENC_COLS.map(([c,,,tp])=>tp==='d'?encDataPT(x[c]):tp==='w'?(x[c]||'')+' '+encSemana(x[c]):tp==='v'?encVendTxt(x[c]):tp==='z'?encZona(x[c]):x[c]).join(' ')+' '+encOrigemLb(encOrigemDe(x))+' '+encNegEstado(x)+' '+((S._encResM||encResMapa()).get(String(x.production_number))||[]).map(r=>vendName(r.vendedor_id)||'').join(' '));return termos.every(q=>qTem(t,q));});
   return arr;
 }
 function encView(){
@@ -8348,7 +8348,7 @@ async function eqColar(vid){
 }
 // pesquisa de negócios: texto nos campos do costume, telemóvel só pelos algarismos (com ou sem espaços e +351) e matrícula sem hífenes
 function negProcura(r,q,extra){q=String(q||'').trim().toLowerCase();if(!q)return true;
-  if(['id_cliente','model','version','mat','chas','enc'].concat(extra||[]).some(k=>String(r[k]==null?'':r[k]).toLowerCase().includes(q)))return true;
+  if(['id_cliente','model','version','mat','chas','enc'].concat(extra||[]).some(k=>qTem(r[k],q)))return true;
   if(/^[\d\s+().-]+$/.test(q)){let d=q.replace(/\D/g,'');if(d.startsWith('00351'))d=d.slice(5);else if(d.startsWith('351')&&d.length>9)d=d.slice(3);
     if(d.length>=3&&String(r.contacto||'').replace(/\D/g,'').includes(d))return true;}
   const a=q.replace(/[^a-z0-9]/g,'');
@@ -8415,6 +8415,47 @@ function campoSeletor(a){
   const ks=Object.keys(a.dataset||{}).filter(k=>k!=='label'&&k!=='num');if(!ks.length)return null;
   return a.tagName.toLowerCase()+ks.map(k=>'[data-'+k.replace(/[A-Z]/g,m=>'-'+m.toLowerCase())+'="'+CSS.escape(a.dataset[k])+'"]').join('');
 }
+// ---- Redesenhar sem trocar o campo onde se está a escrever ----
+// No telemóvel, um campo novo faz o teclado voltar às letras (e fecha-o em alguns Android). Enquanto se escreve numa
+// pesquisa, o ecrã é atualizado por cima do que já lá está: o campo é o mesmo elemento e o teclado fica como estava.
+function morphIgual(o,n){return o.nodeType===n.nodeType&&(o.nodeType!==1||(o.tagName===n.tagName&&(o.id||'')===(n.id||'')));}
+function morphEl(o,n,foco){
+  for(const at of [...o.attributes])if(!n.hasAttribute(at.name))o.removeAttribute(at.name);
+  for(const at of [...n.attributes]){if(o===foco&&at.name==='value')continue;if(o.getAttribute(at.name)!==at.value)o.setAttribute(at.name,at.value);}
+  if(o===foco)return;
+  const t=o.tagName;
+  if(t==='TEXTAREA'){if(o.value!==n.value)o.value=n.value;return;}
+  morphFilhos(o,n,foco);
+  if(t==='INPUT'){if(o.type==='checkbox'||o.type==='radio')o.checked=n.checked;else if(o.type!=='file'&&o.value!==n.value)o.value=n.value;}
+  else if(t==='SELECT'&&o.value!==n.value)o.value=n.value;
+  else if(t==='DETAILS')o.open=n.open;
+}
+function morphFilhos(de,para,foco){
+  const b=[...para.childNodes];let i=0;
+  for(;i<b.length;i++){
+    const n=b[i];let o=de.childNodes[i];
+    if(!o){de.appendChild(n);continue;}
+    if(!morphIgual(o,n)){
+      // o campo com o foco (ou o que o contém) só é trocado se não houver mais à frente onde encaixe
+      if(foco&&o.contains(foco)){const j=b.findIndex((x,k)=>k>i&&morphIgual(o,x));if(j>i){for(let k=i;k<j;k++)de.insertBefore(b[k],o);i=j;morphEl(o,b[j],foco);continue;}}
+      de.replaceChild(n,o);continue;}
+    if(o.nodeType!==1){if(o.nodeValue!==n.nodeValue)o.nodeValue=n.nodeValue;continue;}
+    morphEl(o,n,foco);
+  }
+  while(de.childNodes.length>i)de.removeChild(de.lastChild);
+}
+const PESQ_CAMPOS='#f-search,#gpp-search,#gpp-search-m,.sec-q,#insc-busca,#fm-assoc-q,input[type=search]';
+function appEscrever(app,html,mesmoEcra){
+  const f=document.activeElement;
+  // só nas pesquisas: o valor delas é sempre o que está escrito (noutros campos, o ecrã pode querer limpá-los, ex.: depois de «Adicionar»)
+  const aEscrever=mesmoEcra&&f&&app.contains(f)&&f.tagName==='INPUT'&&f.matches(PESQ_CAMPOS);
+  if(!aEscrever){app.innerHTML=html;return;}
+  const t=document.createElement('div');t.innerHTML=html;morphFilhos(app,t,f);
+}
+// ---- Pesquisa que ignora acentos, maiúsculas, espaços e traços: «ci86cj» encontra «CI-86-CJ», «r1300» encontra «R 1300 GS» ----
+function qNorm(v){return String(v==null?'':v).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();}
+function qTem(txt,q){const t=qNorm(txt),x=qNorm(q).trim();if(!x)return true;if(t.includes(x))return true;
+  const c=x.replace(/[^a-z0-9]/g,'');return c.length>=3&&t.replace(/[^a-z0-9]/g,'').includes(c);}
 function focoCapturar(){
   const a=document.activeElement;if(!a||!a.closest||!a.closest('#app')||!/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))return null;
   if(a.type==='checkbox'||a.type==='radio'||a.type==='file')return null;
@@ -9619,7 +9660,7 @@ function tblOrdenar(tb,col,dir){
   rows.forEach(r=>tbody.appendChild(r));
   if(tb.tHead&&tb.tHead.rows[0])[...tb.tHead.rows[0].cells].forEach((th,i)=>{th.dataset.dir=(i===col)?dir:'';});
 }
-function tblFiltrar(tb,q){q=String(q||'').toLowerCase().trim();const tbody=tb.tBodies[0];if(!tbody)return;[...tbody.rows].forEach(r=>{const txt=[...r.cells].map(tblTexto).join(' ').toLowerCase();r.style.display=(!q||txt.includes(q))?'':'none';});}
+function tblFiltrar(tb,q){q=String(q||'').trim();const tbody=tb.tBodies[0];if(!tbody)return;[...tbody.rows].forEach(r=>{const txt=[...r.cells].map(tblTexto).join(' ');r.style.display=(!q||qTem(txt,q))?'':'none';});}
 function tblSortClick(k,col){const cur=(S.tblSort||{})[k];const dir=(cur&&cur.col===col&&cur.dir==='asc')?'desc':'asc';S.tblSort=Object.assign({},S.tblSort||{},{[k]:{col,dir}});const tb=tblPorChave(k);if(tb)tblOrdenar(tb,col,dir);}
 function tblCSV(k){
   const tb=tblPorChave(k);if(!tb)return;
@@ -12029,7 +12070,7 @@ function renderDashboard(){
     if(S.retailVend)arr=arr.filter(r=>r.vendedor_id===S.retailVend);
     if(S.retailTipo==='novas')arr=arr.filter(r=>r.type==='MN'||r.type==='MD');
     else if(S.retailTipo==='usadas')arr=arr.filter(r=>r.type==='MU');
-    if(S.retailMat&&S.retailMat.trim()){const q=S.retailMat.trim().toLowerCase();arr=arr.filter(r=>(r.mat||'').toLowerCase().includes(q)||(r.id_cliente||'').toLowerCase().includes(q));}
+    if(S.retailMat&&S.retailMat.trim()){const q=S.retailMat.trim().toLowerCase();arr=arr.filter(r=>qTem(r.mat,q)||qTem(r.id_cliente,q));}
     // Ordenação
     const ord=S.retailOrd||'data', dir=S.retailDir||'desc';
     const val=r=>({cliente:(r.id_cliente||'').toLowerCase(),modelo:(r.model||'').toLowerCase(),tipo:r.type||'',vend:(vendName(r.vendedor_id)||'').toLowerCase(),data:r.col_298||''}[ord]);
@@ -12397,7 +12438,7 @@ function render0(){
   if(S.screen==='vnotif'&&S.me&&!isVendedor())S.screen=ecraInicial();
   const fn=screens[S.screen];
   const mb=app.querySelector('.eotm-body'),mst=mb?mb.scrollTop:0;
-  app.innerHTML=(typeof fn==='function'?(V_SHELL[S.screen]&&S.me&&!isAdmin()?vEnvolver(fn(),V_SHELL[S.screen]):fn()):fn)+(S.eotAberto&&S.me?eotModalHTML():'')+(S.negImgVer&&S.me&&!S.eotAberto?negImgLbHTML():'')+(S.me?novaVersaoHTML():'');
+  appEscrever(app,(typeof fn==='function'?(V_SHELL[S.screen]&&S.me&&!isAdmin()?vEnvolver(fn(),V_SHELL[S.screen]):fn()):fn)+(S.eotAberto&&S.me?eotModalHTML():'')+(S.negImgVer&&S.me&&!S.eotAberto?negImgLbHTML():'')+(S.me?novaVersaoHTML():''),ps===S.screen);
   try{const nN=S.me?notifLista().length:0;const tt=(nN?'('+nN+') ':'')+'Bimby Motorrad';if(document.title!==tt)document.title=tt;}catch(e){}
   if(mb&&S.eotAberto){const nb=app.querySelector('.eotm-body');if(nb)nb.scrollTop=mst;}
   app.dataset.screen=S.screen;

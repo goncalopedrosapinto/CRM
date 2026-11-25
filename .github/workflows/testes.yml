@@ -69,6 +69,7 @@ jobs:
       - run: npm run comfixa
       - run: npm run premios
       - run: npm run adiado
+      - run: npm run pesquisa
       - run: npm run usodiario
       - run: npm run polimento
       - run: npm run alertas
