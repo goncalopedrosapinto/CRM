@@ -193,12 +193,11 @@ c.setFont('Carlito-Bold', 9)
 c.drawString(X0 + 4, obs_topo - 10, 'OBSERVAÇÕES')
 c.setLineWidth(1.4)
 c.line(X0, obs_topo, X1, obs_topo)
-c.setStrokeColor(Color(.784314, .784314, .784314))
-c.setLineWidth(.4)
+# sem linhas pautadas: o texto do campo (escrito pela app ou editado no leitor de PDF) usa o espaçamento
+# de cada leitor e nunca coincide com linhas desenhadas; a caixa fica em branco, como as do acordo
 ly = obs_topo - 14 - 14
 linhas = []
 while ly > ASS_TOPO + 8:
-    c.line(34, ly, 561.28, ly)
     linhas.append(ly)
     ly -= 14
 form.textfield(name='observacoes', tooltip='Observações', x=34, y=linhas[-1], width=561.28 - 34,
