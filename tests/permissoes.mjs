@@ -379,6 +379,39 @@ const C=[ // [área, perfil, descrição, função, esperado]
   ['chefe','chefe','origem inventada é recusada',async()=>{await db.exec('savepoint s');try{await db.query(`select public.encomendas_bmw_substituir('[{"production_number":"1"}]','lisboa')`);return 'aceitou';}catch(e){await db.exec('rollback to savepoint s');return /Origem desconhecida/.test(e.message)?'recusada':'ERRO '+e.message.slice(0,60);}},'recusada'],
   ['vendedor','vend','substitui Stock BMW',()=>ok(`select public.encomendas_bmw_substituir('[{"production_number":"1"}]','bmw')`),'recusado'],
   ['chefe','chefe','carrega ficheiro vazio (mapa fica como está)',async()=>{await db.exec('savepoint s');try{await db.query(`select public.encomendas_bmw_substituir('[]')`);}catch(e){await db.exec('rollback to savepoint s');}return n("select count(*) n from public.encomendas_bmw");},1],
+  // ---- revisão 2026-11-26: o vendedor marca a checklist de entrega; os vendedores fazem a escala e o chefe valida ----
+  ['vendedor','vend','marca a entrega do seu negócio (pela função)',async()=>{await db.query(`select public.entrega_vendedor(${N.carteira},'{"prep_pedida":true,"docs":{"CC / NIF":true},"data_entrega":"2026-12-01"}')`);await db.exec('reset role');return n(`select count(*) n from public.entregas where negocio_id=${N.carteira} and prep_pedida and docs->>'CC / NIF'='true' and data_entrega='2026-12-01'`);},1],
+  ['vendedor','vend','marca a entrega do negócio do colega',()=>ok(`select public.entrega_vendedor(${N.retail2},'{"pago":true}')`),'recusado'],
+  ['vendedor','vend','escreve as notas do chefe na entrega',()=>ok(`select public.entrega_vendedor(${N.retail},'{"docs_obs":"x"}')`),'recusado'],
+  ['vendedor','vend','escreve na tabela de entregas diretamente',()=>ok(`insert into public.entregas(negocio_id) values(${N.carteira})`),'recusado'],
+  ['vendedor','vend','marcar a entrega não apaga as notas do chefe',async()=>{await db.exec('reset role');await db.query(`update public.entregas set docs_obs='nota do chefe',obs='obs' where negocio_id=${N.retail}`);await db.exec('set local role authenticated');
+    await db.query(`select public.entrega_vendedor(${N.retail},'{"pago":true}')`);await db.exec('reset role');return n(`select count(*) n from public.entregas where negocio_id=${N.retail} and pago and docs_obs='nota do chefe' and obs='obs'`);},1],
+  ['secretário','sec','marca a entrega pela função',()=>ok(`select public.entrega_vendedor(${N.carteira},'{"pago":true}')`),'recusado'],
+  ['anónimo','anon','marca a entrega pela função',()=>ok(`select public.entrega_vendedor(${N.carteira},'{"pago":true}')`),'recusado'],
+  ['chefe','chefe','marca a entrega pela função (qualquer negócio)',async()=>{await db.query(`select public.entrega_vendedor(${N.retail2},'{"pago":true}')`);return n(`select count(*) n from public.entregas where negocio_id=${N.retail2} and pago`);},1],
+  ['vendedor','vend','preenche a escala do colega (mesma linha, este mês)',()=>ok(`insert into public.escala(dia,vendedor_id,estado) values(date_trunc('month',current_date)::date+9,'${U.vend2}','Stand')`),'consegue'],
+  ['vendedor','vend','preenche a escala de um mês passado',()=>ok(`insert into public.escala(dia,vendedor_id,estado) values(date_trunc('month',current_date)::date-5,'${U.vend}','Stand')`),'recusado'],
+  ['vendedor','vend','põe o chefe na escala',()=>ok(`insert into public.escala(dia,vendedor_id,estado) values(date_trunc('month',current_date)::date+9,'${U.chefe}','Stand')`),'recusado'],
+  ['vendedor','vend','submete o mês e deixa de mexer',async()=>{await db.query(`select public.escala_submeter(to_char(current_date,'YYYY-MM'))`);
+    try{await db.query(`insert into public.escala(dia,vendedor_id,estado) values(date_trunc('month',current_date)::date+9,'${U.vend}','Folga')`);return 'mexeu';}catch(e){return /row-level/.test(e.message)?'bloqueado':'ERRO: '+e.message.slice(0,80);}},'bloqueado'],
+  ['vendedor','vend','submete o mesmo mês duas vezes',async()=>{await db.query(`select public.escala_submeter(to_char(current_date,'YYYY-MM'))`);
+    try{await db.query(`select public.escala_submeter(to_char(current_date,'YYYY-MM'))`);return 'aceitou';}catch(e){return /já está submetido/.test(e.message)?'bloqueado':'ERRO: '+e.message.slice(0,80);}},'bloqueado'],
+  ['vendedor','vend','mês devolvido: volta a mexer',async()=>{await db.exec('reset role');await db.query(`insert into public.escala_meses(linha,mes,estado,comentario) values('motorrad',to_char(current_date,'YYYY-MM'),'devolvido','x')`);await db.exec('set local role authenticated');
+    return ok(`insert into public.escala(dia,vendedor_id,estado) values(date_trunc('month',current_date)::date+9,'${U.vend}','Folga')`);},'consegue'],
+  ['vendedor','vend','mês validado: não apaga dias',async()=>{await db.exec('reset role');await db.query(`insert into public.escala(dia,vendedor_id,estado) values(date_trunc('month',current_date)::date+9,'${U.vend}','Stand')`);
+    await db.query(`insert into public.escala_meses(linha,mes,estado) values('motorrad',to_char(current_date,'YYYY-MM'),'validado')`);await db.exec('set local role authenticated');
+    return n(`with d as (delete from public.escala where vendedor_id='${U.vend}' returning 1) select count(*) n from d`);},0],
+  ['vendedor','vend','valida a escala',()=>ok(`select public.escala_decidir('motorrad',to_char(current_date,'YYYY-MM'),true,null)`),'recusado'],
+  ['vendedor','vend','escreve o estado do mês diretamente',()=>ok(`insert into public.escala_meses(linha,mes,estado) values('motorrad',to_char(current_date,'YYYY-MM'),'validado')`),'recusado'],
+  ['chefe','chefe','valida e devolve (devolver pede comentário)',async()=>{await db.query(`select public.escala_decidir('motorrad','2026-12',true,null)`);let r='';
+    await db.exec('savepoint s');try{await db.query(`select public.escala_decidir('motorrad','2026-12',false,'  ')`);r='aceitou';}catch(e){await db.exec('rollback to savepoint s');r=/Escreve o que/.test(e.message)?'pede':'ERRO';}
+    await db.query(`select public.escala_decidir('motorrad','2026-12',false,'Falta o sábado')`);return r+'/'+(await db.query(`select estado||':'||comentario r from public.escala_meses where mes='2026-12'`)).rows[0].r;},'pede/devolvido:Falta o sábado'],
+  ['chefe','chefe','mexe na escala validada',async()=>{await db.query(`select public.escala_decidir('motorrad',to_char(current_date,'YYYY-MM'),true,null)`);return ok(`insert into public.escala(dia,vendedor_id,estado) values(date_trunc('month',current_date)::date+9,'${U.vend}','Stand')`);},'consegue'],
+  ['assessor','ass','preenche a escala',()=>ok(`insert into public.escala(dia,vendedor_id,estado) values(date_trunc('month',current_date)::date+9,'${U.vend}','Stand')`),'recusado'],
+  ['secretário','sec','submete a escala',()=>ok(`select public.escala_submeter(to_char(current_date,'YYYY-MM'))`),'recusado'],
+  ['vendedor','vend','lê o estado da escala',async()=>{await db.exec('reset role');await db.query(`insert into public.escala_meses(linha,mes,estado) values('motorrad','2026-12','submetido')`);await db.exec('set local role authenticated');return conta('escala_meses')();},1],
+  ['eventos','evt','lê o estado da escala',async()=>{await db.exec('reset role');await db.query(`insert into public.escala_meses(linha,mes,estado) values('motorrad','2026-12','submetido')`);await db.exec('set local role authenticated');return conta('escala_meses')();},0],
+  ['anónimo','anon','lê o estado da escala',conta('escala_meses'),'recusado'],
 ];
 
 let falhas=0;const linhas=[];

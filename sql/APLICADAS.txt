@@ -29,3 +29,6 @@
 2026-11-04_documentos_emitidos.sql
 2026-11-05_negocio_sinal_retoma.sql
 2026-11-09_eventos_externos.sql
+2026-11-09_eventos_externos_2_so_os_seus.sql
+2026-11-10_comissao_fixa.sql
+2026-11-23_eot_historico_financeiro.sql

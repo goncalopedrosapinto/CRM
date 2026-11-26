@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-25-b">
+<meta name="app-version" content="2026-11-26-a">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1537,6 +1537,15 @@ svg .dz-pos,.dz-leg i.dz-pos{fill:var(--dz-pos);background:var(--dz-pos)}svg .dz
 .vh-ok{padding:14px;color:var(--green);font-size:13px;font-weight:600}
 .vh-mais{padding:10px 14px;font-size:12px;color:var(--orange);font-weight:700;cursor:pointer}
 .vh-sec-sub{font-size:12px;font-weight:500;color:var(--text3)}
+.vh-falta .vh-txt{display:flex;flex-direction:column;gap:5px}
+.vh-falta small{color:var(--text3);font-size:11px;margin-left:4px}
+.vh-falta-l{display:flex;flex-wrap:wrap;gap:5px;align-items:center;font-size:11px;font-weight:700;color:var(--text3)}
+.vh-falta-l .ve-chip{background:var(--amber-bg);color:var(--amber)}
+.vh-falta-l .ve-chip.ve-chip-red{background:var(--red-bg);color:var(--red)}
+.vh-box.vh-ent{background:transparent;border:0;box-shadow:none;overflow:visible}
+.vh-ent .en-list{margin:0}
+.nif-dica{font-size:12px;color:var(--text3);margin-top:4px}.nif-dica.erro{color:var(--red);font-weight:600}
+.en-mes{font-size:11px;font-weight:700;color:var(--text3);margin-left:6px;white-space:nowrap}
 .vh-novo{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1.2fr) auto auto;gap:8px;align-items:center;padding:10px;overflow:visible}
 .vh-novo .field-input{padding:8px 11px;font-size:13.5px;min-height:38px}
 .vh-n-chips{display:flex;gap:6px}
@@ -1894,6 +1903,11 @@ a{color:var(--blue)}
 .cf-bd{position:fixed;inset:0;z-index:500;background:rgba(11,18,32,.45);display:flex;align-items:center;justify-content:center;padding:16px}
 .cf-box{background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:var(--r2);box-shadow:0 16px 48px rgba(15,23,42,.3);padding:18px;max-width:440px;width:100%}
 .cf-msg{font-size:14px;line-height:1.5;margin-bottom:16px}.cf-btns{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.cf-opcoes{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.cf-op{display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;padding:11px 14px;border:1.5px solid var(--border2);border-radius:10px;background:var(--surface);color:var(--text);font:inherit;font-size:14px;cursor:pointer;touch-action:manipulation}
+.cf-op span{color:var(--text3);font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.cf-op:hover{border-color:var(--orange);background:var(--surface2)}
+.cf-op:active{transform:scale(.99)}
 .bm-toast.erro .ic{color:#FCA5A5}
 .bm-toast.show{opacity:1;transform:translate(-50%,0)}
 :root[data-theme="dark"] .bm-toast{background:#E2E8F0;color:#0F172A}
@@ -2418,6 +2432,13 @@ body.a-gravar [data-action]{cursor:progress}
 .mr-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--border)}.mr-row:last-child{border-bottom:0}
 .mr-txt{flex:1;min-width:220px;display:flex;flex-direction:column;gap:2px;font-size:13px}.mr-sub{color:var(--text2);font-size:12px}
 .mr-acts{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.mr-inp{width:150px;min-height:36px}
+.atag-red{background:var(--red);color:#fff}:root[data-theme="dark"] .atag-red{color:#0B1220}
+.mr-row.fa-fechado{background:var(--red-bg)}
+.inc-vends{display:flex;flex-wrap:wrap;gap:8px;padding:10px 14px}.inc-v{display:inline-flex;align-items:center;gap:6px;font-size:13px}.inc-v b{font-variant-numeric:tabular-nums}
+.up-acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;padding:10px 14px}
+.esc-st{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;border-left:4px solid var(--border2)}
+.esc-st-submetido{border-left-color:var(--amber)}.esc-st-validado{border-left-color:var(--green)}.esc-st-devolvido{border-left-color:var(--red)}.esc-st-rascunho{border-left-color:var(--blue)}
+.esc-st-t{flex:1 1 260px;min-width:0}.esc-st-b{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.esc-coment{min-width:220px;min-height:34px}
 .mr-nota{margin-top:6px;font-size:12px;color:var(--text2);background:var(--surface2);border-radius:8px;padding:6px 10px}.mr-nota.pend{background:var(--orange-bg);color:var(--orange2)}.mr-nota.ok{background:var(--green-bg);color:var(--green)}
 @media (max-width:760px){.mr-acts{width:100%}.mr-inp{flex:1}}
 /* Acordo de venda (usadas) */
@@ -2713,7 +2734,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-25-b';
+const APP_VERSION='2026-11-26-a';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -2757,7 +2778,7 @@ window.addEventListener('beforeunload',guardarRascunho);
 async function atualizarDadosSilencioso(){
   if(!S.me||!S.token)return;
   const rl=S.me.role;const L=[];
-  if(isAdmin())L.push(loadFichasAprovar(),loadEnc(),loadObjetivos(),loadObjEquipa(),loadTeam(),loadNps(),loadEot(),loadEntregas(),loadMargens(),loadEquipamento(),loadComsRecentes(),loadComFecho());
+  if(isAdmin())L.push(loadEscalaMeses(),loadFichasAprovar(),loadEnc(),loadObjetivos(),loadObjEquipa(),loadTeam(),loadNps(),loadEot(),loadEntregas(),loadMargens(),loadEquipamento(),loadComsRecentes(),loadComFecho());
   else if(isVendedor())L.push(loadEnc(),loadTeam(),loadEot(),loadEntregas(),loadMargens(),loadEquipamento(),loadComsRecentes(),loadComFecho());
   else if(rl==='secretario')L.push(loadTeam(),loadEntregas(),...(isFinanceiro()?[loadEot()]:[]));
   else if(rl==='eventos')L.push(loadEventos(),loadInscricoes());
@@ -2814,7 +2835,7 @@ const NEG_OPCIONAIS=['data_nascimento','decl_circ','sinal','sinal_forma','retoma
 const FIELD_GROUPS=[
   {g:'INFO',fields:[{k:'status',l:'Status',t:'select',o:STATUSES},{k:'motivo_perda',l:'Motivo da Perda',t:'select',o:MOTIVOS_PERDA,show:'perdido'},{k:'recontactar_em',l:'Voltar a contactar em (adiado: obrigatório · perdido: 6 meses por omissão)',t:'date',show:'recont'},{k:'alert_date',l:'Alertar no dia (sugerido — podes mudar)',t:'date',show:'funil'}]},
   {g:'Identificação',fields:[{k:'id_cliente',l:'Cliente',t:'text'},{k:'local',l:'Código Postal',t:'text'},{k:'nif',l:'NIF',t:'text'},{k:'morada',l:'Morada',t:'text'},{k:'cc',l:'CC',t:'text'},{k:'data_nascimento',l:'Data de nascimento (aniversário)',t:'date'},{k:'email',l:'Email',t:'text'},{k:'contacto',l:'Contacto',t:'text'}]},
-  {g:'Negócio',fields:[{k:'neg',l:'Data Negócio',t:'date'},{k:'mes1',l:'Mês Referência',t:'month'},{k:'type',l:'Tipo',t:'select',o:TYPES},{k:'pvp',l:'PVP (€)',t:'number'},{k:'origin',l:'Origem',t:'select',o:ORIGINS},{k:'lead_webapp',l:'Nº Lead (WebApp)',t:'text',show:'lead'},{k:'campanha',l:'Campanha / lote (ex: P6 08/26)',t:'text',show:'lead'},{k:'profile',l:'Perfil',t:'select',o:PROFILES},{k:'retoma',l:'Retoma?',t:'select',o:['Não','Sim']},{k:'retoma_modelo',l:'Modelo da Retoma',t:'text',show:'retoma'},{k:'retoma_mat',l:'Matrícula da Retoma',t:'text',show:'retoma'},{k:'retoma_ano',l:'Ano da Retoma',t:'text',show:'retoma'},{k:'retoma_kms',l:'Km da Retoma',t:'text',show:'retoma'},{k:'retoma_cor',l:'Cor da Retoma',t:'text',show:'retoma'},{k:'retoma_data_matricula',l:'Data de Matrícula da Retoma',t:'date',show:'retoma'},{k:'retoma_valor',l:'Valor dado ao cliente pela retoma (€)',t:'text',show:'retoma'},{k:'retoma_valor_comercio',l:'Valor dado pelo comércio pela retoma (€)',t:'text',show:'retoma'},{k:'biz',l:'Bizagi',t:'text'},{k:'fin',l:'Financiamento',t:'select',o:FINS},{k:'sinal',l:'Sinal (€)',t:'text'},{k:'sinal_forma',l:'Forma do sinal',t:'select',o:SINAL_FORMAS}]},
+  {g:'Negócio',fields:[{k:'neg',l:'Data Negócio',t:'date'},{k:'mes1',l:'Mês Referência',t:'month'},{k:'type',l:'Tipo',t:'select',o:TYPES},{k:'pvp',l:'PVP (€)',t:'number'},{k:'origin',l:'Origem',t:'select',o:ORIGINS},{k:'lead_webapp',l:'Nº Lead (WebApp)',t:'text',show:'lead'},{k:'campanha',l:'Campanha / lote (ex: P6 08/26)',t:'text',show:'campanha'},{k:'profile',l:'Perfil',t:'select',o:PROFILES},{k:'retoma',l:'Retoma?',t:'select',o:['Não','Sim']},{k:'retoma_modelo',l:'Modelo da Retoma',t:'text',show:'retoma'},{k:'retoma_mat',l:'Matrícula da Retoma',t:'text',show:'retoma'},{k:'retoma_ano',l:'Ano da Retoma',t:'text',show:'retoma'},{k:'retoma_kms',l:'Km da Retoma',t:'text',show:'retoma'},{k:'retoma_cor',l:'Cor da Retoma',t:'text',show:'retoma'},{k:'retoma_data_matricula',l:'Data de Matrícula da Retoma',t:'date',show:'retoma'},{k:'retoma_valor',l:'Valor dado ao cliente pela retoma (€)',t:'text',show:'retoma'},{k:'retoma_valor_comercio',l:'Valor dado pelo comércio pela retoma (€)',t:'text',show:'retoma'},{k:'biz',l:'Bizagi',t:'text'},{k:'fin',l:'Financiamento',t:'select',o:FINS},{k:'sinal',l:'Sinal (€)',t:'text'},{k:'sinal_forma',l:'Forma do sinal',t:'select',o:SINAL_FORMAS}]},
   {g:'Viatura',fields:[{k:'stock_id',l:'Mota do Stock (modelo · matrícula)',t:'stockpick',show:'stockpick'},{k:'model',l:'Modelo',t:'text'},{k:'version',l:'Versão',t:'text'},{k:'stock',l:'Em Stock?',t:'select',o:['Não','Sim']},{k:'enc',l:'Encomenda',t:'text'},{k:'chas',l:'Chassis',t:'text'},{k:'mat',l:'Matrícula',t:'text'},{k:'gar',l:'Garantia?',t:'select',o:['Não','Sim']},{k:'gar_periodo',l:'Período de Garantia',t:'select',o:GAR_PERIODOS,show:'garantia'}]},
   {g:'Extras',fields:[{k:'flag_ccgo',l:'CC Go',t:'toggle'},{k:'flag_rgpd',l:'RGPD',t:'toggle'},{k:'flag_seguro',l:'Seguro Nosso',t:'toggle'},{k:'flag_lifestyle',l:'Lifestyle',t:'toggle'}]},
   {g:'Datas',fields:[{k:'status_mota',l:'Status da mota',t:'text'},{k:'col_198',l:'198',t:'text'},{k:'dmat',l:'Data Matrícula',t:'date'},{k:'decl_circ',l:'Declaração de circulação',t:'select',o:['','Atualizada','Por atualizar'],show:'declcirc'},{k:'col_298',l:'298',t:'date'}]},
@@ -3464,10 +3485,12 @@ function _fichasAbertas(){const recs=S.records||[];
   return (S.fichasAprov||[]).filter(f=>!f.aprovada_em&&f.estado!=='arquivada').map(f=>{const r=recs.find(x=>String(x.id)===String(f.negocio_id));
     return r&&!['Perdido','Frio'].includes(r.status)?{f,r}:null;}).filter(Boolean);}
 // à espera do chefe: precisa de aprovação e não foi recusada (a recusa cai quando o vendedor muda a ficha)
+// negócio já em Carteira ou Retail com a ficha por aprovar: aparece primeiro e destacado
+function fichaJaFechada(r){return r&&(r.status==='Carteira'||r.status==='Retail')?1:0;}
 function fichasAprovarLista(){
   if(!isAdmin())return[];
   return _fichasAbertas().filter(x=>!x.f.recusada_em).map(x=>{const c=fichasCalcDe(x.f);return c&&c.aprovacao?Object.assign(x,{c}):null;}).filter(Boolean)
-    .sort((a,b)=>String(b.f.updated_at||'').localeCompare(String(a.f.updated_at||'')));
+    .sort((a,b)=>(fichaJaFechada(b.r)-fichaJaFechada(a.r))||String(b.f.updated_at||'').localeCompare(String(a.f.updated_at||'')));
 }
 // não aprovadas: à espera de o vendedor mudar a ficha
 function fichasRecusadasLista(){
@@ -3497,7 +3520,7 @@ function fichasAprovarHTML(){
       <div class="mr-acts">${abrir(f,r)}<button class="btn btn-ghost btn-sm" data-action="fa-aprovar" data-id="${esc(f.id)}">Aprovar mesmo assim</button></div></div>`).join('')}</details>`:'';
   if(!L.length)return`<div class="mr-box fa-box fa-so-recs">${rec}</div>`;
   return`<div class="mr-box fa-box"><div class="mr-h"><span>Fichas à espera da tua aprovação · <b>${L.length}</b></span><small>Margem abaixo de 0,50 % ou esforço acima da margem variável. Se não aprovares, o vendedor recebe o motivo; quando mudar a ficha (ou mudar uma já aprovada), volta a aparecer aqui.</small></div>
-  ${L.map(({f,r,c})=>{const ab=String(S.faRecusar)===String(f.id);return`<div class="mr-row${ab?' fa-row-rec':''}"><span class="atag atag-al">Aprovar</span>
+  ${L.map(({f,r,c})=>{const ab=String(S.faRecusar)===String(f.id);const fe=fichaJaFechada(r);return`<div class="mr-row${ab?' fa-row-rec':''}${fe?' fa-fechado':''}"><span class="atag ${fe?'atag-red':'atag-al'}">${fe?'Já em '+esc(r.status):'Aprovar'}</span>
     <div class="mr-txt"><div>${nome(f,r)}</div>
     <span class="mr-sub">${esc(fmAprovTxt(c,pc))}${c.venda?' · proposto '+esc(fE0(c.venda))+' · margem '+esc(fE0(c.margem)):''}</span></div>
     <div class="mr-acts">${abrir(f,r)}<button class="btn btn-outline btn-sm" data-action="fa-recusar" data-id="${esc(f.id)}" aria-expanded="${ab}">Não aprovar</button><button class="btn btn-green btn-sm" data-action="fa-aprovar" data-id="${esc(f.id)}">Aprovar</button></div>
@@ -4535,7 +4558,10 @@ function lembretesChefe(){
   if(!isAdmin())return[];const hoje=new Date();if(hoje.getDate()<LEMB_DIA)return[];
   const ym=curYM(),comYM=ymSoma(ym,-2),escYM=ymSoma(ym,1),out=[];
   if(!lembFeito('com',ym)&&!comFechado(comYM))out.push({k:'com',ym,alvo:comYM,tag:'Comissões',tit:`Tratar das comissões de ${ymLongo(comYM)}`,sub:`Dia ${LEMB_DIA}: em ${ymLongo(ym)} fecham-se as comissões de ${ymLongo(comYM)}.`});
-  if(!lembFeito('esc',ym))out.push({k:'esc',ym,alvo:escYM,tag:'Escala',tit:`Tratar da escala de ${ymLongo(escYM)}`,sub:`Dia ${LEMB_DIA}: preparar a escala do próximo mês.`});
+  if(!lembFeito('esc',ym)){
+    if(S.escalaMeses==null)out.push({k:'esc',ym,alvo:escYM,tag:'Escala',tit:`Tratar da escala de ${ymLongo(escYM)}`,sub:`Dia ${LEMB_DIA}: preparar a escala do próximo mês.`});
+    else{const em=String(escYM).replace('/','-');const L=[...new Set((S.team||[]).map(p=>p.linha))].filter(l=>!escalaMesRow(l,em));
+      if(L.length)out.push({k:'esc',ym,alvo:escYM,tag:'Escala',tit:`Escala de ${ymLongo(escYM)}: os vendedores ainda não a submeteram`,sub:`Dia ${LEMB_DIA}: são os vendedores que fazem a escala do próximo mês; tu validas.`});}}
   return out;}
 // ---- Mês de referência: o vendedor propõe, o chefe valida (trigger bc_mes1_validacao no Supabase) ----
 function mrTxt(v){return /^\d{4}\/\d{2}$/.test(String(v||''))?ymCurto(v):'sem mês';}
@@ -4552,6 +4578,78 @@ function mesRefHTML(){const L=mesRefLista();if(!L.length)return'';
       <div class="mr-acts"><input type="month" class="norma-inp mr-inp" id="mr-${r.id}" value="${esc(prop.replace('/','-'))}" aria-label="Mês de referência de ${esc(r.id_cliente||'')}">
       <button class="btn btn-green btn-sm" data-action="mr-ok" data-id="${r.id}">${ped?'Aprovar':'Confirmar'}</button>
       ${ped?`<button class="btn btn-outline btn-sm" data-action="mr-nao" data-id="${r.id}">Recusar</button>`:''}</div></div>`;}).join('')}</div>`;}
+// ---- Carteiras com dados em falta: contador por vendedor para o chefe (quem trata são os vendedores, no Hoje) ----
+function incompletosEquipaHTML(){if(!isAdmin())return'';const L=negIncompletos(S.records||[]);if(!L.length)return'';
+  const por={};L.forEach(x=>{const k=x.r.vendedor_id||'';por[k]=(por[k]||0)+1;});
+  return`<div class="mr-box inc-box"><div class="mr-h"><span>Carteiras com dados em falta · <b>${L.length}</b></span><small>Para os vendedores tratarem: veem a lista no ecrã Hoje (telefone, NIF, email, morada, código postal e valor da retoma).</small></div>
+    <div class="inc-vends">${Object.entries(por).sort((a,b)=>b[1]-a[1]).map(([v,n])=>`<span class="inc-v">${v?vendTag(v):'sem vendedor'} <b>${n}</b></span>`).join('')}</div></div>`;}
+// ---- Usadas paradas há mais de 90 dias: aviso semanal para o chefe, com preço sugerido ----
+const USADA_PARADA_DIAS=90;
+function semanaChave(d){d=d||new Date();return d.getFullYear()+'-S'+String(isoWeek(d)).padStart(2,'0');}
+function usadaPrecoSugerido(m,dias){const taxa=Number(S.depTaxa)||0;const anun=Number(m.valor_anunciado);if(!(taxa>0)||!(anun>0))return null;
+  const meses=Math.floor(dias/30)-3;if(meses<=0)return null;
+  let v=anun*(1-taxa/100*meses);const min=Number(m.valor_min);if(min>0&&v<min)v=min;
+  v=Math.floor(v/50)*50;return v<anun?v:null;}
+function usadasParadasLista(){if(!isAdmin())return[];
+  return (S.stock||[]).filter(m=>(m.categoria||'usada')==='usada'&&m.estado!=='Vendida'&&!/teste/i.test(String(m.modelo||'')+' '+String(m.matricula||'')))
+    .map(m=>({m,dias:diasEmStock(m.data_rececao||m.created_at)})).filter(x=>x.dias!=null&&x.dias>USADA_PARADA_DIAS)
+    .map(x=>Object.assign(x,{sug:usadaPrecoSugerido(x.m,x.dias)})).sort((a,b)=>b.dias-a.dias);}
+function usadasParadasPend(){let v='';try{v=localStorage.getItem('bm_usadas_visto')||'';}catch(e){}return v===semanaChave()?[]:usadasParadasLista();}
+function usadasParadasHTML(){const L=usadasParadasPend();if(!L.length)return'';const taxa=Number(S.depTaxa)||0;
+  const eur=n=>n>0?acordoMil(Math.round(n))+' €':'—';
+  return`<div class="mr-box up-box"><div class="mr-h"><span>Usadas paradas há mais de ${USADA_PARADA_DIAS} dias · <b>${L.length}</b></span><small>${taxa>0?`Preço sugerido: menos ${String(taxa).replace('.',',')} % por mês acima dos 3 meses, nunca abaixo do valor mínimo. É uma proposta: decides tu.`:'Para ver um preço sugerido, define a taxa de depreciação mensal em Stock › Depreciação.'} Aparece uma vez por semana.</small></div>
+  ${L.map(({m,dias,sug})=>`<div class="mr-row"><span class="atag atag-al">${dias} dias</span>
+    <div class="mr-txt"><div><b>${esc(m.modelo||'—')}</b>${m.matricula?` <span class="en-mat">${esc(m.matricula)}</span>`:''}${m.kms?` · ${esc(Number(m.kms).toLocaleString('pt-PT'))} km`:''}</div>
+    <span class="mr-sub">Anunciada a ${esc(eur(Number(m.valor_anunciado)))}${sug?` · sugerido <b>${esc(eur(sug))}</b>`:''}${Number(m.valor_min)>0?` · mínimo ${esc(eur(Number(m.valor_min)))}`:''}</span></div></div>`).join('')}
+  <div class="up-acts"><button type="button" class="btn btn-outline btn-sm" data-action="gpp-sec" data-s="stock">Abrir o stock de usadas</button><button type="button" class="btn btn-dark btn-sm" data-action="usadas-visto">Visto esta semana</button></div></div>`;}
+// ---- Escala: os vendedores preenchem e submetem o mês; o chefe valida ou devolve ----
+function escalaMesRow(linha,mes){const M=S.escalaMeses;if(!M)return null;return M[linha+'|'+mes]||null;}
+function escalaLinhaAtiva(){if(isAdmin()){const L=[...new Set((S.team||[]).map(p=>p.linha))].sort();return S.escalaLinha||L[0]||'auto';}return (S.me&&S.me.linha)||'auto';}
+function escalaMesAtual(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}
+// o vendedor pode mexer neste mês? (do mês atual em diante; sem submeter nem validar)
+function escalaVendPode(mes){if(!isVendedor()||S.escalaMeses==null)return false;if(mes<escalaMesAtual())return false;
+  const r=escalaMesRow(escalaLinhaAtiva(),mes);return !r||r.estado==='devolvido';}
+function escalaPodeEditar(dia){return isAdmin()||escalaVendPode(String(dia||'').slice(0,7));}
+async function loadEscalaMeses(){try{const d=await supabaseApi('GET','/escala_meses?select=*');const m={};(d||[]).forEach(x=>{m[x.linha+'|'+x.mes]=x;});S.escalaMeses=m;}catch(e){S.escalaMeses=null;}}
+function escalaPorValidar(){if(!isAdmin()||!S.escalaMeses)return[];return Object.values(S.escalaMeses).filter(x=>x.estado==='submetido').sort((a,b)=>String(a.mes).localeCompare(String(b.mes)));}
+function escalaMesNome(mes){const[y,m]=String(mes).split('-').map(Number);return (MES_LONGO[m-1]||mes)+' '+y;}
+function escalaQuando(v){try{const d=new Date(v);return isNaN(d)?'':d.toLocaleDateString('pt-PT',{day:'2-digit',month:'2-digit'});}catch(e){return'';}}
+function escalaPorValidarHTML(){const L=escalaPorValidar();if(!L.length)return'';
+  return`<div class="mr-box"><div class="mr-h"><span>Escala por validar · <b>${L.length}</b></span><small>Os vendedores fizeram e submeteram a escala. Valida, ou abre-a para devolver com um comentário.</small></div>
+  ${L.map(x=>`<div class="mr-row"><span class="atag atag-al">Escala</span>
+    <div class="mr-txt"><div><b>${esc(escalaMesNome(x.mes))}</b> · ${esc(linhaLabel(x.linha))}</div><span class="mr-sub">Submetida${x.submetido_por?' por '+esc(nomePerfil(x.submetido_por)||'vendedor'):''}${x.submetido_em?' a '+esc(escalaQuando(x.submetido_em)):''}</span></div>
+    <div class="mr-acts"><button type="button" class="btn btn-outline btn-sm" data-action="escala-abrir" data-linha="${esc(x.linha)}" data-mes="${esc(x.mes)}">Abrir escala</button><button type="button" class="btn btn-green btn-sm" data-action="escala-validar" data-linha="${esc(x.linha)}" data-mes="${esc(x.mes)}">Validar</button></div></div>`).join('')}</div>`;}
+// barra de estado do mês no ecrã da escala
+function escalaEstadoHTML(linha,mes){
+  if(S.escalaMeses==null)return isAdmin()?`<div class="esc-note esc-st">Para os vendedores fazerem a escala e tu validares, falta correr o SQL "2026-11-26_entregas_vendedor_escala" no Supabase. Até lá, só tu mexes.</div>`:'';
+  const r=escalaMesRow(linha,mes);const est=r?r.estado:'rascunho';const passado=mes<escalaMesAtual();
+  const quem=v=>esc(nomePerfil(v)||'');
+  let t='',b='';
+  if(isAdmin()){
+    if(est==='rascunho')t=passado?'Mês passado.':'Os vendedores ainda não submeteram esta escala. Podes mexer à mesma.';
+    else if(est==='submetido'){t=`<b>Submetida</b>${r.submetido_por?' por '+quem(r.submetido_por):''}${r.submetido_em?' a '+esc(escalaQuando(r.submetido_em)):''}. Valida, ou devolve com o que falta mudar.`;
+      b=`<input class="norma-inp esc-coment" id="esc-coment" placeholder="O que têm de mudar (para devolver)" aria-label="Comentário para devolver a escala"><button type="button" class="btn btn-outline btn-sm" data-action="escala-devolver" data-linha="${esc(linha)}" data-mes="${esc(mes)}">Devolver</button><button type="button" class="btn btn-green btn-sm" data-action="escala-validar" data-linha="${esc(linha)}" data-mes="${esc(mes)}">Validar</button>`;}
+    else if(est==='validado'){t=`<b>Validada</b>${r.decidido_em?' a '+esc(escalaQuando(r.decidido_em)):''}. Só tu mexes.`;
+      b=`<input class="norma-inp esc-coment" id="esc-coment" placeholder="Porque reabres (os vendedores veem)" aria-label="Comentário para reabrir a escala"><button type="button" class="btn btn-outline btn-sm" data-action="escala-devolver" data-linha="${esc(linha)}" data-mes="${esc(mes)}">Reabrir para os vendedores</button>`;}
+    else t=`<b>Devolvida</b>${r.decidido_em?' a '+esc(escalaQuando(r.decidido_em)):''}: «${esc(r.comentario||'')}». À espera de nova submissão.`;
+  }else{
+    if(passado)t='Mês passado: só o chefe mexe.';
+    else if(est==='rascunho'){t='Rascunho: preencham os dois a escala do mês. Quando estiver fechada, submetam para o chefe validar.';b=`<button type="button" class="btn btn-orange btn-sm" data-action="escala-submeter" data-mes="${esc(mes)}">Submeter para validação</button>`;}
+    else if(est==='devolvido'){t=`<b>Devolvida pelo chefe</b>: «${esc(r.comentario||'')}». Corrijam e submetam outra vez.`;b=`<button type="button" class="btn btn-orange btn-sm" data-action="escala-submeter" data-mes="${esc(mes)}">Submeter outra vez</button>`;}
+    else if(est==='submetido')t=`<b>Submetida</b>${r.submetido_por?' por '+quem(r.submetido_por):''}${r.submetido_em?' a '+esc(escalaQuando(r.submetido_em)):''}. À espera do chefe; já não dá para mexer.`;
+    else t=`<b>Validada pelo chefe</b>${r.decidido_em?' a '+esc(escalaQuando(r.decidido_em)):''}. Para mudar alguma coisa, fala com o chefe.`;
+  }
+  return`<div class="esc-note esc-st esc-st-${est}" role="status"><span class="esc-st-t">${t}</span>${b?`<span class="esc-st-b">${b}</span>`:''}</div>`;}
+async function escalaSubmeter(mes){
+  if(!await confirmar('Submeter a escala de '+escalaMesNome(mes)+' para o chefe validar?\n\nDepois de submetida, só o chefe mexe (ou devolve-a para corrigirem).',{ok:'Submeter'}))return;
+  try{await supabaseApi('POST','/rpc/escala_submeter',{p_mes:mes});await loadEscalaMeses();render();clearTimeout(_tgT);toast('Escala de '+escalaMesNome(mes)+' submetida: o chefe recebe-a para validar.');}
+  catch(e){avisoErro('Não consegui submeter a escala: '+erroTexto(e));}}
+async function escalaDecidir(linha,mes,validar){
+  const c=validar?'':String((document.getElementById('esc-coment')||{}).value||'').trim();
+  if(!validar&&!c){avisoErro('Escreve o que os vendedores têm de mudar antes de devolver.');const i=document.getElementById('esc-coment');if(i)i.focus();return;}
+  try{await supabaseApi('POST','/rpc/escala_decidir',{p_linha:linha,p_mes:mes,p_validar:!!validar,p_comentario:c||null});await loadEscalaMeses();render();clearTimeout(_tgT);
+    toast(validar?'Escala de '+escalaMesNome(mes)+' validada.':'Escala de '+escalaMesNome(mes)+' devolvida aos vendedores.');}
+  catch(e){avisoErro('Não consegui gravar: '+erroTexto(e));}}
 function mrErro(e){avisoErro('Erro: '+erroTexto(e)+(/mes1_/.test(String(e.message))?'\n\nFalta correr o SQL mes_referencia_validacao.sql no Supabase.':''));}
 async function mrNota(id,txt){try{await supabaseApi('POST','/negocio_historico',{negocio_id:Number(id),tipo:'comentario',texto:txt});if(S.negHist)delete S.negHist[String(id)];}catch(e){}}
 async function mrConfirmar(id){
@@ -4701,7 +4799,7 @@ async function loadEscala(){
   try{const d=await supabaseApi('GET',`/escala?dia=gte.${ini}&dia=lt.${fim}&select=*`);
     const map={};(d||[]).forEach(e=>{map[e.dia+'|'+e.vendedor_id]=e});S.escala=map;
   }catch(e){S.escala={}}
-  await loadFolgaSaldo();
+  await Promise.all([loadFolgaSaldo(),loadEscalaMeses()]);
 }
 async function saveEscalaCell(dia,vid,estado){
   const key=dia+'|'+vid;const ex=S.escala[key];
@@ -5089,6 +5187,38 @@ async function saveVendaDireta(){
     setState({loading:false,vdAdding:false,vdForm:{}});
   }catch(e){setState({loading:false,vdErr:'Erro ao gravar: '+(e.message||e)});}
 }
+// escolha entre várias opções (ex.: qual das fichas foi a vendida); devolve o valor escolhido ou null se cancelar
+function escolherOpcao(msg,opcoes,opt){opt=opt||{};
+  return new Promise(res=>{
+    const velho=document.getElementById('cf-bd');if(velho)velho.remove();
+    const antes=document.activeElement;const bd=document.createElement('div');bd.id='cf-bd';bd.className='cf-bd';
+    bd.innerHTML='<div class="cf-box" id="cf-box" role="dialog" aria-modal="true" aria-labelledby="cf-msg"><div class="cf-msg" id="cf-msg">'+esc(String(msg||'')).replace(/\n/g,'<br>')+'</div><div class="cf-opcoes">'
+      +opcoes.map((o,i)=>'<button type="button" class="cf-op" data-i="'+i+'"><b>'+esc(o.lb||'')+'</b>'+(o.sub?'<span>'+esc(o.sub)+'</span>':'')+'</button>').join('')
+      +'</div><div class="cf-btns"><button type="button" class="btn btn-dark btn-sm" id="cf-nao">'+esc(opt.nao||'Cancelar')+'</button></div></div>';
+    const fim=v=>{document.removeEventListener('keydown',tecla,true);bd.remove();try{if(antes&&antes.isConnected)antes.focus();}catch(e){}res(v);};
+    const foc=()=>[...bd.querySelectorAll('button')];
+    const tecla=e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();fim(null);}
+      else if(e.key==='Tab'||e.key==='ArrowDown'||e.key==='ArrowUp'){const L=foc();const i=L.indexOf(document.activeElement);e.preventDefault();const d=(e.key==='ArrowUp'||(e.key==='Tab'&&e.shiftKey))?-1:1;L[(i+d+L.length)%L.length].focus();}};
+    bd.addEventListener('click',e=>{if(e.target===bd)fim(null);});
+    document.body.appendChild(bd);bd.querySelector('#cf-nao').onclick=()=>fim(null);
+    bd.querySelectorAll('.cf-op').forEach(b=>{b.onclick=()=>fim(opcoes[Number(b.dataset.i)].v);});
+    document.addEventListener('keydown',tecla,true);(bd.querySelector('.cf-op')||bd.querySelector('#cf-nao')).focus();});}
+// ao passar a Carteira ou a Retail: false = não grava; {ficha:id} = marcar essa ficha como a vendida depois de gravar
+async function fichaAoFechar(){
+  const antes=S.selected?S.selected.status:null,para=S.form.status;
+  if(!(para==='Carteira'||para==='Retail')||antes===para||S.form.venda_direta||S.form.automatricula)return{};
+  let L=[];if(S.selected){try{L=await fmListaFichas(S.selected.id);}catch(e){L=null;}}
+  const ativas=(L||[]).filter(f=>f.estado!=='arquivada');
+  if(para==='Carteira'&&['MN','MD'].includes(S.form.type)&&L!==null&&!ativas.length&&!(!S.selected&&S.fmRascunho)){
+    setState({error:'Sem ficha de margem, uma mota nova ou demo não passa a Carteira. Faz a ficha no botão «Ficha de margem» deste negócio e grava outra vez.',loading:false});return false;}
+  if(!ativas.length||ativas.some(f=>f.estado==='vendida'))return{};
+  if(ativas.length===1)return{ficha:ativas[0].id};
+  if(para!=='Carteira')return{};
+  const v=await escolherOpcao('Este negócio tem '+ativas.length+' fichas de margem. Qual foi a mota vendida?',ativas.map((f,i)=>({v:f.id,lb:fmFichaNome(f,i),sub:fmFichaPreco(f)})));
+  return v==null?false:{ficha:v};}
+async function fichaMarcarVendidaAuto(fid,negId){
+  try{await supabaseApi('POST','/rpc/ficha_marcar_vendida',{p_id:Number(fid)});if(negId!=null)S.fichasVend=Object.assign({},S.fichasVend||{},{[String(negId)]:true});}
+  catch(e){toast('O negócio ficou gravado, mas não consegui marcar a ficha da mota vendida: '+erroTexto(e),'erro');}}
 async function saveRecord(){
   if(!S.selected){
     if(!S.form.status){setState({error:'Escolhe em que fase está o negócio (Quente, Morno, Frio, Carteira ou Retail).',loading:false});return;}
@@ -5106,7 +5236,9 @@ async function saveRecord(){
   if((S.form.type==='MU'||S.form.type==='MD')&&!S.form.stock_id&&(S.form.status==='Retail'||S.form.status==='Carteira')){
     if(!await confirmar('Esta venda de usada/demo não tem a Mota do Stock associada.\n\nSem isso não consegues ver a margem real nem o stock fica marcado como vendido.\n\nGravar mesmo assim?'))return;
   }
-  setState({loading:true,error:''});try{const b={...S.form};['neg','dmat','col_298','alert_date','recontactar_em','data_nascimento','decl_circ','sinal_forma','retoma_cor','retoma_data_matricula'].forEach(k=>{if(!b[k])b[k]=null});['sinal','retoma_valor','retoma_valor_comercio'].forEach(k=>{if(k in b){const n=numPT(String(b[k]==null?'':b[k]));b[k]=n==null?null:n;}});['retoma_ano','retoma_kms'].forEach(k=>{if(k in b){const t=String(b[k]==null?'':b[k]).replace(/\D/g,'');b[k]=t?parseInt(t,10):null;}});negColunasNovas(b);if(b.recontactar_em==null||(S.selected&&String(b.recontactar_em)===String(S.selected.recontactar_em||'')))delete b.recontactar_em;['qor','xev','bev','m_flag','csc','cme'].forEach(k=>{b[k]=b[k]?parseInt(b[k]):null});b.pvp=b.pvp?parseFloat(b.pvp):null;b.stock_id=b.stock_id?parseInt(b.stock_id):null;if(!isAdmin())delete b.obs_gestor;delete b.id;delete b.created_at;delete b.updated_at;delete b.updated_by;if(!S.selected&&isAdmin())b.vendedor_id=encNovoVendDe(S.form)||S.viewVendedor||S.me.id;S._avisoMes='';if(!isAdmin()&&b.status==='Carteira'){const _o=S.selected;if(!_o||_o.status!=='Carteira')S._avisoMes='Mês de entrega enviado ao chefe para validar';else if(_o.mes1&&_o.mes1_validado===true&&(b.mes1||'')!==(_o.mes1||''))S._avisoMes='Pedido enviado ao chefe: mudar para '+mrTxt(b.mes1)+' (até lá conta '+mrTxt(_o.mes1)+')';}if(S.selected){if(b.status!==S.selected.status)b.status_updated_at=new Date().toISOString();delete b.status_updated_at_keep;await supabaseApi('PATCH',`/baviera_control?id=eq.${S.selected.id}`,b)}else{b.status_updated_at=new Date().toISOString();const _novo=await supabaseApi('POST','/baviera_control',b);if(S.fmRascunho&&Array.isArray(_novo)&&_novo[0]&&_novo[0].id)await fmLigarAoNovo(_novo[0].id);}await syncStockComNegocio(b.stock_id,b.status);await loadRecords();setState({screen:'list',selected:null,loading:false});if(S._avisoMes){const _t=S._avisoMes;S._avisoMes='';setTimeout(()=>toast(_t),450);}}catch(e){setState({error:'Erro ao guardar: '+erroTexto(e),loading:false})}}
+  // Ficha de margem: mota nova ou demo só passa a Carteira com ficha; ao fechar fica marcada a ficha da mota vendida
+  const _fv=await fichaAoFechar();if(_fv===false)return;
+  setState({loading:true,error:''});try{const b={...S.form};['neg','dmat','col_298','alert_date','recontactar_em','data_nascimento','decl_circ','sinal_forma','retoma_cor','retoma_data_matricula'].forEach(k=>{if(!b[k])b[k]=null});['sinal','retoma_valor','retoma_valor_comercio'].forEach(k=>{if(k in b){const n=numPT(String(b[k]==null?'':b[k]));b[k]=n==null?null:n;}});['retoma_ano','retoma_kms'].forEach(k=>{if(k in b){const t=String(b[k]==null?'':b[k]).replace(/\D/g,'');b[k]=t?parseInt(t,10):null;}});negColunasNovas(b);if(b.recontactar_em==null||(S.selected&&String(b.recontactar_em)===String(S.selected.recontactar_em||'')))delete b.recontactar_em;['qor','xev','bev','m_flag','csc','cme'].forEach(k=>{b[k]=b[k]?parseInt(b[k]):null});b.pvp=b.pvp?parseFloat(b.pvp):null;b.stock_id=b.stock_id?parseInt(b.stock_id):null;if(!isAdmin())delete b.obs_gestor;delete b.id;delete b.created_at;delete b.updated_at;delete b.updated_by;if(!S.selected&&isAdmin())b.vendedor_id=encNovoVendDe(S.form)||S.viewVendedor||S.me.id;S._avisoMes='';if(!isAdmin()&&b.status==='Carteira'){const _o=S.selected;if(!_o||_o.status!=='Carteira')S._avisoMes='Mês de entrega enviado ao chefe para validar';else if(_o.mes1&&_o.mes1_validado===true&&(b.mes1||'')!==(_o.mes1||''))S._avisoMes='Pedido enviado ao chefe: mudar para '+mrTxt(b.mes1)+' (até lá conta '+mrTxt(_o.mes1)+')';}if(S.selected){if(b.status!==S.selected.status)b.status_updated_at=new Date().toISOString();delete b.status_updated_at_keep;await supabaseApi('PATCH',`/baviera_control?id=eq.${S.selected.id}`,b)}else{b.status_updated_at=new Date().toISOString();const _novo=await supabaseApi('POST','/baviera_control',b);if(S.fmRascunho&&Array.isArray(_novo)&&_novo[0]&&_novo[0].id)await fmLigarAoNovo(_novo[0].id);}await syncStockComNegocio(b.stock_id,b.status);if(_fv&&_fv.ficha!=null)await fichaMarcarVendidaAuto(_fv.ficha,S.selected&&S.selected.id);await loadRecords();setState({screen:'list',selected:null,loading:false});if(S._avisoMes){const _t=S._avisoMes;S._avisoMes='';setTimeout(()=>toast(_t),450);}}catch(e){setState({error:'Erro ao guardar: '+erroTexto(e),loading:false})}}
 async function syncStockComNegocio(stockId,status){
   // Estado da mota acompanha o negocio: funil=A negociar; carteira/retail=Vendida; perdido=Disponivel
   if(!stockId)return;
@@ -5214,16 +5346,7 @@ function calcAlerts(records){
   const funilGroups={Quente:[],Morno:[],Frio:[]};
   records.forEach(r=>{ if(FUNIL.includes(r.status)&&funilAtrasado(r))funilGroups[r.status].push(r); });
   Object.entries(funilGroups).forEach(([s,recs])=>{if(recs.length)alerts.push({id:'funil_'+s,icon:'🟡',label:`${recs.length} ${s.toLowerCase()} para contactar`,count:recs.length,ids:recs.map(r=>r.id)})});
-  const cartAlert=records.filter(r=>r.status==='Carteira'&&!r.enc&&r.type!=='MU'&&!dispensaEncomenda(r));
-  if(cartAlert.length)alerts.push({id:'cart',icon:'🔵',label:`${cartAlert.length} carteira${cartAlert.length>1?'s':''} sem encomenda`,count:cartAlert.length,ids:cartAlert.map(r=>r.id)});
   const nowD=new Date();const nowYM=nowD.getFullYear()*12+nowD.getMonth();
-  const cmeAlert=records.filter(r=>{
-    if(!r.bev||r.cme||!r.mes1)return false;
-    const p=r.mes1.split('/').map(Number);if(p.length!==2||p[0]<2025)return false;
-    const targetYM=(p[0]*12)+(p[1]-1);const alertYM=targetYM-2;
-    return nowYM>=alertYM;
-  });
-  if(cmeAlert.length)alerts.push({id:'cme',icon:'🟠',label:`${cmeAlert.length} CME a tratar (2 meses)`,count:cmeAlert.length,ids:cmeAlert.map(r=>r.id)});
   const bizAlert=records.filter(r=>{
     if(r.biz||!r.mes1)return false;
     if(r.status!=='Carteira'&&r.status!=='Retail')return false;
@@ -5235,9 +5358,6 @@ function calcAlerts(records){
   const ymAtual=`${nowD.getFullYear()}/${String(nowD.getMonth()+1).padStart(2,'0')}`;
   const entregaRisco=records.filter(r=>r.status==='Carteira'&&r.type!=='MU'&&!r.enc&&r.mes1&&r.mes1<=ymAtual&&!dispensaEncomenda(r));
   if(entregaRisco.length)alerts.push({id:'entrega_risco',icon:'🚨',label:`${entregaRisco.length} entrega${entregaRisco.length>1?'s':''} deste mês sem encomenda`,count:entregaRisco.length,ids:entregaRisco.map(r=>r.id)});
-  // PREDITIVO: entrega prevista para este mês sem chassis atribuído (com matrícula já não faz sentido)
-  const semChassis=records.filter(r=>r.status==='Carteira'&&!r.chas&&!r.mat&&r.mes1&&r.mes1<=ymAtual);
-  if(semChassis.length)alerts.push({id:'sem_chassis',icon:'🟤',label:`${semChassis.length} entrega${semChassis.length>1?'s':''} deste mês sem chassis`,count:semChassis.length,ids:semChassis.map(r=>r.id)});
   // Carteira com entrega já ultrapassada (mês anterior) e ainda por entregar
   const atrasadas=records.filter(r=>r.status==='Carteira'&&r.mes1&&r.mes1<ymAtual);
   if(atrasadas.length)alerts.push({id:'atrasadas',icon:'⏰',label:`${atrasadas.length} carteira${atrasadas.length>1?'s':''} com entrega em atraso`,count:atrasadas.length,ids:atrasadas.map(r=>r.id)});
@@ -5247,11 +5367,9 @@ function calcAlerts(records){
   // FICHAS: negócio fechado com várias fichas e nenhuma marcada como a vendida
   if(S.fichasN){const esc2=records.filter(r=>(r.status==='Carteira'||r.status==='Retail')&&((S.fichasN[String(r.id)]||0)>1)&&!(S.fichasVend||{})[String(r.id)]);
     if(esc2.length)alerts.push({id:'fichas_escolher',icon:'🧮',label:`${esc2.length} negócio${esc2.length>1?'s':''} fechado${esc2.length>1?'s':''} com várias fichas: escolhe a vendida`,count:esc2.length,ids:esc2.map(r=>r.id)});}
-  // ENCOMENDAS BMW: mota reservada num negócio que ninguém mexe há mais de 7 dias
-  const encTxt=r=>String(r.enc||'').trim();
-  const encParada=records.filter(r=>ENC_NEG.includes(r.status)&&encTxt(r)&&r.updated_at&&(now-new Date(r.updated_at).getTime())>ENC_PARADA_DIAS*day);
-  if(encParada.length)alerts.push({id:'enc_parada',icon:'🏭',label:`${encParada.length} mota${encParada.length>1?'s':''} em negociação sem mexer há +${ENC_PARADA_DIAS} dias`,count:encParada.length,ids:encParada.map(r=>r.id)});
+  // (revisão 2026-11-26: saíram «carteira sem encomenda», «sem chassis», «mota parada +7 dias» e o CME, que dependia do campo BEV vazio)
   // a mesma encomenda em mais de um negócio ativo
+  const encTxt=r=>String(r.enc||'').trim();
   const porEnc={};records.filter(r=>['Quente','Morno','Carteira'].includes(r.status)&&encTxt(r)).forEach(r=>{(porEnc[encTxt(r)]=porEnc[encTxt(r)]||[]).push(r);});
   const encRep=Object.values(porEnc).filter(L=>L.length>1).flat();
   if(encRep.length)alerts.push({id:'enc_repetida',icon:'⛔',label:`${encRep.length} negócios com a mesma encomenda`,count:encRep.length,ids:encRep.map(r=>r.id)});
@@ -5361,19 +5479,6 @@ function renderMinhasEntregas(){
   });
   const prontas=lista.filter(r=>entFaltas(r).length===0).length;
   const hoje=new Date().toISOString().slice(0,10);
-  const item=r=>{
-    const f=entFaltas(r);const dt=dtDe(r);
-    const atras=dt&&dt<hoje;
-    return`<div class="ve-card ${f.length?'':'ve-ok'}" data-action="open-detail" data-id="${r.id}">
-      <div class="ve-top">
-        <div class="ve-cli"><b>${esc(r.id_cliente||'—')}</b><span class="v-tipo">${esc(r.type||'')}</span></div>
-        <div class="ve-dt ${atras?'atras':''}">${dt?(atras?'⚠️ ':'📅 ')+esc(dt.split('-').reverse().join('/')):'<span class="ve-sem">sem data</span>'}</div>
-      </div>
-      <div class="ve-mod">${esc(r.model||'')} ${esc(r.version||'')}${r.mat?` · <b>${esc(r.mat)}</b>`:''}</div>
-      ${f.length?`<div class="ve-falta"><span class="ve-falta-t">Falta</span>${f.map(x=>`<span class="ve-chip">${esc(x)}</span>`).join('')}</div>`
-        :'<div class="ve-pronta">✓ Tudo pronto para entregar</div>'}
-    </div>`;
-  };
   const chips=meses.slice().reverse().map(m=>`<button class="ve-mes ${m===sel?'on':''}" data-action="v-mes-chip" data-m="${m}">${esc(m)}</button>`).join('');
   return`
   <div class="app-layout"><div class="main-panel" style="width:100%">
@@ -5385,8 +5490,8 @@ function renderMinhasEntregas(){
   <div class="content"><div style="padding:12px 0">
     ${meses.length?`<div class="ve-meses">${chips}</div>`:''}
     <div class="ve-resumo"><b>${esc(ymCurto(sel))}</b> · <b style="color:var(--blue)">${doMes.length}</b> por entregar${prontas?` · <b style="color:var(--green)">${prontas}</b> prontas`:''} · <b style="color:var(--text3)">${entreguesMes}</b> já entregues</div>
-    ${doMes.length===0?'<div class="gpp-empty">Nada por entregar neste mês.</div>':`<div class="ve-list">${lista.map(item).join('')}</div>`}
-    <div class="gpp-pend-desc" style="margin:0 16px 10px">Ordenado pela data de entrega mais próxima. "Falta" é o que trava a entrega — pede ao cliente o que estiver em falta do lado dele.</div>
+    ${doMes.length===0?'<div class="gpp-empty">Nada por entregar neste mês.</div>':`<div class="en-list ve-en-list">${lista.map(r=>entCartaoHTML(r,true)).join('')}</div>`}
+    <div class="gpp-pend-desc" style="margin:0 16px 10px">A checklist de entrega é tua: marca cada item quando estiver feito. Ordenado pela data de entrega mais próxima; carrega no nome para abrir o negócio.</div>
     ${vGraficoEntregas(sel)}
   </div></div></div></div>`;
 }
@@ -6742,10 +6847,11 @@ function vEotEspera(){const s=new Set(eotMeus().filter(eotPrecisaAcao).map(x=>St
 function vPendentes(){const al=calcAlerts(recsInContext());const eot=eotMeus().filter(eotPrecisaAcao).length;
   const recont=recontLista().length;
   const notif=isAdmin()?0:notifLista().length;
-  const grupos=al.filter(a=>!String(a.id).startsWith('funil_')).length+((eot||notif)?1:0)+(recont?1:0);
+  const incompl=negIncompletos(recsInContext()).length,entFalta=vEntregasPendentes(recsInContext()).filter(r=>entFaltas(r).length).length;
+  const grupos=al.filter(a=>!String(a.id).startsWith('funil_')).length+((eot||notif)?1:0)+(recont?1:0)+(incompl?1:0)+(entFalta?1:0);
   const contactar=recsInContext().filter(r=>FUNIL.includes(r.status)&&funilAtrasado(r)).length;
   const atras=contactar+al.filter(a=>ALERTAS_ATRASO.includes(String(a.id))).reduce((n,a)=>n+(a.count||0),0);
-  return{al,eot,recont,notif,grupos,contactar,atras,total:grupos+contactar};}
+  return{al,eot,recont,notif,incompl,entFalta,grupos,contactar,atras,total:grupos+contactar};}
 function vEntregasSemana(){const h=new Date();h.setHours(0,0,0,0);const lim=new Date(h);lim.setDate(lim.getDate()+7);
   return recsInContext().filter(r=>{if(r.status!=='Carteira')return false;const e=(typeof entOf==='function'?entOf(r.id):null)||{};if(!e.data_entrega)return false;const d=new Date(String(e.data_entrega).slice(0,10)+'T00:00:00');return d>=h&&d<=lim;});}
 function vDiasDesde(iso){if(!iso)return null;return Math.floor((Date.now()-new Date(iso).getTime())/864e5);}
@@ -6760,6 +6866,17 @@ function vhResumoHTML(nC,nEot,nE){
   if(!partes.length)return'<div class="vh-resumo">Hoje não há clientes por contactar nem EOTs à tua espera.</div>';
   return`<div class="vh-resumo">Hoje: ${partes.length===1?partes[0]:partes.slice(0,-1).join(', ')+' e '+partes[partes.length-1]}.</div>`;
 }
+// Hoje: Carteiras com dados de cliente em falta (o acordo e a folha precisam deles)
+function vhIncompletosHTML(recs){const L=negIncompletos(recs);
+  const row=({r,f})=>`<div class="vh-row vh-falta" data-action="open-detail" data-id="${r.id}" role="button" tabindex="0">
+    <span class="vh-txt"><b>${esc(r.id_cliente||'—')}</b> <small>${esc([r.model,r.version].filter(Boolean).join(' '))}</small>
+    <span class="vh-falta-l">Falta: ${f.map(x=>`<span class="ve-chip${/inválido/.test(x)?' ve-chip-red':''}">${esc(x)}</span>`).join('')}</span></span><span class="vh-chev">${ico('chevr','ic-sm')}</span></div>`;
+  return`<div class="vh-sec"><span>Dados em falta</span>${L.length?`<span class="vh-cnt">${L.length}</span>`:''}</div>
+    <div class="vh-box">${L.length?L.map(row).join(''):'<div class="vh-ok">✓ As tuas Carteiras têm os dados do cliente completos.</div>'}</div>`;}
+// Hoje: checklist das entregas deste mês, do próximo e das atrasadas (o vendedor é o responsável)
+function vhEntregasHTML(recs){const L=vEntregasPendentes(recs);const falta=L.filter(r=>entFaltas(r).length);
+  return`<div class="vh-sec"><span>Entregas</span>${falta.length?`<span class="vh-cnt">${falta.length}</span>`:''}</div>
+    <div class="vh-box vh-ent">${L.length?`<div class="en-list">${L.map(r=>entCartaoHTML(r,true)).join('')}</div>`:'<div class="vh-ok">✓ Sem entregas previstas para este mês nem para o próximo.</div>'}</div>`;}
 function vhNovoVals(){const N=Object.assign({nome:'',tel:'',modelo:'',fase:'Morno'},S.vhNovo||{});
   ['nome','tel','modelo'].forEach(k=>{const el=document.querySelector('[data-vhnovo="'+k+'"]');if(el)N[k]=el.value;});return N;}
 function vhNovoHTML(){
@@ -6881,6 +6998,8 @@ function vHoje(){
     ${comsRecentesHTML('Comentários novos nos teus negócios')}
     <div class="vh-sec"><span>A tratar</span>${tRows.length?`<span class="vh-cnt">${tRows.length}</span>`:''}</div>
     <div class="vh-box">${tRows.length?tRows.join(''):'<div class="vh-ok">✓ Nada pendente nos teus negócios.</div>'}</div>
+    ${vhIncompletosHTML(recs)}
+    ${vhEntregasHTML(recs)}
     <div class="vh-sec"><span>Para contactar hoje</span>${contactar.length?`<span class="vh-cnt red">${contactar.length}</span>`:''}</div>
     <div class="vh-box">${contactar.length?contactar.slice(0,12).map(cRow).join('')+(contactar.length>12?`<div class="vh-mais" data-action="sidebar-filter" data-status="Funil">Ver o funil todo (${contactar.length-12} mais) ›</div>`:''):'<div class="vh-ok">✓ Ninguém em atraso no funil.</div>'}</div>
   </div>`;
@@ -7190,6 +7309,66 @@ function entFaltas(r){
   if(entFsAplica(r)&&!e.fs_tratado)f.push('FS por tratar');
   return f;
 }
+// ---- Dados em falta nas Carteiras (revisão 2026-11-26) ----
+// NIF: '' vazio · 'ok' português válido · 'invalido' (9 algarismos que não batem certo, ou só algarismos sem serem 9) · 'estrangeiro' (tem letras)
+function nifEstado(v){let s=String(v==null?'':v).replace(/[\s.\-]/g,'').toUpperCase();if(!s)return'';
+  if(/^PT\d+$/.test(s))s=s.slice(2);
+  if(/[A-Z]/.test(s))return'estrangeiro';
+  if(!/^\d{9}$/.test(s)||s[0]==='0')return'invalido';
+  let t=0;for(let i=0;i<8;i++)t+=Number(s[i])*(9-i);const r=t%11;const cd=r<2?0:11-r;
+  return cd===Number(s[8])?'ok':'invalido';}
+function nifDicaHTML(v,cls){const e=nifEstado(v);const c='nif-dica'+(cls?' '+cls:'');
+  if(e==='invalido')return`<div class="${c} erro" id="nif-dica" role="status">NIF inválido: confirma os 9 algarismos. O negócio grava na mesma, mas fica nos dados em falta.</div>`;
+  if(e==='estrangeiro')return`<div class="${c}" id="nif-dica" role="status">NIF estrangeiro: não é validado.</div>`;
+  return`<div class="${c}" id="nif-dica" role="status" hidden></div>`;}
+function negTxt(v){return String(v==null?'':v).trim();}
+// o que falta num negócio para o acordo e a folha saírem completos
+function negFaltas(r){const f=[];if(!r)return f;
+  if(!negTxt(r.contacto))f.push('telefone');
+  const n=nifEstado(r.nif);if(!n)f.push('NIF');else if(n==='invalido')f.push('NIF inválido');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(negTxt(r.email)))f.push('email');
+  if(!negTxt(r.morada))f.push('morada');
+  if(!negTxt(r.local))f.push('código postal');
+  if(r.retoma==='Sim'&&(r.retoma_valor==null||r.retoma_valor===''))f.push('valor da retoma');
+  return f;}
+// só Carteira, sem vendas diretas a comerciante nem automatrículas
+function negIncompletos(recs){return (recs||[]).filter(r=>r.status==='Carteira'&&!r.venda_direta&&!r.automatricula).map(r=>({r,f:negFaltas(r)})).filter(x=>x.f.length);}
+// entregas que o vendedor acompanha: Carteiras com entrega prevista este mês, no próximo ou já em atraso
+function vEntregasPendentes(recs){const ym=curYM();const[y,m]=ym.split('/').map(Number);const prox=(m===12?(y+1)+'/01':y+'/'+String(m+1).padStart(2,'0'));
+  return (recs||[]).filter(r=>r.status==='Carteira'&&!r.venda_direta&&!r.automatricula&&r.mes1&&r.mes1<=prox)
+    .sort((a,b)=>String(a.mes1||'').localeCompare(String(b.mes1||''))||String(a.id_cliente||'').localeCompare(String(b.id_cliente||''),'pt'));}
+// cartão da checklist de entrega; vend=true para o vendedor (sem as notas do chefe)
+function entCartaoHTML(r,vend){
+  const p=entProgresso(r);const e=entOf(r.id)||{};const d=e.docs||{};const docs=entDocsFor(r);const dOk=docs.filter(x=>d[x]).length;
+  const chip=(on,label,action,extra)=>`<button type="button" class="en-chip ${on?'on':''}" data-action="${action}" ${extra} aria-pressed="${on?'true':'false'}">${on?'✓':'○'} ${label}</button>`;
+  const cor=p.pct===100?'var(--green)':(p.pct>=50?'var(--amber)':'var(--red)');
+  const biz=r.biz&&String(r.biz).trim();
+  return`<div class="en-card ${p.pct===100?'en-ok':''}">
+    <div class="en-head">
+      <div class="en-tit gpp-lclick" data-action="${vend?'open-detail':'open-record-from-dash'}" data-id="${r.id}"><b>${esc(r.id_cliente||'—')}</b> · ${esc(r.model||'')} ${esc(r.version||'')} <span class="gpp-tipo-badge">${esc(r.type||'?')}</span> ${r.mat&&String(r.mat).trim()?`<span class="en-mat">${esc(r.mat)}</span>`:'<span class="en-mat en-mat-sem">sem matrícula</span>'}${vend&&r.mes1?` <span class="en-mes">entrega ${esc(mrTxt(r.mes1))}</span>`:''}</div>
+      ${vend?'':`<div class="en-vend">${vendTag(r.vendedor_id)}</div>`}
+      <div class="en-prog"><div class="en-bar"><div class="en-fill" style="width:${p.pct}%;background:${cor}"></div></div><span style="color:${cor}">${p.ok}/${p.tot}</span></div>
+    </div>
+    <div class="en-chips">
+      <span class="en-chip en-auto ${biz?'on':'falta'}" title="Lido do campo Bizagi do negócio">${biz?'✓ Bizagi '+esc(biz):'✕ Bizagi em falta'}</span>
+      ${!entMatAplica(r)?`<span class="en-chip en-na" title="Demo e usada já estão matriculadas">Pedido matrícula n/a (${esc(r.type||'')})</span>`:(r.dmat?`<span class="en-chip en-auto on" title="Tem Data de Matrícula no negócio">✓ Matriculada ${esc(String(r.dmat).slice(0,10))}</span>`:chip(e.pedido_matricula,'Pedido de matrícula feito','ent-toggle',`data-id="${r.id}" data-k="pedido_matricula"`))}
+      ${chip(e.prep_pedida,'Preparação pedida','ent-toggle',`data-id="${r.id}" data-k="prep_pedida"`)}
+      ${chip(e.pecas_precisa,'Precisa peças','ent-toggle',`data-id="${r.id}" data-k="pecas_precisa"`)}
+      ${e.pecas_precisa?chip(e.pecas_chegaram,'Peças chegaram','ent-toggle',`data-id="${r.id}" data-k="pecas_chegaram"`):''}
+      ${chip(e.pago,'Cliente pagou','ent-toggle',`data-id="${r.id}" data-k="pago"`)}
+      ${entFsAplica(r)?chip(e.fs_tratado,'FS tratado','ent-toggle',`data-id="${r.id}" data-k="fs_tratado"`):`<span class="en-chip en-na" title="Pronto pagamento — FS não se aplica">FS n/a${r.fin?' ('+esc(r.fin)+')':''}</span>`}
+    </div>
+    <div class="en-docs"><span class="en-lbl ${dOk===docs.length?'ok':''}">Documentos ${dOk}/${docs.length}</span>
+      ${docs.map(x=>chip(d[x],esc(x),'ent-doc',`data-id="${r.id}" data-doc="${esc(x)}"`)).join('')}
+    </div>
+    <div class="en-inputs">
+      ${vend?'':`<input class="norma-inp" data-ent-id="${r.id}" data-ent-f="docs_obs" value="${esc(e.docs_obs||'')}" placeholder="Documentos em falta / notas" aria-label="Documentos em falta / notas de ${esc(r.id_cliente||'')}">`}
+      ${e.pecas_precisa?`<input class="norma-inp" data-ent-id="${r.id}" data-ent-f="pecas_obs" value="${esc(e.pecas_obs||'')}" placeholder="Que peças?" aria-label="Que peças para ${esc(r.id_cliente||'')}">`:''}
+      <label class="en-dt">Entrega <input class="norma-inp" type="date" data-ent-id="${r.id}" data-ent-f="data_entrega" value="${e.data_entrega?esc(String(e.data_entrega).slice(0,10)):''}"></label>
+      ${vend?'':`<input class="norma-inp en-obs" data-ent-id="${r.id}" data-ent-f="obs" value="${esc(e.obs||'')}" placeholder="Observações" aria-label="Observações da entrega de ${esc(r.id_cliente||'')}">`}
+    </div>
+  </div>`;
+}
 async function loadEntregas(){
   try{const d=await supabaseApi('GET',isAdmin()?'/entregas?select=*':'/entregas_publico?select=*');const m={};(d||[]).forEach(x=>{m[String(x.negocio_id)]=x;});S.entregas=m;S.entregasErr='';}
   catch(e){S.entregas={};S.entregasErr=(e&&e.message)||'erro';}
@@ -7199,6 +7378,12 @@ async function saveEntrega(id,patch){
   const body=Object.assign({},patch,{updated_at:new Date().toISOString()});
   const full=Object.assign({negocio_id:Number(id),docs:{}},ex||{},body);
   S.entregas=Object.assign({},S.entregas||{});S.entregas[id]=full;render();
+  if(!isAdmin()){ // o vendedor do negócio marca a checklist pela função (sem tocar nas notas do chefe)
+    const p={};Object.keys(patch).forEach(k=>{p[k]=patch[k];});
+    try{await supabaseApi('POST','/rpc/entrega_vendedor',{p_negocio:Number(id),p_patch:p});}
+    catch(e){avisoErro(/entrega_vendedor|PGRST202|schema cache/i.test(String(e&&e.message))?'Ainda não dá para marcar a entrega: falta correr o SQL "2026-11-26_entregas_vendedor_escala" no Supabase.':'Não consegui gravar a entrega: '+erroTexto(e));await loadEntregas();render();}
+    return;
+  }
   try{
     if(ex){
       const r=await supabaseApi('PATCH',`/entregas?negocio_id=eq.${id}`,body);
@@ -9875,7 +10060,7 @@ function qfChip(k,v,lb){return`<button class="qf-chip ${String(S.form[k]||'')===
 // Essencial: o que está sempre à vista ao editar um negócio; o resto fica nos grupos (fechados)
 const NEG_ESSENCIAL=['status','motivo_perda','recontactar_em','alert_date','id_cliente','contacto','nif','email','type','model','version','origin','lead_webapp','pvp','fin','retoma','retoma_modelo','retoma_mat','retoma_ano','retoma_kms','retoma_cor','retoma_data_matricula','retoma_valor','retoma_valor_comercio','sinal','sinal_forma'];
 function campoVisivel(fd){if(NEG_OPCIONAIS.includes(fd.k)&&!negTemColuna(fd.k))return false;const F=S.form||{};
-  return !fd.show||(fd.show==='funil'&&FUNIL.includes(F.status))||(fd.show==='retoma'&&F.retoma==='Sim')||(fd.show==='perdido'&&F.status==='Perdido')||(fd.show==='recont'&&(F.status==='Perdido'||F.status==='Adiado'))||(fd.show==='garantia'&&F.gar==='Sim')||(fd.show==='stockpick'&&(F.type==='MD'||F.type==='MU'))||(fd.show==='lead'&&F.origin==='Lead')||(fd.show==='declcirc'&&F.type==='MN'&&!!F.dmat);}
+  return !fd.show||(fd.show==='campanha'&&!!negTxt(F.campanha))||(fd.show==='funil'&&FUNIL.includes(F.status))||(fd.show==='retoma'&&F.retoma==='Sim')||(fd.show==='perdido'&&F.status==='Perdido')||(fd.show==='recont'&&(F.status==='Perdido'||F.status==='Adiado'))||(fd.show==='garantia'&&F.gar==='Sim')||(fd.show==='stockpick'&&(F.type==='MD'||F.type==='MU'))||(fd.show==='lead'&&F.origin==='Lead')||(fd.show==='declcirc'&&F.type==='MN'&&!!F.dmat);}
 function campoControlo(fd){
   return fd.t==='vendedores'?renderVendedorSelect(fd.k):
     (fd.k==='obs_gestor'&&!isAdmin())?`<div class="obs-chefe-ro">${S.form.obs_gestor?esc(S.form.obs_gestor):'<span style="color:var(--text3)">— sem nota —</span>'}</div>`:
@@ -9886,7 +10071,7 @@ function campoControlo(fd){
     fd.k==='enc'?encCampoHTML():
     fd.t==='date'?`<input class="field-input" type="date" data-field="${fd.k}" value="${esc(S.form[fd.k]||'')}">`:
     fd.t==='number'?`<input class="field-input" type="number" data-field="${fd.k}" value="${esc(S.form[fd.k]||'')}" placeholder="10" min="1" max="365">`:
-    `<input class="field-input" type="${fd.k==='contacto'?'tel':'text'}" data-field="${fd.k}" value="${esc(S.form[fd.k]||'')}">`;}
+    `<input class="field-input" type="${fd.k==='contacto'?'tel':'text'}" data-field="${fd.k}" value="${esc(S.form[fd.k]||'')}">${fd.k==='nif'?nifDicaHTML(S.form.nif):''}`;}
 function campoHTML(fd){return`<div class="field"><label class="field-label">${esc(fd.l)}${fd.show==='funil'?' (padrão: 10)':''}</label>${campoControlo(fd)}</div>`;}
 function renderEditRapido(){
   const F=S.form||{};const st=F.status||'';const fun=FUNIL.includes(st);const cart=st==='Carteira'||st==='Retail';const usada=F.type==='MD'||F.type==='MU';
@@ -9911,7 +10096,7 @@ function renderEditRapido(){
       ${cart?inp('mes1','Mês de entrega','', 'month'):''}${cart&&!isAdmin()?'<div class="mr-nota qf-w2">O chefe valida o mês de entrega antes de entrar na previsão.</div>':''}
       ${inp('pvp','PVP (€)','Ex: 21500','number')}
       ${qfCampo('fin')}
-      ${inp('nif','NIF','9 algarismos')}
+      ${inp('nif','NIF','9 algarismos')}${nifDicaHTML(F.nif,'qf-w2')}
       ${inp('email','E-mail','','email')}
       ${st==='Retail'?inp('col_298','Data do 298','', 'date'):''}
       ${usada?`<div class="qf-f qf-w2"><span>Mota do stock</span>${renderStockPick()}</div>`:''}
@@ -9991,7 +10176,8 @@ function renderEscala(){
     ${admin&&linhasDisp.length>1?`<div class="dash-linha-filter" style="padding-top:12px">
       ${linhasDisp.map(l=>`<button class="dlf-btn ${linhaAtiva===l?'active':''}" data-action="escala-linha" data-linha="${l}">${LINHA_ICONS[l]||''} ${esc(linhaLabel(l))}</button>`).join('')}
     </div>`:''}
-    ${admin?`<div class="esc-note">Escala <b>${esc(linhaLabel(linhaAtiva))}</b> · Toca numa célula para pôr ou tirar um vendedor desse estado.</div>`:`<div class="esc-note">Escala <b>${esc(linhaLabel(linhaAtiva))}</b> · Vista de consulta.</div>`}
+    ${(()=>{const pode=admin||escalaVendPode(escalaMesRef());return`<div class="esc-note">Escala <b>${esc(linhaLabel(linhaAtiva))}</b> · ${pode?'Toca numa célula para pôr ou tirar um vendedor desse estado.':'Vista de consulta.'}</div>`;})()}
+    ${escalaEstadoHTML(linhaAtiva,escalaMesRef())}
     ${vendedores.length===0&&S.team.length>0?`<div class="esc-note" style="background:var(--red-bg);color:var(--red)">Não há vendedores na linha "${esc(linhaLabel(linhaAtiva))}".</div>`:''}
     ${S.team.length===0?`<div class="esc-note" style="background:var(--amber-bg)">A carregar equipa… se persistir, recarrega a página.</div>`:''}
     <div class="esc-wrap" tabindex="0" role="region" aria-label="Escala do mês">
@@ -10003,9 +10189,9 @@ function renderEscala(){
         <tbody>
           ${dias.map(d=>{
             if(d.dom)return`<tr class="esc-dom"><td class="esc-sem">${d.sem}</td><td class="esc-data">${String(d.d).padStart(2,'0')}</td><td class="esc-dia">${d.dia}</td><td colspan="${ESTADOS_ESCALA.length}" class="esc-encerrado">ENCERRADO</td></tr>`;
-            const grp=porDiaEstado(d.iso);
+            const grp=porDiaEstado(d.iso);const podeEd=escalaPodeEditar(d.iso);
             return`<tr><td class="esc-sem">${d.sem}</td><td class="esc-data">${String(d.d).padStart(2,'0')}</td><td class="esc-dia">${d.dia}</td>
-              ${ESTADOS_ESCALA.map(s=>`<td class="esc-gc esc-${s}-bg ${admin?'esc-editable':''}" ${admin?`data-action="escala-open" data-dia="${d.iso}" data-estado="${s}"`:''}>${grp[s].map(v=>`<span class="esc-chip">${esc(vendIniciais(v))}</span>`).join('')}</td>`).join('')}
+              ${ESTADOS_ESCALA.map(s=>`<td class="esc-gc esc-${s}-bg ${podeEd?'esc-editable':''}" ${podeEd?`data-action="escala-open" data-dia="${d.iso}" data-estado="${s}" aria-label="${s} a ${String(d.d).padStart(2,'0')}: escolher quem"`:''}>${grp[s].map(v=>`<span class="esc-chip">${esc(vendIniciais(v))}</span>`).join('')}</td>`).join('')}
             </tr>`;
           }).join('')}
         </tbody>
@@ -10651,6 +10837,10 @@ function EXPORT_FOLHAS(){
       {c:'id',l:'ID'},{c:'dia',l:'Dia',f:d},{c:'vendedor_id',l:'Vendedor',f:nome},{c:'estado',l:'Estado'},
       {c:'created_at',l:'Criado',f:dt},{c:'updated_at',l:'Atualizado',f:dt},{c:'updated_by',l:'Atualizado por',f:nome},
     ]},
+    {nome:'Escala (validação do mês)',path:'/escala_meses?select=*&order=mes.asc',cols:[
+      {c:'linha',l:'Linha'},{c:'mes',l:'Mês'},{c:'estado',l:'Estado'},{c:'comentario',l:'Comentário do chefe'},
+      {c:'submetido_por',l:'Submetida por',f:nome},{c:'submetido_em',l:'Submetida em',f:dt},{c:'decidido_por',l:'Decidida por',f:nome},{c:'decidido_em',l:'Decidida em',f:dt},
+    ]},
     {nome:'Margens libertadas',path:'/margens?select=*&order=negocio_id.asc',cols:[
       {c:'negocio_id',l:'Negócio ID'},
       {c:'negocio_id',l:'Matrícula',f:v=>{const r=(S.records||[]).find(x=>String(x.id)===String(v));return r?(r.mat||''):''}},
@@ -10894,7 +11084,7 @@ function renderDashboard(){
 
   const alertasNav=calcAlerts(recs);
   const nSem298=recs.filter(r=>r.status==='Retail'&&!r.col_298).length;
-  const nPend=alertasNav.filter(x=>!String(x.id).startsWith('funil_')).reduce((a,x)=>a+(x.count||0),0)+nSem298+lembretesChefe().length+mesRefLista().length+fichasAprovarLista().length+encStParaUs().length;
+  const nPend=alertasNav.filter(x=>!String(x.id).startsWith('funil_')).reduce((a,x)=>a+(x.count||0),0)+nSem298+lembretesChefe().length+mesRefLista().length+fichasAprovarLista().length+encStParaUs().length+escalaPorValidar().length+usadasParadasPend().length;
   const nPerd=recs.filter(r=>r.status==='Perdido').length;const nNotif=notifLista().length;
   // vermelho = já passou o prazo (matrícula há +2 dias, entrega em atraso); o resto do que há a tratar fica a âmbar
   const nAtras=alertasNav.filter(x=>ALERTAS_ATRASO.includes(String(x.id))).reduce((a,x)=>a+(x.count||0),0);const corT=nAtras?'alert':'hoje';
@@ -11428,42 +11618,12 @@ function renderDashboard(){
       .sort((a,b)=>{const t=x=>({MN:0,MD:1,MU:2}[x.r.type]??3);return t(a)-t(b)||String(a.r.mes1||'').localeCompare(String(b.r.mes1||''))||String(a.r.id_cliente||'').localeCompare(String(b.r.id_cliente||''),'pt')||(a.r.id-b.r.id);});
     const grpEnt=[['Novas · MN + MD',x=>x.r.type!=='MU','novas'],['Usadas · MU',x=>x.r.type==='MU','usadas']];
     const completos=arr.filter(x=>x.p.pct===100).length;
-    const chip=(on,label,action,extra)=>`<button class="en-chip ${on?'on':''}" data-action="${action}" ${extra}>${on?'✓':'○'} ${label}</button>`;
-    const cartao=({r,p})=>{
-      const e=entOf(r.id)||{};const d=e.docs||{};const docs=entDocsFor(r);const dOk=docs.filter(x=>d[x]).length;
-      const cor=p.pct===100?'var(--green)':(p.pct>=50?'var(--amber)':'var(--red)');
-      const biz=r.biz&&String(r.biz).trim();
-      return`<div class="en-card ${p.pct===100?'en-ok':''}">
-        <div class="en-head">
-          <div class="en-tit gpp-lclick" data-action="open-record-from-dash" data-id="${r.id}"><b>${esc(r.id_cliente||'—')}</b> · ${esc(r.model||'')} ${esc(r.version||'')} <span class="gpp-tipo-badge">${esc(r.type||'?')}</span> ${r.mat&&String(r.mat).trim()?`<span class="en-mat">${esc(r.mat)}</span>`:'<span class="en-mat en-mat-sem">sem matrícula</span>'}</div>
-          <div class="en-vend">${vendTag(r.vendedor_id)}</div>
-          <div class="en-prog"><div class="en-bar"><div class="en-fill" style="width:${p.pct}%;background:${cor}"></div></div><span style="color:${cor}">${p.ok}/${p.tot}</span></div>
-        </div>
-        <div class="en-chips">
-          <span class="en-chip en-auto ${biz?'on':'falta'}" title="Lido do campo Bizagi do negócio">${biz?'✓ Bizagi '+esc(biz):'✕ Bizagi em falta'}</span>
-          ${!entMatAplica(r)?`<span class="en-chip en-na" title="Demo e usada já estão matriculadas">Pedido matrícula n/a (${esc(r.type||'')})</span>`:(r.dmat?`<span class="en-chip en-auto on" title="Tem Data de Matrícula no negócio">✓ Matriculada ${esc(String(r.dmat).slice(0,10))}</span>`:chip(e.pedido_matricula,'Pedido de matrícula feito','ent-toggle',`data-id="${r.id}" data-k="pedido_matricula"`))}
-          ${chip(e.prep_pedida,'Preparação pedida','ent-toggle',`data-id="${r.id}" data-k="prep_pedida"`)}
-          ${chip(e.pecas_precisa,'Precisa peças','ent-toggle',`data-id="${r.id}" data-k="pecas_precisa"`)}
-          ${e.pecas_precisa?chip(e.pecas_chegaram,'Peças chegaram','ent-toggle',`data-id="${r.id}" data-k="pecas_chegaram"`):''}
-          ${chip(e.pago,'Cliente pagou','ent-toggle',`data-id="${r.id}" data-k="pago"`)}
-          ${entFsAplica(r)?chip(e.fs_tratado,'FS tratado','ent-toggle',`data-id="${r.id}" data-k="fs_tratado"`):`<span class="en-chip en-na" title="Pronto pagamento — FS não se aplica">FS n/a${r.fin?' ('+esc(r.fin)+')':''}</span>`}
-        </div>
-        <div class="en-docs"><span class="en-lbl ${dOk===docs.length?'ok':''}">Documentos ${dOk}/${docs.length}</span>
-          ${docs.map(x=>chip(d[x],esc(x),'ent-doc',`data-id="${r.id}" data-doc="${esc(x)}"`)).join('')}
-        </div>
-        <div class="en-inputs">
-          <input class="norma-inp" data-ent-id="${r.id}" data-ent-f="docs_obs" value="${esc(e.docs_obs||'')}" placeholder="Documentos em falta / notas">
-          ${e.pecas_precisa?`<input class="norma-inp" data-ent-id="${r.id}" data-ent-f="pecas_obs" value="${esc(e.pecas_obs||'')}" placeholder="Que peças?">`:''}
-          <label class="en-dt">Entrega <input class="norma-inp" type="date" data-ent-id="${r.id}" data-ent-f="data_entrega" value="${e.data_entrega?esc(String(e.data_entrega).slice(0,10)):''}"></label>
-          <input class="norma-inp en-obs" data-ent-id="${r.id}" data-ent-f="obs" value="${esc(e.obs||'')}" placeholder="Observações">
-        </div>
-      </div>`;
-    };
+    const cartao=({r})=>entCartaoHTML(r,false);
     return`${mesBar}
       <div class="gpp-tot-head">Entregas · ${esc(perLbl)} · <b>${arr.length}</b> em carteira${arr.length?` · <span style="color:var(--green)">${completos} prontas</span> · <span style="color:var(--amber)">${arr.length-completos} com pendentes</span>`:''}</div>
       ${S.entregasErr?`<div class="mg-aviso">⚠️ Não consegui ler a tabela de entregas (${esc(S.entregasErr)}). Se ainda não correste o SQL da tabela <b>entregas</b> no Supabase, é isso.</div>`:''}
       ${arr.length===0?'<div class="gpp-empty">Sem negócios em carteira neste mês.</div>':grpEnt.map(([lb,fn,cls])=>{const L=arr.filter(fn);if(!L.length)return'';const ok=L.filter(x=>x.p.pct===100).length;return`<div class="gpp-sub-h en-grp en-grp-${cls}">${lb} · <b>${L.length}</b> <span class="en-grp-s">${ok} pronta${ok!==1?'s':''}</span></div><div class="en-list">${L.map(cartao).join('')}</div>`;}).join('')}
-      <div class="gpp-pend-desc" style="margin:0 16px 16px">Só para ti — os vendedores não veem isto. Ordem fixa: MN e MD primeiro, depois MU; dentro de cada grupo por mês de entrega e cliente. O Bizagi lê-se do próprio negócio; o FS só conta quando é financiado. Clica no nome para abrir o negócio.</div>`;
+      <div class="gpp-pend-desc" style="margin:0 16px 16px">Os vendedores marcam estes itens nos seus negócios (no ecrã Hoje); as notas e as observações são só tuas. Ordem fixa: MN e MD primeiro, depois MU; dentro de cada grupo por mês de entrega e cliente. O Bizagi lê-se do próprio negócio; o FS só conta quando é financiado. Clica no nome para abrir o negócio.</div>`;
   }
   function saudeEquipa(){
     const el=r=>!r.venda_direta&&!r.automatricula;
@@ -12365,10 +12525,10 @@ function renderDashboard(){
   else if(sec==='home'){
     // números primeiro: os avisos ficam numa só faixa «A tratar (N)» que abre ao tocar
     const n298=recs.filter(r=>r.status==='Retail'&&!r.col_298).length;
-    const blocos=lembretesHTML()+notifBannerHTML()+fichasAprovarHTML()+encStParaUsHTML()+mesRefHTML()+(recs.filter(r=>r.status==='Retail'&&!r.col_298).length?`${(()=>{const semData=recs.filter(r=>r.status==='Retail'&&!r.col_298);return`<div class="gpp-alerta ${S.dashAlertOpen==='sem298'?'open':''}"><div class="gpp-alerta-head" data-action="dash-alert-toggle" data-id="sem298"><span>⚠️</span><span><b>${semData.length}</b> mota${semData.length>1?'s':''} em Retail sem data 298 — não contam nos totais</span><span class="gpp-alerta-arrow">${S.dashAlertOpen==='sem298'?'▾':'▸'}</span></div>${S.dashAlertOpen==='sem298'?`<div class="gpp-alerta-lista">${semData.map(r=>`<div class="gpp-alerta-item" data-action="open-record-from-dash" data-id="${r.id}"><b>${esc(r.id_cliente||'(sem cliente)')}</b><span>${esc(r.model||'')} ${esc(r.version||'')}</span><span class="gpp-alerta-tipo">${esc(r.type||'?')}</span><span style="color:var(--text3)">${esc(vendName(r.vendedor_id)||'')}</span></div>`).join('')}</div>`:''}</div>`})()}`:'');
+    const blocos=lembretesHTML()+notifBannerHTML()+escalaPorValidarHTML()+fichasAprovarHTML()+encStParaUsHTML()+mesRefHTML()+usadasParadasHTML()+incompletosEquipaHTML()+(recs.filter(r=>r.status==='Retail'&&!r.col_298).length?`${(()=>{const semData=recs.filter(r=>r.status==='Retail'&&!r.col_298);return`<div class="gpp-alerta ${S.dashAlertOpen==='sem298'?'open':''}"><div class="gpp-alerta-head" data-action="dash-alert-toggle" data-id="sem298"><span>⚠️</span><span><b>${semData.length}</b> mota${semData.length>1?'s':''} em Retail sem data 298 — não contam nos totais</span><span class="gpp-alerta-arrow">${S.dashAlertOpen==='sem298'?'▾':'▸'}</span></div>${S.dashAlertOpen==='sem298'?`<div class="gpp-alerta-lista">${semData.map(r=>`<div class="gpp-alerta-item" data-action="open-record-from-dash" data-id="${r.id}"><b>${esc(r.id_cliente||'(sem cliente)')}</b><span>${esc(r.model||'')} ${esc(r.version||'')}</span><span class="gpp-alerta-tipo">${esc(r.type||'?')}</span><span style="color:var(--text3)">${esc(vendName(r.vendedor_id)||'')}</span></div>`).join('')}</div>`:''}</div>`})()}`:'');
     const pl=(n,a,b)=>n+' '+(n===1?a:b);
     const res=[[lembretesChefe().length,'lembrete','lembretes'],[nNotif,'indicação nas EOTs','indicações nas EOTs'],[fichasAprovarLista().length,'ficha por aprovar','fichas por aprovar'],[encStParaUs().length,'ST para pedir US','ST para pedir US'],
-      [mesRefLista().length,'mês de entrega por validar','meses de entrega por validar'],[n298,'Retail sem 298','Retail sem 298']].filter(x=>x[0]).map(x=>pl(x[0],x[1],x[2]));
+      [mesRefLista().length,'mês de entrega por validar','meses de entrega por validar'],[n298,'Retail sem 298','Retail sem 298'],[escalaPorValidar().length,'escala por validar','escalas por validar'],[usadasParadasPend().length,'usada parada há +90 dias','usadas paradas há +90 dias'],[negIncompletos(recs).length,'Carteira com dados em falta (vendedores)','Carteiras com dados em falta (vendedores)']].filter(x=>x[0]).map(x=>pl(x[0],x[1],x[2]));
     const nT=nPend+nNotif,ab=!!S.homeTratar;
     const faixa=nT?`<div class="ht${ab?' on':''}"><button type="button" class="ht-h" data-action="home-tratar" aria-expanded="${ab?'true':'false'}"><span class="ht-n${nAtras?' red':''}">${nT}</span><span class="ht-t"><b>A tratar</b>${nAtras||res.length?`<span class="ht-res">${nAtras?`<b class="ht-atr">${nAtras} em atraso</b>${res.length?' · ':''}`:''}${esc(res.join(' · '))}</span>`:''}</span><span class="ht-s">${ab?'▾':'▸'}</span></button>
       ${ab?`<div class="ht-b">${blocos}<button type="button" class="btn btn-outline btn-sm ht-ir" data-action="gpp-sec" data-s="atratar">Abrir «A tratar» com tudo ›</button></div>`:''}</div>`:'';
@@ -12392,7 +12552,7 @@ function renderDashboard(){
   else if(sec==='carteira')body=carteiraChart()+listaEstado('Carteira',r=>r.mes1);
   else if(sec==='retail')body=retailView();
   else if(sec==='comercio')body=comercioView();
-  else if(sec==='pendentes')body=lembretesHTML()+fichasAprovarHTML()+encStParaUsHTML()+mesRefHTML()+acoesHoje()+pendentesView();
+  else if(sec==='pendentes')body=lembretesHTML()+escalaPorValidarHTML()+fichasAprovarHTML()+encStParaUsHTML()+mesRefHTML()+usadasParadasHTML()+incompletosEquipaHTML()+acoesHoje()+pendentesView();
   else if(sec==='notificacoes')body=`<div class="nt-pad">${notifView()}</div>`;
   else if(sec==='stock')body=stockView('usada');
   else if(sec==='depreciacao')body=depreciacaoView();
@@ -12457,6 +12617,7 @@ function render0(){
 function bindEvents(){
   const app=document.getElementById('app');
   app.oninput=function(e){
+    {const el=e.target;if(el&&el.dataset&&el.dataset.field==='nif'){const d=document.getElementById('nif-dica');if(d){const t=document.createElement('div');t.innerHTML=nifDicaHTML(el.value,d.classList.contains('qf-w2')?'qf-w2':'');d.replaceWith(t.firstElementChild);}}}
     {const el=e.target;if(el&&el.dataset&&S.pacEd){if(el.dataset.pac){const k=el.dataset.pac;S.pacEd[k]=k==='sem'?el.value.split(',').map(x=>x.trim()).filter(Boolean):el.value;return;}
       if(el.dataset.pacRow!=null&&el.dataset.pacK){const r=S.pacEd.modelos[Number(el.dataset.pacRow)];if(r)r[el.dataset.pacK]=el.value;return;}}}
     const el=e.target;
@@ -12625,6 +12786,8 @@ function bindEvents(){
       if(el.dataset.field==='status'&&FUNIL.includes(S.form.status)&&!S.form.alert_date){
         S.form.alert_date=sugereAlerta(S.form.status);
       }
+      // ao passar a Retail, a data 298 vem com o dia de hoje (pode mudar-se)
+      if(el.dataset.field==='status'&&S.form.status==='Retail'&&!S.form.col_298){const h=new Date();S.form.col_298=`${h.getFullYear()}-${String(h.getMonth()+1).padStart(2,'0')}-${String(h.getDate()).padStart(2,'0')}`;}
       render();return;
     }
   };
@@ -12905,12 +13068,17 @@ function bindEvents(){
       case'eot-resp-f':{const F=Object.assign({},S.eotF||{});F.resp=el.dataset.v||'';setState({eotF:F,eotMsg:''});break;}
       case'stock-assumir':stockMudarEstado(el.dataset.id,'A negociar',true);break;
       case'stock-largar':stockMudarEstado(el.dataset.id,'Disponível',false);break;
-      case'escala-open':{if(!isAdmin())break;setState({escalaPicker:{dia:el.dataset.dia,estado:el.dataset.estado}});break}
+      case'escala-open':{if(!escalaPodeEditar(el.dataset.dia))break;setState({escalaPicker:{dia:el.dataset.dia,estado:el.dataset.estado}});break}
       case'escala-close':setState({escalaPicker:null});break;
       case'escala-noop':break;
       case'escala-linha':setState({escalaLinha:el.dataset.linha});break;
-      case'escala-toggle':{if(!isAdmin())break;const dia=el.dataset.dia,vid=el.dataset.vid,estado=el.dataset.estado;const e=S.escala[dia+'|'+vid];const novoEstado=(e&&e.estado===estado)?'':estado;saveEscalaCell(dia,vid,novoEstado).then(()=>render()).catch(err=>{avisoErro('Erro: '+err.message);render()});break}
+      case'escala-toggle':{if(!escalaPodeEditar(el.dataset.dia))break;const dia=el.dataset.dia,vid=el.dataset.vid,estado=el.dataset.estado;const e=S.escala[dia+'|'+vid];const novoEstado=(e&&e.estado===estado)?'':estado;saveEscalaCell(dia,vid,novoEstado).then(()=>render()).catch(err=>{avisoErro('Erro: '+err.message);render()});break}
       case'escala-export':exportEscala();break;
+      case'escala-submeter':escalaSubmeter(el.dataset.mes);break;
+      case'escala-validar':escalaDecidir(el.dataset.linha,el.dataset.mes,true);break;
+      case'escala-devolver':escalaDecidir(el.dataset.linha,el.dataset.mes,false);break;
+      case'escala-abrir':S.escalaMes=el.dataset.mes;S.escalaLinha=el.dataset.linha;setState({loading:true});Promise.all([loadTeam(),loadEscala()]).then(()=>setState({screen:'escala',loading:false})).catch(e=>setState({error:erroTexto(e),loading:false}));break;
+      case'usadas-visto':try{localStorage.setItem('bm_usadas_visto',semanaChave());}catch(e){}render();break;
       case'escala-pdf':exportEscalaPDF();break;
       case'escala-prev':escalaShiftMes(-1);loadEscala().then(()=>render());break;
       case'escala-next':escalaShiftMes(1);loadEscala().then(()=>render());break;
@@ -12972,7 +13140,7 @@ function bindEvents(){
       case'fm-esf-toggle':fmEsfToggle(el);break;
       case'close-sidebar':setState({sidebarOpen:false});break;
       case'load-more':setState({renderLimit:(S.renderLimit||50)+50});break;
-      case'qf-set':{collectFormData();const k=el.dataset.k,v=el.dataset.v;S.form[k]=(S.form[k]===v&&k==='type')?'':v;if(k==='status'&&FUNIL.includes(v)&&!S.form.alert_date)S.form.alert_date=sugereAlerta(v);if(k==='status'&&v==='Carteira'&&!S.form.neg)S.form.neg=new Date().toISOString().slice(0,10);S.error='';render();break;}
+      case'qf-set':{collectFormData();const k=el.dataset.k,v=el.dataset.v;S.form[k]=(S.form[k]===v&&k==='type')?'':v;if(k==='status'&&FUNIL.includes(v)&&!S.form.alert_date)S.form.alert_date=sugereAlerta(v);if(k==='status'&&v==='Carteira'&&!S.form.neg)S.form.neg=new Date().toISOString().slice(0,10);if(k==='status'&&v==='Retail'&&!S.form.col_298){const h=new Date();S.form.col_298=`${h.getFullYear()}-${String(h.getMonth()+1).padStart(2,'0')}-${String(h.getDate()).padStart(2,'0')}`;}S.error='';render();break;}
       case'qf-completo':collectFormData();S.formCompleto=true;setState({openGroups:Object.assign({},S.openGroups,{INFO:true,'Identificação':true,'Negócio':true,'Viatura':true,OBS:true})});break;
       case'neg-comentar':negComentar(el.dataset.id);break;
       case'neg-com-chip':{const t=el.dataset.t;const cur=String(S.negCom||'').trim();S.negCom=cur?cur+' — '+t:t;render();setTimeout(()=>{const x=document.getElementById('neg-com');if(x){x.focus();x.setSelectionRange(x.value.length,x.value.length);}},20);break;}
@@ -13057,7 +13225,7 @@ function bindEvents(){
 
 function collectFormData(){document.querySelectorAll('input[data-field],select[data-field],textarea[data-field]').forEach(el=>{const k=el.dataset.field;let v=el.value;if(el.dataset.fmt==='month'&&v)v=v.replace('-','/');S.form[k]=v})}
 
-function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadComsRecentes(),loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes(),loadTransicoes(),loadNorma(),loadFichasIdx(),loadFichasAprovar(),loadEot(),loadComFecho()]):(isVendedor()?Promise.all([loadComsRecentes(),loadTeam(),loadEventos(),loadInscricoes(),loadInscricoesAll(),loadMargens(),loadEntregas(),loadEquipamento(),loadFichasIdx(),loadEot(),loadComFecho()]):(S.me&&S.me.role==='secretario'?Promise.all([loadTeam(),loadEntregas(),...(isFinanceiro()?[loadEot()]:[])]):(S.me&&S.me.role==='assessor'?Promise.all([loadTeam(),loadEquipamento(),...(isSecretaria()?[loadEntregas()]:[])]):(S.me&&S.me.role==='financeiro'?Promise.all([loadTeam(),loadEot()]):(S.me&&S.me.role==='eventos'?Promise.all([loadEventos(),loadInscricoes()]):Promise.all([loadTeam()]))))));return Promise.all([extra,(!isAdmin()&&temArea('previsao'))?loadObjEquipa():null])}).then(function(){return loadRecords()}).then(function(){/* notificações e stock não atrasam a entrada */const _rs=function(){if(S.screen&&S.screen!=='loading'){if(typeof aEscrever==='function'&&aEscrever())S._renderPend=true;else renderSeguro();}};loadNotif().then(_rs);if(isAdmin()&&!S.encLoaded&&!S._encLoading){S._encLoading=true;loadEnc().finally(function(){S._encLoading=false;_rs();});}}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:ecraInicial(),loading:false,statusFilter:isAdmin()?S.statusFilter:'_hoje'});_ultimoAuto=Date.now();restaurarRascunho();})}
+function afterAuth(){return loadMe().then(function(){const extra=isAdmin()?Promise.all([loadStock(),loadEscalaMeses(),loadComsRecentes(),loadTeam(),loadObjetivos(),loadObjEquipa(),loadNps(),loadEventos(),loadInscricoes(),loadTransicoes(),loadNorma(),loadFichasIdx(),loadFichasAprovar(),loadEot(),loadComFecho()]):(isVendedor()?Promise.all([loadEscalaMeses(),loadComsRecentes(),loadTeam(),loadEventos(),loadInscricoes(),loadInscricoesAll(),loadMargens(),loadEntregas(),loadEquipamento(),loadFichasIdx(),loadEot(),loadComFecho()]):(S.me&&S.me.role==='secretario'?Promise.all([loadTeam(),loadEntregas(),...(isFinanceiro()?[loadEot()]:[])]):(S.me&&S.me.role==='assessor'?Promise.all([loadTeam(),loadEquipamento(),...(isSecretaria()?[loadEntregas()]:[])]):(S.me&&S.me.role==='financeiro'?Promise.all([loadTeam(),loadEot()]):(S.me&&S.me.role==='eventos'?Promise.all([loadEventos(),loadInscricoes()]):Promise.all([loadTeam()]))))));return Promise.all([extra,(!isAdmin()&&temArea('previsao'))?loadObjEquipa():null])}).then(function(){return loadRecords()}).then(function(){/* notificações e stock não atrasam a entrada */const _rs=function(){if(S.screen&&S.screen!=='loading'){if(typeof aEscrever==='function'&&aEscrever())S._renderPend=true;else renderSeguro();}};loadNotif().then(_rs);if(isAdmin()&&!S.encLoaded&&!S._encLoading){S._encLoading=true;loadEnc().finally(function(){S._encLoading=false;_rs();});}}).then(function(){const ev=eventoAtivo();return loadRanking(ev?ev.id:null)}).then(function(){setState({screen:ecraInicial(),loading:false,statusFilter:isAdmin()?S.statusFilter:'_hoje'});_ultimoAuto=Date.now();restaurarRascunho();})}
 (function(){
   S.screen='loading';render();
   // Link de recuperacao do Supabase: #access_token=...&type=recovery
