@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-26-a">
+<meta name="app-version" content="2026-11-26-b">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2734,7 +2734,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-26-a';
+const APP_VERSION='2026-11-26-b';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -2778,7 +2778,7 @@ window.addEventListener('beforeunload',guardarRascunho);
 async function atualizarDadosSilencioso(){
   if(!S.me||!S.token)return;
   const rl=S.me.role;const L=[];
-  if(isAdmin())L.push(loadEscalaMeses(),loadFichasAprovar(),loadEnc(),loadObjetivos(),loadObjEquipa(),loadTeam(),loadNps(),loadEot(),loadEntregas(),loadMargens(),loadEquipamento(),loadComsRecentes(),loadComFecho());
+  if(isAdmin())L.push(loadEscalaMeses(),loadFichasIdx(),loadFichasAprovar(),loadEnc(),loadObjetivos(),loadObjEquipa(),loadTeam(),loadNps(),loadEot(),loadEntregas(),loadMargens(),loadEquipamento(),loadComsRecentes(),loadComFecho());
   else if(isVendedor())L.push(loadEnc(),loadTeam(),loadEot(),loadEntregas(),loadMargens(),loadEquipamento(),loadComsRecentes(),loadComFecho());
   else if(rl==='secretario')L.push(loadTeam(),loadEntregas(),...(isFinanceiro()?[loadEot()]:[]));
   else if(rl==='eventos')L.push(loadEventos(),loadInscricoes());
@@ -3306,9 +3306,9 @@ async function loadFichasIdx(){
   let d=null;
   try{d=await supabaseApi('GET','/fichas_margem?select=negocio_id,updated_at,estado');}
   catch(e){try{d=await supabaseApi('GET','/fichas_margem?select=negocio_id,updated_at');}catch(e2){d=[];}}
-  const m={},nn={},vv={};
-  (d||[]).forEach(x=>{const k=String(x.negocio_id);if(!m[k]||String(x.updated_at)>String(m[k]))m[k]=x.updated_at;nn[k]=(nn[k]||0)+1;if(x.estado==='vendida')vv[k]=true;});
-  S.fichasIdx=m;S.fichasN=nn;S.fichasVend=vv;
+  const m={},nn={},vv={},aa={};
+  (d||[]).forEach(x=>{const k=String(x.negocio_id);if(!m[k]||String(x.updated_at)>String(m[k]))m[k]=x.updated_at;nn[k]=(nn[k]||0)+1;if(x.estado!=='arquivada')aa[k]=(aa[k]||0)+1;if(x.estado==='vendida')vv[k]=true;});
+  S.fichasIdx=m;S.fichasN=nn;S.fichasVend=vv;S.fichasAtivasN=aa;
 }
 function fmFichaNome(f,i){const d=(f&&f.dados)||{};const cur=String(f&&f.id)===String(S.fmFicha)?S.fm||{}:d;
   const pv=numPT(cur.preco_venda);return (f&&f.nome)||cur.modelo||('Ficha '+(i+1))+'';}
@@ -3364,7 +3364,7 @@ async function fmMarcarVendida(desfazer){
     if(desfazer)await supabaseApi('PATCH',`/fichas_margem?negocio_id=eq.${id}`,{estado:'ativa'});
     else await supabaseApi('POST','/rpc/ficha_marcar_vendida',{p_id:Number(fid)});
     const L=await fmListaFichas(id);S.fmFichas=L;const f=L.find(x=>String(x.id)===String(fid));if(f)S.fmGravado=f.updated_at;
-    S.fichasVend=Object.assign({},S.fichasVend||{},{[String(id)]:!desfazer});
+    S.fichasVend=Object.assign({},S.fichasVend||{},{[String(id)]:!desfazer});S.fichasAtivasN=Object.assign({},S.fichasAtivasN||{},{[String(id)]:L.filter(x=>x.estado!=='arquivada').length});
     S.fmEstado=desfazer?'escolha desfeita':'marcada como a mota vendida';render();
   }catch(e){avisoErro('Não consegui marcar: '+erroTexto(e));}
 }
@@ -3486,10 +3486,12 @@ function _fichasAbertas(){const recs=S.records||[];
     return r&&!['Perdido','Frio'].includes(r.status)?{f,r}:null;}).filter(Boolean);}
 // à espera do chefe: precisa de aprovação e não foi recusada (a recusa cai quando o vendedor muda a ficha)
 // negócio já em Carteira ou Retail com a ficha por aprovar: aparece primeiro e destacado
+// o chefe só aprova a ficha da mota vendida ou a ficha única do negócio (as simulações de quem tem várias ficam de fora)
+function fichaElegivelAprov(f,nAtivas){return !!f&&(f.estado==='vendida'||(nAtivas!=null?nAtivas:1)<=1);}
 function fichaJaFechada(r){return r&&(r.status==='Carteira'||r.status==='Retail')?1:0;}
 function fichasAprovarLista(){
   if(!isAdmin())return[];
-  return _fichasAbertas().filter(x=>!x.f.recusada_em).map(x=>{const c=fichasCalcDe(x.f);return c&&c.aprovacao?Object.assign(x,{c}):null;}).filter(Boolean)
+  return _fichasAbertas().filter(x=>!x.f.recusada_em&&fichaElegivelAprov(x.f,(S.fichasAtivasN||S.fichasN||{})[String(x.f.negocio_id)])).map(x=>{const c=fichasCalcDe(x.f);return c&&c.aprovacao?Object.assign(x,{c}):null;}).filter(Boolean)
     .sort((a,b)=>(fichaJaFechada(b.r)-fichaJaFechada(a.r))||String(b.f.updated_at||'').localeCompare(String(a.f.updated_at||'')));
 }
 // não aprovadas: à espera de o vendedor mudar a ficha
@@ -3519,7 +3521,7 @@ function fichasAprovarHTML(){
       <div class="mr-txt"><div>${nome(f,r)}</div><span class="mr-sub">«${esc(f.recusa_motivo||'')}» · ${esc(faQuando(f.recusada_em))}. Volta para aprovar quando o vendedor mudar a ficha.</span></div>
       <div class="mr-acts">${abrir(f,r)}<button class="btn btn-ghost btn-sm" data-action="fa-aprovar" data-id="${esc(f.id)}">Aprovar mesmo assim</button></div></div>`).join('')}</details>`:'';
   if(!L.length)return`<div class="mr-box fa-box fa-so-recs">${rec}</div>`;
-  return`<div class="mr-box fa-box"><div class="mr-h"><span>Fichas à espera da tua aprovação · <b>${L.length}</b></span><small>Margem abaixo de 0,50 % ou esforço acima da margem variável. Se não aprovares, o vendedor recebe o motivo; quando mudar a ficha (ou mudar uma já aprovada), volta a aparecer aqui.</small></div>
+  return`<div class="mr-box fa-box"><div class="mr-h"><span>Fichas à espera da tua aprovação · <b>${L.length}</b></span><small>Margem abaixo de 0,50 % ou esforço acima da margem variável. Só a ficha da mota vendida ou a ficha única do negócio; as simulações de quem tem várias fichas não vêm cá. Se não aprovares, o vendedor recebe o motivo; quando mudar a ficha (ou mudar uma já aprovada), volta a aparecer aqui.</small></div>
   ${L.map(({f,r,c})=>{const ab=String(S.faRecusar)===String(f.id);const fe=fichaJaFechada(r);return`<div class="mr-row${ab?' fa-row-rec':''}${fe?' fa-fechado':''}"><span class="atag ${fe?'atag-red':'atag-al'}">${fe?'Já em '+esc(r.status):'Aprovar'}</span>
     <div class="mr-txt"><div>${nome(f,r)}</div>
     <span class="mr-sub">${esc(fmAprovTxt(c,pc))}${c.venda?' · proposto '+esc(fE0(c.venda))+' · margem '+esc(fE0(c.margem)):''}</span></div>
@@ -4093,7 +4095,7 @@ function renderFichaMargem(){
       if(!c.aprovacao)return'';
       if(fa&&fa.aprovada_em){const q=nomePerfil(fa.aprovada_por)||'chefia';const d=new Date(fa.aprovada_em);return`<div class="fm-aprov ok">✓ <b>Aprovada por ${esc(q)}</b> a ${esc(d.toLocaleDateString('pt-PT'))} às ${esc(d.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'}))}: ${esc(fmAprovTxt(c,pc))}. Se mudares a ficha, a aprovação cai.${isAdmin()?` <button class="btn btn-ghost btn-sm" data-action="fa-retirar" data-id="${esc(fa.id)}">Retirar aprovação</button>`:''}</div>`;}
       const ab=fa&&isAdmin()&&String(S.faRecusar)===String(fa.id);
-      return`<div class="fm-aprov">⚠️ <b>Necessário aprovação da chefia</b>: ${esc(fmAprovTxt(c,pc))}.${fa?(isAdmin()?` <button class="btn btn-green btn-sm" data-action="fa-aprovar" data-id="${esc(fa.id)}">Aprovar agora</button> <button class="btn btn-outline btn-sm" data-action="fa-recusar" data-id="${esc(fa.id)}" aria-expanded="${!!ab}">Não aprovar</button>`:' Já aparece ao chefe para aprovar.'):''}${ab?faRecusarHTML(fa,c):''}</div>`;})()}
+      return`<div class="fm-aprov">⚠️ <b>Necessário aprovação da chefia</b>: ${esc(fmAprovTxt(c,pc))}.${fa?(isAdmin()?` <button class="btn btn-green btn-sm" data-action="fa-aprovar" data-id="${esc(fa.id)}">Aprovar agora</button> <button class="btn btn-outline btn-sm" data-action="fa-recusar" data-id="${esc(fa.id)}" aria-expanded="${!!ab}">Não aprovar</button>`:(fichaElegivelAprov(fa,(S.fmFichas||[]).filter(f=>f.estado!=='arquivada').length)?' Já aparece ao chefe para aprovar.':' Com várias fichas, só vai ao chefe a que for escolhida como a mota vendida (ao passar a Carteira).')):''}${ab?faRecusarHTML(fa,c):''}</div>`;})()}
     ${fmEsforcoHTML(c,p1,fE0)}
     <div class="gpp-card fm-card">
       <table class="fm-tbl"><tbody>
@@ -5217,7 +5219,7 @@ async function fichaAoFechar(){
   const v=await escolherOpcao('Este negócio tem '+ativas.length+' fichas de margem. Qual foi a mota vendida?',ativas.map((f,i)=>({v:f.id,lb:fmFichaNome(f,i),sub:fmFichaPreco(f)})));
   return v==null?false:{ficha:v};}
 async function fichaMarcarVendidaAuto(fid,negId){
-  try{await supabaseApi('POST','/rpc/ficha_marcar_vendida',{p_id:Number(fid)});if(negId!=null)S.fichasVend=Object.assign({},S.fichasVend||{},{[String(negId)]:true});}
+  try{await supabaseApi('POST','/rpc/ficha_marcar_vendida',{p_id:Number(fid)});if(negId!=null){S.fichasVend=Object.assign({},S.fichasVend||{},{[String(negId)]:true});S.fichasAtivasN=Object.assign({},S.fichasAtivasN||{},{[String(negId)]:1});}}
   catch(e){toast('O negócio ficou gravado, mas não consegui marcar a ficha da mota vendida: '+erroTexto(e),'erro');}}
 async function saveRecord(){
   if(!S.selected){

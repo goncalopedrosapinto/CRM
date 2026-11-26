@@ -109,7 +109,7 @@ const rota=quem=>async r=>{const u=decodeURIComponent(r.request().url());const m
  await q.click('[data-action="usadas-visto"]');await q.waitForTimeout(300);
  const upDepois=await q.evaluate(()=>document.querySelectorAll('.up-box').length);
  // fichas por aprovar: a do negócio já em Carteira vem primeiro e destacada
- const fa=await q.evaluate(()=>{window.fichasCalcDe=()=>({aprovacao:true,venda:0,margem:0});S.fichasAprov=[{id:91,negocio_id:5,dados:{},updated_at:'2026-11-26T10:00:00Z'},{id:92,negocio_id:3,dados:{},updated_at:'2026-11-01T10:00:00Z'}];
+ const fa=await q.evaluate(()=>{window.fichasCalcDe=()=>({aprovacao:true,venda:0,margem:0});S.fichasAprov=[{id:91,negocio_id:5,dados:{},updated_at:'2026-11-26T10:00:00Z'},{id:92,negocio_id:3,dados:{},updated_at:'2026-11-01T10:00:00Z'},{id:61,negocio_id:6,estado:'ativa',dados:{},updated_at:'2026-11-25T10:00:00Z'},{id:62,negocio_id:6,estado:'vendida',dados:{},updated_at:'2026-11-20T10:00:00Z'}];
    return fichasAprovarLista().map(x=>x.r.id+':'+fichaJaFechada(x.r));});
  // escala: devolver sem comentário é recusado; com comentário grava; validar grava
  await q.evaluate(async()=>{S.escalaMes=null;await loadEscala();setState({screen:'escala'});});await q.waitForTimeout(400);
@@ -147,7 +147,7 @@ const rota=quem=>async r=>{const u=decodeURIComponent(r.request().url());const m
   'chefe: usada parada com preço sugerido (só a de +90 dias)':home.up.length===1&&/125 dias/.test(home.up[0])&&/sugerido 9\s?800 €/.test(home.up[0])&&/mínimo 9\s?000 €/.test(home.up[0]),
   'chefe: «Visto esta semana» tira o aviso':upDepois===0,
   'chefe: escala submetida aparece para validar':home.esc.includes(mesE),
-  'fichas por aprovar: negócio já em Carteira primeiro':JSON.stringify(fa)==='["3:1","5:0"]',
+  'fichas por aprovar: só a vendida ou a única; negócio já em Carteira primeiro':JSON.stringify(fa)==='["6:1","3:1","5:0"]',
   'devolver sem comentário é recusado':semComent===0,
   'devolver com comentário grava':!!dev&&dev[1].p_validar===false&&dev[1].p_comentario==='Falta o sábado dia 6'&&/Devolvida/.test(escC),
   'vendedor vê a devolução e volta a mexer':escV3.ed>0&&/Devolvida pelo chefe.*Falta o sábado dia 6/.test(escV3.st),
