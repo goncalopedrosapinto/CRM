@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-27-a">
+<meta name="app-version" content="2026-11-27-b">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -945,6 +945,7 @@ html,body{overflow-x:hidden;max-width:100vw}
 .pe-emp-t2 tr.pe-emp-erro td{background:var(--amber-bg)}.pe-emp-t2 tr.pe-emp-metodo td,.pe-emp-t2 tr.pe-emp-efeito td{color:var(--text2)}
 .pe-emp-t td,.pe-emp-t th,.pe-emp-t2 td,.pe-emp-t2 th{font-variant-numeric:tabular-nums}.pe-emp-t tr.pe-emp-mal>td:first-child{box-shadow:inset 3px 0 0 var(--amber)}
 .pe-emp-t .ok,.pe-emp-t2 .ok{color:var(--green)}.pe-emp-t .neg,.pe-emp-t2 .neg{color:var(--red)}
+.pe-emp-acts{white-space:nowrap}.pe-emp-acts .btn{vertical-align:middle}.pe-emp-pdf{margin-left:6px}
 .pe-emp-det>td{background:var(--surface2);padding:8px 10px}.pe-emp-t2{margin:0;background:var(--surface)}.pe-emp-t2 tr.pe-emp-aj td:first-child{padding-left:18px}
 .pe-ref{font-size:12px;color:var(--text2)}.pe-card{margin:0 16px 14px;padding:14px 16px}.pe-h{font-weight:800;font-size:14px;margin-bottom:8px}
 .pe-nota{font-size:12.5px;color:var(--text2);margin:0 0 10px;line-height:1.5}
@@ -2742,7 +2743,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-27-a';
+const APP_VERSION='2026-11-27-b';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -7699,11 +7700,45 @@ function peEmpHTML(E){
     <div style="overflow-x:auto"><table class="gpp-ltable pe-emp-t" data-no-tools="1"><thead><tr><th>Mês ${esc(String(X.ano))}</th><th style="text-align:right">Empresa</th><th style="text-align:right">Teu esquema</th><th style="text-align:right">Diferença</th><th></th></tr></thead><tbody>
     ${R.map(r=>{const ab=S.peEmpAberto===r.ym;if(r.vazio)return`<tr class="pe-vazio"><td>${MN[r.m-1]}</td><td colspan="4" class="pe-sub">sem dados no ficheiro</td></tr>`;
       return`<tr class="${r.erros?'pe-emp-mal':''}"><td>${MN[r.m-1]}${r.semVN?' <span class="pe-sub">· por fechar (faturas VN a 0)</span>':''}</td><td style="text-align:right">${eur(r.emp)}</td><td style="text-align:right">${eur(r.esq)}</td><td style="text-align:right" class="${Math.abs(r.dif)<0.005?'':(r.dif>0?'ok':'neg')}"><b>${Math.abs(r.dif)<0.005?'bate':sinal(r.dif)}</b></td>
-        <td><button type="button" class="btn btn-ghost btn-sm" data-action="pe-emp-mes" data-m="${r.ym}" aria-expanded="${ab}">${lbBtn(r)} ${ab?'▾':'▸'}</button></td></tr>${ab?det(r):''}`;}).join('')}
+        <td class="pe-emp-acts"><button type="button" class="btn btn-ghost btn-sm" data-action="pe-emp-mes" data-m="${r.ym}" aria-expanded="${ab}">${lbBtn(r)} ${ab?'▾':'▸'}</button>${r.erros?`<button type="button" class="btn btn-outline btn-sm pe-emp-pdf" data-action="pe-emp-pdf" data-m="${r.ym}" title="Exportar a conferência de ${MN[r.m-1]} em PDF" aria-label="Exportar a conferência de ${MN[r.m-1]} em PDF">⬇ PDF</button>`:''}</td></tr>${ab?det(r):''}`;}).join('')}
     </tbody><tfoot><tr><td>Total do ano</td><td style="text-align:right">${eur(peR(cheios.reduce((a,r)=>a+r.emp,0),2))}</td><td style="text-align:right">${eur(peR(cheios.reduce((a,r)=>a+r.esq,0),2))}</td><td style="text-align:right" class="${tot>0?'ok':(tot<0?'neg':'')}"><b>${sinal(tot)}</b></td><td></td></tr></tfoot></table></div>
     <div class="pe-sub" style="margin:8px 0">Positivo: o teu esquema dá mais do que a empresa pagou. Recalculado com a referência de ${eur(E.ref)}, os escalões do teu esquema e os valores de base do ficheiro (o escalão do objetivo de vendas é o que a empresa marcou na linha 43).</div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">${botao}<button type="button" class="btn btn-outline btn-sm" data-action="pe-emp-usar">Usar estes dados nos meus meses</button><span class="pe-sub">${esc(X.ficheiro||'')}</span></div>
   </div>`;
+}
+// PDF de um mês da conferência (para enviar aos RH): o quadro das rubricas com o porquê de cada diferença
+function peEmpPDF(ym){
+  const E=peEsq(),X=S.peEmp;if(!E||!X||!isAdmin())return;
+  const metodo=S.peEmpMetodo==='esquema'?'esquema':'empresa';const r=peEmpComparar(E,X,metodo).find(x=>x.ym===ym);if(!r)return;
+  const MES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const eur=v=>fmtEur(v,2),sinal=v=>(v>0?'+':'')+fmtEur(v,2);
+  const neutro=t=>String(t||'').replace(/\b([Nn]o|[Oo]) teu (esquema|simulador)\b/g,'$1 $2').replace(/\bteu esquema\b/g,'esquema');
+  const regraK={bm_enc:'enc',leads:'leads'};const ks=new Set(r.linhas.filter(l=>l.tipo==='erro').map(l=>regraK[l.k]).filter(Boolean));
+  const regras=X.regras.filter(x=>ks.has(x.k)).map(x=>neutro(x.t));
+  const titulo=`Conferência da comissão · ${MES[r.m-1]} ${String(r.ym).slice(0,4)}`;
+  const linhas=r.linhas.map(l=>`<tr class="${l.tipo==='erro'?'erro':(l.tipo?'sec':'')}${l.aj?' aj':''}"><td>${esc(l.lb)}</td>
+    <td class="r">${esc(eur(l.empE))}${l.empP!=null?`<div class="p">${esc(pePc(l.empP))}</div>`:''}</td>
+    <td class="r">${esc(eur(l.esqE))}${l.esqP!=null?`<div class="p">${esc(pePc(l.esqP))}</div>`:''}</td>
+    <td class="r ${l.tipo?(l.esqE-l.empE>0?'pos':'neg'):''}">${l.tipo?esc(sinal(peR(l.esqE-l.empE,2))):'—'}</td><td class="q">${esc(neutro(l.pq))}</td></tr>`).join('');
+  const css='@page{size:A4 landscape;margin:11mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:0;font-size:11px;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+   +'.barra{position:sticky;top:0;background:#0b1220;color:#fff;padding:8px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px}.barra button{background:#c2410c;color:#fff;border:0;border-radius:6px;padding:7px 14px;font-weight:700;cursor:pointer}@media print{.barra{display:none}}'
+   +'.doc{padding:6px 2px}.cab{border-bottom:2px solid #0f172a;padding-bottom:6px;margin-bottom:10px}.h1{font-size:18px;font-weight:800}.h2{color:#475569;font-size:11px;margin-top:3px}'
+   +'.tot{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 12px}.tot div{border:1px solid #cbd5e1;border-radius:6px;padding:7px 10px}.tot span{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.03em;color:#475569;font-weight:700}.tot b{font-size:17px}'
+   +'table{width:100%;border-collapse:collapse;font-size:10.5px}th,td{border-bottom:1px solid #e2e8f0;padding:5px 7px;text-align:left;vertical-align:middle}th{background:#f1f5f9;font-size:9px;text-transform:uppercase;letter-spacing:.03em}'
+   +'.r{text-align:right;white-space:nowrap}.p{font-size:9px;color:#64748b}.q{font-size:9.5px;color:#334155}tr.erro td{background:#fef3c7}tr.sec td{color:#64748b}tr.aj td:first-child{padding-left:16px}.pos{color:#15803d;font-weight:700}.neg{color:#b91c1c;font-weight:700}'
+   +'.notas{margin-top:10px;font-size:9.5px;color:#475569;line-height:1.45}.notas ul{margin:4px 0 0;padding-left:16px}';
+  const html='<!doctype html><html lang="pt"><head><meta charset="utf-8"><title>'+esc(titulo)+'</title><style>'+css+'</style></head><body>'
+   +'<div class="barra"><span>Para guardar em PDF escolhe «Guardar como PDF» na janela de impressão</span><button onclick="window.print()">Imprimir / Guardar PDF</button></div>'
+   +'<div class="doc"><div class="cab"><div class="h1">'+esc(titulo)+'</div><div class="h2">'+esc([S.me&&S.me.nome,'Chefe de Vendas'].filter(Boolean).join(' · '))
+   +' · Ficheiro da empresa: '+esc(X.ficheiro||'—')+' · Gerado a '+esc(new Date().toLocaleDateString('pt-PT'))+'</div></div>'
+   +'<div class="tot"><div><span>Ficheiro da empresa</span><b>'+esc(eur(r.emp))+'</b></div><div><span>Segundo o esquema</span><b>'+esc(eur(r.esq))+'</b></div><div><span>Diferença</span><b class="'+(r.dif>0?'pos':(r.dif<0?'neg':''))+'">'+esc(Math.abs(r.dif)<0.005?'0,00 €':sinal(r.dif))+'</b></div></div>'
+   +'<table><thead><tr><th>Rubrica</th><th class="r">Ficheiro da empresa</th><th class="r">Segundo o esquema</th><th class="r">Diferença</th><th>Porquê</th></tr></thead><tbody>'+linhas+'</tbody></table>'
+   +'<div class="notas">'+(regras.length?'<b>No ficheiro da empresa</b><ul>'+regras.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul>':'')
+   +'<div style="margin-top:6px">Recalculado com a referência de '+esc(eur(E.ref))+', os escalões do esquema e os valores de base do ficheiro da empresa. Penalizações e bonificações aplicadas '
+   +(metodo==='empresa'?'sobre a comissão do mês, como no ficheiro da empresa.':'sobre a referência de '+esc(eur(E.ref))+'.')+' As linhas a cinzento mudam só por consequência de outra diferença.</div></div></div></body></html>';
+  const w=window.open('','_blank');
+  if(!w){avisoErro('Permite pop-ups neste site para abrir o PDF.');return;}
+  w.document.open();w.document.write(html);w.document.close();w.focus();
 }
 async function peImportar(f){
   if(!f||!isAdmin())return;
@@ -13203,6 +13238,7 @@ function bindEvents(){
       case'pe-emp-mes':S.peEmpAberto=S.peEmpAberto===el.dataset.m?null:el.dataset.m;render();break;
       case'pe-emp-usar':peEmpUsar();break;
       case'pe-emp-metodo':S.peEmpMetodo=el.dataset.v;render();break;
+      case'pe-emp-pdf':peEmpPDF(el.dataset.m);break;
       case'eot-rot-desfazer':if(S.eotRotFeitos)eotRotacaoDesfazer(S.eotRotFeitos);break;
       case'eot-acr-cancelar':setState({eotAcr:null,eotErrImp:''});break;
       case'eot-novo':eotNovoAbrir();break;

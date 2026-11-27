@@ -69,12 +69,16 @@ const rota=quem=>async r=>{const u=decodeURIComponent(r.request().url());const m
  await p.click('[data-action="pe-emp-mes"][data-m="2026/01"]');await p.waitForTimeout(200);
  const jan=await p.evaluate(()=>[...document.querySelectorAll('.pe-emp-t2 tr.pe-emp-erro')].map(x=>x.textContent.replace(/[\s  ]+/g,' ').trim()));
  await p.screenshot({path:path.join(__dirname,'premios_empresa.png'),fullPage:true});
+ const botoesPdf=await p.evaluate(()=>[...document.querySelectorAll('[data-action="pe-emp-pdf"]')].map(x=>x.dataset.m));
+ const [pop]=await Promise.all([ctx.waitForEvent('page'),p.click('[data-action="pe-emp-pdf"][data-m="2026/01"]')]);await pop.waitForLoadState();
+ const pdf=await pop.evaluate(()=>({titulo:document.title,txt:document.body.innerText.replace(/[\s  ]+/g,' '),erros:document.querySelectorAll('tr.erro').length}));
+ await pop.screenshot({path:path.join(__dirname,'premios_empresa_pdf.png'),fullPage:true});await pop.close();
  await p.click('[data-action="pe-emp-metodo"][data-v="esquema"]');await p.waitForTimeout(200);
  const L2=await linhas();
  await p.click('[data-action="pe-emp-usar"]');await p.waitForTimeout(800);
  const jan2=est.pm['2026/01']||{},fev2=est.pm['2026/02']||{};
  await ctx.close();
- const R0={antes,erroMau,L1,pontos,jan,L2,jan2,fev2,alertas,erros};console.log(JSON.stringify(R0,null,1));
+ const R0={antes,erroMau,L1,pontos,jan,L2,jan2,fev2,pdf,botoesPdf,alertas,erros};console.log(JSON.stringify(R0,null,1));
  const ok={
   'sem ficheiro: explica e pede o Excel da empresa':/2 · Conferir o cálculo da empresa/.test(antes)&&/Carregar o ficheiro da empresa/.test(antes),
   'ficheiro com outro formato: erro claro':/não tem o formato esperado/.test(erroMau),
@@ -85,6 +89,9 @@ const rota=quem=>async r=>{const u=decodeURIComponent(r.request().url());const m
   'fevereiro bate; março sem dados':/^Fev\s*24,00\s*€\s*24,00\s*€\s*bate\s*Ver/.test(L1[1])&&/^Mar\s*sem dados no ficheiro/.test(L1[2]),
   'erros de janeiro com o porquê':jan.length===3&&jan.some(x=>/Faturas VO.*escrito à mão/.test(x))&&jan.some(x=>/Gestão de encomendas.*Falta o escalão de 15 %/.test(x))&&jan.some(x=>/Conversão de leads.*exatamente nos 12 %/.test(x)),
   'método do simulador: fevereiro difere só pelo método':/^Fev\s*24,00\s*€\s*100,00\s*€\s*\+76,00\s*€\s*só método/.test(L2[1])&&/^Jan\s*254,40\s*€\s*392,00\s*€/.test(L2[0]),
+  'PDF só nos meses com erros':JSON.stringify(botoesPdf)==='["2026/01"]',
+  'PDF de janeiro: totais, rubricas com o porquê, sem «teu»':pdf.titulo==='Conferência da comissão · Janeiro 2026'&&pdf.erros===3&&/Ficheiro da empresa 254,40 €/i.test(pdf.txt)&&/Segundo o esquema 353,60 €/i.test(pdf.txt)
+    &&/Faturas VO.*escrito à mão/.test(pdf.txt)&&/Falta o escalão de 15 %/.test(pdf.txt)&&/Gestão de encomendas: a folha «Política»/.test(pdf.txt)&&!/\bteu\b/i.test(pdf.txt)&&/comissoes\.xlsx/.test(pdf.txt),
   'usar os dados: só preenche o que está vazio':jan2.fvn_r===11&&jan2.fvn_o===10&&jan2.fvo_r===4&&jan2.bm_enc==='Sim'&&jan2.bm_obj===110&&jan2.leads===12&&fev2.fvn_r===9&&fev2.voc===1&&!est.escritas.some(x=>x[1]==='2026/03'),
   'sem erros na página':erros.length===0,
  };
