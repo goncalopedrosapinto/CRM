@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-26-b">
+<meta name="app-version" content="2026-11-27-a">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -938,6 +938,14 @@ html,body{overflow-x:hidden;max-width:100vw}
 .pe-sn{width:74px;padding:4px 6px}.pe-x{text-align:center;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
 .pe-teur{font-size:10px;opacity:.75}.pe-sub{font-size:11px;font-weight:500;color:var(--text3)}.pm-eur .pe-sub{display:block}
 .pe-tri td{background:var(--bg2,var(--surface2))}.pe-lado{display:flex;flex-wrap:wrap;gap:12px;margin:0 16px 12px;align-items:flex-start}.pe-lado>.pm-ajuda{flex:1 1 220px;max-width:340px}.pe-tabs{margin:0 16px 14px;padding:0}
+.pe-emp-pontos{background:var(--amber-bg);border-radius:10px;padding:10px 14px;margin:0 0 12px;font-size:13px;line-height:1.5}.pe-emp-pontos.ok{background:var(--green-bg);color:var(--green);font-weight:600}
+.pe-emp-pontos ul{margin:6px 0 0;padding-left:18px}.pe-emp-pontos li{margin:3px 0}
+.pe-emp-met{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 0 10px}.pe-emp-chip{font:inherit;font-size:12px;font-weight:600;padding:5px 11px;border-radius:14px;border:1.5px solid var(--border2);background:var(--surface);color:var(--text2);cursor:pointer;touch-action:manipulation}
+.pe-emp-chip.on{background:var(--orange);border-color:var(--orange);color:#fff}:root[data-theme="dark"] .pe-emp-chip.on{color:#0B1220}.pe-emp-chip:active{transform:scale(.98)}
+.pe-emp-t2 tr.pe-emp-erro td{background:var(--amber-bg)}.pe-emp-t2 tr.pe-emp-metodo td,.pe-emp-t2 tr.pe-emp-efeito td{color:var(--text2)}
+.pe-emp-t td,.pe-emp-t th,.pe-emp-t2 td,.pe-emp-t2 th{font-variant-numeric:tabular-nums}.pe-emp-t tr.pe-emp-mal>td:first-child{box-shadow:inset 3px 0 0 var(--amber)}
+.pe-emp-t .ok,.pe-emp-t2 .ok{color:var(--green)}.pe-emp-t .neg,.pe-emp-t2 .neg{color:var(--red)}
+.pe-emp-det>td{background:var(--surface2);padding:8px 10px}.pe-emp-t2{margin:0;background:var(--surface)}.pe-emp-t2 tr.pe-emp-aj td:first-child{padding-left:18px}
 .pe-ref{font-size:12px;color:var(--text2)}.pe-card{margin:0 16px 14px;padding:14px 16px}.pe-h{font-weight:800;font-size:14px;margin-bottom:8px}
 .pe-nota{font-size:12.5px;color:var(--text2);margin:0 0 10px;line-height:1.5}
 .pe-ano-t td,.pe-ano-t th{padding:5px 8px;font-variant-numeric:tabular-nums}.pe-ano-t tr.on td{background:var(--orange-bg)}.pe-ano-t tr.pe-vazio td{color:var(--text3)}.pe-ano-t .neg{color:var(--red)}
@@ -2734,7 +2742,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-26-b';
+const APP_VERSION='2026-11-27-a';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -7552,6 +7560,151 @@ function peLerExcel(wb){
   if(!(E.ref>0))throw new Error('O valor de referência (C2) tem de ser maior do que zero.');
   return E;
 }
+// ---- Conferir o cálculo da empresa (Excel «Comissões CV Baviera»: folhas «Comissão» e «Política») ----
+// Lê os resultados e os valores de base de cada mês, volta a calcular com as regras do teu esquema e mostra onde não bate.
+// Fica só na memória do browser: o ficheiro é a fonte; nada é gravado sem carregares em «Usar estes dados nos meus meses».
+const PE_EMP_MESES=['janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const PE_EMP_CHK=[[11,'faturas vn'],[16,'faturas vu'],[21,'margem comercial vn'],[26,'margem comercial vu'],[31,'finance vn'],[36,'finance vu'],[41,'objetivo vendas'],
+  [51,'demonstra'],[54,'encomendas'],[63,'media por vendedor'],[67,'caetano go'],[71,'stock vn'],[79,'consentimentos'],[84,'voc'],[88,'leads'],[93,'retencao']];
+// [chave do teu esquema, nome, linha da % na empresa, linha do €]
+const PE_EMP_PREMIOS=[['fvn','Faturas VN',14,15],['fvo','Faturas VO',19,20],['mvn','Margem comercial VN',24,25],['mvo','Margem comercial VO',29,30],['rvn','Receita financeira VN',34,35],['rvo','Receita financeira VO',39,40],
+  ['bm_obj','Objetivo de vendas',44,45],['bm_demo','Programa de demonstração',52,53],['bm_enc','Gestão de encomendas',55,56],['media','Média de vendas por vendedor',64,65]];
+const PE_EMP_AJUSTES=[['ccgo','CCGO',69,70],['stock','Stock VN + KM0',73,74],['consent','Consentimentos',82,83],['voc','VOC Marca',86,87],['leads','Conversão de leads',91,92],['ret','Taxa de retenção',95,96]];
+function peEmpLer(wb,E){
+  const nC=wb.SheetNames.find(n=>eotNorm(n)==='comissao'),nP=wb.SheetNames.find(n=>eotNorm(n)==='politica');
+  const ws=nC&&wb.Sheets[nC],pol=nP&&wb.Sheets[nP];
+  if(!ws||!pol)throw new Error('Não encontrei as folhas «Comissão» e «Política»: este não parece o ficheiro de comissões da empresa.');
+  const cel=(w,a)=>w[a]||null,v=(w,a)=>{const c=cel(w,a);return c?c.v:null;};
+  const mal=PE_EMP_CHK.find(([r,t])=>!eotNorm(v(ws,'A'+r)).includes(t));
+  if(mal)throw new Error(`O ficheiro não tem o formato esperado: na folha «Comissão», a célula A${mal[0]} devia falar de «${mal[1]}» e diz «${v(ws,'A'+mal[0])==null?'':v(ws,'A'+mal[0])}».`);
+  const n=x=>{if(x===''||x==null||typeof x==='boolean')return null;const y=typeof x==='number'?x:Number(String(x).replace(',','.'));return isFinite(y)?y:null;};
+  const col=i=>{let s='';i++;while(i>0){const m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26);}return s;};
+  const ano=Math.round(n(v(ws,'B8'))||new Date().getFullYear()),refEmp=n(v(ws,'B2'));
+  // colunas dos meses e dos trimestres (linha 10)
+  const cols={},tri={};for(let i=2;i<40;i++){const t=eotNorm(v(ws,col(i)+'10'));const m=PE_EMP_MESES.indexOf(t);if(m>=0)cols[m+1]=col(i);const q=t.match(/^(\d)\D*trimestre/);if(q)tri[+q[1]*3]=col(i);}
+  if(Object.keys(cols).length<12)throw new Error('Não encontrei os 12 meses na linha 10 da folha «Comissão».');
+  const pct=x=>x==null?null:peR(x*100,6);
+  // escalão do objetivo de vendas: a empresa marca o escalão da marca (folha Política, C13:E13); passa a % do teu esquema
+  const esc=[n(v(pol,'C13')),n(v(pol,'D13')),n(v(pol,'E13'))];
+  const meses=[];
+  for(let m=1;m<=12;m++){const c=cols[m],q=tri[m];const g=r=>n(v(ws,c+r)),t=r=>{const x=v(ws,c+r);return x==null?'':String(x).trim();};
+    const ym=ano+'/'+String(m).padStart(2,'0');
+    const nivel=(()=>{const x=g(43);if(x==null)return -1;const i=esc.findIndex(e=>e!=null&&Math.abs(e-x)<1e-9);return i;})();
+    const demo=t(51),enc=t(54);
+    const d={fvn_o:g(12),fvn_r:g(11),fvo_o:g(17),fvo_r:g(16),mvn_o:pct(g(22)),mvn_r:pct(g(21)),mvo_o:pct(g(27)),mvo_r:pct(g(26)),
+      rvn_o:g(32),rvn_r:g(31),rvo_o:g(37),rvo_r:g(36),
+      bm_norma:(nivel>=0||demo||enc)?'Sim':'',bm_obj:nivel>=0?peR(E.bm.lim[nivel]*100,6):null,bm_demo:demo==='Sim'?'Sim':(demo?'Não':''),bm_enc:enc==='Sim'?'Sim':(enc?'Não':''),
+      media:g(63),ccgo:g(68)>0&&g(67)!=null?peR(g(67)/g(68),6):null,stk365:g(72),stk180:g(71),consent:(g(79)||0)>0?pct(g(81)):null,
+      voc:(g(85)||0)>0?g(84):null,voc_nac:(g(85)||0)>0?g(85):null,leads:(g(88)||0)>0?pct(g(90)):null,ret:pct(g(93))};   // sem potencial, média nacional ou oportunidades = sem dado
+    if(q){const gq=r=>n(v(ws,q+r));Object.assign(d,{mvn_to:pct(gq(22)),mvn_tr:pct(gq(21)),mvo_to:pct(gq(27)),mvo_tr:pct(gq(26))});}
+    Object.keys(d).forEach(k=>{if(d[k]==null||d[k]==='')delete d[k];});
+    const lin=L=>L.map(([k,lb,rp,re])=>({k,lb,p:g(rp),e:g(re)}));
+    meses.push({ym,m,d,nivel,prem:lin(PE_EMP_PREMIOS),aj:lin(PE_EMP_AJUSTES),premios:g(66),ajustes:g(102),mes:g(103),tri:q?n(v(ws,q+'103')):null,
+      vazio:g(103)==null&&g(66)==null,semVN:(g(11)||0)===0});}
+  // regras escritas no ficheiro que não batem com o esquema
+  const regras=[];
+  const encMax=n(v(pol,'E19'));const f55=String((cel(ws,'C55')||{}).f||'');
+  if(!(encMax>0)&&!/E\$?19/.test(f55))regras.push({k:'enc',t:'Gestão de encomendas: a folha «Política» só tem o escalão de '+pePc(n(v(pol,'D19'))||0)+' (D19) e a fórmula da linha 55 só usa esse. Falta o escalão de '+pePc(E.bm.enc[2])+' quando o objetivo de vendas está no escalão máximo.'});
+  const f91=String((cel(ws,'C91')||{}).f||'');
+  if(/<=\s*Pol[íi]tica!\$?D\$?38/i.test(f91))regras.push({k:'leads',t:'Conversão de leads: a fórmula da linha 91 só bonifica acima de '+pePc(n(v(pol,'D38'))||E.pen.leads.apartir)+' («<=»). O teu esquema diz «a partir de» (>=): com a conversão exatamente nesse valor, a empresa não paga a bonificação.'});
+  return {ano,refEmp,meses,regras};
+}
+// compara mês a mês: o que a empresa pagou × o teu esquema calculado com os mesmos valores de base.
+// metodo 'empresa': as penalizações/bonificações aplicam-se à comissão do mês (como no ficheiro da empresa) → sobram só os erros;
+// metodo 'esquema': aplicam-se à referência (como no teu simulador). Cada linha: tipo 'erro' | 'metodo' | 'efeito' (consequência de outra linha).
+function peEmpComparar(E,X,metodo){
+  const ano={};X.meses.forEach(M=>{ano[M.ym]=M.d;});
+  const ref=E.ref,ok=(a,b)=>Math.abs((a||0)-(b||0))<0.005,emp=metodo!=='esquema';
+  const CC={};X.meses.forEach(M=>{CC[M.m]=peCalcMes(E,M.ym,ano);});
+  const premDe=C=>peR(C.L.filter(l=>!l.tri).reduce((a,l)=>a+l.p,0)*ref,2);
+  // acerto do trimestre à maneira da empresa: a parte de cada mês leva a % de penalizações/bonificações desse mês
+  const triEmp=(M,pctDe)=>{let alt=0;[['mvn','vn'],['mvo','vo']].forEach(([k,c])=>{const t=peMargem(E,M.d[k+'_to'],M.d[k+'_tr'],E.marg[c]);if(t.desvio==null)return;
+    for(let j=M.m-2;j<=M.m;j++){const Mj=X.meses.find(x=>x.m===j);if(!Mj)continue;const pj=peMargem(E,Mj.d[k+'_o'],Mj.d[k+'_r'],E.marg[c]).p;alt+=Math.max(0,t.p-pj)*ref*(1+pctDe(Mj));}});return peR(alt,2);};
+  const pctEmp=Mj=>Mj.aj.reduce((a,x)=>a+(x.p||0),0),pctEsq=Mj=>CC[Mj.m].aj;
+  return X.meses.map(M=>{
+    const C=CC[M.m];const esqL=k=>C.L.find(l=>l.k===k),esqA=k=>C.A.find(a=>a.k===k);const premE=premDe(C);
+    const linhas=[];
+    M.prem.forEach(e=>{const l=esqL(e.k)||{p:0};const esqE=peR(l.p*ref,2);let pq='',tipo='';
+      if(!ok(e.e,esqE)){tipo='erro';
+        if(e.p!=null&&X.refEmp&&!ok(e.e,peR(e.p*X.refEmp,2)))pq=`Valor escrito à mão no ficheiro: a % da empresa (${pePc(e.p)}) daria ${fmtEur(peR(e.p*X.refEmp,2),2)}.`;
+        else if(e.k==='bm_enc'&&Math.abs(l.p-E.bm.enc[2])<1e-9)pq=`Falta o escalão de ${pePc(E.bm.enc[2])}: o objetivo de vendas está no escalão máximo e a empresa pagou ${pePc(e.p||0)}.`;
+        else if(X.refEmp&&!ok(X.refEmp,ref))pq=`Referência diferente: a empresa usa ${fmtEur(X.refEmp,2)}, o teu esquema ${fmtEur(ref,2)}.`;
+        else pq=`Escalão diferente: a empresa pagou ${pePc(e.p||0)}, o teu esquema dá ${pePc(l.p)}.`;}
+      linhas.push({k:e.k,lb:e.lb,empP:e.p,empE:e.e||0,esqP:l.p,esqE,pq,tipo});});
+    let triE=0;
+    if(M.tri!=null||C.L.some(l=>l.tri)){const inteiro=peR(C.L.filter(l=>l.tri).reduce((a,l)=>a+l.p,0)*ref,2);triE=emp?triEmp(M,pctEsq):inteiro;const empE=M.tri||0;let pq='',tipo='';
+      if(!ok(empE,triE)){
+        if(!emp&&ok(empE,triEmp(M,pctEmp))){tipo='metodo';pq='A empresa aplica ao acerto a % de penalizações e bonificações do mês em que ficou abaixo; o teu esquema paga o acerto por inteiro.';}
+        else if(emp&&ok(empE,triEmp(M,pctEmp))){tipo='efeito';pq='Muda porque as penalizações e bonificações desses meses são diferentes (ver abaixo).';}
+        else{tipo='erro';pq='O acerto do trimestre não bate: confirma a margem do trimestre no ficheiro (ou o trimestre ainda não fechou).';}}
+      linhas.push({k:'tri',lb:'Acerto da margem no trimestre',empP:null,empE,esqP:null,esqE:triE,pq,tipo,tri:true});}
+    let ajT=0;
+    M.aj.forEach(e=>{const a=esqA(e.k)||{p:0};const esqE=peR(a.p*(emp?premE:ref),2);ajT+=esqE;let pq='',tipo='';
+      if(!ok(e.e,esqE)){
+        if(e.p!=null&&Math.abs(e.p-a.p)<1e-9){if(emp){tipo='efeito';pq=`Mesma % (${pePc(a.p)}); muda porque a comissão do mês é diferente (${fmtEur(premE,2)} no teu esquema, ${fmtEur(M.premios||0,2)} na empresa).`;}
+          else{tipo='metodo';pq=`Mesma % (${pePc(a.p)}); a empresa aplica-a sobre a comissão do mês (${fmtEur(M.premios||0,2)}), o teu esquema sobre a referência (${fmtEur(ref,2)}).`;}}
+        else{tipo='erro';
+          if(M.d[{ccgo:'ccgo',stock:'stk365',consent:'consent',voc:'voc',leads:'leads',ret:'ret'}[e.k]]==null)pq=`Sem dado válido no ficheiro (vazio ou a zero, como o potencial, a média nacional ou o nº de vendedores): a empresa aplicou ${e.p==null?'—':pePc(e.p)}, o teu esquema não ajusta.`;
+          else if(e.k==='leads'&&Math.abs(M.d.leads/100-E.pen.leads.apartir)<1e-9)pq=`Conversão exatamente nos ${pePc(E.pen.leads.apartir)}: o esquema bonifica, a fórmula da empresa não.`;
+          else if(e.k==='voc'&&M.d.voc===M.d.voc_nac)pq='VOC igual à média nacional: a empresa não ajusta; o teu simulador conta como bonificação.';
+          else pq=`Escalão diferente: a empresa aplicou ${e.p==null?'—':pePc(e.p)}, o teu esquema dá ${pePc(a.p)}.`;}}
+      linhas.push({k:e.k,lb:e.lb,empP:e.p,empE:e.e||0,esqP:a.p,esqE,pq,tipo,aj:true});});
+    const empT=peR((M.mes||0)+(M.tri||0),2),esq=emp?peR(premE+triE+ajT,2):C.com;
+    const dif=peR(esq-empT,2);   // até 2 cêntimos é arredondamento (a empresa não arredonda as parcelas)
+    return {ym:M.ym,m:M.m,vazio:M.vazio,semVN:M.semVN,emp:empT,esq,dif:Math.abs(dif)<0.02?0:dif,linhas,
+      erros:linhas.filter(l=>l.tipo==='erro').length,metodo:linhas.filter(l=>l.tipo==='metodo').length};});
+}
+async function peEmpImportar(f){
+  if(!f||!isAdmin())return;const E=peEsq();if(!E){avisoErro('Importa primeiro o teu esquema (1): é com ele que confiro o cálculo da empresa.');return;}
+  setState({peEmpBusy:true,peEmpErr:''});
+  try{const X=await eotCarregarXLSX();const wb=X.read(new Uint8Array(await f.arrayBuffer()),{type:'array',cellFormula:true});
+    const R=peEmpLer(wb,E);setState({peEmpBusy:false,peEmp:Object.assign(R,{ficheiro:f.name}),peEmpAberto:null});}
+  catch(e){setState({peEmpBusy:false,peEmpErr:(e&&e.message)||String(e)});}
+}
+async function peEmpUsar(){const X=S.peEmp;if(!X||!isAdmin())return;
+  const meses=X.meses.filter(M=>!M.vazio);
+  if(!await confirmar(`Copiar os valores de base de ${meses.length} meses do ficheiro da empresa para os teus meses?\n\nSó preenche o que está vazio: o que já escreveste fica como está.`,{ok:'Copiar'}))return;
+  let n=0;try{for(const M of meses){const atual=Object.assign({},premioDados(M.ym));let k=0;Object.entries(M.d).forEach(([c,v])=>{if((atual[c]==null||atual[c]==='')&&v!=null&&v!==''){atual[c]=v;k++;}});
+    if(k){await peGravarMes(M.ym,atual);n++;}}
+    clearTimeout(_tgT);toast(n?`Valores copiados para ${n} ${n===1?'mês':'meses'}.`:'Nada a copiar: esses meses já estavam preenchidos.');}
+  catch(e){avisoErro('Erro ao gravar: '+erroTexto(e));await loadPremiosMes();render();}
+}
+function peEmpHTML(E){
+  const X=S.peEmp;const eur=v=>fmtU(fmtEur(v,2)),eurT=v=>fmtEur(v,2),sinal=v=>(v>0?'+':'')+eur(v),sinalT=v=>(v>0?'+':'')+eurT(v);
+  const botao=`<label class="btn btn-${X?'outline':'orange'} btn-sm" style="cursor:pointer;margin:0">${S.peEmpBusy?'A ler…':(X?'Carregar outro ficheiro':'📥 Carregar o ficheiro da empresa')}<input type="file" id="pe-emp" accept=".xlsx,.xlsm,.xls" style="display:none"></label>`;
+  const cab=`<div class="pe-h">2 · Conferir o cálculo da empresa</div>
+    <p class="pe-nota">Carrega o Excel de comissões que a empresa te envia (folhas «Comissão» e «Política»). Recalculo cada mês com as regras do teu esquema (1), usando os mesmos valores de base, e mostro onde não bate. O ficheiro não é gravado.</p>`;
+  if(!X)return`<div class="gpp-card pe-card pe-emp">${cab}${S.peEmpErr?`<div class="error" style="margin:0 0 10px">${esc(S.peEmpErr)}</div>`:''}${botao}</div>`;
+  const metodo=S.peEmpMetodo==='esquema'?'esquema':'empresa';
+  const R=peEmpComparar(E,X,metodo),R1=metodo==='esquema'?R:peEmpComparar(E,X,'esquema'),R2=metodo==='empresa'?R:peEmpComparar(E,X,'empresa');
+  const MN=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const cheios=R.filter(r=>!r.vazio);const tot=peR(cheios.reduce((a,r)=>a+r.dif,0),2);
+  const fechados=R2.filter(r=>!r.vazio&&!r.semVN);
+  const metDif=peR(R1.filter(r=>!r.vazio&&!r.semVN).reduce((a,r,i)=>a+r.esq,0)-fechados.reduce((a,r)=>a+r.esq,0),2);
+  const soma=(L,f)=>peR(L.filter(r=>!r.vazio&&!r.semVN).reduce((a,r)=>a+r.linhas.filter(f).reduce((b,l)=>b+(l.esqE-l.empE),0),0),2);
+  const enc=soma(R2,l=>l.k==='bm_enc'&&/Falta o escalão/.test(l.pq));
+  const mao=[];R2.filter(r=>!r.vazio).forEach(r=>r.linhas.filter(l=>/escrito à mão/.test(l.pq)).forEach(l=>mao.push(MN[r.m-1]+' · '+l.lb+' ('+sinalT(peR(l.esqE-l.empE,2))+')')));
+  const pontos=[...X.regras.map(x=>x.t+(x.k==='enc'&&enc?` Neste ficheiro: ${sinalT(enc)}.`:'')),
+    ...(mao.length?[`Valores escritos à mão que não batem com a % da própria empresa: ${mao.join('; ')}.`]:[]),
+    ...(Math.abs(metDif)>=0.01?[`Penalizações e bonificações: a empresa aplica a % sobre a comissão do mês; o teu simulador sobre a referência de ${eurT(E.ref)}. Nos meses fechados, o teu método dá ${sinalT(metDif)} ${metDif<0?'(o método da empresa tem-te sido favorável)':'(o método da empresa paga-te menos)'}.`]:[])];
+  const chip=(v,lb)=>`<button type="button" class="pe-emp-chip${metodo===v?' on':''}" data-action="pe-emp-metodo" data-v="${v}" aria-pressed="${metodo===v}">${lb}</button>`;
+  const det=r=>`<tr class="pe-emp-det"><td colspan="5"><table class="gpp-ltable pe-emp-t2" data-no-tools="1"><thead><tr><th>Rubrica</th><th style="text-align:right">Empresa</th><th style="text-align:right">Teu esquema</th><th style="text-align:right">Diferença</th><th>Porquê</th></tr></thead><tbody>
+    ${r.linhas.map(l=>`<tr class="${l.tipo?'pe-emp-'+l.tipo:''}${l.aj?' pe-emp-aj':''}"><td>${esc(l.lb)}</td><td style="text-align:right">${eur(l.empE)}${l.empP!=null?`<div class="pe-sub">${pePc(l.empP)}</div>`:''}</td><td style="text-align:right">${eur(l.esqE)}${l.esqP!=null?`<div class="pe-sub">${pePc(l.esqP)}</div>`:''}</td><td style="text-align:right" class="${l.tipo?(l.esqE-l.empE>0?'ok':'neg'):''}">${l.tipo?sinal(peR(l.esqE-l.empE,2)):'—'}</td><td class="pe-sub">${esc(l.pq||'')}</td></tr>`).join('')}
+    </tbody></table></td></tr>`;
+  const lbBtn=r=>r.erros?r.erros+' '+(r.erros===1?'erro':'erros'):(r.metodo?'só método':'Ver');
+  return`<div class="gpp-card pe-card pe-emp">${cab}
+    ${S.peEmpErr?`<div class="error" style="margin:0 0 10px">${esc(S.peEmpErr)}</div>`:''}
+    ${pontos.length?`<div class="pe-emp-pontos"><b>O que encontrei</b><ul>${pontos.map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div>`:'<div class="pe-emp-pontos ok">✓ O cálculo da empresa bate com o teu esquema em todos os meses.</div>'}
+    <div class="pe-emp-met"><span class="pe-sub">Penalizações e bonificações sobre</span>${chip('empresa','a comissão do mês (como a empresa)')}${chip('esquema','a referência de '+eurT(E.ref)+' (como o teu simulador)')}</div>
+    <div style="overflow-x:auto"><table class="gpp-ltable pe-emp-t" data-no-tools="1"><thead><tr><th>Mês ${esc(String(X.ano))}</th><th style="text-align:right">Empresa</th><th style="text-align:right">Teu esquema</th><th style="text-align:right">Diferença</th><th></th></tr></thead><tbody>
+    ${R.map(r=>{const ab=S.peEmpAberto===r.ym;if(r.vazio)return`<tr class="pe-vazio"><td>${MN[r.m-1]}</td><td colspan="4" class="pe-sub">sem dados no ficheiro</td></tr>`;
+      return`<tr class="${r.erros?'pe-emp-mal':''}"><td>${MN[r.m-1]}${r.semVN?' <span class="pe-sub">· por fechar (faturas VN a 0)</span>':''}</td><td style="text-align:right">${eur(r.emp)}</td><td style="text-align:right">${eur(r.esq)}</td><td style="text-align:right" class="${Math.abs(r.dif)<0.005?'':(r.dif>0?'ok':'neg')}"><b>${Math.abs(r.dif)<0.005?'bate':sinal(r.dif)}</b></td>
+        <td><button type="button" class="btn btn-ghost btn-sm" data-action="pe-emp-mes" data-m="${r.ym}" aria-expanded="${ab}">${lbBtn(r)} ${ab?'▾':'▸'}</button></td></tr>${ab?det(r):''}`;}).join('')}
+    </tbody><tfoot><tr><td>Total do ano</td><td style="text-align:right">${eur(peR(cheios.reduce((a,r)=>a+r.emp,0),2))}</td><td style="text-align:right">${eur(peR(cheios.reduce((a,r)=>a+r.esq,0),2))}</td><td style="text-align:right" class="${tot>0?'ok':(tot<0?'neg':'')}"><b>${sinal(tot)}</b></td><td></td></tr></tfoot></table></div>
+    <div class="pe-sub" style="margin:8px 0">Positivo: o teu esquema dá mais do que a empresa pagou. Recalculado com a referência de ${eur(E.ref)}, os escalões do teu esquema e os valores de base do ficheiro (o escalão do objetivo de vendas é o que a empresa marcou na linha 43).</div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">${botao}<button type="button" class="btn btn-outline btn-sm" data-action="pe-emp-usar">Usar estes dados nos meus meses</button><span class="pe-sub">${esc(X.ficheiro||'')}</span></div>
+  </div>`;
+}
 async function peImportar(f){
   if(!f||!isAdmin())return;
   setState({peBusy:true,peErr:'',pePrev:null});
@@ -7605,7 +7758,7 @@ function peRegrasHTML(E){
       <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn btn-orange btn-sm" data-action="pe-confirmar">Gravar estas regras</button><button class="btn btn-dark btn-sm" data-action="pe-cancelar">Cancelar</button></div></div>`:'';
   if(!E)return`${S.peErr?`<div class="error" style="margin:0 16px 12px">${esc(S.peErr)}</div>`:''}${prev||`<div class="gpp-card pe-card pe-vazio-c"><div class="pe-h">Ainda não há regras do esquema</div>
       <p class="pe-nota">Importa o Excel do <b>Esquema Base</b> (o mesmo do teu simulador). Os valores ficam só na base de dados, visíveis só para ti. Quando o esquema for renovado, importas o novo.</p>${botao}</div>`}`;
-  return`<details class="gpp-card pe-card pe-regras" ${P||S.peErr?'open':''}><summary class="pe-h">Regras do esquema${E.valido?` <span class="pe-sub">· ${esc(E.valido)}</span>`:''}</summary>
+  return`<details class="gpp-card pe-card pe-regras" ${P||S.peErr?'open':''}><summary class="pe-h">1 · O meu esquema (regras)${E.valido?` <span class="pe-sub">· ${esc(E.valido)}</span>`:''}</summary>
     ${S.peErr?`<div class="error" style="margin:8px 0">${esc(S.peErr)}</div>`:''}
     ${prev}
     ${resumo(E)}
@@ -11542,6 +11695,7 @@ function renderDashboard(){
       ${fe}
       ${anoHTML}
       ${regras}
+      ${peEmpHTML(E)}
       <div class="gpp-pend-desc" style="margin:0 16px 16px">Escreve o <b>orçamento</b> e o <b>real</b> de cada rubrica; o escalão atingido acende e soma em % do valor de referência. Os escalões são degraus: abaixo do 1.º paga 0 e só sobe ao atingir o seguinte. VN e VO contam em separado. Os números a cinzento nas faturas vêm do CRM (retail do mês e objetivo de novas) e só contam quando carregas em «Usar estes números» ou os escreves: o oficial é o da marca. A margem é medida no mês e acertada no fim do trimestre (março, junho, setembro, dezembro): cada mês que pagou abaixo do escalão do trimestre recebe a diferença. O Bónus Marcas preenche-se só no mês em que é pago. A comissão do mês pode ficar negativa.</div>`;
   }
   function leadFormHTML(){
@@ -12721,6 +12875,7 @@ function bindEvents(){
     if(el.dataset&&el.dataset.seqV){S.seqVenda=Object.assign({},S.seqVenda||{},{[el.dataset.seqV]:el.value});seqCalcAtualizar();return;}
     if(el.id==='eot-file'){const f=el.files&&el.files[0];el.value='';eotFicheiro(f);return;}
     if(el.id==='pe-xls'){const f=el.files&&el.files[0];el.value='';peImportar(f);return;}
+    if(el.id==='pe-emp'){const f=el.files&&el.files[0];el.value='';peEmpImportar(f);return;}
     if(el.id==='eot-hist-file'){const f=el.files&&el.files[0];el.value='';eotAcrFicheiro(f);return;}
     if(el.dataset&&el.dataset.eotAcrProv!=null&&S.eotAcr){const c=el.dataset.eotAcrProv;S.eotAcr=Object.assign({},S.eotAcr,{prov:S.eotAcr.prov.map(x=>String(x.l.contrato)===c?Object.assign({},x,{incluir:el.checked}):x)});render();return;}
     if(el.id==='eot-lote'){eotAtribuirLote(el.value);return;}
@@ -13045,6 +13200,9 @@ function bindEvents(){
       case'pe-confirmar':peConfirmar();break;
       case'pe-cancelar':setState({pePrev:null,peErr:''});break;
       case'pe-crm':if(S._peSug)peUsarCrm(S._peSug.mes,S._peSug.vals);break;
+      case'pe-emp-mes':S.peEmpAberto=S.peEmpAberto===el.dataset.m?null:el.dataset.m;render();break;
+      case'pe-emp-usar':peEmpUsar();break;
+      case'pe-emp-metodo':S.peEmpMetodo=el.dataset.v;render();break;
       case'eot-rot-desfazer':if(S.eotRotFeitos)eotRotacaoDesfazer(S.eotRotFeitos);break;
       case'eot-acr-cancelar':setState({eotAcr:null,eotErrImp:''});break;
       case'eot-novo':eotNovoAbrir();break;

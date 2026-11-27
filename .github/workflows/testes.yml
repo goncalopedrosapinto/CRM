@@ -68,6 +68,7 @@ jobs:
       - run: npm run eventosext
       - run: npm run comfixa
       - run: npm run premios
+      - run: npm run premiosempresa
       - run: npm run adiado
       - run: npm run pesquisa
       - run: npm run revisao
