@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2026-11-27-b">
+<meta name="app-version" content="2026-11-27-c">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://fyieckrmdrorjoevmrhm.supabase.co https://lifestyle.caetano.pt; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2743,7 +2743,7 @@ const ALERTA_TAG={mat:['Matrícula','al'],cart:['Encomenda','mn'],cme:['CME','av
 function alertaTag(id){const t=ALERTA_TAG[id]||(String(id).startsWith('funil_')?['Funil','av']:['Aviso','neu']);return`<span class="atag atag-${t[1]}">${t[0]}</span>`;}
 function vazioHTML(icn,tit,sub){return`<div class="bm-vazio">${ico(icn||'inboxEmpty')}<b>${tit}</b>${sub?`<span>${sub}</span>`:''}</div>`;}
 // ===== Atualização automática (de hora a hora) + "em aberto" guardado na sessão =====
-const APP_VERSION='2026-11-27-b';
+const APP_VERSION='2026-11-27-c';
 const AUTO_INTERVALO=60*60*1000;
 let _ultimaAtiv=Date.now(),_ultimoAuto=Date.now(),_novaVersao=null;
 ['keydown','pointerdown','input','wheel','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{_ultimaAtiv=Date.now();},{passive:true,capture:true}));
@@ -2845,9 +2845,9 @@ const FIELD_GROUPS=[
   {g:'INFO',fields:[{k:'status',l:'Status',t:'select',o:STATUSES},{k:'motivo_perda',l:'Motivo da Perda',t:'select',o:MOTIVOS_PERDA,show:'perdido'},{k:'recontactar_em',l:'Voltar a contactar em (adiado: obrigatório · perdido: 6 meses por omissão)',t:'date',show:'recont'},{k:'alert_date',l:'Alertar no dia (sugerido — podes mudar)',t:'date',show:'funil'}]},
   {g:'Identificação',fields:[{k:'id_cliente',l:'Cliente',t:'text'},{k:'local',l:'Código Postal',t:'text'},{k:'nif',l:'NIF',t:'text'},{k:'morada',l:'Morada',t:'text'},{k:'cc',l:'CC',t:'text'},{k:'data_nascimento',l:'Data de nascimento (aniversário)',t:'date'},{k:'email',l:'Email',t:'text'},{k:'contacto',l:'Contacto',t:'text'}]},
   {g:'Negócio',fields:[{k:'neg',l:'Data Negócio',t:'date'},{k:'mes1',l:'Mês Referência',t:'month'},{k:'type',l:'Tipo',t:'select',o:TYPES},{k:'pvp',l:'PVP (€)',t:'number'},{k:'origin',l:'Origem',t:'select',o:ORIGINS},{k:'lead_webapp',l:'Nº Lead (WebApp)',t:'text',show:'lead'},{k:'campanha',l:'Campanha / lote (ex: P6 08/26)',t:'text',show:'campanha'},{k:'profile',l:'Perfil',t:'select',o:PROFILES},{k:'retoma',l:'Retoma?',t:'select',o:['Não','Sim']},{k:'retoma_modelo',l:'Modelo da Retoma',t:'text',show:'retoma'},{k:'retoma_mat',l:'Matrícula da Retoma',t:'text',show:'retoma'},{k:'retoma_ano',l:'Ano da Retoma',t:'text',show:'retoma'},{k:'retoma_kms',l:'Km da Retoma',t:'text',show:'retoma'},{k:'retoma_cor',l:'Cor da Retoma',t:'text',show:'retoma'},{k:'retoma_data_matricula',l:'Data de Matrícula da Retoma',t:'date',show:'retoma'},{k:'retoma_valor',l:'Valor dado ao cliente pela retoma (€)',t:'text',show:'retoma'},{k:'retoma_valor_comercio',l:'Valor dado pelo comércio pela retoma (€)',t:'text',show:'retoma'},{k:'biz',l:'Bizagi',t:'text'},{k:'fin',l:'Financiamento',t:'select',o:FINS},{k:'sinal',l:'Sinal (€)',t:'text'},{k:'sinal_forma',l:'Forma do sinal',t:'select',o:SINAL_FORMAS}]},
-  {g:'Viatura',fields:[{k:'stock_id',l:'Mota do Stock (modelo · matrícula)',t:'stockpick',show:'stockpick'},{k:'model',l:'Modelo',t:'text'},{k:'version',l:'Versão',t:'text'},{k:'stock',l:'Em Stock?',t:'select',o:['Não','Sim']},{k:'enc',l:'Encomenda',t:'text'},{k:'chas',l:'Chassis',t:'text'},{k:'mat',l:'Matrícula',t:'text'},{k:'gar',l:'Garantia?',t:'select',o:['Não','Sim']},{k:'gar_periodo',l:'Período de Garantia',t:'select',o:GAR_PERIODOS,show:'garantia'}]},
+  {g:'Viatura',fields:[{k:'stock_id',l:'Mota do Stock (modelo · matrícula)',t:'stockpick',show:'stockpick'},{k:'model',l:'Modelo',t:'text'},{k:'version',l:'Versão',t:'text'},{k:'stock',l:'Em Stock?',t:'select',o:['Não','Sim']},{k:'enc',l:'Encomenda',t:'text'},{k:'chas',l:'Chassis',t:'text'},{k:'mat',l:'Matrícula',t:'text'},{k:'dmat',l:'Data Matrícula',t:'date'},{k:'gar',l:'Garantia?',t:'select',o:['Não','Sim']},{k:'gar_periodo',l:'Período de Garantia',t:'select',o:GAR_PERIODOS,show:'garantia'}]},
   {g:'Extras',fields:[{k:'flag_ccgo',l:'CC Go',t:'toggle'},{k:'flag_rgpd',l:'RGPD',t:'toggle'},{k:'flag_seguro',l:'Seguro Nosso',t:'toggle'},{k:'flag_lifestyle',l:'Lifestyle',t:'toggle'}]},
-  {g:'Datas',fields:[{k:'status_mota',l:'Status da mota',t:'text'},{k:'col_198',l:'198',t:'text'},{k:'dmat',l:'Data Matrícula',t:'date'},{k:'decl_circ',l:'Declaração de circulação',t:'select',o:['','Atualizada','Por atualizar'],show:'declcirc'},{k:'col_298',l:'298',t:'date'}]},
+  {g:'Datas',fields:[{k:'status_mota',l:'Status da mota',t:'text'},{k:'col_198',l:'198',t:'text'},{k:'decl_circ',l:'Declaração de circulação',t:'select',o:['','Atualizada','Por atualizar'],show:'declcirc'},{k:'col_298',l:'298',t:'date'}]},
   {g:'OBS',fields:[{k:'obs',l:'Observações',t:'textarea'},{k:'obs_gestor',l:'Observação do Chefe',t:'textarea'}]}
 ];
 const ALL_FIELDS=FIELD_GROUPS.flatMap(g=>g.fields);
